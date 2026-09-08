@@ -3,8 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('compliance_warnings')) {
@@ -13,10 +17,10 @@ return new class extends Migration {
 
         Schema::create('compliance_warnings', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->unsignedInteger('order_column')->nullable()->index()->comment('Thứ tự sắp xếp — Spatie Sortable / ORDER BY');
             $table->foreignUlid('organization_id')->constrained('organizations')->cascadeOnDelete()->comment('Tổ chức sở hữu');
             $table->string('warnable_type', 50)->index()->comment('Morph alias — product_compliance | vendor_certificate | batch');
             $table->ulid('warnable_id');
-            $table->index(['warnable_type', 'warnable_id'], 'idx_warnings_warnable');
             $table->string('category', 50)->index()->comment('product_compliance_expiry | vendor_certificate_expiry | batch_near_expiry');
             $table->string('title', 255);
             $table->text('message');
@@ -27,9 +31,15 @@ return new class extends Migration {
             $table->timestamp('acknowledged_at')->nullable();
             $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+            
 
+            // Indexes
+            $table->index(['warnable_type', 'warnable_id'], 'idx_warnings_warnable');
             $table->unique(['warnable_type', 'warnable_id', 'category'], 'uq_warning_warnable_category');
         });
+
+        
     }
 
     public function down(): void

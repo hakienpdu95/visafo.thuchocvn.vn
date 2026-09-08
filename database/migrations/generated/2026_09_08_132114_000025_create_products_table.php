@@ -25,6 +25,7 @@ return new class extends Migration
             $table->foreignUlid('brand_id')->nullable()->constrained('brands')->nullOnDelete()->comment('Thương hiệu');
             $table->string('category_type', 30)->index()->comment('food | cosmetic | medical_device | toy_plastic | textile');
             $table->string('unit', 30)->comment('Đơn vị tính');
+            $table->string('external_product_id', 100)->nullable()->index()->comment('ID sản phẩm bên hệ thống POS (Sapo/KiotViet)');
             $table->string('status', 20)->default('active')->index()->comment('active | discontinued');
             $table->timestamps();
             $table->softDeletes();

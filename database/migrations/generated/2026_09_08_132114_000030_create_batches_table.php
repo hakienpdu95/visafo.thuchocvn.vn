@@ -18,6 +18,7 @@ return new class extends Migration
         Schema::create('batches', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->unsignedInteger('order_column')->nullable()->index()->comment('Thứ tự sắp xếp — Spatie Sortable / ORDER BY');
+            $table->foreignUlid('organization_id')->constrained('organizations')->cascadeOnDelete()->comment('Tổ chức sở hữu — denormalize để tenant-scope trực tiếp bảng batches');
             $table->foreignUlid('inbound_receipt_id')->constrained('inbound_receipts')->restrictOnDelete()->comment('Phiếu nhập kho tạo ra lô này');
             $table->foreignUlid('product_id')->constrained('products')->restrictOnDelete()->comment('SKU của lô hàng');
             $table->foreignUlid('vendor_id')->constrained('vendors')->restrictOnDelete()->comment('Nhà cung cấp — denormalize từ inbound_receipt để query nhanh');

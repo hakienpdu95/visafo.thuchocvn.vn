@@ -3,8 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('outbound_orders')) {
@@ -13,6 +17,7 @@ return new class extends Migration {
 
         Schema::create('outbound_orders', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->unsignedInteger('order_column')->nullable()->index()->comment('Thứ tự sắp xếp — Spatie Sortable / ORDER BY');
             $table->foreignUlid('organization_id')->constrained('organizations')->cascadeOnDelete()->comment('Tổ chức sở hữu');
             $table->string('order_number', 100)->comment('Mã đơn xuất buôn nội bộ');
             $table->string('order_type', 20)->default('wholesale')->index()->comment('wholesale — dự phòng mở rộng loại khác về sau');
@@ -25,9 +30,13 @@ return new class extends Migration {
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
+            
 
+            // Indexes
             $table->unique(['organization_id', 'order_number'], 'uq_outbound_orders_org_number');
         });
+
+        
     }
 
     public function down(): void
