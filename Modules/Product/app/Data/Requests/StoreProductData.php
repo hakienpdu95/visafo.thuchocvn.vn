@@ -1,0 +1,78 @@
+<?php
+
+namespace Modules\Product\Data\Requests;
+
+use App\Shared\Tenancy\TenantContext;
+use Illuminate\Validation\Rule;
+use Modules\Product\Enums\ProductCategoryType;
+use Modules\Product\Enums\ProductStatus;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Nullable;
+use Spatie\LaravelData\Attributes\Validation\Required;
+use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Data;
+
+class StoreProductData extends Data
+{
+    public function __construct(
+        #[Required, StringType, Max(100)]
+        public readonly string $sku,
+
+        #[Nullable, StringType, Max(50)]
+        public readonly ?string $barcode,
+
+        #[Required, StringType, Max(255)]
+        public readonly string $name,
+
+        #[Nullable]
+        public readonly ?string $brand_id,
+
+        public readonly ProductCategoryType $category_type,
+
+        #[Required, StringType, Max(30)]
+        public readonly string $unit,
+
+        public readonly ProductStatus $status = ProductStatus::Active,
+    ) {}
+
+    public static function rules(): array
+    {
+        return [
+            'sku' => [
+                'required', 'string', 'max:100',
+                Rule::unique('products', 'sku')->where('organization_id', TenantContext::getOrganizationId()),
+            ],
+            'brand_id' => ['nullable', Rule::exists('brands', 'id')->where('organization_id', TenantContext::getOrganizationId())],
+            'category_type' => ['required', Rule::enum(ProductCategoryType::class)],
+        ];
+    }
+
+    public static function messages(): array
+    {
+        return [
+            'sku.required' => 'Vui lòng nhập mã SKU.',
+            'sku.string'   => 'Mã SKU không hợp lệ.',
+            'sku.max'      => 'Mã SKU không được vượt quá 100 ký tự.',
+            'sku.unique'   => 'Mã SKU này đã tồn tại.',
+
+            'barcode.string' => 'Mã vạch không hợp lệ.',
+            'barcode.max'    => 'Mã vạch không được vượt quá 50 ký tự.',
+
+            'name.required' => 'Vui lòng nhập tên sản phẩm.',
+            'name.string'   => 'Tên sản phẩm không hợp lệ.',
+            'name.max'      => 'Tên sản phẩm không được vượt quá 255 ký tự.',
+
+            'brand_id.exists' => 'Thương hiệu không hợp lệ.',
+
+            'category_type.required' => 'Vui lòng chọn ngành hàng.',
+            'category_type.enum'     => 'Ngành hàng không hợp lệ.',
+
+            'unit.required' => 'Vui lòng nhập đơn vị tính.',
+            'unit.string'   => 'Đơn vị tính không hợp lệ.',
+            'unit.max'      => 'Đơn vị tính không được vượt quá 30 ký tự.',
+
+            'status.required' => 'Vui lòng chọn trạng thái.',
+            'status.enum'     => 'Trạng thái không hợp lệ.',
+        ];
+    }
+}

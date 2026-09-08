@@ -1,0 +1,12 @@
+{
+    "Auth": true,
+    "Organization": true,
+    "User": true,
+    "ActivityLog": true,
+    "Vendor": true,
+    "Product": true,
+    "Warehouse": true,
+    "Sapo": true,
+    "Recall": true,
+    "Compliance": true
+}

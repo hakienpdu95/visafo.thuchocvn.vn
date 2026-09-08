@@ -1,0 +1,11 @@
+{
+    "name": "Recall",
+    "alias": "recall",
+    "description": "",
+    "keywords": [],
+    "priority": 1,
+    "providers": [
+        "Modules\\Recall\\Providers\\RecallServiceProvider"
+    ],
+    "files": []
+}

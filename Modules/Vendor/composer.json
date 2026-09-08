@@ -1,0 +1,25 @@
+{
+    "name": "nwidart/vendor",
+    "description": "",
+    "authors": [],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Vendor\\": "app/",
+            "Modules\\Vendor\\Database\\Factories\\": "database/factories/",
+            "Modules\\Vendor\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Vendor\\Tests\\": "tests/"
+        }
+    }
+}

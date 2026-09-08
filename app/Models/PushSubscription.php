@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class PushSubscription extends Model
+{
+    use HasUlids;
+
+    protected $table = 'push_subscriptions';
+
+    protected $fillable = [
+        'user_id',
+        'endpoint',
+        'public_key',
+        'auth_token',
+        'content_encoding',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}
