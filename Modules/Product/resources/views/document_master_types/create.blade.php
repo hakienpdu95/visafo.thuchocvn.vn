@@ -35,19 +35,20 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="form-control">
                     <label class="label py-0 pb-1.5"><span class="label-text font-medium">Mã loại giấy tờ <span class="text-error">*</span></span></label>
-                    <input type="text" name="code" value="{{ old('code') }}" placeholder="vd: cosmetic_pif"
+                    <input type="text" name="code" value="{{ old('code') }}" placeholder="vd: facility_attp"
                            class="input input-bordered input-sm w-full font-mono @error('code') input-error @enderror">
                     @error('code')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="form-control">
-                    <label class="label py-0 pb-1.5"><span class="label-text font-medium">Ngành hàng áp dụng <span class="text-error">*</span></span></label>
-                    <select name="applicable_category" class="select select-bordered select-sm w-full @error('applicable_category') select-error @enderror">
-                        @foreach($categoryTypes as $category)
-                        <option value="{{ $category->value }}" @selected(old('applicable_category') === $category->value)>{{ $category->label() }}</option>
+                    <label class="label py-0 pb-1.5"><span class="label-text font-medium">Nhóm giấy tờ <span class="text-error">*</span></span></label>
+                    <select name="document_group" class="select select-bordered select-sm w-full @error('document_group') select-error @enderror">
+                        <option value="" disabled @selected(!old('document_group'))>— Chọn nhóm —</option>
+                        @foreach($documentGroups as $group)
+                        <option value="{{ $group->value }}" @selected(old('document_group') === $group->value)>{{ $group->label() }}</option>
                         @endforeach
                     </select>
-                    @error('applicable_category')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                    @error('document_group')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                 </div>
             </div>
 

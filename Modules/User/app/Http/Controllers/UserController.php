@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Modules\Organization\Models\Organization;
 use Modules\User\Actions\DestroyUserAction;
 use Modules\User\Actions\StoreUserAction;
 use Modules\User\Actions\UpdateUserAction;
@@ -25,12 +24,7 @@ class UserController extends Controller
         $canEdit   = $request->user()->can('create', User::class);
         $canDelete = $isAdmin;
 
-        $countQuery = User::whereNotNull('organization_id');
-        if (! $isAdmin) {
-            $countQuery->where('organization_id', $request->user()->organization_id);
-        }
-
-        $counts = $countQuery->selectRaw(
+        $counts = User::query()->selectRaw(
             'COUNT(*) as total_all,
              SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as total_active,
              SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) as total_inactive'
@@ -45,11 +39,7 @@ class UserController extends Controller
             ['value' => '0', 'text' => 'Vô hiệu'],
         ];
 
-        $organizations = $isAdmin
-            ? Organization::orderBy('name')->get(['id', 'name'])
-            : collect();
-
-        return view('user::index', compact('isAdmin', 'canEdit', 'canDelete', 'roles', 'statuses', 'organizations', 'counts'));
+        return view('user::index', compact('isAdmin', 'canEdit', 'canDelete', 'roles', 'statuses', 'counts'));
     }
 
     public function create(Request $request)
@@ -58,34 +48,20 @@ class UserController extends Controller
 
         $isAdmin = $request->user()->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
 
-        $organizations = $this->getOrganizationsFor($request->user());
-        $roles         = $this->buildRolesFor($request->user());
-        $matrix        = $this->permissionMatrix();
+        $roles  = $this->buildRolesFor($request->user());
+        $matrix = $this->permissionMatrix();
 
-        return view('user::create', compact('organizations', 'roles', 'matrix', 'isAdmin'));
+        return view('user::create', compact('roles', 'matrix', 'isAdmin'));
     }
 
     public function store(Request $request, StoreUserAction $action): RedirectResponse
     {
         $this->authorize('create', User::class);
 
-        // Guard: HR cannot assign roles beyond their allowed set
         $this->guardRoleEscalation($request->user(), $request->input('system_role'));
 
-        $orgId        = $request->user()->organization_id;
-        $currentCount = User::where('organization_id', $orgId)->count();
-        if (org_at_limit('limit.members', $currentCount)) {
-            return back()->withInput()->withErrors([
-                'limit' => 'Bạn đã đạt giới hạn người dùng (' . org_limit('limit.members') . ') của gói hiện tại. Vui lòng nâng cấp để thêm.',
-            ]);
-        }
-
-        try {
-            $data = StoreUserData::validateAndCreate($request->all());
-            $user = $action->handle($data);
-        } catch (\DomainException $e) {
-            return back()->withInput()->withErrors(['email' => $e->getMessage()]);
-        }
+        $data = StoreUserData::validateAndCreate($request->all());
+        $user = $action->handle($data);
 
         return redirect()->route('backend.users.index')
             ->with('success', 'Tài khoản "' . $user->name . '" đã được tạo thành công.');
@@ -98,13 +74,10 @@ class UserController extends Controller
         $isAdmin     = $request->user()->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
         $currentRole = $this->resolveUserRole($user);
 
-        $user->load(['organization', 'organizationMembership']);
+        $roles  = $this->buildRolesFor($request->user());
+        $matrix = $this->permissionMatrix();
 
-        $organizations = $this->getOrganizationsFor($request->user());
-        $roles         = $this->buildRolesFor($request->user());
-        $matrix        = $this->permissionMatrix();
-
-        return view('user::edit', compact('user', 'organizations', 'roles', 'matrix', 'isAdmin', 'currentRole'));
+        return view('user::edit', compact('user', 'roles', 'matrix', 'isAdmin', 'currentRole'));
     }
 
     public function update(Request $request, User $user, UpdateUserAction $action): RedirectResponse
@@ -136,20 +109,10 @@ class UserController extends Controller
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    private function getOrganizationsFor(User $actor)
-    {
-        if ($actor->hasAnyRole(['super-admin', RoleEnum::ADMIN->value])) {
-            return Organization::where('status', 'active')->orderBy('name')->get(['id', 'name']);
-        }
-
-        return Organization::where('id', $actor->organization_id)->get(['id', 'name']);
-    }
-
     private function buildRolesFor(User $actor): array
     {
         $isAdmin = $actor->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
 
-        // HR cannot create CEO or System Admin accounts
         $excluded = $isAdmin ? [] : [RoleEnum::CEO->value, RoleEnum::ADMIN->value];
 
         return collect(RoleEnum::cases())
@@ -171,20 +134,9 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Get the user's current system role scoped to their own organisation,
-     * regardless of the currently logged-in user's team context.
-     */
     private function resolveUserRole(User $user): string
     {
-        $prevTeamId = getPermissionsTeamId();
-        setPermissionsTeamId($user->organization_id);
-        $user->unsetRelation('roles');
-        $role = $user->getRoleNames()->first() ?? '';
-        setPermissionsTeamId($prevTeamId);
-        $user->unsetRelation('roles');
-
-        return $role;
+        return $user->getRoleNames()->first() ?? '';
     }
 
     private function permissionMatrix(): array

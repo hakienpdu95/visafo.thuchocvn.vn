@@ -17,10 +17,10 @@ function buildColumns(canDelete) {
             title: 'Tên loại giấy tờ', field: 'name', minWidth: 260, sorter: 'string',
         },
         {
-            title: 'Ngành hàng áp dụng', field: 'applicable_category_label', minWidth: 200, sorter: 'string',
+            title: 'Nhóm giấy tờ', field: 'document_group_label', minWidth: 220, headerSort: false,
             formatter(cell) {
                 const d = cell.getRow().getData();
-                return esc(d.applicable_category_label);
+                return esc(d.document_group_label);
             },
         },
         {
@@ -125,9 +125,9 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.data('documentMasterTypeListPage', (serverData = {}) => {
         const {
-            apiUrl        = '',
-            categoryTypes = [],
-            canDelete     = false,
+            apiUrl         = '',
+            documentGroups = [],
+            canDelete      = false,
         } = serverData;
 
         const COLUMNS = buildColumns(canDelete);
@@ -135,19 +135,19 @@ document.addEventListener('alpine:init', () => {
         let tableInst = null;
 
         return {
-            filters: { search: '', applicable_category: '' },
+            filters: { search: '', document_group: '' },
 
             get hasFilters() {
                 const f = this.filters;
-                return !!(f.search || f.applicable_category);
+                return !!(f.search || f.document_group);
             },
 
             get activeChips() {
                 const chips = [], f = this.filters;
                 if (f.search) chips.push({ key: 'search', label: 'Tìm: ' + f.search });
-                if (f.applicable_category) {
-                    const c = categoryTypes.find(x => x.value === f.applicable_category);
-                    chips.push({ key: 'applicable_category', label: c ? c.text : f.applicable_category });
+                if (f.document_group) {
+                    const g = documentGroups.find(x => x.value === f.document_group);
+                    chips.push({ key: 'document_group', label: g ? g.text : f.document_group });
                 }
                 return chips;
             },
@@ -166,19 +166,26 @@ document.addEventListener('alpine:init', () => {
                     ajaxParams() {
                         const p = {}, f = self.filters;
                         if (f.search) p.search = f.search;
-                        if (f.applicable_category) p.applicable_category = f.applicable_category;
+                        if (f.document_group) p.document_group = f.document_group;
                         return p;
                     },
                     ajaxResponse: (_u, _p, res) => res,
                     ajaxError: (error) => console.error('[document-master-type] API error', error),
 
+                    // Danh mục tra cứu nhỏ (~15-30 dòng) — tải hết 1 trang rồi group ở client cho dễ nhìn.
                     pagination:             true,
                     paginationMode:         'remote',
-                    paginationSize:         25,
-                    paginationSizeSelector: [10, 25, 50, 100],
+                    paginationSize:         100,
+                    paginationSizeSelector: [25, 50, 100],
                     paginationCounter:      'rows',
                     sortMode:               'remote',
-                    initialSort:            [{ column: 'applicable_category_label', dir: 'asc' }],
+                    // Không set initialSort — server mặc định sắp theo thứ tự nghiệp vụ của Nhóm giấy tờ (1→4), rồi tới tên.
+
+                    groupBy:        'document_group_label',
+                    groupStartOpen: true,
+                    groupHeader(value, count) {
+                        return esc(value) + ' <span class="opacity-50 text-xs font-normal">(' + count + ')</span>';
+                    },
 
                     layout:           'fitColumns',
                     responsiveLayout: 'collapse',
@@ -210,13 +217,13 @@ document.addEventListener('alpine:init', () => {
             loadState() {
                 const p = new URLSearchParams(location.search);
                 if (p.has('q'))   this.filters.search = p.get('q');
-                if (p.has('cat')) this.filters.applicable_category = p.get('cat');
+                if (p.has('grp')) this.filters.document_group = p.get('grp');
             },
 
             saveState() {
                 const p = new URLSearchParams(), f = this.filters;
                 if (f.search) p.set('q', f.search);
-                if (f.applicable_category) p.set('cat', f.applicable_category);
+                if (f.document_group) p.set('grp', f.document_group);
                 const qs = p.toString();
                 history.replaceState(null, '', qs ? '?' + qs : location.pathname);
             },
@@ -227,13 +234,13 @@ document.addEventListener('alpine:init', () => {
 
             removeChip(key) {
                 if (key === 'search') this.filters.search = '';
-                if (key === 'applicable_category') this.filters.applicable_category = '';
+                if (key === 'document_group') this.filters.document_group = '';
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
-                this.filters = { search: '', applicable_category: '' };
+                this.filters = { search: '', document_group: '' };
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

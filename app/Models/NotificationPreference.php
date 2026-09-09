@@ -12,7 +12,6 @@ class NotificationPreference extends Model
 
     protected $fillable = [
         'user_id',
-        'organization_id',
         'event_type',
         'channel_db',
         'channel_mail',

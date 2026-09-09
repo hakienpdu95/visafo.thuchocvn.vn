@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\Route;
 | Auto-prefix: /api  (set by withRouting api: in bootstrap/app.php)
 */
 
-Route::middleware(['auth:sanctum', 'tenant'])
+Route::middleware(['auth:sanctum'])
     ->get('v1/users/options', UserOptionsController::class)
     ->name('api.users.options');
 
-Route::middleware(['auth:sanctum', 'tenant', 'throttle:notifications'])
+Route::middleware(['auth:sanctum', 'throttle:notifications'])
     ->prefix('notifications')
     ->name('api.notifications.')
     ->group(function () {

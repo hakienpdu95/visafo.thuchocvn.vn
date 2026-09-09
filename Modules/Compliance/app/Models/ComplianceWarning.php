@@ -13,7 +13,6 @@ use Modules\Compliance\Enums\WarningStatus;
 class ComplianceWarning extends TenantAwareModel
 {
     protected $fillable = [
-        'organization_id',
         'warnable_type',
         'warnable_id',
         'category',

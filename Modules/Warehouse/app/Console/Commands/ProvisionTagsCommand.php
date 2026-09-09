@@ -2,7 +2,6 @@
 
 namespace Modules\Warehouse\Console\Commands;
 
-use App\Shared\Tenancy\Models\Organization;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Modules\Warehouse\Actions\Backend\ProvisionRetailItemTagsAction;
@@ -12,7 +11,7 @@ use Spatie\LaravelPdf\Facades\Pdf;
 
 class ProvisionTagsCommand extends Command
 {
-    protected $signature = 'tags:provision {count : Số lượng tem cần khởi tạo} {--organization= : ID tổ chức sở hữu — bỏ trống nếu hệ thống chỉ có 1 tổ chức} {--prefix= : Tiền tố chữ cho gs1_serial của cuộn tem này (VD: TH26)}';
+    protected $signature = 'tags:provision {count : Số lượng tem cần khởi tạo} {--prefix= : Tiền tố chữ cho gs1_serial của cuộn tem này (VD: TH26)}';
 
     protected $description = 'Khởi tạo một cuộn tem tiền định danh (Pre-serialized Tags) — chưa gắn với sản phẩm/lô nào';
 
@@ -26,15 +25,7 @@ class ProvisionTagsCommand extends Command
             return self::FAILURE;
         }
 
-        $organizationId = $this->option('organization') ?: $this->resolveSoleOrganization();
-
-        if (! $organizationId) {
-            $this->error('Không xác định được tổ chức. Truyền --organization=<id>.');
-
-            return self::FAILURE;
-        }
-
-        $result = $action->handle($organizationId, $count, (string) $this->option('prefix'));
+        $result = $action->handle($count, (string) $this->option('prefix'));
 
         $this->info("Đã khởi tạo {$result['count']} tem — prefix \"{$result['prefix']}\" — visual_sequence từ {$result['from']} đến {$result['to']}.");
 
@@ -44,13 +35,6 @@ class ProvisionTagsCommand extends Command
         $this->info('File PDF: ' . $paths['pdf']);
 
         return self::SUCCESS;
-    }
-
-    private function resolveSoleOrganization(): ?string
-    {
-        $organizations = Organization::query()->limit(2)->pluck('id');
-
-        return $organizations->count() === 1 ? $organizations->first() : null;
     }
 
     /** @return array{csv: string, pdf: string} */

@@ -68,12 +68,12 @@ const JS_OUTPUT = {
   'qrcode':     'assets/qrcode.[hash].js',
   // Module JS — named [module] to avoid chunk name collision
   'user':                 'assets/modules/user.[hash].js',
-  'organization':         'assets/modules/organization.[hash].js',
   'activity-log':           'assets/modules/activity-log.[hash].js',
   'vendor':               'assets/modules/vendor.[hash].js',
   'product':              'assets/modules/product.[hash].js',
   'warehouse':            'assets/modules/warehouse.[hash].js',
   'compliance':           'assets/modules/compliance.[hash].js',
+  'employee':             'assets/modules/employee.[hash].js',
 };
 
 /** CSS asset name → output path.
@@ -92,7 +92,6 @@ const CSS_OUTPUT = {
   // Module SCSS → CSS
   // asset.name là tên sau khi compile: 'user.css', không phải 'user.scss'
   'user.css':                 'assets/modules/user.[hash].css',
-  'organization.css':         'assets/modules/organization.[hash].css',
   'activity-log.css':           'assets/modules/activity-log.[hash].css',
   'vendor.css':               'assets/modules/vendor.[hash].css',
   'product.css':              'assets/modules/product.[hash].css',
@@ -108,9 +107,6 @@ const MODULE_ENTRIES = [
   // User
   'Modules/User/resources/assets/sass/user.scss',
   'Modules/User/resources/assets/js/user.js',
-  // Organization
-  'Modules/Organization/resources/assets/sass/organization.scss',
-  'Modules/Organization/resources/assets/js/organization.js',
   // ActivityLog
   'Modules/ActivityLog/resources/assets/sass/activity-log.scss',
   'Modules/ActivityLog/resources/assets/js/activity-log.js',
@@ -125,6 +121,8 @@ const MODULE_ENTRIES = [
   'Modules/Warehouse/resources/assets/js/warehouse.js',
   // Compliance
   'Modules/Compliance/resources/assets/js/compliance.js',
+  // Employee
+  'Modules/Employee/resources/assets/js/employee.js',
 ];
 
 // ─────────────────────────────────────────────────────────────────────

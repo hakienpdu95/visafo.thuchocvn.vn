@@ -10,7 +10,7 @@ use Modules\Product\Actions\Backend\StoreDocumentMasterTypeAction;
 use Modules\Product\Actions\Backend\UpdateDocumentMasterTypeAction;
 use Modules\Product\Data\Requests\StoreDocumentMasterTypeData;
 use Modules\Product\Data\Requests\UpdateDocumentMasterTypeData;
-use Modules\Product\Enums\ProductCategoryType;
+use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Models\DocumentMasterType;
 
 class DocumentMasterTypeController extends Controller
@@ -22,18 +22,18 @@ class DocumentMasterTypeController extends Controller
 
     public function index()
     {
-        $categoryTypes = collect(ProductCategoryType::cases())
-            ->map(fn ($c) => ['value' => $c->value, 'text' => $c->label()])
+        $documentGroups = collect(DocumentGroupType::cases())
+            ->map(fn ($g) => ['value' => $g->value, 'text' => $g->label()])
             ->all();
 
-        return view('product::document_master_types.index', compact('categoryTypes'));
+        return view('product::document_master_types.index', compact('documentGroups'));
     }
 
     public function create()
     {
-        $categoryTypes = ProductCategoryType::cases();
+        $documentGroups = DocumentGroupType::cases();
 
-        return view('product::document_master_types.create', compact('categoryTypes'));
+        return view('product::document_master_types.create', compact('documentGroups'));
     }
 
     public function store(Request $request, StoreDocumentMasterTypeAction $action): RedirectResponse
@@ -51,9 +51,9 @@ class DocumentMasterTypeController extends Controller
 
     public function edit(DocumentMasterType $documentMasterType)
     {
-        $categoryTypes = ProductCategoryType::cases();
+        $documentGroups = DocumentGroupType::cases();
 
-        return view('product::document_master_types.edit', compact('documentMasterType', 'categoryTypes'));
+        return view('product::document_master_types.edit', compact('documentMasterType', 'documentGroups'));
     }
 
     public function update(Request $request, DocumentMasterType $documentMasterType, UpdateDocumentMasterTypeAction $action): RedirectResponse

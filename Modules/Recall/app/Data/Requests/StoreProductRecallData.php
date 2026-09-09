@@ -2,7 +2,6 @@
 
 namespace Modules\Recall\Data\Requests;
 
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Validation\Rule;
 use Modules\Recall\Enums\RecallSeverity;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
@@ -31,8 +30,8 @@ class StoreProductRecallData extends Data
     public static function rules(): array
     {
         return [
-            'product_id' => ['required', Rule::exists('products', 'id')->where('organization_id', TenantContext::getOrganizationId())],
-            'batch_id'   => ['nullable', Rule::exists('batches', 'id')->where('organization_id', TenantContext::getOrganizationId())->where('product_id', request('product_id'))],
+            'product_id' => ['required', Rule::exists('products', 'id')],
+            'batch_id'   => ['nullable', Rule::exists('batches', 'id')->where('product_id', request('product_id'))],
             'severity'   => ['nullable', Rule::enum(RecallSeverity::class)],
         ];
     }

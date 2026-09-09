@@ -11,9 +11,6 @@ use Spatie\LaravelData\Data;
 class LogEntryData extends Data
 {
     public function __construct(
-        // Tenant
-        public readonly ?string   $organizationId,
-
         // Actor
         public readonly ?string   $actorId,
         #[WithCast(EnumCast::class)]

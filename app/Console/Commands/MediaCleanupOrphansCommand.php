@@ -6,7 +6,6 @@ use App\Models\FilePondDraft;
 use App\Models\JoditDraft;
 use App\Models\Media;
 use App\Services\Media\MediaUploadService;
-use App\Shared\Tenancy\OrganizationScope;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -91,7 +90,7 @@ class MediaCleanupOrphansCommand extends Command
         }
 
         // Prune empty JoditDraft records
-        $emptyQuery = JoditDraft::withoutGlobalScope(OrganizationScope::class)
+        $emptyQuery = JoditDraft::query()
             ->where('created_at', '<', $cutoff)
             ->whereDoesntHave('media', fn ($q) => $q->where('collection_name', 'jodit_content'));
 
@@ -152,7 +151,7 @@ class MediaCleanupOrphansCommand extends Command
         }
 
         // Prune empty FilePondDraft records
-        $emptyQuery = FilePondDraft::withoutGlobalScope(OrganizationScope::class)
+        $emptyQuery = FilePondDraft::query()
             ->where('created_at', '<', $cutoff)
             ->doesntHave('media');
 

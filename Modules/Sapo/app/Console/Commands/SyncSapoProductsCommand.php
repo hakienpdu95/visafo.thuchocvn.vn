@@ -2,8 +2,6 @@
 
 namespace Modules\Sapo\Console\Commands;
 
-use App\Shared\Tenancy\Models\Organization;
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
@@ -27,22 +25,6 @@ class SyncSapoProductsCommand extends Command
 
             return self::FAILURE;
         }
-
-        if (! config('sapo.organization_id')) {
-            $this->error('Chưa cấu hình SAPO_ORGANIZATION_ID trong .env — cần biết đồng bộ vào tổ chức nào.');
-
-            return self::FAILURE;
-        }
-
-        $organization = Organization::find(config('sapo.organization_id'));
-
-        if (! $organization) {
-            $this->error('SAPO_ORGANIZATION_ID không hợp lệ — không tìm thấy tổ chức tương ứng.');
-
-            return self::FAILURE;
-        }
-
-        TenantContext::set($organization);
 
         $limit   = max(1, (int) $this->option('limit'));
         $page    = 1;

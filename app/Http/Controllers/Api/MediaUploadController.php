@@ -7,7 +7,6 @@ use App\Models\FilePondDraft;
 use App\Models\Media;
 use App\Services\Media\MediaUploadService;
 use App\Services\Media\MediaUrlService;
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,7 +51,6 @@ class MediaUploadController extends Controller
      * Add new models as they adopt HasTenantMedia.
      */
     private const ENTITY_MAP = [
-        'organization'            => \Modules\Organization\Models\Organization::class,
         'vendor_certificate'      => \Modules\Vendor\Models\VendorCertificate::class,
         'brand'                   => \Modules\Product\Models\Brand::class,
     ];
@@ -132,10 +130,7 @@ class MediaUploadController extends Controller
      */
     public function destroy(string $uuid): JsonResponse
     {
-        $media = Media::withoutTenant()
-            ->where('id', $uuid)
-            ->where('organization_id', TenantContext::getOrganizationId())
-            ->first();
+        $media = Media::where('id', $uuid)->first();
 
         if (! $media) {
             return response()->json(['message' => 'File không tồn tại.'], 404);
@@ -197,10 +192,9 @@ class MediaUploadController extends Controller
         }
 
         return FilePondDraft::create([
-            'organization_id' => TenantContext::getOrganizationId(),
-            'user_id'         => auth()->id(),
-            'context_type'    => $contextType,
-            'context_id'      => $contextId,
+            'user_id'      => auth()->id(),
+            'context_type' => $contextType,
+            'context_id'   => $contextId,
         ]);
     }
 

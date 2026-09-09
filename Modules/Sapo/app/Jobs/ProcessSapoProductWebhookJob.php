@@ -2,7 +2,11 @@
 
 namespace Modules\Sapo\Jobs;
 
-use App\Foundation\Jobs\TenantAwareJob;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Modules\Sapo\Support\SapoProductMapper;
 use Modules\Sapo\Support\SapoProductSyncRecorder;
@@ -13,8 +17,10 @@ use Throwable;
  * dispatch job này và trả 200 OK ngay, không mapping data trực tiếp trong request cycle
  * (tránh Sapo đánh dấu timeout nếu xử lý chậm).
  */
-class ProcessSapoProductWebhookJob extends TenantAwareJob
+class ProcessSapoProductWebhookJob implements ShouldQueue
 {
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
     private const SOURCE = 'webhook';
 
     public int $tries = 3;
@@ -24,19 +30,15 @@ class ProcessSapoProductWebhookJob extends TenantAwareJob
     public function __construct(
         public readonly string $topic,
         public readonly array $payload,
-    ) {
-        parent::__construct();
-    }
+    ) {}
 
     public function handle(SapoProductMapper $mapper, SapoProductSyncRecorder $recorder): void
     {
-        $this->withTenant(function () use ($mapper, $recorder) {
-            match ($this->topic) {
-                'products/create', 'products/update' => $this->syncProduct($mapper, $recorder),
-                'products/delete' => $this->deleteProduct($mapper, $recorder),
-                default => Log::warning("Sapo webhook: topic không xác định [{$this->topic}]"),
-            };
-        });
+        match ($this->topic) {
+            'products/create', 'products/update' => $this->syncProduct($mapper, $recorder),
+            'products/delete' => $this->deleteProduct($mapper, $recorder),
+            default => Log::warning("Sapo webhook: topic không xác định [{$this->topic}]"),
+        };
     }
 
     private function syncProduct(SapoProductMapper $mapper, SapoProductSyncRecorder $recorder): void

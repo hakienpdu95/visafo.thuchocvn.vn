@@ -1,6 +1,5 @@
 {
     "Auth": true,
-    "Organization": true,
     "User": true,
     "ActivityLog": true,
     "Vendor": true,
@@ -8,5 +7,6 @@
     "Warehouse": true,
     "Sapo": true,
     "Recall": true,
-    "Compliance": true
+    "Compliance": true,
+    "Employee": true
 }

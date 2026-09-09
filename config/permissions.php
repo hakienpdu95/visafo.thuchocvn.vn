@@ -27,6 +27,7 @@ return [
         P::WAREHOUSE_VIEW->value,
         P::RECALL_VIEW->value,
         P::COMPLIANCE_VIEW->value,
+        P::EMPLOYEE_VIEW->value,
         // Export dữ liệu nhạy cảm: Full — CEO phê duyệt export (SoD)
         P::EXPORT_REQUEST_VIEW->value,
         P::EXPORT_REQUEST_APPROVE->value,
@@ -59,6 +60,8 @@ return [
         P::RECALL_MANAGE->value,
         P::COMPLIANCE_VIEW->value,
         P::COMPLIANCE_MANAGE->value,
+        P::EMPLOYEE_VIEW->value,
+        P::EMPLOYEE_MANAGE->value,
         // Export dữ liệu nhạy cảm: View (minh bạch nội bộ)
         P::EXPORT_REQUEST_VIEW->value,
     ],
@@ -77,6 +80,9 @@ return [
         P::AI_COPILOT_USE->value,
         // Users: Limited (tạo user nội bộ, onboarding)
         P::USERS_HR->value,
+        // Nhân sự: Full — HR quản lý phòng ban/nhân viên/hồ sơ y tế & ATTP
+        P::EMPLOYEE_VIEW->value,
+        P::EMPLOYEE_MANAGE->value,
         // Export dữ liệu nhạy cảm: View (minh bạch nội bộ)
         P::EXPORT_REQUEST_VIEW->value,
     ],
@@ -127,6 +133,8 @@ return [
         P::RECALL_MANAGE->value,
         P::COMPLIANCE_VIEW->value,
         P::COMPLIANCE_MANAGE->value,
+        P::EMPLOYEE_VIEW->value,
+        P::EMPLOYEE_MANAGE->value,
         // Export dữ liệu nhạy cảm: Full — System Admin phê duyệt export (SoD)
         P::EXPORT_REQUEST_VIEW->value,
         P::EXPORT_REQUEST_APPROVE->value,

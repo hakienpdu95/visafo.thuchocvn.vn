@@ -15,7 +15,7 @@ Route::get('/', fn () => redirect()->route('backend.dashboard'));
 | Media API Routes — prefix: api/v1/media
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'tenant'])
+Route::middleware(['auth'])
     ->prefix('api/v1/media')
     ->name('api.media.')
     ->group(function () {
@@ -35,7 +35,6 @@ Route::middleware(['auth', 'tenant'])
 |--------------------------------------------------------------------------
 | Backend Routes — prefix: backend.*
 |--------------------------------------------------------------------------
-| Organization CRUD  → Modules/Organization/routes/web.php
 | User CRUD          → Modules/User/routes/web.php
 */
 Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(function () {
@@ -45,7 +44,7 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     // ── Dashboard chart API ───────────────────────────────────────────────
     // task-throughput/lead-funnel/workflow-health đã bị gỡ cùng module Task/Lead/
     // WorkflowAutomation (cleanup/remove-non-competency-modules).
-    Route::prefix('api/dashboard/charts')->name('dashboard.charts.')->middleware('tenant')->group(function () {
+    Route::prefix('api/dashboard/charts')->name('dashboard.charts.')->group(function () {
         Route::get('headcount', [DashboardChartController::class, 'headcount'])->name('headcount');
     });
 
@@ -60,7 +59,7 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::get('/reports',          fn () => abort(503, 'Module đang phát triển'))->name('reports.index');
 
     // ── Notification Center ───────────────────────────────────────────────
-    Route::middleware('tenant')->prefix('notifications')->name('notifications.')->group(function () {
+    Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/',             [NotificationCenterController::class,    'index'])       ->name('index');
         Route::get('/preferences',  [NotificationPreferenceController::class,'index'])       ->name('preferences');
         Route::patch('/{uuid}/read',[NotificationCenterController::class,    'markRead'])    ->name('mark-read');

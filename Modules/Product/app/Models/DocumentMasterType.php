@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Modules\Product\Enums\ProductCategoryType;
+use Modules\Product\Enums\DocumentGroupType;
 
 class DocumentMasterType extends Model
 {
@@ -18,7 +18,7 @@ class DocumentMasterType extends Model
     protected $fillable = [
         'code',
         'name',
-        'applicable_category',
+        'document_group',
         'is_required_issue_date',
         'is_required_expiry_date',
         'default_validity_months',
@@ -27,7 +27,7 @@ class DocumentMasterType extends Model
     protected function casts(): array
     {
         return [
-            'applicable_category'     => ProductCategoryType::class,
+            'document_group'          => DocumentGroupType::class,
             'is_required_issue_date'  => 'boolean',
             'is_required_expiry_date' => 'boolean',
             'default_validity_months' => 'integer',
@@ -37,10 +37,5 @@ class DocumentMasterType extends Model
     public function compliances(): HasMany
     {
         return $this->hasMany(ProductCompliance::class, 'document_type_id');
-    }
-
-    public function requiresPifAttachment(): bool
-    {
-        return $this->code === 'cosmetic_notification';
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Modules\Sapo\Console\Commands;
 
-use App\Shared\Tenancy\Models\Organization;
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Console\Command;
 use Modules\Sapo\Actions\ProcessSapoOrderWebhookAction;
 use Modules\Sapo\Services\SapoClient;
@@ -16,21 +14,11 @@ class ReconcileSapoOrdersCommand extends Command
 
     public function handle(SapoClient $client, ProcessSapoOrderWebhookAction $action): int
     {
-        if (! config('sapo.base_url') || ! config('sapo.organization_id')) {
-            $this->warn('Chưa cấu hình SAPO_BASE_URL/SAPO_ORGANIZATION_ID — bỏ qua đối soát.');
+        if (! config('sapo.base_url')) {
+            $this->warn('Chưa cấu hình SAPO_BASE_URL — bỏ qua đối soát.');
 
             return self::SUCCESS;
         }
-
-        $organization = Organization::find(config('sapo.organization_id'));
-
-        if (! $organization) {
-            $this->error('SAPO_ORGANIZATION_ID không hợp lệ.');
-
-            return self::FAILURE;
-        }
-
-        TenantContext::set($organization);
 
         try {
             $response = $client->get(config('sapo.sold_serials_endpoint'), [

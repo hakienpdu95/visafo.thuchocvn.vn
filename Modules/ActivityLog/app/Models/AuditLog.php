@@ -3,7 +3,6 @@
 namespace Modules\ActivityLog\Models;
 
 use App\Models\User;
-use App\Shared\Tenancy\Traits\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,12 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AuditLog extends Model
 {
     use HasUlids;
-    use BelongsToOrganization;
 
     public $timestamps = false;
 
     protected $fillable = [
-        'organization_id',
         'user_id',
         'model_type',
         'model_id',

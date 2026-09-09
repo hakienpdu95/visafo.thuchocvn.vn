@@ -2,7 +2,6 @@
 
 namespace Modules\Product\Data\Requests;
 
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
@@ -25,7 +24,7 @@ class StoreBrandData extends Data
         return [
             'name' => [
                 'required', 'string', 'max:150',
-                Rule::unique('brands', 'name')->where('organization_id', TenantContext::getOrganizationId()),
+                Rule::unique('brands', 'name'),
             ],
         ];
     }

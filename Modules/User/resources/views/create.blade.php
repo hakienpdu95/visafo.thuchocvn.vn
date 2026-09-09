@@ -4,10 +4,8 @@
 
 @section('content')
 <div x-data="createUserPage({{ Js::from([
-    'organizations' => $organizations->values(),
     'roles'         => $roles,
     'matrix'        => $matrix,
-    'oldOrg'        => old('organization_id', ''),
     'oldRole'       => old('system_role', ''),
     'oldName'       => old('name', ''),
     'oldEmail'      => old('email', ''),
@@ -275,23 +273,6 @@
                         </svg>
                         Tổ chức & Vai trò
                     </h2>
-
-                    {{-- Organization --}}
-                    <div class="form-control mb-5">
-                        <label class="label py-0 pb-1.5">
-                            <span class="label-text font-medium">Tổ chức <span class="text-error">*</span></span>
-                            <span x-show="showOk('organization_id')" x-transition
-                                  class="label-text-alt text-success text-xs flex items-center gap-0.5">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                                Đã chọn
-                            </span>
-                        </label>
-                        <select id="org-select" name="organization_id"
-                                class="select select-bordered select-sm w-full @error('organization_id') select-error @enderror"></select>
-                        <p x-show="showErr('organization_id')" x-text="errors.organization_id"
-                           class="mt-1 text-xs text-error" x-transition></p>
-                        @error('organization_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
-                    </div>
 
                     {{-- Role presets --}}
                     <div class="mb-4">

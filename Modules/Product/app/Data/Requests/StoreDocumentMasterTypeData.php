@@ -2,7 +2,7 @@
 
 namespace Modules\Product\Data\Requests;
 
-use Modules\Product\Enums\ProductCategoryType;
+use Modules\Product\Enums\DocumentGroupType;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
@@ -21,7 +21,7 @@ class StoreDocumentMasterTypeData extends Data
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
-        public readonly ProductCategoryType $applicable_category,
+        public readonly DocumentGroupType $document_group,
 
         public readonly bool $is_required_issue_date = true,
 
@@ -44,8 +44,8 @@ class StoreDocumentMasterTypeData extends Data
             'name.string'   => 'Tên loại giấy tờ không hợp lệ.',
             'name.max'      => 'Tên loại giấy tờ không được vượt quá 255 ký tự.',
 
-            'applicable_category.required' => 'Vui lòng chọn ngành hàng áp dụng.',
-            'applicable_category.enum'     => 'Ngành hàng áp dụng không hợp lệ.',
+            'document_group.required' => 'Vui lòng chọn nhóm giấy tờ.',
+            'document_group.enum'     => 'Nhóm giấy tờ không hợp lệ.',
 
             'default_validity_months.min' => 'Số tháng hiệu lực phải lớn hơn 0.',
             'default_validity_months.max' => 'Số tháng hiệu lực không hợp lệ.',

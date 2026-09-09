@@ -34,18 +34,6 @@
         <p class="section-title" style="margin-top:16px;">Tổ chức</p>
         <div class="nav-group">
 
-            <details {{ request()->routeIs('backend.organizations.*') ? 'open' : '' }}>
-                <summary class="nav-summary {{ request()->routeIs('backend.organizations.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    <span class="nav-label">Tổ chức</span>
-                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
-                </summary>
-                <div class="sub-menu">
-                    <a href="{{ route('backend.organizations.index') }}" class="sub-link {{ request()->routeIs('backend.organizations.index') ? 'active' : '' }}">Danh sách tổ chức</a>
-                    <a href="{{ route('backend.organizations.create') }}" class="sub-link {{ request()->routeIs('backend.organizations.create') ? 'active' : '' }}">Thêm tổ chức</a>
-                </div>
-            </details>
-
             {{--
                 Định danh tách rời (Decoupled Serialization) — phân hệ Master Data được
                 "phẳng hóa" thành 3 module cấp 1 độc lập, không còn gộp chung "Dữ liệu &
@@ -244,9 +232,21 @@
             {{-- Vertical Template / Business Solution/Business Blueprint admin đã bị gỡ cùng
                  các module đó (cleanup/remove-non-competency-modules). --}}
 
-            {{-- Chức danh (JobTitle), Person/Invitations/Import cơ cấu, Chi nhánh/Phòng ban/Vị trí/Nhân viên/Leave/
-                 KpiGoal/PerformanceReview/OrgChart
-                 đã bị gỡ cùng các module đó (cleanup/remove-non-competency-modules). --}}
+            {{-- Chức danh (JobTitle), Person/Invitations/Import cơ cấu, Chi nhánh/Vị trí/Leave/
+                 KpiGoal/PerformanceReview/OrgChart vẫn đã bị gỡ (cleanup/remove-non-competency-modules). --}}
+            @can('employee.view')
+            <details {{ request()->routeIs('backend.departments.*', 'backend.employees.*') ? 'open' : '' }}>
+                <summary class="nav-summary {{ request()->routeIs('backend.departments.*', 'backend.employees.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span class="nav-label">Nhân sự</span>
+                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
+                </summary>
+                <div class="sub-menu">
+                    <a href="{{ route('backend.employees.index') }}" class="sub-link {{ request()->routeIs('backend.employees.*') ? 'active' : '' }}">Danh sách nhân viên</a>
+                    <a href="{{ route('backend.departments.index') }}" class="sub-link {{ request()->routeIs('backend.departments.*') ? 'active' : '' }}">Phòng ban / Bộ phận</a>
+                </div>
+            </details>
+            @endcan
 
             {{-- JobPosting/Marketplace/Recruitment/Subscription đã bị gỡ cùng các module đó
                  (cleanup/remove-non-competency-modules). --}}

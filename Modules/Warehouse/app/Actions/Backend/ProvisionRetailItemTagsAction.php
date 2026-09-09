@@ -22,7 +22,7 @@ class ProvisionRetailItemTagsAction
     ) {}
 
     /** @return array{from: int, to: int, count: int, prefix: string, roll_id: string} */
-    public function handle(string $organizationId, int $count, string $prefix = '', ?string $createdBy = null): array
+    public function handle(int $count, string $prefix = '', ?string $createdBy = null): array
     {
         $nextSequence = ((int) DB::table('retail_item_tags')->max('visual_sequence')) + 1;
         $now          = now();
@@ -40,7 +40,6 @@ class ProvisionRetailItemTagsAction
             foreach ($uids as $uid) {
                 $rows[] = [
                     'id'              => (string) Str::ulid(),
-                    'organization_id' => $organizationId,
                     'uid'             => $uid,
                     'gs1_serial'      => $this->serialGenerator->buildGs1Serial($prefix, $sequence),
                     'visual_sequence' => $sequence,
@@ -57,7 +56,6 @@ class ProvisionRetailItemTagsAction
         }
 
         $roll = TagRoll::create([
-            'organization_id' => $organizationId,
             'prefix'          => strtoupper($prefix),
             'from_sequence'   => $fromSequence,
             'to_sequence'     => $toSequence,

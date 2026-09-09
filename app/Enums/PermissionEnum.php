@@ -67,6 +67,10 @@ enum PermissionEnum: string
     case COMPLIANCE_VIEW   = 'compliance.view';
     case COMPLIANCE_MANAGE = 'compliance.manage';
 
+    // ══ EMPLOYEE (Nhân sự — Phòng ban/Nhân viên/Hồ sơ y tế & ATTP) ═════
+    case EMPLOYEE_VIEW   = 'employee.view';
+    case EMPLOYEE_MANAGE = 'employee.manage';
+
     // ══ SUBSCRIPTION ═══════════════════════════════════════════════
     // Chỉ còn VIEW — MANAGE/BILLING/ADMIN gate các route quản trị thuộc
     // Modules/Subscription (đã xóa, xem cleanup/remove-non-competency-modules).

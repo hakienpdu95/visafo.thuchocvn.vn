@@ -2,7 +2,6 @@
 
 namespace Modules\Warehouse\Data\Requests;
 
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\AfterOrEqual;
 use Spatie\LaravelData\Attributes\Validation\Date;
@@ -35,7 +34,7 @@ class StoreBatchData extends Data
     public static function rules(): array
     {
         return [
-            'product_id' => ['required', Rule::exists('products', 'id')->where('organization_id', TenantContext::getOrganizationId())],
+            'product_id' => ['required', Rule::exists('products', 'id')],
         ];
     }
 

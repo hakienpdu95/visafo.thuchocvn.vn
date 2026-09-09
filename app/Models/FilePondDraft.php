@@ -26,5 +26,5 @@ class FilePondDraft extends TenantAwareModel implements HasMedia
 
     protected $table = 'filepond_drafts';
 
-    protected $fillable = ['organization_id', 'user_id', 'context_type', 'context_id'];
+    protected $fillable = ['user_id', 'context_type', 'context_id'];
 }

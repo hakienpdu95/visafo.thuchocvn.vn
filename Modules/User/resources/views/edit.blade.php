@@ -9,10 +9,8 @@ $avatarUrl = 'https://api.dicebear.com/9.x/initials/svg?seed=' . urlencode($user
 
 @section('content')
 <div x-data="editUserPage({{ Js::from([
-    'organizations' => $organizations->values(),
     'roles'         => $roles,
     'matrix'        => $matrix,
-    'oldOrg'        => old('organization_id', $user->organization_id),
     'oldRole'       => old('system_role', $currentRole),
     'hasErrors'     => $errors->any(),
 ]) }})">
@@ -245,15 +243,6 @@ $avatarUrl = 'https://api.dicebear.com/9.x/initials/svg?seed=' . urlencode($user
                         </svg>
                         Tổ chức & Vai trò
                     </h2>
-
-                    <div class="form-control mb-5">
-                        <label class="label py-0 pb-1.5">
-                            <span class="label-text font-medium">Tổ chức <span class="text-error">*</span></span>
-                        </label>
-                        <select id="org-select" name="organization_id"
-                                class="select select-bordered select-sm w-full @error('organization_id') select-error @enderror"></select>
-                        @error('organization_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
-                    </div>
 
                     {{-- Role presets --}}
                     <div class="mb-4">

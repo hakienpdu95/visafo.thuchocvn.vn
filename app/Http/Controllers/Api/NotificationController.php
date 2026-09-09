@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\NotificationPreference;
 use App\Models\PushSubscription;
 use App\Services\NotificationPreferenceService;
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
@@ -18,11 +17,6 @@ class NotificationController extends Controller
         $user = $request->user();
 
         $query = $user->notifications()
-            ->when(TenantContext::getOrganizationId(), fn ($q, $orgId) =>
-                $q->where(fn ($sub) =>
-                    $sub->where('organization_id', $orgId)->orWhereNull('organization_id')
-                )
-            )
             ->when($request->filter === 'unread', fn ($q) => $q->whereNull('read_at'))
             ->when($request->type, fn ($q, $t) => $q->whereJsonContains('data->type', $t))
             ->latest()
@@ -32,13 +26,7 @@ class NotificationController extends Controller
             'data' => $query->getCollection()->map(fn ($n) => $this->format($n)),
             'meta' => [
                 'total'        => $query->total(),
-                'unread'       => $user->unreadNotifications()
-                    ->when(TenantContext::getOrganizationId(), fn ($q, $orgId) =>
-                        $q->where(fn ($sub) =>
-                            $sub->where('organization_id', $orgId)->orWhereNull('organization_id')
-                        )
-                    )
-                    ->count(),
+                'unread'       => $user->unreadNotifications()->count(),
                 'current_page' => $query->currentPage(),
                 'last_page'    => $query->lastPage(),
             ],
@@ -47,13 +35,7 @@ class NotificationController extends Controller
 
     public function unreadCount(Request $request): JsonResponse
     {
-        $count = $request->user()->unreadNotifications()
-            ->when(TenantContext::getOrganizationId(), fn ($q, $orgId) =>
-                $q->where(fn ($sub) =>
-                    $sub->where('organization_id', $orgId)->orWhereNull('organization_id')
-                )
-            )
-            ->count();
+        $count = $request->user()->unreadNotifications()->count();
 
         return response()->json(['count' => $count]);
     }
@@ -68,13 +50,7 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request): JsonResponse
     {
-        $request->user()->unreadNotifications()
-            ->when(TenantContext::getOrganizationId(), fn ($q, $orgId) =>
-                $q->where(fn ($sub) =>
-                    $sub->where('organization_id', $orgId)->orWhereNull('organization_id')
-                )
-            )
-            ->update(['read_at' => now()]);
+        $request->user()->unreadNotifications()->update(['read_at' => now()]);
 
         return response()->json(['ok' => true]);
     }
@@ -88,11 +64,9 @@ class NotificationController extends Controller
 
     public function preferences(Request $request): JsonResponse
     {
-        $user  = $request->user();
-        $orgId = TenantContext::getOrganizationId() ?? $user->organization_id;
+        $user = $request->user();
 
         $prefs = NotificationPreference::where('user_id', $user->id)
-            ->where('organization_id', $orgId)
             ->get()
             ->keyBy('event_type')
             ->map(fn ($p) => [
@@ -112,12 +86,10 @@ class NotificationController extends Controller
             'channel_push' => ['sometimes', 'boolean'],
         ]);
 
-        $user  = $request->user();
-        $orgId = TenantContext::getOrganizationId() ?? $user->organization_id;
+        $user = $request->user();
 
         app(NotificationPreferenceService::class)->upsert(
             $user,
-            $orgId,
             $eventType,
             $validated['channel_db']   ?? true,
             $validated['channel_mail'] ?? false,

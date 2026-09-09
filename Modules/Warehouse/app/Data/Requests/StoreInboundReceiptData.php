@@ -2,7 +2,6 @@
 
 namespace Modules\Warehouse\Data\Requests;
 
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Validation\Rule;
 use Modules\Warehouse\Enums\InboundReceiptStatus;
 use Spatie\LaravelData\Attributes\Validation\Date;
@@ -33,10 +32,10 @@ class StoreInboundReceiptData extends Data
     public static function rules(): array
     {
         return [
-            'vendor_id' => ['required', Rule::exists('vendors', 'id')->where('organization_id', TenantContext::getOrganizationId())],
+            'vendor_id' => ['required', Rule::exists('vendors', 'id')],
             'receipt_number' => [
                 'required', 'string', 'max:100',
-                Rule::unique('inbound_receipts', 'receipt_number')->where('organization_id', TenantContext::getOrganizationId()),
+                Rule::unique('inbound_receipts', 'receipt_number'),
             ],
         ];
     }

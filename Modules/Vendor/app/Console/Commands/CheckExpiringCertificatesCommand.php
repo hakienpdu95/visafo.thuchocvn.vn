@@ -19,23 +19,12 @@ class CheckExpiringCertificatesCommand extends Command
             ->where('is_active', true)
             ->whereNotNull('expiry_date')
             ->whereBetween('expiry_date', [now()->toDateString(), now()->addDays(30)->toDateString()])
-            ->with(['vendor' => fn ($q) => $q->withoutTenant()])
             ->get();
 
-        $sent = 0;
+        $sent       = 0;
+        $recipients = User::all()->filter(fn (User $user) => $user->can('vendor.manage'));
 
         foreach ($certificates as $certificate) {
-            $organizationId = $certificate->vendor->organization_id;
-
-            $previousTeamId = getPermissionsTeamId();
-            setPermissionsTeamId($organizationId);
-
-            $recipients = User::where('organization_id', $organizationId)
-                ->get()
-                ->filter(fn (User $user) => $user->can('vendor.manage'));
-
-            setPermissionsTeamId($previousTeamId);
-
             foreach ($recipients as $recipient) {
                 $recipient->notify(new VendorCertificateExpiringNotification($certificate));
                 $sent++;

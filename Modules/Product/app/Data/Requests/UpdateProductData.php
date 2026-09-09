@@ -2,7 +2,6 @@
 
 namespace Modules\Product\Data\Requests;
 
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Validation\Rule;
 use Modules\Product\Enums\ProductCategoryType;
 use Modules\Product\Enums\ProductStatus;
@@ -43,10 +42,9 @@ class UpdateProductData extends Data
             'sku' => [
                 'required', 'string', 'max:100',
                 Rule::unique('products', 'sku')
-                    ->where('organization_id', TenantContext::getOrganizationId())
                     ->ignore($currentId),
             ],
-            'brand_id' => ['nullable', Rule::exists('brands', 'id')->where('organization_id', TenantContext::getOrganizationId())],
+            'brand_id' => ['nullable', Rule::exists('brands', 'id')],
             'category_type' => ['required', Rule::enum(ProductCategoryType::class)],
         ];
     }

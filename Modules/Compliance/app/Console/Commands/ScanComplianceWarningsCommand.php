@@ -7,6 +7,7 @@ use Modules\Compliance\Enums\WarningCategory;
 use Modules\Compliance\Enums\WarningSeverity;
 use Modules\Compliance\Enums\WarningStatus;
 use Modules\Compliance\Models\ComplianceWarning;
+use Modules\Employee\Models\Employee;
 use Modules\Product\Enums\ComplianceStatus;
 use Modules\Product\Enums\ProductCategoryType;
 use Modules\Product\Models\Product;
@@ -19,7 +20,7 @@ class ScanComplianceWarningsCommand extends Command
 {
     protected $signature = 'compliance:scan-warnings';
 
-    protected $description = 'Quét hồ sơ pháp lý sản phẩm, chứng chỉ nhà cung cấp và lô hàng cận date, cập nhật hộp thư cảnh báo compliance_warnings.';
+    protected $description = 'Quét hồ sơ pháp lý sản phẩm, chứng chỉ nhà cung cấp, lô hàng cận date và hồ sơ y tế/ATTP nhân viên, cập nhật hộp thư cảnh báo compliance_warnings.';
 
     public function handle(): int
     {
@@ -32,7 +33,10 @@ class ScanComplianceWarningsCommand extends Command
         $batchIds = $this->scanBatches();
         $this->resolveStale(WarningCategory::BatchNearExpiry, $batchIds);
 
-        $total = count($productIds) + count($vendorIds) + count($batchIds);
+        $employeeRecordIds = $this->scanEmployeeHealthRecords();
+        $this->resolveStale(WarningCategory::EmployeeHealthRecordExpiry, $employeeRecordIds);
+
+        $total = count($productIds) + count($vendorIds) + count($batchIds) + count($employeeRecordIds);
         $this->info("Đã cập nhật {$total} cảnh báo đang hiệu lực.");
 
         return self::SUCCESS;
@@ -68,7 +72,6 @@ class ScanComplianceWarningsCommand extends Command
                         'category'      => WarningCategory::ProductComplianceExpiry->value,
                     ],
                     [
-                        'organization_id' => $product->organization_id,
                         'title'           => "{$compliance->documentType->name} — {$product->name}",
                         'message'         => "Hồ sơ \"{$compliance->documentType->name}\" của sản phẩm \"{$product->name}\" (SKU {$product->sku}) sẽ hết hạn vào {$compliance->expiration_date->format('d/m/Y')}.",
                         'due_date'        => $compliance->expiration_date,
@@ -112,7 +115,6 @@ class ScanComplianceWarningsCommand extends Command
                         'category'      => WarningCategory::VendorCertificateExpiry->value,
                     ],
                     [
-                        'organization_id' => $vendor->organization_id,
                         'title'           => "{$certificate->certificate_type->label()} — {$vendor->name}",
                         'message'         => "{$certificate->certificate_type->label()} của nhà cung cấp \"{$vendor->name}\" sẽ hết hạn vào {$certificate->expiry_date->format('d/m/Y')}.",
                         'due_date'        => $certificate->expiry_date,
@@ -153,7 +155,6 @@ class ScanComplianceWarningsCommand extends Command
                     'category'      => WarningCategory::BatchNearExpiry->value,
                 ],
                 [
-                    'organization_id' => $batch->organization_id,
                     'title'           => "Lô {$batch->internal_batch_code} — {$batch->product->name}",
                     'message'         => "Lô \"{$batch->internal_batch_code}\" của sản phẩm \"{$batch->product->name}\" (còn {$batch->current_qty} đơn vị) sẽ hết hạn vào {$batch->exp_date->format('d/m/Y')}.",
                     'due_date'        => $batch->exp_date,
@@ -162,6 +163,52 @@ class ScanComplianceWarningsCommand extends Command
             );
 
             $activeIds[] = $batch->id;
+        }
+
+        return $activeIds;
+    }
+
+    /** @return string[] */
+    private function scanEmployeeHealthRecords(): array
+    {
+        $activeIds = [];
+        $threshold = (int) config('compliance.thresholds.employee_health_record_days');
+        $critical  = (int) config('compliance.thresholds.employee_health_record_critical_days');
+
+        $employees = Employee::query()
+            ->with(['latestHealthCheck', 'latestAttpTraining'])
+            ->get();
+
+        foreach ($employees as $employee) {
+            foreach (['latestHealthCheck', 'latestAttpTraining'] as $relation) {
+                $record = $employee->{$relation};
+
+                if ($record === null || $record->expiry_date === null) {
+                    continue;
+                }
+
+                $daysRemaining = $this->daysRemaining($record->expiry_date);
+
+                if ($daysRemaining > $threshold) {
+                    continue;
+                }
+
+                ComplianceWarning::withoutTenant()->updateOrCreate(
+                    [
+                        'warnable_type' => 'employee_health_record',
+                        'warnable_id'   => $record->id,
+                        'category'      => WarningCategory::EmployeeHealthRecordExpiry->value,
+                    ],
+                    [
+                        'title'           => "{$record->record_type->label()} — {$employee->full_name}",
+                        'message'         => "{$record->record_type->label()} của nhân viên \"{$employee->full_name}\" sẽ hết hạn vào {$record->expiry_date->format('d/m/Y')}.",
+                        'due_date'        => $record->expiry_date,
+                        'severity'        => $this->severity($daysRemaining, $critical)->value,
+                    ],
+                );
+
+                $activeIds[] = $record->id;
+            }
         }
 
         return $activeIds;
@@ -184,9 +231,11 @@ class ScanComplianceWarningsCommand extends Command
         return $dueDate->isPast() ? -$today->diffInDays($dueDate) : $today->diffInDays($dueDate);
     }
 
-    private function severity(int $daysRemaining): WarningSeverity
+    private function severity(int $daysRemaining, ?int $criticalDays = null): WarningSeverity
     {
-        return $daysRemaining <= (int) config('compliance.thresholds.critical_days')
+        $threshold = $criticalDays ?? (int) config('compliance.thresholds.critical_days');
+
+        return $daysRemaining <= $threshold
             ? WarningSeverity::Critical
             : WarningSeverity::Warning;
     }

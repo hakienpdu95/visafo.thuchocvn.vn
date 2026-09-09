@@ -107,16 +107,6 @@
                     </div>
                 </div>
 
-                @if ($isAdmin)
-                {{-- Organization TomSelect (admin only) --}}
-                <div class="form-control w-56">
-                    <label class="label py-0.5">
-                        <span class="label-text text-xs font-medium">Tổ chức</span>
-                    </label>
-                    <select id="filter-org" class="select select-sm select-bordered w-full"></select>
-                </div>
-                @endif
-
                 {{-- Role TomSelect --}}
                 <div class="form-control w-44">
                     <label class="label py-0.5">
@@ -249,7 +239,6 @@ var API_URL       = '{{ route('backend.api.users') }}';
 var IS_ADMIN      = @json($isAdmin);
 var CAN_EDIT      = @json($canEdit);
 var CAN_DELETE    = @json($canDelete);
-var ORGANIZATIONS = @json($organizations->values());
 var ROLES         = @json($roles);
 var STATUSES      = @json($statuses);
 var LS_COLS       = 'user-list-hidden-cols';
@@ -298,12 +287,6 @@ var COLUMNS = [
                 +   '<p class="text-xs text-base-content/40">' + esc(d.email) + '</p>'
                 + '</div>'
                 + '</div>';
-        },
-    },
-    {
-        title: 'Tổ chức', field: 'organization_name', minWidth: 160, sorter: 'string',
-        formatter: function (cell) {
-            return esc(cell.getValue()) || '<span class="opacity-30">—</span>';
         },
     },
     {
@@ -407,7 +390,6 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', async func
 document.addEventListener('alpine:init', function () {
     // Closure-scoped lib instances (non-reactive)
     var tableInst    = null;
-    var orgTsInst    = null;
     var roleTsInst   = null;
     var statusTsInst = null;
     var dateFpInst   = null;
@@ -416,7 +398,7 @@ document.addEventListener('alpine:init', function () {
     Alpine.data('userListPage', function () {
         return {
             filters: {
-                search: '', organization_id: '', role: '', status: '', date_from: '', date_to: ''
+                search: '', role: '', status: '', date_from: '', date_to: ''
             },
             activeDatePreset: '',
             hiddenCols:       [],
@@ -428,16 +410,12 @@ document.addEventListener('alpine:init', function () {
 
             get hasFilters() {
                 var f = this.filters;
-                return !!(f.search || f.organization_id || f.role || f.status || f.date_from);
+                return !!(f.search || f.role || f.status || f.date_from);
             },
 
             get activeChips() {
                 var chips = [], f = this.filters;
                 if (f.search) chips.push({ key: 'search', label: 'Tìm: ' + f.search });
-                if (f.organization_id) {
-                    var org = ORGANIZATIONS.find(function (o) { return String(o.id) === String(f.organization_id); });
-                    chips.push({ key: 'org', label: org ? org.name : f.organization_id });
-                }
                 if (f.role) {
                     var role = ROLES.find(function (r) { return r.value === f.role; });
                     chips.push({ key: 'role', label: role ? role.text : f.role });
@@ -467,7 +445,6 @@ document.addEventListener('alpine:init', function () {
                     ajaxParams: function () {
                         var p = {}, f = self.filters;
                         if (f.search)          p.search          = f.search;
-                        if (f.organization_id) p.organization_id = f.organization_id;
                         if (f.role)            p.role            = f.role;
                         if (f.status)          p.status          = f.status;
                         if (f.date_from)       p.date_from       = f.date_from;
@@ -515,25 +492,6 @@ document.addEventListener('alpine:init', function () {
 
                 // Restore hidden columns
                 self.hiddenCols.forEach(function (field) { tableInst.hideColumn(field); });
-
-                // ── Organization TomSelect (admin only) ──────────────────
-                if (IS_ADMIN && document.getElementById('filter-org')) {
-                    orgTsInst = new window.TomSelect('#filter-org', {
-                        dropdownParent: 'body',
-                        placeholder:    'Tất cả tổ chức...',
-                        maxOptions:     null,
-                        searchField:    ['text'],
-                        plugins:        ['clear_button'],
-                        options:        ORGANIZATIONS.map(function (o) { return { value: String(o.id), text: o.name }; }),
-                        items:          self.filters.organization_id ? [String(self.filters.organization_id)] : [],
-                        onChange: function (val) {
-                            self.filters.organization_id = val || '';
-                            self.saveState();
-                            self.refresh();
-                        },
-                        render: { no_results: function () { return '<div class="no-results p-3 text-sm opacity-50">Không tìm thấy</div>'; } },
-                    });
-                }
 
                 // ── Role TomSelect ───────────────────────────────────────
                 roleTsInst = new window.TomSelect('#filter-role', {
@@ -591,7 +549,6 @@ document.addEventListener('alpine:init', function () {
             loadState() {
                 var p = new URLSearchParams(location.search);
                 if (p.has('q'))    this.filters.search          = p.get('q');
-                if (p.has('org'))  this.filters.organization_id = p.get('org');
                 if (p.has('role')) this.filters.role            = p.get('role');
                 if (p.has('st'))   this.filters.status          = p.get('st');
                 if (p.has('from')) this.filters.date_from       = p.get('from');
@@ -602,7 +559,6 @@ document.addEventListener('alpine:init', function () {
             saveState() {
                 var p = new URLSearchParams(), f = this.filters;
                 if (f.search)          p.set('q',    f.search);
-                if (f.organization_id) p.set('org',  f.organization_id);
                 if (f.role)            p.set('role', f.role);
                 if (f.status)          p.set('st',   f.status);
                 if (f.date_from)       p.set('from', f.date_from);
@@ -643,7 +599,6 @@ document.addEventListener('alpine:init', function () {
 
             removeChip(key) {
                 if (key === 'search') { this.filters.search = ''; }
-                if (key === 'org')    { this.filters.organization_id = ''; if (orgTsInst)    orgTsInst.clear(true); }
                 if (key === 'role')   { this.filters.role = '';             if (roleTsInst)   roleTsInst.clear(true); }
                 if (key === 'status') { this.filters.status = '';           if (statusTsInst) statusTsInst.clear(true); }
                 if (key === 'date')   { this.clearDate(); return; }
@@ -652,9 +607,8 @@ document.addEventListener('alpine:init', function () {
             },
 
             reset() {
-                this.filters = { search: '', organization_id: '', role: '', status: '', date_from: '', date_to: '' };
+                this.filters = { search: '', role: '', status: '', date_from: '', date_to: '' };
                 this.activeDatePreset = '';
-                if (orgTsInst)    orgTsInst.clear(true);
                 if (roleTsInst)   roleTsInst.clear(true);
                 if (statusTsInst) statusTsInst.clear(true);
                 if (dateFpInst)   dateFpInst.clear(false);

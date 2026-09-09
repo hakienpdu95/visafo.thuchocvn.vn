@@ -3,8 +3,6 @@
 namespace Modules\Sapo\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Shared\Tenancy\Models\Organization;
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Sapo\Jobs\ProcessSapoProductWebhookJob;
@@ -33,9 +31,6 @@ class SapoProductWebhookController extends Controller
 
     private function accept(Request $request, string $org_id, string $topic): JsonResponse
     {
-        $org = Organization::findOrFail($org_id);
-        TenantContext::set($org);
-
         ProcessSapoProductWebhookJob::dispatch($topic, $request->all());
 
         return response()->json(['status' => 'queued']);

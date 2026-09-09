@@ -3,7 +3,7 @@
 namespace Modules\Product\Data\Requests;
 
 use Illuminate\Validation\Rule;
-use Modules\Product\Enums\ProductCategoryType;
+use Modules\Product\Enums\DocumentGroupType;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
@@ -21,7 +21,7 @@ class UpdateDocumentMasterTypeData extends Data
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
-        public readonly ProductCategoryType $applicable_category,
+        public readonly DocumentGroupType $document_group,
 
         public readonly bool $is_required_issue_date,
 

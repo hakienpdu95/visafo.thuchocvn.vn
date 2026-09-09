@@ -26,17 +26,17 @@ abstract class BaseModelObserver
 
     protected function createdContext(Model $m): array
     {
-        return ['organization_id' => $m->organization_id ?? null];
+        return [];
     }
 
     protected function updatedContext(Model $m): array
     {
-        return ['organization_id' => $m->organization_id ?? null];
+        return [];
     }
 
     protected function deletedContext(Model $m): array
     {
-        return ['organization_id' => $m->organization_id ?? null];
+        return [];
     }
 
     public function created(Model $model): void

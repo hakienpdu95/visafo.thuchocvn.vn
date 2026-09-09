@@ -3,7 +3,6 @@
 namespace App\Services\Media;
 
 use App\Models\Media;
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
@@ -49,9 +48,8 @@ class MediaUploadService
             ])
             ->toMediaCollection($collection, $disk);
 
-        // Set organization_id and uploaded_at explicitly (not handled by Spatie)
-        $media->organization_id = TenantContext::getOrganizationId();
-        $media->uploaded_at     = now();
+        // Set uploaded_at explicitly (not handled by Spatie)
+        $media->uploaded_at = now();
         $media->save();
 
         // Synchronous image conversions (no queue)
@@ -64,7 +62,7 @@ class MediaUploadService
      * Delete a media record and its associated files on disk.
      * Conversions are stored manually alongside the original (not in Spatie's
      * conversions/ subdir), so we delete them explicitly before the record.
-     * Prunes empty ancestor directories up to (not including) the org_id level.
+     * Prunes empty ancestor directories up to (not including) the media/ root.
      */
     public function delete(Media $media): void
     {
@@ -84,8 +82,8 @@ class MediaUploadService
 
     /**
      * Walk up the directory tree from $leafDir, deleting each level while empty.
-     * Stops at the org_id directory (media/{org_id}) so tenant roots are preserved.
-     * Path convention: media/{org_id}/{module}/{entity_type}/{entity_id}/{uuid}
+     * Stops at the media/ root directory.
+     * Path convention: media/{module}/{entity_type}/{entity_id}/{uuid}
      * → up to 4 levels pruned: uuid, entity_id, entity_type, module.
      */
     public function pruneEmptyAncestors(string $disk, string $leafDir): void
@@ -97,8 +95,8 @@ class MediaUploadService
                 break;
             }
 
-            // Keep org_id dir: path has form "media/{org_id}" (2 segments)
-            if (substr_count($path, '/') < 2) {
+            // Keep the media/ root: path has form "media" (0 segments)
+            if (! str_contains($path, '/')) {
                 break;
             }
 

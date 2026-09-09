@@ -2,7 +2,6 @@
 
 namespace Modules\Warehouse\Data\Requests;
 
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -41,7 +40,6 @@ class UpdateOutboundOrderData extends Data
             'order_number' => [
                 'required', 'string', 'max:100',
                 Rule::unique('outbound_orders', 'order_number')
-                    ->where('organization_id', TenantContext::getOrganizationId())
                     ->ignore($currentId),
             ],
         ];

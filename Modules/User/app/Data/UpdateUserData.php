@@ -5,7 +5,6 @@ namespace Modules\User\Data;
 use App\Enums\RoleEnum;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -20,11 +19,7 @@ class UpdateUserData extends Data
 
         public readonly string $email,
 
-        // nullable — empty string means no change
         public readonly ?string $password,
-
-        #[Required, Exists('organizations', 'id')]
-        public readonly string $organization_id,
 
         #[Nullable, StringType, Max(50)]
         public readonly ?string $department,

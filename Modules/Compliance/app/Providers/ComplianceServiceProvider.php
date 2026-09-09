@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use Modules\Compliance\Console\Commands\ScanComplianceWarningsCommand;
 use Modules\Compliance\Models\ComplianceWarning;
 use Modules\Compliance\Policies\ComplianceWarningPolicy;
+use Modules\Employee\Models\EmployeeHealthRecord;
 use Modules\Product\Models\ProductCompliance;
 use Modules\Vendor\Models\VendorCertificate;
 use Modules\Warehouse\Models\Batch;
@@ -37,9 +38,10 @@ class ComplianceServiceProvider extends ModuleServiceProvider
         parent::boot();
 
         Relation::morphMap([
-            'product_compliance' => ProductCompliance::class,
-            'vendor_certificate'  => VendorCertificate::class,
-            'batch'               => Batch::class,
+            'product_compliance'      => ProductCompliance::class,
+            'vendor_certificate'      => VendorCertificate::class,
+            'batch'                   => Batch::class,
+            'employee_health_record'  => EmployeeHealthRecord::class,
         ]);
 
         Gate::policy(ComplianceWarning::class, ComplianceWarningPolicy::class);

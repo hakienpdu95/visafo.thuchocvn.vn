@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Modules\ActivityLog\Database\Seeders\ActivityLogPermissionsSeeder;
 use Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
-use Modules\Organization\Database\Seeders\OrganizationRolePermissionSeeder;
+use Modules\Employee\Database\Seeders\DepartmentSeeder;
 use Modules\Product\Database\Seeders\DocumentMasterTypeSeeder;
 
 /**
@@ -16,12 +16,11 @@ use Modules\Product\Database\Seeders\DocumentMasterTypeSeeder;
  *   php artisan db:seed --class=Database\\Seeders\\SystemDataSeeder
  *
  * Không bao gồm:
- *   - OrganizationDemoSeeder (1000 orgs demo — chỉ chạy thủ công khi cần)
- *   - Các seeder rỗng (Employee, Customer, Branch, Department, Project...)
+ *   - Các seeder rỗng (Customer, Branch, Project...)
  *   - Subscription/Lead/LeadPipelineStage/LeadSource/Recruitment/JobPosting/Deployment/
  *     BusinessSolution/BusinessBlueprint/OrganizationSolution/BusinessProject/Survey/
  *     VerticalTemplate/Sandbox/Certifications/CareerPathway/AiImpact/Passport/Campaigns/
- *     Employee/Department/Branch/Position/JobTitle/Person(persons,invitations,imports)/
+ *     Branch/Position/JobTitle/Person(persons,invitations,imports)/
  *     AiCopilot/RoleScope/Assessment: đã bị gỡ cùng các module/route đó
  *     (cleanup/remove-non-competency-modules)
  */
@@ -45,20 +44,13 @@ class SystemDataSeeder extends Seeder
             // ── 3. Super-admin role + 2 tài khoản hệ thống ───────────────
             AuthDatabaseSeeder::class,
 
-            // ── 4. Template roles cấp org (owner/admin/manager/member) ────
-            OrganizationRolePermissionSeeder::class,
-
-            // ── 5. Org hệ thống mặc định (id=1 trên fresh DB) ────────────
-            SystemOrganizationSeeder::class,
-
-            // ── 6. Demo organization (dev/test) ───────────────────────────
-            OrganizationSeeder::class,
-
-            // ── 7. Test users (1 per role) ────────────────────────────────
+            // ── 4. Test users (1 per role) ────────────────────────────────
             UserSeeder::class,
 
-            // ── 8. Từ điển loại giấy tờ pháp lý (document_master_types) ──
+            // ── 5. Từ điển loại giấy tờ pháp lý (document_master_types) ──
             DocumentMasterTypeSeeder::class,
+
+            DepartmentSeeder::class,
         ]);
 
         $this->command->newLine();

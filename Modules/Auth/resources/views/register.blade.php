@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Đăng ký tổ chức')
+@section('title', 'Đăng ký tài khoản')
 
 @section('content')
 <div class="w-full max-w-md">
@@ -9,7 +9,7 @@
 
             <div class="text-center">
                 <h1 class="text-2xl font-bold text-primary">{{ config('app.name') }}</h1>
-                <p class="text-base-content/60 text-sm mt-1">Tạo tổ chức & tài khoản quản trị</p>
+                <p class="text-base-content/60 text-sm mt-1">Tạo tài khoản mới</p>
             </div>
 
             @if ($errors->any())
@@ -24,33 +24,6 @@
 
             <form method="POST" action="{{ route('register') }}" class="flex flex-col gap-3">
                 @csrf
-
-                <div class="divider divider-start text-sm font-semibold text-base-content/70">
-                    Thông tin tổ chức
-                </div>
-
-                <label class="form-control w-full">
-                    <div class="label">
-                        <span class="label-text font-medium">Tên tổ chức <span class="text-error">*</span></span>
-                    </div>
-                    <input
-                        type="text"
-                        name="organization_name"
-                        value="{{ old('organization_name') }}"
-                        placeholder="VD: Công ty TNHH ABC"
-                        class="input input-bordered w-full @error('organization_name') input-error @enderror"
-                        required
-                    />
-                    @error('organization_name')
-                        <div class="label">
-                            <span class="label-text-alt text-error">{{ $message }}</span>
-                        </div>
-                    @enderror
-                </label>
-
-                <div class="divider divider-start text-sm font-semibold text-base-content/70 mt-1">
-                    Tài khoản chủ sở hữu (CEO)
-                </div>
 
                 <label class="form-control w-full">
                     <div class="label">

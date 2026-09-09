@@ -51,7 +51,6 @@ class TagProvisioningController extends Controller
         ]);
 
         $result = $action->handle(
-            \App\Shared\Tenancy\TenantContext::getOrganizationId(),
             (int) $validated['count'],
             (string) ($validated['prefix'] ?? ''),
         );

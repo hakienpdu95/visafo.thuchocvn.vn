@@ -123,16 +123,12 @@ class MediaMigrateService
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function buildMigrateQuery(string $fromDisk, ?string $collection = null, ?string $orgId = null)
+    public function buildMigrateQuery(string $fromDisk, ?string $collection = null)
     {
-        $q = Media::withoutTenant()->where('disk', $fromDisk);
+        $q = Media::query()->where('disk', $fromDisk);
 
         if ($collection !== null) {
             $q->where('collection_name', $collection);
-        }
-
-        if ($orgId !== null) {
-            $q->where('organization_id', $orgId);
         }
 
         return $q;
@@ -141,9 +137,9 @@ class MediaMigrateService
     /**
      * Partition a collection of files into batches of $size.
      */
-    public function chunkQuery(string $fromDisk, int $batchSize, ?string $collection, ?string $orgId): Collection
+    public function chunkQuery(string $fromDisk, int $batchSize, ?string $collection): Collection
     {
-        return $this->buildMigrateQuery($fromDisk, $collection, $orgId)
+        return $this->buildMigrateQuery($fromDisk, $collection)
             ->orderBy('id')
             ->limit($batchSize)
             ->get();

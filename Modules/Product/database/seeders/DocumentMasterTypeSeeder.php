@@ -3,123 +3,156 @@
 namespace Modules\Product\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Product\Enums\ProductCategoryType;
+use Illuminate\Support\Facades\Schema;
+use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Models\DocumentMasterType;
 
 class DocumentMasterTypeSeeder extends Seeder
 {
     public function run(): void
     {
-        DocumentMasterType::where('code', 'cosmetic_pif')->update(['code' => 'cosmetic_notification']);
+        Schema::disableForeignKeyConstraints();
+        DocumentMasterType::query()->forceDelete();
+        Schema::enableForeignKeyConstraints();
 
-        foreach ($this->definitions() as $definition) {
-            DocumentMasterType::query()->updateOrCreate(
-                ['code' => $definition['code']],
-                $definition,
-            );
+        $definitions = $this->definitions();
+
+        foreach ($definitions as $definition) {
+            DocumentMasterType::query()->create($definition);
         }
 
-        $this->command?->info('  ✓ document_master_types seeded: ' . count($this->definitions()) . ' loại giấy tờ.');
+        $this->command?->info('  ✓ document_master_types seeded: ' . count($definitions) . ' loại giấy tờ ATTP bếp ăn bán trú.');
     }
 
     private function definitions(): array
     {
         return [
+            // Nhóm 1: Hồ sơ pháp lý cơ sở
             [
-                'code'                    => 'food_self_declaration',
-                'name'                    => 'Bản tự công bố sản phẩm (NĐ 15/2018)',
-                'applicable_category'     => ProductCategoryType::Food->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => false,
-                'default_validity_months' => null,
+                'code'                     => 'facility_attp',
+                'name'                     => 'Giấy chứng nhận cơ sở đủ điều kiện ATTP',
+                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 36,
             ],
             [
-                'code'                    => 'ocop_certificate',
-                'name'                    => 'Giấy chứng nhận sản phẩm OCOP (QĐ 148/QĐ-TTg)',
-                'applicable_category'     => ProductCategoryType::Food->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => true,
-                'default_validity_months' => 36,
+                'code'                     => 'facility_commitment',
+                'name'                     => 'Bản cam kết bảo đảm an toàn thực phẩm',
+                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 36,
             ],
             [
-                'code'                    => 'vietgap_globalgap',
-                'name'                    => 'Chứng nhận VietGAP / GlobalGAP',
-                'applicable_category'     => ProductCategoryType::Food->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => true,
-                'default_validity_months' => 12,
+                'code'                     => 'facility_contract',
+                'name'                     => 'Hợp đồng cung cấp suất ăn/thực phẩm',
+                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 12,
+            ],
+
+            // Nhóm 2: Hồ sơ nhân viên
+            [
+                'code'                     => 'personnel_health',
+                'name'                     => 'Giấy khám sức khỏe',
+                'document_group'           => DocumentGroupType::Personnel->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 12,
             ],
             [
-                'code'                    => 'food_registration_declaration',
-                'name'                    => 'Giấy tiếp nhận đăng ký bản công bố sản phẩm (Sữa công thức)',
-                'applicable_category'     => ProductCategoryType::Food->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => true,
-                'default_validity_months' => 60,
+                'code'                     => 'personnel_training',
+                'name'                     => 'Giấy xác nhận kiến thức về an toàn thực phẩm',
+                'document_group'           => DocumentGroupType::Personnel->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 36,
+            ],
+
+            // Nhóm 3: Hồ sơ nguồn gốc (Truy xuất)
+            [
+                'code'                     => 'supplier_brc',
+                'name'                     => 'Giấy phép kinh doanh (NCC)',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'default_validity_months'  => null,
             ],
             [
-                'code'                    => 'cosmetic_notification',
-                'name'                    => 'Số tiếp nhận Phiếu công bố sản phẩm mỹ phẩm (kèm PIF)',
-                'applicable_category'     => ProductCategoryType::Cosmetic->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => true,
-                'default_validity_months' => 60,
+                'code'                     => 'supplier_attp',
+                'name'                     => 'Giấy chứng nhận cơ sở đủ điều kiện ATTP (NCC)',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 36,
             ],
             [
-                'code'                    => 'medical_device_classification',
-                'name'                    => 'Bản phân loại trang thiết bị y tế (A/B/C/D) & Số lưu hành',
-                'applicable_category'     => ProductCategoryType::MedicalDevice->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => false,
-                'default_validity_months' => null,
+                'code'                     => 'supplier_vietgap',
+                'name'                     => 'Chứng nhận VietGAP / GlobalGAP',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 12,
             ],
             [
-                'code'                    => 'medical_standard_declaration',
-                'name'                    => 'Số phiếu tiếp nhận hồ sơ công bố tiêu chuẩn áp dụng (TBYT loại A/B)',
-                'applicable_category'     => ProductCategoryType::MedicalDevice->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => false,
-                'default_validity_months' => null,
+                'code'                     => 'supplier_vet',
+                'name'                     => 'Giấy chứng nhận kiểm dịch thú y',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'default_validity_months'  => null,
             ],
             [
-                'code'                    => 'toy_cr_cert',
-                'name'                    => 'Giấy chứng nhận Hợp quy CR (QCVN 3:2019/BKHCN)',
-                'applicable_category'     => ProductCategoryType::ToyPlastic->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => true,
-                'default_validity_months' => 36,
+                'code'                     => 'supplier_ocop',
+                'name'                     => 'Giấy chứng nhận OCOP',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 36,
             ],
             [
-                'code'                    => 'textile_conformity_declaration',
-                'name'                    => 'Bản công bố hợp quy dệt may (QCVN 01:2017/BCT)',
-                'applicable_category'     => ProductCategoryType::Textile->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => false,
-                'default_validity_months' => null,
+                'code'                     => 'product_declaration',
+                'name'                     => 'Hồ sơ công bố sản phẩm (Tự công bố / Đăng ký)',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'default_validity_months'  => null,
             ],
             [
-                'code'                    => 'tccs_standard',
-                'name'                    => 'Bản công bố Tiêu chuẩn cơ sở (TCCS)',
-                'applicable_category'     => ProductCategoryType::ConsumerGoods->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => false,
-                'default_validity_months' => null,
+                'code'                     => 'daily_invoice',
+                'name'                     => 'Chứng từ giao nhận hàng ngày (Hóa đơn, phiếu xuất/nhập)',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'default_validity_months'  => null,
+            ],
+
+            // Nhóm 4: Sổ sách giám sát tại chỗ
+            [
+                'code'                     => 'log_3_steps',
+                'name'                     => 'Sổ Kiểm thực 3 bước (QĐ 1246/QĐ-BYT)',
+                'document_group'           => DocumentGroupType::MonitoringLogs->value,
+                'is_required_issue_date'   => false,
+                'is_required_expiry_date'  => false,
+                'default_validity_months'  => null,
             ],
             [
-                'code'                    => 'food_contact_self_declaration',
-                'name'                    => 'Bản tự công bố sản phẩm — vật liệu tiếp xúc thực phẩm (QCVN 12-1:2011/BYT)',
-                'applicable_category'     => ProductCategoryType::FoodContactMaterial->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => false,
-                'default_validity_months' => null,
+                'code'                     => 'log_sample',
+                'name'                     => 'Sổ lưu mẫu thức ăn',
+                'document_group'           => DocumentGroupType::MonitoringLogs->value,
+                'is_required_issue_date'   => false,
+                'is_required_expiry_date'  => false,
+                'default_validity_months'  => null,
             ],
             [
-                'code'                    => 'electrical_cr_cert',
-                'name'                    => 'Giấy chứng nhận hợp quy thiết bị điện (Dấu CR — QCVN 4:2009/BKHCN)',
-                'applicable_category'     => ProductCategoryType::ElectricalAppliance->value,
-                'is_required_issue_date'  => true,
-                'is_required_expiry_date' => true,
-                'default_validity_months' => 36,
+                'code'                     => 'log_chemical',
+                'name'                     => 'Sổ theo dõi hóa chất, vật tư y tế',
+                'document_group'           => DocumentGroupType::MonitoringLogs->value,
+                'is_required_issue_date'   => false,
+                'is_required_expiry_date'  => false,
+                'default_validity_months'  => null,
             ],
         ];
     }

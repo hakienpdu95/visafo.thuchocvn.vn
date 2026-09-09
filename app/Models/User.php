@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
-use App\Shared\Tenancy\Models\Organization;
-use App\Shared\Tenancy\TenantContext;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -12,24 +10,19 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\NotificationPreference;
 use App\Models\PushSubscription;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Modules\Auth\Models\SocialAccount;
-use Modules\Organization\Models\OrganizationMember;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable([
     'name', 'email', 'password',
-    'organization_id', 'department', 'is_active', 'last_active_at',
-    // Phase 0 — Identity Foundation
-    'account_type', 'current_org_id', 'trust_level',
-    // SRS01-FR-ID-003 (GAP_ANALYSIS_v1.0.md §3.3 ID-02) — account lifecycle, tách khỏi employment status
+    'department', 'is_active', 'last_active_at',
+    'account_type', 'trust_level',
     'lifecycle_status', 'email_verified_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
@@ -52,21 +45,6 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     // ── Relationships ────────────────────────────────────────────────
-
-    public function organization(): BelongsTo
-    {
-        return $this->belongsTo(Organization::class);
-    }
-
-    public function organizationMembership(): HasOne
-    {
-        return $this->hasOne(OrganizationMember::class);
-    }
-
-    public function organizationMemberships(): HasMany
-    {
-        return $this->hasMany(OrganizationMember::class);
-    }
 
     public function pushSubscriptions(): HasMany
     {
@@ -98,29 +76,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isSuspended(): bool
     {
         return $this->account_type === AccountType::Suspended;
-    }
-
-    // ── Tenant Helpers ───────────────────────────────────────────────
-
-    /**
-     * Returns the organization ID for the current request context.
-     * Used by policies for same-tenant checks.
-     *
-     * Priority: TenantContext (middleware-resolved) → user's own organization_id.
-     */
-    public function getCurrentOrganizationIdAttribute(): ?string
-    {
-        return TenantContext::getOrganizationId() ?? $this->organization_id;
-    }
-
-    public function getCurrentOrganizationAttribute(): ?Organization
-    {
-        return TenantContext::get() ?? $this->organization;
-    }
-
-    public function belongsToOrganization(string $organizationId): bool
-    {
-        return $this->organization_id === $organizationId;
     }
 
     public function getActivitylogOptions(): LogOptions

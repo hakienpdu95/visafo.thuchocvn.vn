@@ -26,7 +26,7 @@ class UserPolicy
         }
 
         if ($actor->hasAnyRole([RoleEnum::CEO->value, RoleEnum::HR->value])) {
-            return $actor->organization_id === $target->organization_id;
+            return true;
         }
 
         return false;
@@ -49,7 +49,7 @@ class UserPolicy
         }
 
         if ($actor->hasRole(RoleEnum::HR->value)) {
-            return $actor->organization_id === $target->organization_id;
+            return true;
         }
 
         return false;

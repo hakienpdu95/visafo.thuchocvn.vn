@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 class ListUsersHandler implements QueryHandlerInterface
 {
     private const SORTABLE = [
-        'name', 'email', 'department', 'is_active', 'created_at', 'organization_name',
+        'name', 'email', 'department', 'is_active', 'created_at',
     ];
 
     public function handle(QueryInterface $query): LengthAwarePaginator
@@ -24,17 +24,8 @@ class ListUsersHandler implements QueryHandlerInterface
 
         $sortDir = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = User::query()
-            ->select('users.*')
-            ->whereNotNull('users.organization_id')
-            ->with(['organization:id,name', 'organizationMembership']);
+        $q = User::query()->select('users.*');
 
-        // ── Tenant scope ─────────────────────────────────────────────
-        if ($query->organizationId !== null) {
-            $q->where('users.organization_id', $query->organizationId);
-        }
-
-        // ── Text search (OR) ─────────────────────────────────────────
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';
             $q->where(function (Builder $sub) use ($term): void {
@@ -43,10 +34,6 @@ class ListUsersHandler implements QueryHandlerInterface
             });
         }
 
-        // ── Role filter (via Spatie model_has_roles) ─────────────────
-        // Filter values are system roles (RoleEnum: ceo, sales, hr…),
-        // NOT org-membership roles (owner/admin/member) — use a raw EXISTS
-        // so the query is independent of the current Spatie team context.
         if ($query->role !== null && $query->role !== '') {
             $role = $query->role;
             $q->whereExists(function ($sub) use ($role): void {
@@ -59,12 +46,10 @@ class ListUsersHandler implements QueryHandlerInterface
             });
         }
 
-        // ── Status filter ─────────────────────────────────────────────
         if ($query->status !== null && $query->status !== '') {
             $q->where('users.is_active', $query->status === '1');
         }
 
-        // ── Date range ────────────────────────────────────────────────
         if ($query->dateFrom !== null && $query->dateFrom !== '') {
             $q->where('users.created_at', '>=', $query->dateFrom . ' 00:00:00');
         }
@@ -73,12 +58,7 @@ class ListUsersHandler implements QueryHandlerInterface
             $q->where('users.created_at', '<=', $query->dateTo . ' 23:59:59');
         }
 
-        // ── Sort ──────────────────────────────────────────────────────
-        match ($sortField) {
-            'organization_name' => $q->leftJoin('organizations as org_sort', 'users.organization_id', '=', 'org_sort.id')
-                                      ->orderBy('org_sort.name', $sortDir),
-            default             => $q->orderBy('users.' . $sortField, $sortDir),
-        };
+        $q->orderBy('users.' . $sortField, $sortDir);
 
         if ($sortField !== 'id') {
             $q->orderBy('users.id', $sortDir);

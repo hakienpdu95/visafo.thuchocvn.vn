@@ -21,5 +21,5 @@ class JoditDraft extends TenantAwareModel implements HasMedia
 
     protected $table = 'jodit_drafts';
 
-    protected $fillable = ['organization_id', 'user_id', 'context_type', 'context_id'];
+    protected $fillable = ['user_id', 'context_type', 'context_id'];
 }

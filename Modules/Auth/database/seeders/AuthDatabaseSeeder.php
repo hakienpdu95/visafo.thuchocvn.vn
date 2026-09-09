@@ -13,7 +13,6 @@ use Spatie\Permission\PermissionRegistrar;
  * Seed: tạo role super-admin + 2 tài khoản quản trị hệ thống mặc định.
  *
  * super-admin:
- *  - Không thuộc bất kỳ Organization nào (organization_id = null)
  *  - Bypass toàn bộ Gate checks (xem AppServiceProvider::Gate::before)
  *  - Có tất cả permissions hiện tại
  *
@@ -68,13 +67,11 @@ class AuthDatabaseSeeder extends Seeder
         ];
 
         foreach ($admins as $data) {
-            // withoutGlobalScopes: tránh OrganizationScope filter khi seed
-            $user = User::withoutGlobalScopes()->firstOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $data['email']],
                 [
-                    'name'             => $data['name'],
-                    'password'         => Hash::make('Admin@123!'),
-                    'organization_id'  => null,
+                    'name'     => $data['name'],
+                    'password' => Hash::make('Admin@123!'),
                     // Email pre-verified, trust_level = 2 (bypass toàn bộ eKYC)
                     'email_verified_at' => $now,
                     'trust_level'       => 2,

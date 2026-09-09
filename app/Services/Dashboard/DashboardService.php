@@ -4,7 +4,6 @@ namespace App\Services\Dashboard;
 
 use App\Enums\RoleEnum;
 use App\Models\User;
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Support\Collection;
 use Modules\ActivityLog\Models\ActivityLog;
 
@@ -18,28 +17,24 @@ class DashboardService
 {
     public function getData(User $user): array
     {
-        $orgId       = TenantContext::getOrganizationId();
         $primaryRole = $user->getRoleNames()->first() ?? RoleEnum::VIEWER->value;
 
         return [
             'kpi_cards'       => [],
             'action_feed'     => [],
-            'recent_activity' => $this->recentActivity($orgId),
+            'recent_activity' => $this->recentActivity(),
             'primary_role'    => $primaryRole,
         ];
     }
 
     // ── Recent Activity ───────────────────────────────────────────────────────
 
-    private function recentActivity(?string $orgId): Collection
+    private function recentActivity(): Collection
     {
-        return ActivityLog::where(function ($q) use ($orgId) {
-                $q->where('organization_id', $orgId)
-                  ->orWhereNull('organization_id');
-            })
+        return ActivityLog::query()
             ->with('causer:id,name')
             ->orderByDesc('created_at')
             ->limit(8)
-            ->get(['id', 'description', 'subject_type', 'event', 'causer_id', 'causer_type', 'created_at', 'organization_id']);
+            ->get(['id', 'description', 'subject_type', 'event', 'causer_id', 'causer_type', 'created_at']);
     }
 }

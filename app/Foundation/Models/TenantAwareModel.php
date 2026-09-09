@@ -10,12 +10,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
-/**
- * Base model for all tenant-scoped domain entities.
- *
- * Provides: multi-tenancy scoping, soft deletes, and activity logging.
- * All domain models in Modules should extend this.
- */
 abstract class TenantAwareModel extends Model
 {
     use HasFactory;

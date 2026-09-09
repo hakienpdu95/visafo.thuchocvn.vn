@@ -143,7 +143,7 @@ return [
             // BCOS Knowledge Center full-text search — xem
             // Modules/KcItem/app/Search/MeilisearchKcItemSearchDriver.php
             'kc_items' => [
-                'filterableAttributes' => ['organization_id', 'type', 'status', 'visibility', 'industry'],
+                'filterableAttributes' => ['type', 'status', 'visibility', 'industry'],
                 'searchableAttributes' => ['title', 'summary', 'content'],
             ],
         ],

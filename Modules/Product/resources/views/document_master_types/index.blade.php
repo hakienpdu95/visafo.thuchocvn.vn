@@ -3,9 +3,9 @@
 
 @section('content')
 <div x-data="documentMasterTypeListPage({{ Js::from([
-    'apiUrl'        => route('backend.api.document-master-types'),
-    'categoryTypes' => $categoryTypes,
-    'canDelete'     => auth()->user()->can('delete', new \Modules\Product\Models\DocumentMasterType),
+    'apiUrl'         => route('backend.api.document-master-types'),
+    'documentGroups' => $documentGroups,
+    'canDelete'      => auth()->user()->can('delete', new \Modules\Product\Models\DocumentMasterType),
 ]) }})">
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -57,14 +57,14 @@
                     </div>
                 </div>
 
-                <div class="form-control w-56">
+                <div class="form-control w-64">
                     <label class="label py-0.5">
-                        <span class="label-text text-xs font-medium">Ngành hàng áp dụng</span>
+                        <span class="label-text text-xs font-medium">Nhóm giấy tờ</span>
                     </label>
-                    <select x-model="filters.applicable_category" @change="onFilterChange()" class="select select-sm select-bordered w-full">
+                    <select x-model="filters.document_group" @change="onFilterChange()" class="select select-sm select-bordered w-full">
                         <option value="">Tất cả</option>
-                        @foreach($categoryTypes as $category)
-                        <option value="{{ $category['value'] }}">{{ $category['text'] }}</option>
+                        @foreach($documentGroups as $group)
+                        <option value="{{ $group['value'] }}">{{ $group['text'] }}</option>
                         @endforeach
                     </select>
                 </div>

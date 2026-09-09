@@ -3,8 +3,6 @@
 namespace Modules\Sapo\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Shared\Tenancy\Models\Organization;
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -17,9 +15,6 @@ class SapoOrderWebhookController extends Controller
     {
         // Xác thực đã chạy ở middleware VerifySapoWebhookHmac (route sapo.hmac) — không
         // còn dùng token trong query string như trước.
-        $org = Organization::findOrFail($org_id);
-        TenantContext::set($org);
-
         $payload = $request->all();
         $rawBody = $request->getContent();
 

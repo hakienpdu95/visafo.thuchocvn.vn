@@ -9,15 +9,15 @@ class DocumentMasterTypeListResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $category = $this->applicable_category;
+        $group = $this->document_group;
 
         return [
             'id'   => $this->id,
             'code' => $this->code,
             'name' => $this->name,
 
-            'applicable_category_value' => $category->value,
-            'applicable_category_label' => $category->label(),
+            'document_group_value' => $group?->value,
+            'document_group_label' => $group?->label() ?? 'Chưa phân nhóm',
 
             'is_required_issue_date'  => $this->is_required_issue_date,
             'is_required_expiry_date' => $this->is_required_expiry_date,

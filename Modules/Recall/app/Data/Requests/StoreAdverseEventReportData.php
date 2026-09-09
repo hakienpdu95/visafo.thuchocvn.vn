@@ -2,7 +2,6 @@
 
 namespace Modules\Recall\Data\Requests;
 
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Validation\Rule;
 use Modules\Recall\Enums\AdverseEventOutcome;
 use Modules\Recall\Enums\AdverseEventReportSource;
@@ -107,8 +106,8 @@ class StoreAdverseEventReportData extends Data
     public static function rules(): array
     {
         return [
-            'product_id' => ['required', Rule::exists('products', 'id')->where('organization_id', TenantContext::getOrganizationId())],
-            'batch_id'   => ['nullable', Rule::exists('batches', 'id')->where('organization_id', TenantContext::getOrganizationId())],
+            'product_id' => ['required', Rule::exists('products', 'id')],
+            'batch_id'   => ['nullable', Rule::exists('batches', 'id')],
             'consumer_gender' => ['nullable', Rule::enum(ConsumerGender::class)],
             'outcome'         => ['nullable', Rule::enum(AdverseEventOutcome::class)],
             'report_source'   => ['nullable', Rule::enum(AdverseEventReportSource::class)],

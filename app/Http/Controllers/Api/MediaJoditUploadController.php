@@ -7,7 +7,6 @@ use App\Models\JoditDraft;
 use App\Models\Media;
 use App\Services\Media\MediaUploadService;
 use App\Services\Media\MediaUrlService;
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -167,10 +166,9 @@ class MediaJoditUploadController extends Controller
         }
 
         return JoditDraft::create([
-            'organization_id' => TenantContext::getOrganizationId(),
-            'user_id'         => auth()->id(),
-            'context_type'    => $contextType,
-            'context_id'      => $contextId,
+            'user_id'      => auth()->id(),
+            'context_type' => $contextType,
+            'context_id'   => $contextId,
         ]);
     }
 }

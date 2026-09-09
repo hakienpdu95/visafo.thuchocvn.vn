@@ -17,7 +17,6 @@ class TagRoll extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'organization_id',
         'prefix',
         'from_sequence',
         'to_sequence',

@@ -26,23 +26,12 @@ class CheckExpiringCompliancesCommand extends Command
             ->where('status', ComplianceStatus::Active->value)
             ->whereNotNull('expiration_date')
             ->whereBetween('expiration_date', [now()->toDateString(), now()->addDays(30)->toDateString()])
-            ->with(['product' => fn ($q) => $q->withoutTenant()])
             ->get();
 
-        $sent = 0;
+        $sent       = 0;
+        $recipients = User::all()->filter(fn (User $user) => $user->can('product.manage'));
 
         foreach ($compliances as $compliance) {
-            $organizationId = $compliance->product->organization_id;
-
-            $previousTeamId = getPermissionsTeamId();
-            setPermissionsTeamId($organizationId);
-
-            $recipients = User::where('organization_id', $organizationId)
-                ->get()
-                ->filter(fn (User $user) => $user->can('product.manage'));
-
-            setPermissionsTeamId($previousTeamId);
-
             foreach ($recipients as $recipient) {
                 $recipient->notify(new ProductComplianceExpiringNotification($compliance));
                 $sent++;

@@ -132,19 +132,6 @@ function _syncPasswordInputs(pw) {
 
 // ── TomSelect setup helpers ─────────────────────────────────────────────────
 
-function _setupOrgTs(selector, orgs, initial, onChange) {
-    return new window.TomSelect(selector, {
-        dropdownParent: 'body',
-        placeholder:    'Chọn tổ chức...',
-        maxOptions:     null,
-        searchField:    ['text'],
-        options:        orgs.map(o => ({ value: String(o.id), text: o.name })),
-        items:          initial ? [String(initial)] : [],
-        render: { no_results: () => '<div class="p-3 text-sm opacity-50">Không tìm thấy</div>' },
-        onChange,
-    });
-}
-
 function _setupRoleTs(selector, roles, initial, onChange) {
     return new window.TomSelect(selector, {
         dropdownParent: 'body',
@@ -163,7 +150,7 @@ document.addEventListener('alpine:init', () => {
 
     // ── CREATE ───────────────────────────────────────────────────────────────
     Alpine.data('createUserPage', (sd) => {
-        const { organizations, roles, matrix } = sd;
+        const { roles, matrix } = sd;
         const filteredPresets = ALL_PRESETS.filter(p => roles.some(r => r.value === p.role));
         let roleTsInst = null;
 
@@ -176,7 +163,6 @@ document.addEventListener('alpine:init', () => {
             showPw:           false,
             sendWelcomeEmail: false,
             avatarUrl:        '',
-            selectedOrg:      sd.oldOrg  || '',
             selectedRole:     sd.oldRole || '',
             selectedRoleLabel:'',
             rolePresets:      filteredPresets,
@@ -186,7 +172,6 @@ document.addEventListener('alpine:init', () => {
                 name:            !!sd.hasErrors,
                 email:           !!sd.hasErrors,
                 password:        !!sd.hasErrors,
-                organization_id: !!sd.hasErrors,
                 system_role:     !!sd.hasErrors,
             },
             attempted: !!sd.hasErrors,
@@ -203,13 +188,12 @@ document.addEventListener('alpine:init', () => {
                         : !/[A-Z]/.test(this.password)  ? 'Cần ít nhất 1 chữ HOA'
                         : !/[a-z]/.test(this.password)  ? 'Cần ít nhất 1 chữ thường'
                         : !/[0-9]/.test(this.password)  ? 'Cần ít nhất 1 chữ số' : null,
-                    organization_id: !this.selectedOrg  ? 'Vui lòng chọn tổ chức' : null,
                     system_role:     !this.selectedRole ? 'Vui lòng chọn vai trò'  : null,
                 };
             },
             get isValid() {
                 const e = this.errors;
-                return !e.name && !e.email && !e.password && !e.organization_id && !e.system_role;
+                return !e.name && !e.email && !e.password && !e.system_role;
             },
             get pwChecks()       { return _pwChecks(this.password); },
             get strength()       { return _strength(this.password); },
@@ -223,7 +207,7 @@ document.addEventListener('alpine:init', () => {
             },
             showOk(field) {
                 const val = { name: this.name, email: this.email, password: this.password,
-                              organization_id: this.selectedOrg, system_role: this.selectedRole }[field] || '';
+                              system_role: this.selectedRole }[field] || '';
                 return this.touched[field] && !this.errors[field] && !!String(val).trim();
             },
             fieldCls(field) {
@@ -273,10 +257,6 @@ document.addEventListener('alpine:init', () => {
             },
 
             _setup() {
-                _setupOrgTs('#org-select', organizations, sd.oldOrg, val => {
-                    this.selectedOrg = val || '';
-                    this.touched.organization_id = true;
-                });
                 roleTsInst = _setupRoleTs('#role-select', roles, sd.oldRole, val => {
                     this.selectedRole = val || '';
                     this.touched.system_role = true;
@@ -289,7 +269,7 @@ document.addEventListener('alpine:init', () => {
 
     // ── EDIT ─────────────────────────────────────────────────────────────────
     Alpine.data('editUserPage', (sd) => {
-        const { organizations, roles, matrix } = sd;
+        const { roles, matrix } = sd;
         const filteredPresets = ALL_PRESETS.filter(p => roles.some(r => r.value === p.role));
         let roleTsInst = null;
 
@@ -333,7 +313,6 @@ document.addEventListener('alpine:init', () => {
             },
 
             _setup() {
-                _setupOrgTs('#org-select', organizations, sd.oldOrg, null);
                 roleTsInst = _setupRoleTs('#role-select', roles, sd.oldRole, val => {
                     this.selectedRole = val || '';
                     const found = roles.find(r => r.value === val);

@@ -2,7 +2,6 @@
 
 namespace Modules\Warehouse\Data\Requests;
 
-use App\Shared\Tenancy\TenantContext;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -21,7 +20,7 @@ class AddPickedBatchData extends Data
     public static function rules(): array
     {
         return [
-            'batch_id' => ['required', Rule::exists('batches', 'id')->where('organization_id', TenantContext::getOrganizationId())],
+            'batch_id' => ['required', Rule::exists('batches', 'id')],
         ];
     }
 

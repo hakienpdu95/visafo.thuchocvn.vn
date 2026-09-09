@@ -42,13 +42,13 @@
                 </div>
 
                 <div class="form-control">
-                    <label class="label py-0 pb-1.5"><span class="label-text font-medium">Ngành hàng áp dụng <span class="text-error">*</span></span></label>
-                    <select name="applicable_category" class="select select-bordered select-sm w-full @error('applicable_category') select-error @enderror">
-                        @foreach($categoryTypes as $category)
-                        <option value="{{ $category->value }}" @selected(old('applicable_category', $documentMasterType->applicable_category->value) === $category->value)>{{ $category->label() }}</option>
+                    <label class="label py-0 pb-1.5"><span class="label-text font-medium">Nhóm giấy tờ <span class="text-error">*</span></span></label>
+                    <select name="document_group" class="select select-bordered select-sm w-full @error('document_group') select-error @enderror">
+                        @foreach($documentGroups as $group)
+                        <option value="{{ $group->value }}" @selected(old('document_group', $documentMasterType->document_group?->value) === $group->value)>{{ $group->label() }}</option>
                         @endforeach
                     </select>
-                    @error('applicable_category')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                    @error('document_group')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                 </div>
             </div>
 

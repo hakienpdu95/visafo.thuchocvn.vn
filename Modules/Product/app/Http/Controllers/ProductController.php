@@ -58,12 +58,15 @@ class ProductController extends Controller
     {
         $product = $handler->handle(new GetProductQuery($product));
 
+        $groupOrder = collect(\Modules\Product\Enums\DocumentGroupType::cases())
+            ->map(fn ($g) => "'{$g->value}'")
+            ->implode(',');
+
         $documentTypes = \Modules\Product\Models\DocumentMasterType::query()
-            ->orderByRaw('applicable_category <> ? asc', [$product->category_type->value])
-            ->orderBy('applicable_category')
+            ->orderByRaw("FIELD(document_group, $groupOrder)")
             ->orderBy('name')
             ->get()
-            ->groupBy(fn ($type) => $type->applicable_category->label());
+            ->groupBy(fn ($type) => $type->document_group?->label() ?? 'Chưa phân nhóm');
 
         return view('product::products.show', compact('product', 'documentTypes'));
     }
