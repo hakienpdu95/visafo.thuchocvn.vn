@@ -97,12 +97,42 @@
 
         <div class="card bg-base-100 shadow-sm border border-base-200">
             <div class="card-body">
-                <h2 class="text-base font-semibold mb-3">Thông tin liên hệ</h2>
+                <h2 class="text-base font-semibold mb-3">Thông tin pháp nhân</h2>
                 <dl class="text-sm space-y-2">
-                    <div><dt class="text-base-content/50 text-xs">Địa chỉ</dt><dd>{{ $vendor->address ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Điện thoại</dt><dd>{{ $vendor->phone_number ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Email</dt><dd>{{ $vendor->email ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Người đại diện</dt><dd>{{ $vendor->representative_name ?? '—' }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Địa chỉ</dt>
+                        <dd>
+                            {{ $vendor->address ?? '—' }}
+                            @if($vendor->ward || $vendor->province)
+                                <br>{{ trim(($vendor->ward?->name ?? '') . ', ' . ($vendor->province?->name ?? ''), ', ') }}
+                            @endif
+                        </dd>
+                    </div>
+                    <div><dt class="text-base-content/50 text-xs">Điện thoại công ty</dt><dd>{{ $vendor->phone_number ?? '—' }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Email công ty</dt><dd>{{ $vendor->email ?? '—' }}</dd></div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+            <div class="card-body">
+                <h2 class="text-base font-semibold mb-3">Người đại diện theo pháp luật</h2>
+                <dl class="text-sm space-y-2">
+                    <div><dt class="text-base-content/50 text-xs">Họ và tên</dt><dd>{{ $vendor->representative_name ?? '—' }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Chức danh</dt><dd>{{ $vendor->representative_title ?? '—' }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Điện thoại</dt><dd>{{ $vendor->representative_phone ?? '—' }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Email</dt><dd>{{ $vendor->representative_email ?? '—' }}</dd></div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+            <div class="card-body">
+                <h2 class="text-base font-semibold mb-3">Đầu mối liên hệ về công việc</h2>
+                <dl class="text-sm space-y-2">
+                    <div><dt class="text-base-content/50 text-xs">Họ và tên</dt><dd>{{ $vendor->contact_person_name ?? '—' }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Chức vụ</dt><dd>{{ $vendor->contact_person_title ?? '—' }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Điện thoại</dt><dd>{{ $vendor->contact_person_phone ?? '—' }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Email</dt><dd>{{ $vendor->contact_person_email ?? '—' }}</dd></div>
                 </dl>
             </div>
         </div>

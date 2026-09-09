@@ -3,6 +3,9 @@
 namespace Modules\Vendor\Models;
 
 use App\Foundation\Models\TenantAwareModel;
+use App\Models\Province;
+use App\Models\Ward;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\Vendor\Enums\VendorStatus;
@@ -14,9 +17,18 @@ class Vendor extends TenantAwareModel
         'name',
         'tax_code',
         'address',
+        'province_code',
+        'ward_code',
         'phone_number',
         'email',
         'representative_name',
+        'representative_title',
+        'representative_phone',
+        'representative_email',
+        'contact_person_name',
+        'contact_person_title',
+        'contact_person_phone',
+        'contact_person_email',
         'status',
     ];
 
@@ -25,6 +37,16 @@ class Vendor extends TenantAwareModel
         return [
             'status' => VendorStatus::class,
         ];
+    }
+
+    public function province(): BelongsTo
+    {
+        return $this->belongsTo(Province::class, 'province_code', 'province_code');
+    }
+
+    public function ward(): BelongsTo
+    {
+        return $this->belongsTo(Ward::class, 'ward_code', 'ward_code');
     }
 
     public function certificates(): HasMany

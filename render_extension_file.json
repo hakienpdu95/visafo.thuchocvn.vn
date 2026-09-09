@@ -94,5 +94,18 @@
         "late_offboard_gap_days///unsignedSmallInteger///__///_NULL///NULL///__///Số ngày gap giữa effective_left_at và offboarded_at — 0 nếu offboard đúng hạn",
         "__index///index///__///__///__///status|om_status_index///__",
         "__index///index///__///__///__///left_at|om_left_at_index///__"
+    ],
+    [
+        "vendors///add///representative_name///Tách liên hệ công ty / người đại diện / đầu mối làm việc thành 3 khối riêng",
+        "representative_title///string///100///_NULL///NULL///__///Chức danh người đại diện — VD: Giám đốc, Chủ tịch HĐQT",
+        "representative_phone///string///20///_NULL///NULL///__///Điện thoại cá nhân người đại diện",
+        "representative_email///string///100///_NULL///NULL///__///Email cá nhân người đại diện",
+        "contact_person_name///string///100///_NULL///NULL///__///Đầu mối liên hệ về công việc — nhân sự làm việc trực tiếp hàng ngày",
+        "contact_person_title///string///100///_NULL///NULL///__///Chức vụ đầu mối liên hệ — VD: Sales, Kế toán trưởng",
+        "contact_person_phone///string///20///_NULL///NULL///__///Điện thoại đầu mối liên hệ",
+        "contact_person_email///string///100///_NULL///NULL///__///Email đầu mối liên hệ",
+        "province_code///char///2///_NULL///NULL///->references('province_code')->constrained('provinces')->nullOnDelete()///Tỉnh/thành phố trụ sở — FK tới provinces.province_code",
+        "ward_code///char///5///_NULL///NULL///->references('ward_code')->constrained('wards')->nullOnDelete()///Phường/xã trụ sở — FK tới wards.ward_code",
+        "__index///index///__///__///__///province_code,ward_code|idx_vendors_address///__"
     ]
 ]

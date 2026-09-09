@@ -13,7 +13,11 @@ class GetVendorHandler implements QueryHandlerInterface
         /** @var GetVendorQuery $query */
         $vendor = $query->vendor;
 
-        $vendor->load(['certificates' => fn ($q) => $q->latest('issue_date')]);
+        $vendor->load([
+            'certificates' => fn ($q) => $q->latest('issue_date'),
+            'province',
+            'ward',
+        ]);
 
         return $vendor;
     }
