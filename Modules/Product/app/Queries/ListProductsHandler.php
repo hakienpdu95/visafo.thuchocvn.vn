@@ -10,7 +10,7 @@ use Modules\Product\Models\Product;
 
 class ListProductsHandler implements QueryHandlerInterface
 {
-    private const SORTABLE = ['name', 'sku', 'category_type', 'status', 'created_at'];
+    private const SORTABLE = ['name', 'sku', 'status', 'created_at'];
 
     public function handle(QueryInterface $query): LengthAwarePaginator
     {
@@ -19,7 +19,7 @@ class ListProductsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir   = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = Product::query()->with(['brand', 'latestCompliance.documentType']);
+        $q = Product::query()->with(['category', 'latestCompliance.documentType']);
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';
@@ -30,8 +30,8 @@ class ListProductsHandler implements QueryHandlerInterface
             });
         }
 
-        if ($query->categoryType !== null && $query->categoryType !== '') {
-            $q->where('category_type', $query->categoryType);
+        if ($query->categoryId !== null && $query->categoryId !== '') {
+            $q->where('category_id', $query->categoryId);
         }
 
         if ($query->status !== null && $query->status !== '') {

@@ -12,7 +12,7 @@ class ListProductsQuery implements QueryInterface
         public readonly string  $sortField = 'created_at',
         public readonly string  $sortDir   = 'desc',
         public readonly ?string $search    = null,
-        public readonly ?string $categoryType = null,
+        public readonly ?string $categoryId = null,
         public readonly ?string $status    = null,
     ) {}
 }

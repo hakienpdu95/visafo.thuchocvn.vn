@@ -11,9 +11,9 @@ use Modules\Product\Actions\Backend\StoreProductAction;
 use Modules\Product\Actions\Backend\UpdateProductAction;
 use Modules\Product\Data\Requests\StoreProductData;
 use Modules\Product\Data\Requests\UpdateProductData;
-use Modules\Product\Enums\ProductCategoryType;
 use Modules\Product\Enums\ProductStatus;
-use Modules\Product\Models\Brand;
+use Modules\Product\Enums\ProductType;
+use Modules\Product\Models\Category;
 use Modules\Product\Models\Product;
 use Modules\Product\Queries\GetProductHandler;
 use Modules\Product\Queries\GetProductQuery;
@@ -27,22 +27,26 @@ class ProductController extends Controller
 
     public function index()
     {
-        $categoryTypes = collect(ProductCategoryType::cases())
-            ->map(fn ($c) => ['value' => $c->value, 'text' => $c->label()])
+        $categories = Category::orderBy('name')->get(['id', 'name'])
+            ->map(fn ($c) => ['value' => $c->id, 'text' => $c->name])
+            ->all();
+
+        $productTypes = collect(ProductType::cases())
+            ->map(fn ($t) => ['value' => $t->value, 'text' => $t->label()])
             ->all();
 
         $statuses = collect(ProductStatus::cases())
             ->map(fn ($s) => ['value' => $s->value, 'text' => $s->label()])
             ->all();
 
-        return view('product::products.index', compact('categoryTypes', 'statuses'));
+        return view('product::products.index', compact('categories', 'productTypes', 'statuses'));
     }
 
     public function create()
     {
-        $brands = Brand::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
 
-        return view('product::products.create', compact('brands'));
+        return view('product::products.create', compact('categories'));
     }
 
     public function store(Request $request, StoreProductAction $action): RedirectResponse
@@ -73,9 +77,9 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        $brands = Brand::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
 
-        return view('product::products.edit', compact('product', 'brands'));
+        return view('product::products.edit', compact('product', 'categories'));
     }
 
     public function update(Request $request, Product $product, UpdateProductAction $action): RedirectResponse

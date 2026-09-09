@@ -52,7 +52,6 @@ class MediaUploadController extends Controller
      */
     private const ENTITY_MAP = [
         'vendor_certificate'      => \Modules\Vendor\Models\VendorCertificate::class,
-        'brand'                   => \Modules\Product\Models\Brand::class,
     ];
 
     public function __construct(

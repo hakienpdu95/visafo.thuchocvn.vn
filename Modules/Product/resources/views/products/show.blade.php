@@ -9,7 +9,7 @@
             <span class="badge {{ $product->status->badgeClass() }} badge-sm">{{ $product->status->label() }}</span>
         </h1>
         <p class="text-sm text-base-content/50 mt-0.5 font-mono">
-            {{ $product->sku }} · {{ $product->category_type->label() }}
+            {{ $product->sku }} · {{ $product->category?->name }} · {{ $product->product_type->label() }}
         </p>
     </div>
     <div class="flex items-center gap-2">
@@ -100,7 +100,6 @@
                 <h2 class="text-base font-semibold mb-3">Thông tin sản phẩm</h2>
                 <dl class="text-sm space-y-2">
                     <div><dt class="text-base-content/50 text-xs">Mã vạch</dt><dd>{{ $product->barcode ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Thương hiệu</dt><dd>{{ $product->brand?->name ?? '—' }}</dd></div>
                     <div><dt class="text-base-content/50 text-xs">Đơn vị tính</dt><dd>{{ $product->unit }}</dd></div>
                 </dl>
             </div>

@@ -1,0 +1,11 @@
+{
+    "name": "Contract",
+    "alias": "contract",
+    "description": "Quản lý hợp đồng nhà cung cấp (nguyên tắc, bao tiêu nông sản, mua bán theo chuyến, ký gửi)",
+    "keywords": [],
+    "priority": 1,
+    "providers": [
+        "Modules\\Contract\\Providers\\ContractServiceProvider"
+    ],
+    "files": []
+}

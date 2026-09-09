@@ -1,0 +1,25 @@
+{
+    "name": "nwidart/contract",
+    "description": "",
+    "authors": [],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Contract\\": "app/",
+            "Modules\\Contract\\Database\\Factories\\": "database/factories/",
+            "Modules\\Contract\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Contract\\Tests\\": "tests/"
+        }
+    }
+}

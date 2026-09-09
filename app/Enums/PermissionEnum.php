@@ -51,6 +51,10 @@ enum PermissionEnum: string
     case VENDOR_VIEW   = 'vendor.view';
     case VENDOR_MANAGE = 'vendor.manage';
 
+    // ══ CONTRACT (Quản lý Hợp đồng nhà cung cấp) ══════════════════════
+    case CONTRACT_VIEW   = 'contract.view';
+    case CONTRACT_MANAGE = 'contract.manage';
+
     // ══ PRODUCT (Quản lý Danh mục / SKU Master) ═══════════════════════
     case PRODUCT_VIEW   = 'product.view';
     case PRODUCT_MANAGE = 'product.manage';

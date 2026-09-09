@@ -13,13 +13,13 @@ class UpdateProductAction
     public function handle(Product $product, UpdateProductData $data): Product
     {
         $product->update([
-            'sku'           => $data->sku,
-            'barcode'       => $data->barcode,
-            'name'          => $data->name,
-            'brand_id'      => $data->brand_id,
-            'category_type' => $data->category_type->value,
-            'unit'          => $data->unit,
-            'status'        => $data->status->value,
+            'sku'          => $data->sku,
+            'barcode'      => $data->barcode,
+            'name'         => $data->name,
+            'category_id'  => $data->category_id,
+            'product_type' => $data->product_type->value,
+            'unit'         => $data->unit,
+            'status'       => $data->status->value,
         ]);
 
         return $product;

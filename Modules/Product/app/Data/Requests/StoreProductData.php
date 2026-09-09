@@ -3,8 +3,8 @@
 namespace Modules\Product\Data\Requests;
 
 use Illuminate\Validation\Rule;
-use Modules\Product\Enums\ProductCategoryType;
 use Modules\Product\Enums\ProductStatus;
+use Modules\Product\Enums\ProductType;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -23,10 +23,10 @@ class StoreProductData extends Data
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
-        #[Nullable]
-        public readonly ?string $brand_id,
+        #[Required]
+        public readonly string $category_id,
 
-        public readonly ProductCategoryType $category_type,
+        public readonly ProductType $product_type,
 
         #[Required, StringType, Max(30)]
         public readonly string $unit,
@@ -41,8 +41,8 @@ class StoreProductData extends Data
                 'required', 'string', 'max:100',
                 Rule::unique('products', 'sku'),
             ],
-            'brand_id' => ['nullable', Rule::exists('brands', 'id')],
-            'category_type' => ['required', Rule::enum(ProductCategoryType::class)],
+            'category_id'  => ['required', Rule::exists('categories', 'id')],
+            'product_type' => ['required', Rule::enum(ProductType::class)],
         ];
     }
 
@@ -61,10 +61,11 @@ class StoreProductData extends Data
             'name.string'   => 'Tên sản phẩm không hợp lệ.',
             'name.max'      => 'Tên sản phẩm không được vượt quá 255 ký tự.',
 
-            'brand_id.exists' => 'Thương hiệu không hợp lệ.',
+            'category_id.required' => 'Vui lòng chọn nhóm thực phẩm.',
+            'category_id.exists'   => 'Nhóm thực phẩm không hợp lệ.',
 
-            'category_type.required' => 'Vui lòng chọn ngành hàng.',
-            'category_type.enum'     => 'Ngành hàng không hợp lệ.',
+            'product_type.required' => 'Vui lòng chọn loại sản phẩm.',
+            'product_type.enum'     => 'Loại sản phẩm không hợp lệ.',
 
             'unit.required' => 'Vui lòng nhập đơn vị tính.',
             'unit.string'   => 'Đơn vị tính không hợp lệ.',

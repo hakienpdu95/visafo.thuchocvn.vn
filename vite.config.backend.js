@@ -74,6 +74,7 @@ const JS_OUTPUT = {
   'warehouse':            'assets/modules/warehouse.[hash].js',
   'compliance':           'assets/modules/compliance.[hash].js',
   'employee':             'assets/modules/employee.[hash].js',
+  'contract':             'assets/modules/contract.[hash].js',
 };
 
 /** CSS asset name → output path.
@@ -96,6 +97,7 @@ const CSS_OUTPUT = {
   'vendor.css':               'assets/modules/vendor.[hash].css',
   'product.css':              'assets/modules/product.[hash].css',
   'warehouse.css':            'assets/modules/warehouse.[hash].css',
+  'contract.css':             'assets/modules/contract.[hash].css',
 };
 
 // ─── Module input entries ─────────────────────────────────────────────
@@ -123,6 +125,9 @@ const MODULE_ENTRIES = [
   'Modules/Compliance/resources/assets/js/compliance.js',
   // Employee
   'Modules/Employee/resources/assets/js/employee.js',
+  // Contract
+  'Modules/Contract/resources/assets/sass/contract.scss',
+  'Modules/Contract/resources/assets/js/contract.js',
 ];
 
 // ─────────────────────────────────────────────────────────────────────

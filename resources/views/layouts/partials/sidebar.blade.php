@@ -39,7 +39,7 @@
                 "phẳng hóa" thành 3 module cấp 1 độc lập, không còn gộp chung "Dữ liệu &
                 Sản phẩm" và không còn link hành động ("Thêm...") trên sidebar — các nút
                 Thêm mới đã có sẵn trên chính trang Index tương ứng (products/vendors/
-                brands/document-master-types index.blade.php, góc trên bên phải).
+                document-master-types index.blade.php, góc trên bên phải).
             --}}
 
             {{-- 1. Sản phẩm (Danh mục cốt lõi) — flat link, không dropdown --}}
@@ -51,10 +51,10 @@
             </a>
             @endcan
 
-            {{-- 2. Đối tác cung ứng (Nhà cung cấp + Thương hiệu) --}}
-            @canany(['vendor.view', 'product.manage'])
-            <details {{ request()->routeIs('backend.vendors.*', 'backend.brands.*') ? 'open' : '' }}>
-                <summary class="nav-summary {{ request()->routeIs('backend.vendors.*', 'backend.brands.*') ? 'active' : '' }}">
+            {{-- 2. Đối tác cung ứng (Nhà cung cấp + Hợp đồng + Hàng hóa NCC) --}}
+            @canany(['vendor.view', 'contract.view', 'product.view'])
+            <details {{ request()->routeIs('backend.vendors.*', 'backend.contracts.*', 'backend.partner-products.*') ? 'open' : '' }}>
+                <summary class="nav-summary {{ request()->routeIs('backend.vendors.*', 'backend.contracts.*', 'backend.partner-products.*') ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h18v4H3V3zm2 4h14v14H5V7zm3 4h8m-8 4h5"/></svg>
                     <span class="nav-label">Đối tác cung ứng</span>
                     <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
@@ -63,8 +63,11 @@
                     @can('vendor.view')
                     <a href="{{ route('backend.vendors.index') }}" class="sub-link {{ request()->routeIs('backend.vendors.*') ? 'active' : '' }}">Nhà cung cấp</a>
                     @endcan
-                    @can('product.manage')
-                    <a href="{{ route('backend.brands.index') }}" class="sub-link {{ request()->routeIs('backend.brands.*') ? 'active' : '' }}">Thương hiệu</a>
+                    @can('contract.view')
+                    <a href="{{ route('backend.contracts.index') }}" class="sub-link {{ request()->routeIs('backend.contracts.*') ? 'active' : '' }}">Hợp đồng</a>
+                    @endcan
+                    @can('product.view')
+                    <a href="{{ route('backend.partner-products.index') }}" class="sub-link {{ request()->routeIs('backend.partner-products.*') ? 'active' : '' }}">Hàng hóa NCC</a>
                     @endcan
                 </div>
             </details>

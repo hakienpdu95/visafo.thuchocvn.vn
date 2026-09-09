@@ -2,7 +2,8 @@
 
 namespace Modules\Sapo\Support;
 
-use Modules\Product\Enums\ProductCategoryType;
+use Modules\Product\Enums\ProductType;
+use Modules\Product\Models\Category;
 use Modules\Product\Models\Product;
 
 /**
@@ -29,9 +30,9 @@ class SapoProductMapper
             'image_url'       => $product['image']['src'] ?? null,
         ];
 
-        // updateOrCreate không phù hợp ở đây: cột category_type/unit là NOT NULL không có
-        // default, nhưng Sapo không trả về 2 trường này — chỉ nên gán giá trị mặc định lúc
-        // tạo mới, tránh ghi đè category_type/unit đã được người dùng chỉnh tay sau đó.
+        // updateOrCreate không phù hợp ở đây: cột category_id/product_type/unit là NOT NULL
+        // không có default, nhưng Sapo không trả về các trường này — chỉ nên gán giá trị mặc
+        // định lúc tạo mới, tránh ghi đè giá trị đã được người dùng chỉnh tay sau đó.
         $item = Product::where('sapo_variant_id', (string) $variant['id'])->first();
 
         if ($item) {
@@ -42,7 +43,10 @@ class SapoProductMapper
 
         return Product::create($attributes + [
             'sapo_variant_id' => (string) $variant['id'],
-            'category_type'   => ProductCategoryType::ConsumerGoods->value,
+            // Sapo không trả về nhóm thực phẩm/bản chất hàng — mặc định hàng bao gói sẵn
+            // mua về bán lại qua POS, người dùng chỉnh tay sau nếu cần.
+            'category_id'     => Category::where('code', 'prepackaged_food')->value('id'),
+            'product_type'    => ProductType::TradingGood->value,
             'unit'            => 'Cái',
             'status'          => 'active',
         ]);

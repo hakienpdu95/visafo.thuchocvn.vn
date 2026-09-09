@@ -3,10 +3,11 @@
 
 @section('content')
 <div x-data="productListPage({{ Js::from([
-    'apiUrl'        => route('backend.api.products'),
-    'categoryTypes' => $categoryTypes,
-    'statuses'      => $statuses,
-    'canDelete'     => auth()->user()->can('delete', new \Modules\Product\Models\Product),
+    'apiUrl'       => route('backend.api.products'),
+    'categories'   => $categories,
+    'productTypes' => $productTypes,
+    'statuses'     => $statuses,
+    'canDelete'    => auth()->user()->can('delete', new \Modules\Product\Models\Product),
 ]) }})">
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -84,9 +85,9 @@
                     <label class="label py-0.5">
                         <span class="label-text text-xs font-medium">Ngành hàng</span>
                     </label>
-                    <select x-model="filters.category_type" @change="onFilterChange()" class="select select-sm select-bordered w-full">
+                    <select x-model="filters.category_id" @change="onFilterChange()" class="select select-sm select-bordered w-full">
                         <option value="">Tất cả</option>
-                        @foreach($categoryTypes as $category)
+                        @foreach($categories as $category)
                         <option value="{{ $category['value'] }}">{{ $category['text'] }}</option>
                         @endforeach
                     </select>

@@ -3,8 +3,8 @@
 namespace Modules\Product\Data\Requests;
 
 use Illuminate\Validation\Rule;
-use Modules\Product\Enums\ProductCategoryType;
 use Modules\Product\Enums\ProductStatus;
+use Modules\Product\Enums\ProductType;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -23,10 +23,10 @@ class UpdateProductData extends Data
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
-        #[Nullable]
-        public readonly ?string $brand_id,
+        #[Required]
+        public readonly string $category_id,
 
-        public readonly ProductCategoryType $category_type,
+        public readonly ProductType $product_type,
 
         #[Required, StringType, Max(30)]
         public readonly string $unit,
@@ -44,8 +44,8 @@ class UpdateProductData extends Data
                 Rule::unique('products', 'sku')
                     ->ignore($currentId),
             ],
-            'brand_id' => ['nullable', Rule::exists('brands', 'id')],
-            'category_type' => ['required', Rule::enum(ProductCategoryType::class)],
+            'category_id'  => ['required', Rule::exists('categories', 'id')],
+            'product_type' => ['required', Rule::enum(ProductType::class)],
         ];
     }
 

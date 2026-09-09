@@ -9,7 +9,6 @@ use Modules\Compliance\Enums\WarningStatus;
 use Modules\Compliance\Models\ComplianceWarning;
 use Modules\Employee\Models\Employee;
 use Modules\Product\Enums\ComplianceStatus;
-use Modules\Product\Enums\ProductCategoryType;
 use Modules\Product\Models\Product;
 use Modules\Vendor\Enums\VendorCertificateType;
 use Modules\Vendor\Models\Vendor;
@@ -54,9 +53,7 @@ class ScanComplianceWarningsCommand extends Command
             ->get();
 
         foreach ($products as $product) {
-            $threshold = $product->category_type === ProductCategoryType::Cosmetic
-                ? (int) config('compliance.thresholds.product_compliance_cosmetic_days')
-                : (int) config('compliance.thresholds.product_compliance_default_days');
+            $threshold = (int) config('compliance.thresholds.product_compliance_default_days');
 
             foreach ($product->compliances as $compliance) {
                 $daysRemaining = $this->daysRemaining($compliance->expiration_date);

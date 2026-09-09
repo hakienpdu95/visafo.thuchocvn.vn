@@ -17,11 +17,11 @@ class ProductApiController extends Controller
         $this->authorize('viewAny', Product::class);
 
         $validated = $request->validate([
-            'page'          => ['nullable', 'integer', 'min:1'],
-            'size'          => ['nullable', 'integer', 'min:5', 'max:100'],
-            'search'        => ['nullable', 'string', 'max:200'],
-            'category_type' => ['nullable', 'string'],
-            'status'        => ['nullable', 'string'],
+            'page'        => ['nullable', 'integer', 'min:1'],
+            'size'        => ['nullable', 'integer', 'min:5', 'max:100'],
+            'search'      => ['nullable', 'string', 'max:200'],
+            'category_id' => ['nullable', 'string'],
+            'status'      => ['nullable', 'string'],
         ]);
 
         $sortRaw   = $request->input('sort.0');
@@ -29,13 +29,13 @@ class ProductApiController extends Controller
         $sortDir   = is_array($sortRaw) && ($sortRaw['dir'] ?? '') === 'asc' ? 'asc' : 'desc';
 
         $query = new ListProductsQuery(
-            page:         max(1, (int) ($validated['page'] ?? 1)),
-            perPage:      min(100, max(5, (int) ($validated['size'] ?? 25))),
-            sortField:    $sortField,
-            sortDir:      $sortDir,
-            search:       $validated['search'] ?? null,
-            categoryType: $validated['category_type'] ?? null,
-            status:       $validated['status'] ?? null,
+            page:       max(1, (int) ($validated['page'] ?? 1)),
+            perPage:    min(100, max(5, (int) ($validated['size'] ?? 25))),
+            sortField:  $sortField,
+            sortDir:    $sortDir,
+            search:     $validated['search'] ?? null,
+            categoryId: $validated['category_id'] ?? null,
+            status:     $validated['status'] ?? null,
         );
 
         $paginator = $handler->handle($query);

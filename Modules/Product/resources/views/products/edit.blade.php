@@ -55,7 +55,7 @@
                         <input type="text" name="name" value="{{ old('name', $product->name) }}"
                                data-req="Vui lòng nhập tên sản phẩm"
                                class="input input-bordered input-sm w-full @error('name') input-error @enderror"
-                               placeholder="VD: Sữa rửa mặt dịu nhẹ cho bé" autofocus>
+                               placeholder="VD: Thịt lợn nạc mông, Suất ăn bán trú..." autofocus>
                         @error('name')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
@@ -87,51 +87,50 @@
 
                     </div>
 
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5">
+                            <span class="label-text font-medium">Đơn vị tính <span class="text-error">*</span></span>
+                        </label>
+                        <input type="text" name="unit" value="{{ old('unit', $product->unit) }}"
+                               data-req="Vui lòng nhập đơn vị tính"
+                               data-val-maxlength="30"
+                               class="input input-bordered input-sm w-full @error('unit') input-error @enderror"
+                               placeholder="VD: Hộp, Bịch, Cái..." maxlength="30">
+                        @error('unit')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <div class="form-control">
                             <label class="label py-0 pb-1.5">
-                                <span class="label-text font-medium">Thương hiệu</span>
-                                <span class="label-text-alt text-xs text-base-content/40">Tuỳ chọn</span>
+                                <span class="label-text font-medium">Ngành hàng <span class="text-error">*</span></span>
                             </label>
-                            <select id="ts-brand_id" name="brand_id"
-                                    class="select select-bordered select-sm w-full ts-init @error('brand_id') select-error @enderror"
-                                    data-ts-placeholder="— Không có —">
-                                <option value="">— Không có —</option>
-                                @foreach($brands as $brand)
-                                <option value="{{ $brand->id }}" @selected(old('brand_id', $product->brand_id) === $brand->id)>{{ $brand->name }}</option>
+                            <select id="ts-category_id" name="category_id"
+                                    class="select select-bordered select-sm w-full ts-init @error('category_id') select-error @enderror"
+                                    data-ts-placeholder="— Chọn nhóm thực phẩm —"
+                                    data-req="Vui lòng chọn nhóm thực phẩm">
+                                @foreach($categories as $category)
+                                <option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) === $category->id)>{{ $category->name }}</option>
                                 @endforeach
                             </select>
-                            @error('brand_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                            @error('category_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
                         <div class="form-control">
                             <label class="label py-0 pb-1.5">
-                                <span class="label-text font-medium">Đơn vị tính <span class="text-error">*</span></span>
+                                <span class="label-text font-medium">Loại sản phẩm <span class="text-error">*</span></span>
                             </label>
-                            <input type="text" name="unit" value="{{ old('unit', $product->unit) }}"
-                                   data-req="Vui lòng nhập đơn vị tính"
-                                   data-val-maxlength="30"
-                                   class="input input-bordered input-sm w-full @error('unit') input-error @enderror"
-                                   placeholder="VD: Hộp, Bịch, Cái..." maxlength="30">
-                            @error('unit')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                            <select id="ts-product_type" name="product_type"
+                                    class="select select-bordered select-sm w-full ts-init @error('product_type') select-error @enderror"
+                                    data-ts-placeholder="— Chọn loại sản phẩm —"
+                                    data-req="Vui lòng chọn loại sản phẩm">
+                                @foreach(\Modules\Product\Enums\ProductType::cases() as $type)
+                                <option value="{{ $type->value }}" @selected(old('product_type', $product->product_type->value) === $type->value)>{{ $type->label() }}</option>
+                                @endforeach
+                            </select>
+                            @error('product_type')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
-                    </div>
-
-                    <div class="form-control">
-                        <label class="label py-0 pb-1.5">
-                            <span class="label-text font-medium">Ngành hàng <span class="text-error">*</span></span>
-                        </label>
-                        <select id="ts-category_type" name="category_type"
-                                class="select select-bordered select-sm w-full ts-init @error('category_type') select-error @enderror"
-                                data-ts-placeholder="— Chọn ngành hàng —"
-                                data-req="Vui lòng chọn ngành hàng">
-                            @foreach(\Modules\Product\Enums\ProductCategoryType::cases() as $category)
-                            <option value="{{ $category->value }}" @selected(old('category_type', $product->category_type->value) === $category->value)>{{ $category->label() }}</option>
-                            @endforeach
-                        </select>
-                        @error('category_type')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
                 </div>

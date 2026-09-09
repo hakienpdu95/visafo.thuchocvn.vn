@@ -26,13 +26,10 @@ function buildColumns(canDelete) {
             },
         },
         {
-            title: 'Thương hiệu', field: 'brand_name', minWidth: 150, sorter: 'string',
-            formatter(cell) {
-                return esc(cell.getValue()) || '<span class="text-base-content/25 text-xs">—</span>';
-            },
+            title: 'Ngành hàng', field: 'category_name', minWidth: 160, headerSort: false,
         },
         {
-            title: 'Ngành hàng', field: 'category_type_label', minWidth: 160, headerSort: false,
+            title: 'Loại sản phẩm', field: 'product_type_label', minWidth: 140, headerSort: false,
         },
         {
             title: 'Hồ sơ pháp lý gần nhất', field: 'compliance_document_name', minWidth: 220, headerSort: false,
@@ -147,10 +144,10 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.data('productListPage', (serverData = {}) => {
         const {
-            apiUrl        = '',
-            categoryTypes = [],
-            statuses      = [],
-            canDelete     = false,
+            apiUrl     = '',
+            categories = [],
+            statuses   = [],
+            canDelete  = false,
         } = serverData;
 
         const COLUMNS = buildColumns(canDelete);
@@ -158,7 +155,7 @@ document.addEventListener('alpine:init', () => {
         let tableInst = null;
 
         return {
-            filters: { search: '', category_type: '', status: '' },
+            filters: { search: '', category_id: '', status: '' },
             hiddenCols: [],
 
             get toggleableCols() {
@@ -169,15 +166,15 @@ document.addEventListener('alpine:init', () => {
 
             get hasFilters() {
                 const f = this.filters;
-                return !!(f.search || f.category_type || f.status);
+                return !!(f.search || f.category_id || f.status);
             },
 
             get activeChips() {
                 const chips = [], f = this.filters;
                 if (f.search) chips.push({ key: 'search', label: 'Tìm: ' + f.search });
-                if (f.category_type) {
-                    const c = categoryTypes.find(x => x.value === f.category_type);
-                    chips.push({ key: 'category_type', label: c ? c.text : f.category_type });
+                if (f.category_id) {
+                    const c = categories.find(x => x.value === f.category_id);
+                    chips.push({ key: 'category_id', label: c ? c.text : f.category_id });
                 }
                 if (f.status) {
                     const st = statuses.find(s => s.value === f.status);
@@ -200,9 +197,9 @@ document.addEventListener('alpine:init', () => {
                     ajaxConfig: { headers: { 'X-Requested-With': 'XMLHttpRequest' } },
                     ajaxParams() {
                         const p = {}, f = self.filters;
-                        if (f.search)        p.search        = f.search;
-                        if (f.category_type) p.category_type = f.category_type;
-                        if (f.status)         p.status        = f.status;
+                        if (f.search)      p.search      = f.search;
+                        if (f.category_id) p.category_id = f.category_id;
+                        if (f.status)      p.status      = f.status;
                         return p;
                     },
                     ajaxResponse: (_u, _p, res) => res,
@@ -246,16 +243,16 @@ document.addEventListener('alpine:init', () => {
 
             loadState() {
                 const p = new URLSearchParams(location.search);
-                if (p.has('q'))   this.filters.search        = p.get('q');
-                if (p.has('cat')) this.filters.category_type = p.get('cat');
-                if (p.has('st'))  this.filters.status        = p.get('st');
+                if (p.has('q'))   this.filters.search      = p.get('q');
+                if (p.has('cat')) this.filters.category_id = p.get('cat');
+                if (p.has('st'))  this.filters.status      = p.get('st');
             },
 
             saveState() {
                 const p = new URLSearchParams(), f = this.filters;
-                if (f.search)        p.set('q',   f.search);
-                if (f.category_type) p.set('cat', f.category_type);
-                if (f.status)        p.set('st',  f.status);
+                if (f.search)      p.set('q',   f.search);
+                if (f.category_id) p.set('cat', f.category_id);
+                if (f.status)      p.set('st',  f.status);
                 const qs = p.toString();
                 history.replaceState(null, '', qs ? '?' + qs : location.pathname);
             },
@@ -265,15 +262,15 @@ document.addEventListener('alpine:init', () => {
             clearSearch()    { this.filters.search = ''; this.saveState(); this.refresh(); },
 
             removeChip(key) {
-                if (key === 'search')        this.filters.search = '';
-                if (key === 'category_type') this.filters.category_type = '';
-                if (key === 'status')        this.filters.status = '';
+                if (key === 'search')      this.filters.search = '';
+                if (key === 'category_id') this.filters.category_id = '';
+                if (key === 'status')      this.filters.status = '';
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
-                this.filters = { search: '', category_type: '', status: '' };
+                this.filters = { search: '', category_id: '', status: '' };
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

@@ -24,6 +24,11 @@ class DocumentMasterTypeSeeder extends Seeder
         $this->command?->info('  ✓ document_master_types seeded: ' . count($definitions) . ' loại giấy tờ ATTP bếp ăn bán trú.');
     }
 
+    /**
+     * Ranh giới kiến trúc: bảng này CHỈ quản lý Giấy phép/Chứng nhận/Chứng chỉ/Sổ sách.
+     * Hợp đồng và phụ lục hợp đồng thuộc về Module Contract (bảng `contracts` +
+     * `contract_types`) — không seed bất kỳ loại hợp đồng nào ở đây.
+     */
     private function definitions(): array
     {
         return [
@@ -44,14 +49,6 @@ class DocumentMasterTypeSeeder extends Seeder
                 'is_required_expiry_date'  => true,
                 'default_validity_months'  => 36,
             ],
-            [
-                'code'                     => 'facility_contract',
-                'name'                     => 'Hợp đồng cung cấp suất ăn/thực phẩm',
-                'document_group'           => DocumentGroupType::LegalFacility->value,
-                'is_required_issue_date'   => true,
-                'is_required_expiry_date'  => true,
-                'default_validity_months'  => 12,
-            ],
 
             // Nhóm 2: Hồ sơ nhân viên
             [
@@ -71,10 +68,18 @@ class DocumentMasterTypeSeeder extends Seeder
                 'default_validity_months'  => 36,
             ],
 
-            // Nhóm 3: Hồ sơ nguồn gốc (Truy xuất)
+            // Nhóm 3: Hồ sơ nguồn gốc (Truy xuất) — phía Nhà cung cấp
             [
-                'code'                     => 'supplier_brc',
-                'name'                     => 'Giấy phép kinh doanh (NCC)',
+                'code'                     => 'supplier_business_registration',
+                'name'                     => 'Giấy chứng nhận đăng ký kinh doanh / ĐKKD',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'default_validity_months'  => null,
+            ],
+            [
+                'code'                     => 'personal_id_card',
+                'name'                     => 'Căn cước công dân (hộ kinh doanh cá thể)',
                 'document_group'           => DocumentGroupType::Traceability->value,
                 'is_required_issue_date'   => true,
                 'is_required_expiry_date'  => false,
@@ -83,6 +88,14 @@ class DocumentMasterTypeSeeder extends Seeder
             [
                 'code'                     => 'supplier_attp',
                 'name'                     => 'Giấy chứng nhận cơ sở đủ điều kiện ATTP (NCC)',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 36,
+            ],
+            [
+                'code'                     => 'supplier_commitment',
+                'name'                     => 'Bản cam kết bảo đảm an toàn thực phẩm (Phía NCC)',
                 'document_group'           => DocumentGroupType::Traceability->value,
                 'is_required_issue_date'   => true,
                 'is_required_expiry_date'  => true,

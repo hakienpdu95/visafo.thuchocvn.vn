@@ -83,6 +83,8 @@ class RolePermissionSeeder extends Seeder
 
                 P::VENDOR_VIEW->value,
 
+                P::CONTRACT_VIEW->value,
+
                 P::PRODUCT_VIEW->value,
 
                 P::WAREHOUSE_VIEW->value,
@@ -117,6 +119,9 @@ class RolePermissionSeeder extends Seeder
 
                 P::VENDOR_VIEW->value,
                 P::VENDOR_MANAGE->value,
+
+                P::CONTRACT_VIEW->value,
+                P::CONTRACT_MANAGE->value,
 
                 P::PRODUCT_VIEW->value,
                 P::PRODUCT_MANAGE->value,
@@ -198,6 +203,9 @@ class RolePermissionSeeder extends Seeder
 
                 P::VENDOR_VIEW->value,
                 P::VENDOR_MANAGE->value,
+
+                P::CONTRACT_VIEW->value,
+                P::CONTRACT_MANAGE->value,
 
                 P::PRODUCT_VIEW->value,
                 P::PRODUCT_MANAGE->value,

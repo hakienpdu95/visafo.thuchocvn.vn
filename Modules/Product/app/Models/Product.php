@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\Product\Enums\ComplianceStatus;
-use Modules\Product\Enums\ProductCategoryType;
 use Modules\Product\Enums\ProductStatus;
+use Modules\Product\Enums\ProductType;
 
 class Product extends TenantAwareModel
 {
@@ -16,8 +16,8 @@ class Product extends TenantAwareModel
         'sku',
         'barcode',
         'name',
-        'brand_id',
-        'category_type',
+        'category_id',
+        'product_type',
         'unit',
         'external_product_id',
         'sapo_product_id',
@@ -29,19 +29,24 @@ class Product extends TenantAwareModel
     protected function casts(): array
     {
         return [
-            'category_type' => ProductCategoryType::class,
-            'status'        => ProductStatus::class,
+            'product_type' => ProductType::class,
+            'status'       => ProductStatus::class,
         ];
     }
 
-    public function brand(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(Brand::class);
+        return $this->belongsTo(Category::class);
     }
 
     public function compliances(): HasMany
     {
         return $this->hasMany(ProductCompliance::class);
+    }
+
+    public function partnerProducts(): HasMany
+    {
+        return $this->hasMany(PartnerProduct::class);
     }
 
     public function activeCompliances(): HasMany

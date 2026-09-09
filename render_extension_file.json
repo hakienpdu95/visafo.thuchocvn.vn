@@ -27,8 +27,7 @@
         "__index///index///__///__///__///level,created_at|idx_level///__",
         "__index///index///__///__///__///module,action,created_at|idx_module_action///__",
         "__index///index///__///__///__///request_id|idx_request///__",
-        "ulid///ulid///__///_NULL///NULL///__///Tenant context — NULL khi CLI/system job",
-        "__index///index///__///__///__///organization_id,created_at|idx_org_created///__"
+        "ulid///ulid///__///_NULL///NULL///__///Tenant context — NULL khi CLI/system job"
     ],
     [
         "media///add///__///",

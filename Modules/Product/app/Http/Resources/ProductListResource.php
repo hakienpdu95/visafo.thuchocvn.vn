@@ -9,9 +9,9 @@ class ProductListResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $status   = $this->status;
-        $category = $this->category_type;
-        $cert     = $this->latestCompliance;
+        $status      = $this->status;
+        $productType = $this->product_type;
+        $cert        = $this->latestCompliance;
 
         return [
             'id'      => $this->id,
@@ -19,10 +19,11 @@ class ProductListResource extends JsonResource
             'barcode' => $this->barcode,
             'name'    => $this->name,
 
-            'brand_name' => $this->brand?->name,
+            'category_id'   => $this->category_id,
+            'category_name' => $this->category?->name,
 
-            'category_type_value' => $category->value,
-            'category_type_label' => $category->label(),
+            'product_type_value' => $productType->value,
+            'product_type_label' => $productType->label(),
 
             'status_value' => $status->value,
             'status_label' => $status->label(),
