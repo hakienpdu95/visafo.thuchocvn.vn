@@ -50,13 +50,13 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
     // ── Placeholder routes (modules chưa triển khai) ──────────────────
     // products.index/products.create: đã triển khai thật ở Modules/Product/routes/web.php
+    // customers.*: đã triển khai thật ở Modules/Customer/routes/web.php
+    // categories.*: đã triển khai thật ở Modules/Product/routes/web.php
     Route::get('/orders',           fn () => abort(503, 'Module đang phát triển'))->name('orders.index');
-    Route::get('/customers',        fn () => abort(503, 'Module đang phát triển'))->name('customers.index');
-    Route::get('/customers/create', fn () => abort(503, 'Module đang phát triển'))->name('customers.create');
-    Route::get('/categories',       fn () => abort(503, 'Module đang phát triển'))->name('categories.index');
-    Route::get('/categories/create',fn () => abort(503, 'Module đang phát triển'))->name('categories.create');
     Route::get('/settings',         fn () => abort(503, 'Module đang phát triển'))->name('settings.index');
     Route::get('/reports',          fn () => abort(503, 'Module đang phát triển'))->name('reports.index');
+    Route::get('/document-repository', fn () => abort(503, 'Module đang phát triển'))->name('document-repository.index');
+    Route::get('/readiness-check',     fn () => abort(503, 'Module đang phát triển'))->name('readiness-check.index');
 
     // ── Notification Center ───────────────────────────────────────────────
     Route::prefix('notifications')->name('notifications.')->group(function () {

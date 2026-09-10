@@ -21,7 +21,7 @@ return new class extends Migration
             }
 
             if (!Schema::hasColumn('products', 'category_id')) {
-                $table->foreignUlid('category_id')->after('brand_id')->constrained('categories')->restrictOnDelete();
+                $table->foreignUlid('category_id')->nullable()->after('brand_id')->constrained('categories')->restrictOnDelete();
             }
 
             if (!Schema::hasColumn('products', 'product_type')) {

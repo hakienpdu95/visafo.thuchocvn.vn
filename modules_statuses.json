@@ -4,10 +4,8 @@
     "ActivityLog": true,
     "Vendor": true,
     "Product": true,
-    "Warehouse": true,
-    "Sapo": true,
-    "Recall": true,
     "Compliance": true,
     "Employee": true,
-    "Contract": true
+    "Contract": true,
+    "Customer": true
 }

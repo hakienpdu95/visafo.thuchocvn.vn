@@ -83,6 +83,8 @@ class RolePermissionSeeder extends Seeder
 
                 P::VENDOR_VIEW->value,
 
+                P::CUSTOMER_VIEW->value,
+
                 P::CONTRACT_VIEW->value,
 
                 P::PRODUCT_VIEW->value,
@@ -101,12 +103,15 @@ class RolePermissionSeeder extends Seeder
             ],
 
             // ─────────────────────────────────────────────────────────
-            // Sales Team — AI assist
+            // Sales Team — AI assist + Khách hàng B2B (pic_id chăm sóc khách hàng)
             // ─────────────────────────────────────────────────────────
             RoleEnum::SALES->value => [
                 P::SALES_AI_USE->value,
 
                 P::AI_COPILOT_USE->value,
+
+                P::CUSTOMER_VIEW->value,
+                P::CUSTOMER_MANAGE->value,
             ],
 
             // ─────────────────────────────────────────────────────────
@@ -119,6 +124,9 @@ class RolePermissionSeeder extends Seeder
 
                 P::VENDOR_VIEW->value,
                 P::VENDOR_MANAGE->value,
+
+                P::CUSTOMER_VIEW->value,
+                P::CUSTOMER_MANAGE->value,
 
                 P::CONTRACT_VIEW->value,
                 P::CONTRACT_MANAGE->value,
@@ -203,6 +211,9 @@ class RolePermissionSeeder extends Seeder
 
                 P::VENDOR_VIEW->value,
                 P::VENDOR_MANAGE->value,
+
+                P::CUSTOMER_VIEW->value,
+                P::CUSTOMER_MANAGE->value,
 
                 P::CONTRACT_VIEW->value,
                 P::CONTRACT_MANAGE->value,

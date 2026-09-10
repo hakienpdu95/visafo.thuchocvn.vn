@@ -1,9 +1,0 @@
-import './pages/batch-index.js';
-import './pages/inbound-receipt-index.js';
-import './pages/inbound-receipt-form.js';
-import './pages/retail-item-tag-index.js';
-import './pages/outbound-order-index.js';
-import './pages/outbound-order-form.js';
-import './pages/sapo-sync-log-index.js';
-import './pages/sapo-product-sync-log-index.js';
-import './pages/tag-roll-index.js';

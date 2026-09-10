@@ -9,8 +9,6 @@ use Modules\ActivityLog\Core\LogEntryBuilder;
 use Modules\ActivityLog\Observers\AuditableObserver;
 use Modules\Product\Models\ProductCompliance;
 use Modules\Vendor\Models\VendorCertificate;
-use Modules\Warehouse\Models\Batch;
-use Modules\Warehouse\Models\OutboundOrder;
 
 class ActivityLogServiceProvider extends ServiceProvider
 {
@@ -41,10 +39,8 @@ class ActivityLogServiceProvider extends ServiceProvider
 
     private function registerAuditObservers(): void
     {
-        Batch::observe(AuditableObserver::class);
         ProductCompliance::observe(AuditableObserver::class);
         VendorCertificate::observe(AuditableObserver::class);
-        OutboundOrder::observe(AuditableObserver::class);
     }
 
     private function registerSchedule(): void

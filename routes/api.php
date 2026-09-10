@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\UserOptionsController;
+use App\Http\Controllers\Api\WardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum'])
     ->get('v1/users/options', UserOptionsController::class)
     ->name('api.users.options');
+
+Route::middleware(['auth:sanctum'])
+    ->get('provinces/{provinceCode}/wards', [WardController::class, 'forProvince'])
+    ->name('api.provinces.wards');
 
 Route::middleware(['auth:sanctum', 'throttle:notifications'])
     ->prefix('notifications')

@@ -23,6 +23,7 @@ return [
         // Users: View
         P::USERS_VIEW->value,
         P::VENDOR_VIEW->value,
+        P::CUSTOMER_VIEW->value,
         P::CONTRACT_VIEW->value,
         P::PRODUCT_VIEW->value,
         P::WAREHOUSE_VIEW->value,
@@ -39,6 +40,9 @@ return [
         P::SALES_AI_USE->value,
         // AI Copilot: Use
         P::AI_COPILOT_USE->value,
+        // Khách hàng B2B: Full — Sales là NV phụ trách (pic_id) chăm sóc khách hàng
+        P::CUSTOMER_VIEW->value,
+        P::CUSTOMER_MANAGE->value,
     ],
 
     R::OPS->value => [
@@ -53,6 +57,8 @@ return [
         P::AI_COPILOT_VIEW_USAGE->value,
         P::VENDOR_VIEW->value,
         P::VENDOR_MANAGE->value,
+        P::CUSTOMER_VIEW->value,
+        P::CUSTOMER_MANAGE->value,
         P::CONTRACT_VIEW->value,
         P::CONTRACT_MANAGE->value,
         P::PRODUCT_VIEW->value,
@@ -128,6 +134,8 @@ return [
         P::SYSTEM_CONFIG->value,
         P::VENDOR_VIEW->value,
         P::VENDOR_MANAGE->value,
+        P::CUSTOMER_VIEW->value,
+        P::CUSTOMER_MANAGE->value,
         P::CONTRACT_VIEW->value,
         P::CONTRACT_MANAGE->value,
         P::PRODUCT_VIEW->value,

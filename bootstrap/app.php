@@ -21,7 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'               => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-            'sapo.hmac'          => \Modules\Sapo\Http\Middleware\VerifySapoWebhookHmac::class,
         ]);
         // InjectRequestId phải chạy đầu tiên để tất cả request đều có X-Request-Id
         $middleware->prepend(\App\Http\Middleware\RemoveServerHeaders::class);

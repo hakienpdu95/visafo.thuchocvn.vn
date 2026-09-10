@@ -12,8 +12,6 @@ use Modules\Product\Enums\ComplianceStatus;
 use Modules\Product\Models\Product;
 use Modules\Vendor\Enums\VendorCertificateType;
 use Modules\Vendor\Models\Vendor;
-use Modules\Warehouse\Enums\BatchStatus;
-use Modules\Warehouse\Models\Batch;
 
 class ScanComplianceWarningsCommand extends Command
 {
@@ -29,13 +27,12 @@ class ScanComplianceWarningsCommand extends Command
         $vendorIds = $this->scanVendorCertificates();
         $this->resolveStale(WarningCategory::VendorCertificateExpiry, $vendorIds);
 
-        $batchIds = $this->scanBatches();
-        $this->resolveStale(WarningCategory::BatchNearExpiry, $batchIds);
+        $this->resolveStale(WarningCategory::BatchNearExpiry, []);
 
         $employeeRecordIds = $this->scanEmployeeHealthRecords();
         $this->resolveStale(WarningCategory::EmployeeHealthRecordExpiry, $employeeRecordIds);
 
-        $total = count($productIds) + count($vendorIds) + count($batchIds) + count($employeeRecordIds);
+        $total = count($productIds) + count($vendorIds) + count($employeeRecordIds);
         $this->info("Đã cập nhật {$total} cảnh báo đang hiệu lực.");
 
         return self::SUCCESS;
@@ -121,45 +118,6 @@ class ScanComplianceWarningsCommand extends Command
 
                 $activeIds[] = $certificate->id;
             }
-        }
-
-        return $activeIds;
-    }
-
-    /** @return string[] */
-    private function scanBatches(): array
-    {
-        $activeIds = [];
-        $threshold = (int) config('compliance.thresholds.batch_expiry_days');
-
-        $batches = Batch::withoutTenant()
-            ->where('status', BatchStatus::Available->value)
-            ->where('current_qty', '>', 0)
-            ->with(['product' => fn ($q) => $q->withoutTenant()])
-            ->get();
-
-        foreach ($batches as $batch) {
-            $daysRemaining = $this->daysRemaining($batch->exp_date);
-
-            if ($daysRemaining > $threshold) {
-                continue;
-            }
-
-            ComplianceWarning::withoutTenant()->updateOrCreate(
-                [
-                    'warnable_type' => 'batch',
-                    'warnable_id'   => $batch->id,
-                    'category'      => WarningCategory::BatchNearExpiry->value,
-                ],
-                [
-                    'title'           => "Lô {$batch->internal_batch_code} — {$batch->product->name}",
-                    'message'         => "Lô \"{$batch->internal_batch_code}\" của sản phẩm \"{$batch->product->name}\" (còn {$batch->current_qty} đơn vị) sẽ hết hạn vào {$batch->exp_date->format('d/m/Y')}.",
-                    'due_date'        => $batch->exp_date,
-                    'severity'        => $this->severity($daysRemaining)->value,
-                ],
-            );
-
-            $activeIds[] = $batch->id;
         }
 
         return $activeIds;

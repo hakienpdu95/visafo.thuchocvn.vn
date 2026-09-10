@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Modules\ActivityLog\Database\Seeders\ActivityLogPermissionsSeeder;
 use Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
 use Modules\Employee\Database\Seeders\DepartmentSeeder;
+use Modules\Product\Database\Seeders\CategorySeeder;
 use Modules\Product\Database\Seeders\DocumentMasterTypeSeeder;
 
 /**
@@ -49,6 +50,9 @@ class SystemDataSeeder extends Seeder
 
             // ── 5. Từ điển loại giấy tờ pháp lý (document_master_types) ──
             DocumentMasterTypeSeeder::class,
+
+            // ── 6. 6 nhóm thực phẩm chuẩn ATTP (categories) — Rule Engine ─
+            CategorySeeder::class,
 
             DepartmentSeeder::class,
         ]);

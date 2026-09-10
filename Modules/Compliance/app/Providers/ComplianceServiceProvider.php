@@ -11,7 +11,6 @@ use Modules\Compliance\Policies\ComplianceWarningPolicy;
 use Modules\Employee\Models\EmployeeHealthRecord;
 use Modules\Product\Models\ProductCompliance;
 use Modules\Vendor\Models\VendorCertificate;
-use Modules\Warehouse\Models\Batch;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class ComplianceServiceProvider extends ModuleServiceProvider
@@ -40,7 +39,6 @@ class ComplianceServiceProvider extends ModuleServiceProvider
         Relation::morphMap([
             'product_compliance'      => ProductCompliance::class,
             'vendor_certificate'      => VendorCertificate::class,
-            'batch'                   => Batch::class,
             'employee_health_record'  => EmployeeHealthRecord::class,
         ]);
 

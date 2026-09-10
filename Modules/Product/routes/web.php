@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Product\Http\Controllers\Api\DocumentMasterTypeApiController;
 use Modules\Product\Http\Controllers\Api\PartnerProductApiController;
 use Modules\Product\Http\Controllers\Api\ProductApiController;
+use Modules\Product\Http\Controllers\CategoryController;
 use Modules\Product\Http\Controllers\DocumentMasterTypeController;
 use Modules\Product\Http\Controllers\PartnerProductComplianceController;
 use Modules\Product\Http\Controllers\PartnerProductController;
@@ -19,6 +20,8 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
         ->name('products.compliances.destroy');
 
     Route::resource('document-master-types', DocumentMasterTypeController::class)->except(['show']);
+
+    Route::resource('categories', CategoryController::class)->except(['show']);
 
     Route::resource('partner-products', PartnerProductController::class);
 

@@ -279,16 +279,50 @@
         "__index///index///__///__///__///product_id,status|idx_retail_tag_product_status///__"
     ],
     [
-        "customers///__///__///Khách hàng — tối thiểu để liên kết đơn hàng đổ về từ Sapo",
-        "name///string///255///NOT_NULL///__///__///Tên khách hàng",
-        "phone///string///20///_NULL///NULL///->index()///Số điện thoại — khóa đối soát chính khi đồng bộ từ POS",
-        "email///string///150///_NULL///NULL///__///__",
-        "external_system///string///20///_NULL///NULL///->index()///Hệ thống nguồn — sapo | kiotviet",
-        "external_system_id///string///100///_NULL///NULL///->index()///ID khách hàng bên hệ thống POS",
+        "customers///__///__///Khách hàng B2B (trường học/bếp ăn/DN thương mại) — theo HD-02/HD-BCĐ",
+        "customer_code///string///50///_NULL///NULL///__///Mã khách hàng nội bộ",
+        "name///string///255///NOT_NULL///__///__///Tên pháp nhân ký hợp đồng (VD: Công ty CP Đầu tư Vinakim)",
+        "customer_group///string///30///NOT_NULL///__///->index()///kindergarten | high_school | industrial_canteen | trading_company",
+        "meal_model///string///30///NOT_NULL///__///->index()///cook_at_school | pre_cooked_meal | ingredient_supply",
+        "tax_code///string///20///_NULL///NULL///__///Mã số thuế pháp nhân",
+        "address///string///500///_NULL///NULL///__///Địa chỉ trụ sở/trường",
+        "province_code///char///2///_NULL///NULL///->references('province_code')->constrained('provinces')->nullOnDelete()///__",
+        "ward_code///char///5///_NULL///NULL///->references('ward_code')->constrained('wards')->nullOnDelete()///__",
+        "phone_number///string///20///_NULL///NULL///__///Điện thoại tổng đài",
+        "email///string///150///_NULL///NULL///__///Email tổng đài/hóa đơn",
+        "representative_name///string///100///_NULL///NULL///__///Người đại diện theo pháp luật",
+        "representative_title///string///100///_NULL///NULL///__///Chức danh người đại diện",
+        "representative_phone///string///20///_NULL///NULL///__///__",
+        "representative_email///string///100///_NULL///NULL///__///__",
+        "pic_id///unsignedBigInteger///__///_NULL///NULL///->constrained('employees')->onDelete('set null')///NV phụ trách (Sales/Account Manager)",
+        "status///string///20///NOT_NULL///'active'///->index()///active | inactive",
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
-        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm",
-        "__index///unique///__///__///__///phone|customers_phone_unique///__"
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "customer_contacts///__///__///Đầu mối liên hệ của khách hàng (kế toán, bếp trưởng, quản lý cơ sở...) — 1 khách hàng có nhiều đầu mối",
+        "customer_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('customers')->onDelete('cascade')///__",
+        "name///string///100///NOT_NULL///__///__///Họ và tên",
+        "title///string///100///_NULL///NULL///__///Chức vụ — VD: Kế toán, Bếp trưởng, Quản lý cơ sở",
+        "phone///string///20///_NULL///NULL///__///__",
+        "email///string///100///_NULL///NULL///__///__",
+        "note///string///255///_NULL///NULL///__///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật"
+    ],
+    [
+        "customer_delivery_points///__///__///Điểm giao hàng của khách hàng (multi-site) — VD: Marie Curie Cơ sở 1, Cơ sở 2",
+        "customer_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('customers')->onDelete('cascade')///__",
+        "site_name///string///150///NOT_NULL///__///__///Tên cơ sở/điểm giao hàng",
+        "address///string///500///NOT_NULL///__///__///Địa chỉ giao hàng",
+        "province_code///char///2///_NULL///NULL///->references('province_code')->constrained('provinces')->nullOnDelete()///__",
+        "ward_code///char///5///_NULL///NULL///->references('ward_code')->constrained('wards')->nullOnDelete()///__",
+        "receiver_name///string///100///_NULL///NULL///__///Người nhận hàng tại điểm giao",
+        "receiver_phone///string///20///_NULL///NULL///__///SĐT người nhận hàng",
+        "note///string///255///_NULL///NULL///__///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật"
     ],
     [
         "external_orders///__///__///Đơn hàng đồng bộ về từ hệ thống POS bên ngoài (Sapo/KiotViet)",
@@ -494,7 +528,6 @@
     ],
     [
         "contract_types///__///__///",
-        "ulid///ulid///__///NOT_NULL///__///__///__",
         "code///string///60///NOT_NULL///__///->unique()///framework_agreement | agricultural_offtake | spot_purchase | consignment",
         "name///string///255///NOT_NULL///__///__///Tên loại hợp đồng",
         "description///text///__///_NULL///NULL///__///__",
@@ -504,7 +537,6 @@
     ],
     [
         "contracts///__///__///",
-        "ulid///ulid///__///NOT_NULL///__///__///__",
         "vendor_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('vendors')->onDelete('restrict')///Nhà cung cấp ký hợp đồng",
         "contract_type_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('contract_types')->onDelete('restrict')///__",
         "contract_number///string///100///NOT_NULL///__///__///Số hợp đồng",
@@ -524,7 +556,6 @@
     ],
     [
         "partner_products///__///__///",
-        "ulid///ulid///__///NOT_NULL///__///__///__",
         "vendor_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('vendors')->onDelete('restrict')///NCC kê khai mặt hàng này",
         "product_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('products')->onDelete('restrict')///Ánh xạ tới danh mục chuẩn (master catalog) của Visafo",
         "vendor_sku///string///100///_NULL///NULL///__///Mã hàng nội bộ do NCC tự đặt",
@@ -539,7 +570,6 @@
     ],
     [
         "partner_product_compliances///__///__///",
-        "ulid///ulid///__///NOT_NULL///__///__///__",
         "partner_product_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('partner_products')->onDelete('cascade')///__",
         "document_type_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('document_master_types')->onDelete('restrict')///__",
         "document_number///string///150///NOT_NULL///__///__///Số tiếp nhận / số chứng nhận",
@@ -553,9 +583,10 @@
     ],
     [
         "categories///__///__///",
-        "ulid///ulid///__///NOT_NULL///__///__///__",
         "code///string///60///NOT_NULL///__///->unique()///fresh_food | processed_food | prepackaged_food | additives_spices | functional_fortified_food | beverages_water",
         "name///string///255///NOT_NULL///__///__///Tên nhóm thực phẩm",
+        "description///string///255///_NULL///NULL///__///__",
+        "is_active///boolean///__///NOT_NULL///true///->index()///__",
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
         "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"

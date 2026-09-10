@@ -70,8 +70,8 @@ const JS_OUTPUT = {
   'user':                 'assets/modules/user.[hash].js',
   'activity-log':           'assets/modules/activity-log.[hash].js',
   'vendor':               'assets/modules/vendor.[hash].js',
+  'customer':             'assets/modules/customer.[hash].js',
   'product':              'assets/modules/product.[hash].js',
-  'warehouse':            'assets/modules/warehouse.[hash].js',
   'compliance':           'assets/modules/compliance.[hash].js',
   'employee':             'assets/modules/employee.[hash].js',
   'contract':             'assets/modules/contract.[hash].js',
@@ -95,8 +95,8 @@ const CSS_OUTPUT = {
   'user.css':                 'assets/modules/user.[hash].css',
   'activity-log.css':           'assets/modules/activity-log.[hash].css',
   'vendor.css':               'assets/modules/vendor.[hash].css',
+  'customer.css':             'assets/modules/customer.[hash].css',
   'product.css':              'assets/modules/product.[hash].css',
-  'warehouse.css':            'assets/modules/warehouse.[hash].css',
   'contract.css':             'assets/modules/contract.[hash].css',
 };
 
@@ -115,12 +115,12 @@ const MODULE_ENTRIES = [
   // Vendor
   'Modules/Vendor/resources/assets/sass/vendor.scss',
   'Modules/Vendor/resources/assets/js/vendor.js',
+  // Customer
+  'Modules/Customer/resources/assets/sass/customer.scss',
+  'Modules/Customer/resources/assets/js/customer.js',
   // Product
   'Modules/Product/resources/assets/sass/product.scss',
   'Modules/Product/resources/assets/js/product.js',
-  // Warehouse
-  'Modules/Warehouse/resources/assets/sass/warehouse.scss',
-  'Modules/Warehouse/resources/assets/js/warehouse.js',
   // Compliance
   'Modules/Compliance/resources/assets/js/compliance.js',
   // Employee
