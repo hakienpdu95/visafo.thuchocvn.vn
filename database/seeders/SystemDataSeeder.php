@@ -5,10 +5,12 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Modules\ActivityLog\Database\Seeders\ActivityLogPermissionsSeeder;
 use Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
+use Modules\Customer\Database\Seeders\CustomerMasterDataSeeder;
 use Modules\Employee\Database\Seeders\DepartmentSeeder;
 use Modules\Product\Database\Seeders\CategorySeeder;
 use Modules\Product\Database\Seeders\DocumentMasterTypeSeeder;
 use Modules\Product\Database\Seeders\ProductMasterDataSeeder;
+use Modules\Vendor\Database\Seeders\VendorMasterDataSeeder;
 
 /**
  * Master Seeder — điểm khởi chạy duy nhất cho toàn bộ dữ liệu mặc định hệ thống.
@@ -60,6 +62,12 @@ class SystemDataSeeder extends Seeder
 
             // ── 7. Master data sản phẩm (datafiles/products_master_data.json) ─
             ProductMasterDataSeeder::class,
+
+            // ── 8. Master data nhà cung cấp (datafiles/vendors_master_data.json) ─
+            VendorMasterDataSeeder::class,
+
+            // ── 9. Master data khách hàng (datafiles/customers_master_data.json) ─
+            CustomerMasterDataSeeder::class,
 
             DepartmentSeeder::class,
         ]);

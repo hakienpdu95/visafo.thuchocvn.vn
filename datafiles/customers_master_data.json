@@ -1,0 +1,290 @@
+[
+  {
+    "customer_code": "3B",
+    "name": "CÔNG TY CỔ PHẦN THỰC PHẨM 3 BROTHERS",
+    "address": "Thôn Lương Nỗ, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0109186962"
+  },
+  {
+    "customer_code": "5F",
+    "name": "CÔNG TY TNHH 5F FOOD VIỆT NAM",
+    "address": "Số nhà 30, ngõ 3, thôn Phương Bảng, Xã Sơn Đồng, TP Hà Nội, Việt Nam.",
+    "tax_code": "0111328484"
+  },
+  {
+    "customer_code": "7F",
+    "name": "CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ VÀ SẢN XUẤT AN TÂM VIỆT",
+    "address": "Số nhà C1-83, Thôn Sơn Đông, Xã Sóc Sơn, TP Hà Nội, Việt Nam.",
+    "tax_code": "0110654090"
+  },
+  {
+    "customer_code": "ALAMBV",
+    "name": "Anh Lâm bếp BV",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "AN_PHAT",
+    "name": "Công ty CP TM DV thực phẩm sạch An Phát",
+    "address": "Hà Đông - Hà Nội",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "CANON_THANH_NGHIA",
+    "name": "CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ TỔNG HỢP THÀNH NGHĨA",
+    "address": "Số 17, phố Đoàn Trần Nghiệp, Phường Hai Bà Trưng, TP Hà Nội, Việt Nam.",
+    "tax_code": "0107512988"
+  },
+  {
+    "customer_code": "CHI_HA_RAU_CAI",
+    "name": "Chị Hà rau cải",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "CHI_HUONG__PHO_DUC_CHINH",
+    "name": "Chị Hương - 80 Phó Đức Chính",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "CHI_THUY__SUNGROUP",
+    "name": "CÔNG TY TNHH SẢN XUẤT & THƯƠNG MẠI SUNGROUP",
+    "address": "Nhà số 5 Khu nhà Vườn Vĩnh Hoàng, Phường Tương Mai, TP Hà Nội, Việt Nam.",
+    "tax_code": "0108110022"
+  },
+  {
+    "customer_code": "CONG_TY_CO_PHAN_TTC",
+    "name": "CÔNG TY CỔ PHẦN TTC",
+    "address": "CN6, KCN Phúc Yên, Phường Phúc Thắng, TP Phúc Yên, Tỉnh Vĩnh Phúc",
+    "tax_code": "2500514342"
+  },
+  {
+    "customer_code": "DAU_VONG_LA",
+    "name": "HTX Thanh niên Võng La,",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "DUNG_HA",
+    "name": "CÔNG TY CỔ PHẦN PHÁT TRIỂN DŨNG HÀ",
+    "address": "Tầng 1, Số 11 phố Kim Đồng, Phường Tương Mai, TP Hà Nội, Việt Nam.",
+    "tax_code": "0108783652"
+  },
+  {
+    "customer_code": "HAI_HIEN",
+    "name": "CÔNG TY TNHH CHẾ BIẾN THỰC PHẨM HẢI HIÊN",
+    "address": "Xóm chùa, xã Phúc Thịnh, TP Hà Nội, Việt Nam",
+    "tax_code": "0106318709"
+  },
+  {
+    "customer_code": "HHH",
+    "name": "HƯỜNG HƯNG HIỀN- đơn ngoài",
+    "address": "VISAFO",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "HOYA",
+    "name": "CÔNG TY TNHH HOYA GLASS DISK VIỆT NAM",
+    "address": "Lô J-3&4, khu công nghiệp Thăng Long, Xã Thiên Lộc, TP Hà Nội, Việt Nam.",
+    "tax_code": "0101579263"
+  },
+  {
+    "customer_code": "INDIA_GATE",
+    "name": "CÔNG TY TNHH INDIA GATE",
+    "address": "Số 15 Hàng Thùng, Phường Hoàn Kiếm, TP Hà Nội, Việt Nam.",
+    "tax_code": "0110349731"
+  },
+  {
+    "customer_code": "KH00001",
+    "name": "CÔNG TY CỔ PHẦN CÔNG NGHỆ ĐỒNG COPEX",
+    "address": "Thôn Viên Nội, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0108813748"
+  },
+  {
+    "customer_code": "KH00004",
+    "name": "Nhóm bếp Hạnh Phúc - Hạnh Phúc",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "KH00005",
+    "name": "Công Ty TNHH KYUNG BO VIỆT NAM",
+    "address": "Cụm công nghiệp Đan Phượng , xã Đan Phượng, huyện Đan Phượng, TP.HN, VN",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "KH00007",
+    "name": "CÔNG TY TNHH THỰC PHẨM CHẾ BIẾN KHÁNH AN",
+    "address": "Thôn 4, Xã Song Phương, Huyện Hoài Đức, Thành phố Hà Nội, Việt Nam",
+    "tax_code": "0109709059"
+  },
+  {
+    "customer_code": "KH00008",
+    "name": "CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ THẠCH BÀN",
+    "address": "Số 49, đường Thạch Bàn, Phường Thạch Bàn, Quận Long Biên, Thành phố Hà Nội, Việt Nam",
+    "tax_code": "0101255558"
+  },
+  {
+    "customer_code": "KH00014",
+    "name": "CÔNG TY CỔ PHẦN DỊCH VỤ VÀ GIẢI PHÁP CÔNG NGHỆ GIÁO DỤC PHX",
+    "address": "Tầng 12, Tòa A10 -  Đại học Phenikaa, đường Nguyễn Trác, Phường Dương Nội, TP Hà Nội, Việt Nam.",
+    "tax_code": "0109426678"
+  },
+  {
+    "customer_code": "KH00015",
+    "name": "Quầy bar",
+    "address": "P. Yên Nghĩa, Quận Hà Đông, Thành phố Hà Nội, Việt Nam",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "KH00019",
+    "name": "CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ KTL AN KHÁNH",
+    "address": "Phố Sa Đôi, Phường Phú Đô, Nam Từ Liêm, Hà Nội, Việt Nam",
+    "tax_code": "0109330013"
+  },
+  {
+    "customer_code": "KH00021",
+    "name": "TRUNG TÂM KỸ THUẬT ĐƯỜNG BỘ",
+    "address": "Số 108 Khương Trung, Phường Khương Trung, Quận Thanh Xuân, Thành phố Hà Nội, Việt Nam",
+    "tax_code": "0100104122"
+  },
+  {
+    "customer_code": "KH00022",
+    "name": "SOZA",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "KH00024",
+    "name": "Nhóm khách hàng Cty Việt An - VIỆT AN",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "KH00039",
+    "name": "Lại Đức Dũng ( Giam đốc )",
+    "address": "Xóm tây - Vân Nội",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "KH00040",
+    "name": "Trung đoàn 68",
+    "address": "Thắng Trí, Xã Minh Trí, H Sóc Sơn, Hà Nội",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "KH00043",
+    "name": "Marie Curie - Long Biên - Tiểu học rau",
+    "address": "688 Bằng Lăng, Việt Hưng, Long Biên, Hà Nội",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "KH001",
+    "name": "CÔNG TY CỔ PHẦN QDT VIỆT NAM",
+    "address": "Thôn Văn Tinh, Xã Đông Anh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0111448975"
+  },
+  {
+    "customer_code": "KHAC_CHO_XANH",
+    "name": "HTX Vân Nội",
+    "address": "Thôn Đầm, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "12345678"
+  },
+  {
+    "customer_code": "LAI_DUC_QUANG",
+    "name": "Lại Đức Quang",
+    "address": "Vân Nội, Đông Anh, Hà Nội",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "LE",
+    "name": "NCC lẻ - ttoan ngay",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "NGOI_SAO_XANH",
+    "name": "CÔNG TY CỔ PHẦN THỰC PHẨM NGÔI SAO XANH",
+    "address": "Tập thể Công ty Bắc Hà, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0102318793"
+  },
+  {
+    "customer_code": "NSX_SAI_DONG_2",
+    "name": "Công ty cổ phần thực phẩm Ngôi Sao Xanh",
+    "address": "Nơi nhận: THCS Sài Đồng. Địa chỉ: Số 11, ngõ 557, Đường Nguyễn Văn Linh, P.Phúc Lợi.",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "STARGATE",
+    "name": "Công ty cổ phần tập đoàn Stargate",
+    "address": "Số 33 Ngọc Giang, Vĩnh Thanh,Đông Anh",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "TH_FOOD_VN",
+    "name": "Công ty CP TH Food Vina",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "THUY_CAI_BE",
+    "name": "Trương Xuân Thủy",
+    "address": "Xóm Nhì, xã Phúc Thịnh, TP Hà Nội",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "TPBM8",
+    "name": "CÔNG TY CỔ PHẦN THƯƠNG MẠI Q18",
+    "address": "Số 2, ngõ 115 Trần Cung, P. Nghĩa Tân , Q. Cầu Giấy, TP. Hà Nội",
+    "tax_code": "0108934686"
+  },
+  {
+    "customer_code": "TTCP15",
+    "name": "Cấp 3 Nguyễn Quốc Chinh",
+    "address": "Đại Áng- Thanh Trì - HN",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "TTCP18",
+    "name": "Bếp CAN NON  PHÚC THẮNG",
+    "address": "Khu công nghiệp Bắc Thăng Long",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "TTCP23",
+    "name": "CÔNG TY TNHH CUNG CẤP THỰC PHẨM VÀ DỊCH VỤ ĂN UỐNG TÙNG ANH",
+    "address": "Xóm Đầm, Xã Vân Nội, Huyện Đông Anh, Thành phố Hà Nội, Việt Nam",
+    "tax_code": "0109114710"
+  },
+  {
+    "customer_code": "TTCP27",
+    "name": "NHÀ MÁY BÊ TÔNG AMACAO",
+    "address": "VÂN NỘI -  ĐÔNG ANH - HÀ NỘI",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "TTCP29",
+    "name": "Nhóm bếp - VINA STORY",
+    "address": "",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "TTCP30",
+    "name": "Đồ khô chị Yến",
+    "address": "Xóm Nhì, Vân Nội, Đông Anh, Hà nội",
+    "tax_code": ""
+  },
+  {
+    "customer_code": "TTCP33",
+    "name": "CHI NHÁNH CÔNG TY CỔ PHẦN Y HỌC VĨNH THIỆN- BỆNH VIỆN ĐẠI HỌC PHENIKAA",
+    "address": "Tổ 5 Hòe Thị , phường Xuân Phương, Thành phố Hà Nội, Việt Nam.",
+    "tax_code": "0108052589-001"
+  },
+  {
+    "customer_code": "TTCP41",
+    "name": "CANON GALAXY",
+    "address": "KCN Bắc Thăng Long",
+    "tax_code": ""
+  }
+]

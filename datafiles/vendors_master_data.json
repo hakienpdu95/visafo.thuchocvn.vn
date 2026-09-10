@@ -1,0 +1,926 @@
+[
+  {
+    "vendor_code": "A_LAM",
+    "name": "Anh Lâm bếp PHENIKAA mua hộ hàng",
+    "address": "",
+    "tax_code": "",
+    "original_code": "A Lâm"
+  },
+  {
+    "vendor_code": "A_QUYNH_BI_NON",
+    "name": "Hoàng Văn Quỳnh",
+    "address": "",
+    "tax_code": "",
+    "original_code": "A Quỳnh bí non"
+  },
+  {
+    "vendor_code": "AN3",
+    "name": "Công Ty Xăng Dầu Khu Vực 1 CÔNG TY TNHH  MỘT THÀNH VIÊN CHI NHÁNH XăNG DẦU HÀ NỘI",
+    "address": "Số 1 , Phố Thành Công , phường Thành Công , Quận Ba Đình , Thành Phố Hà Nội",
+    "tax_code": "0100107564-001",
+    "original_code": "AN3"
+  },
+  {
+    "vendor_code": "ANH_THUAT_MONG_TOI",
+    "name": "Anh Thuật mồng tơi",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Anh Thuật mồng tơi"
+  },
+  {
+    "vendor_code": "ANHHANHBV",
+    "name": "HANH-BỆNH VIỆN",
+    "address": "",
+    "tax_code": "",
+    "original_code": "ANHHANHBV"
+  },
+  {
+    "vendor_code": "BAO_HIEM",
+    "name": "Bảo hiểm xã hội Đông Anh",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Bảo Hiểm"
+  },
+  {
+    "vendor_code": "BAOHIEM",
+    "name": "BHXH Đông Anh",
+    "address": "",
+    "tax_code": "",
+    "original_code": "BAOHIEM"
+  },
+  {
+    "vendor_code": "BCHC",
+    "name": "CÔNG TY CỔ PHẦN CHẾ BIẾN VÀ THƯƠNG MẠI THỰC PHẨM HẢI CHÂU",
+    "address": "Số 16 phố Mạc Thị Bưởi, Phường Vĩnh Tuy, TP Hà Nội, Việt Nam.",
+    "tax_code": "0110538263",
+    "original_code": "BCHC"
+  },
+  {
+    "vendor_code": "BINH_NUOC_20L",
+    "name": "CÔNG TY CỔ PHẦN SẢN XUẤT DỊCH VỤ THƯƠNG MẠI TRƯỜNG THÀNH",
+    "address": "Xóm 4 Đông Lao, Xã An Khánh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0110052730",
+    "original_code": "Bình nước 20L"
+  },
+  {
+    "vendor_code": "BUN_PHO_MINH_PHAT",
+    "name": "CÔNG TY TNHH THỰC PHẨM MINH PHÁT HN",
+    "address": "Khu 6, Thôn Thụy Lôi, Xã Thư Lâm, TP Hà Nội, Việt Nam.",
+    "tax_code": "0111274768",
+    "original_code": "bún phở minh phát"
+  },
+  {
+    "vendor_code": "CHI_HA",
+    "name": "Chị Hà cải xanh",
+    "address": "",
+    "tax_code": "",
+    "original_code": "CHỊ HÀ"
+  },
+  {
+    "vendor_code": "CHI_HUE",
+    "name": "Chị Huế",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Chị Huế"
+  },
+  {
+    "vendor_code": "CHIEN_THUY_KHOAI_MON",
+    "name": "Nguyễn Thị Thuỷ",
+    "address": "Xuân Chiếm , Tề Lỗ , Phú Thọ",
+    "tax_code": "",
+    "original_code": "Chiến Thuỷ khoai môn"
+  },
+  {
+    "vendor_code": "CHINH__CHUOI_HOAI_DUC",
+    "name": "Chinh - Chuối Hoài Đức",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Chinh - Chuối Hoài Đức"
+  },
+  {
+    "vendor_code": "CMAY",
+    "name": "Chị may",
+    "address": "",
+    "tax_code": "",
+    "original_code": "CMAY"
+  },
+  {
+    "vendor_code": "CO_CHAU_RAU_MUONG",
+    "name": "Nguyễn Thị Châu",
+    "address": "Thôn Đông, Xã Thiên Lộc, Hà Nội",
+    "tax_code": "",
+    "original_code": "Cô Châu rau muống"
+  },
+  {
+    "vendor_code": "CO_DAU_RAU_MUONG",
+    "name": "Cô Dậu rau muống",
+    "address": "",
+    "tax_code": "",
+    "original_code": "CÔ DẬU rau muống"
+  },
+  {
+    "vendor_code": "CO_DIEN__QUAY",
+    "name": "Cô Diên - quẩy",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Cô Diên - quẩy"
+  },
+  {
+    "vendor_code": "CO_HAI",
+    "name": "HỢP TÁC XÃ BA CHỮ.",
+    "address": "Thôn Ba Chữ, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "",
+    "original_code": "Cô Hải"
+  },
+  {
+    "vendor_code": "CO_HIEN_RAU",
+    "name": "Cô Hiên rau",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Cô Hiên rau"
+  },
+  {
+    "vendor_code": "CO_LIEU_SU_HAO",
+    "name": "Chủ Văn Phương",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Cô Liễu su hào"
+  },
+  {
+    "vendor_code": "CO_LUA",
+    "name": "Cô Lụa mồng tơi",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Cô Lụa"
+  },
+  {
+    "vendor_code": "CO_LY_NGONG_CAI",
+    "name": "Trần Thị Cần",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Cô Lý ngồng cải"
+  },
+  {
+    "vendor_code": "CO_XUAN_RAU_MUONG",
+    "name": "Phạm Thị Xuân",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Cô Xuân rau muống"
+  },
+  {
+    "vendor_code": "CUONG_HANH__CHUOI",
+    "name": "Trần Mạnh Cường",
+    "address": "Xóm Đông, xã Phúc Thịnh, TP Hà Nội",
+    "tax_code": "",
+    "original_code": "Cường Hạnh - chuối"
+  },
+  {
+    "vendor_code": "DA_BI",
+    "name": "Ngô Văn Đà",
+    "address": "Thôn Đìa, Phúc Thịnh, Hà Nội",
+    "tax_code": "",
+    "original_code": "Đà bí"
+  },
+  {
+    "vendor_code": "DAT_CU_CAI",
+    "name": "Nguyễn Văn Đạt",
+    "address": "Đông Cao, Mê Linh, Hà Nội",
+    "tax_code": "",
+    "original_code": "Đạt củ cải"
+  },
+  {
+    "vendor_code": "DAU_VONG_LA",
+    "name": "HTX Thanh niên Võng La,",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Đậu võng la"
+  },
+  {
+    "vendor_code": "DIEN_LUC",
+    "name": "Điện Lực Đông Anh",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Điện Lực"
+  },
+  {
+    "vendor_code": "DONG_DUA_HAU",
+    "name": "Nguyễn Văn Đông",
+    "address": "Thô Đo, xã Trung Giã, TP Hà Nội, Việt Nam",
+    "tax_code": "",
+    "original_code": "Đông dưa hấu"
+  },
+  {
+    "vendor_code": "DT",
+    "name": "CÔNG TY CỔ PHẦN ĐÔNG THÀNH HÀ NỘI",
+    "address": "Khu Chợ Kim, Xã Thư Lâm, TP Hà Nội, Việt Nam.",
+    "tax_code": "0100161240",
+    "original_code": "DT"
+  },
+  {
+    "vendor_code": "DUC_BINH",
+    "name": "HKD Lê Thị Bình 1993",
+    "address": "Đường Vân Trì, chợ rau An toàn thôn ba Chữ, Phúc Thịnh, HN",
+    "tax_code": "",
+    "original_code": "Đức Bình"
+  },
+  {
+    "vendor_code": "DUC_MINH",
+    "name": "Công ty TNHH Đức Minh Food",
+    "address": "98/56 Phố Thạnh Cầu, tổ 29 Phường Long Biên, TP Hà Nội",
+    "tax_code": "",
+    "original_code": "Đức Minh"
+  },
+  {
+    "vendor_code": "DUC_RAU",
+    "name": "Lê Đăng Đức",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Đức rau"
+  },
+  {
+    "vendor_code": "DUC_RAU1",
+    "name": "LONG BỆNH VIỆN",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Đức rau1"
+  },
+  {
+    "vendor_code": "DUNG",
+    "name": "Dung đu đủ",
+    "address": "",
+    "tax_code": "",
+    "original_code": "DUNG"
+  },
+  {
+    "vendor_code": "DUNG__DUAXA",
+    "name": "Nguyễn Văn Dũng",
+    "address": "Viên Nội, Vân Nội Phúc Thịnh Hà Nội",
+    "tax_code": "",
+    "original_code": "DUNG - DUAXA"
+  },
+  {
+    "vendor_code": "GANG_TAY_Y_TE_DEN",
+    "name": "NCC gang tay y tế đen ( lẻ ) k có hóa đơn",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Gang tay y tế đen"
+  },
+  {
+    "vendor_code": "GIAY_COC",
+    "name": "CTY TNHH SX VA TM GIAY VIET HOANG",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Giấy cốc"
+  },
+  {
+    "vendor_code": "HA_HOA_QUA",
+    "name": "Hoàng Việt Hà",
+    "address": "",
+    "tax_code": "",
+    "original_code": "HÀ hoa quả"
+  },
+  {
+    "vendor_code": "HCN",
+    "name": "Hưng Canon",
+    "address": "",
+    "tax_code": "",
+    "original_code": "HCN"
+  },
+  {
+    "vendor_code": "HIEU_HOA_QUA",
+    "name": "HKD Hà Minh Hiếu",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Hiếu hoa quả"
+  },
+  {
+    "vendor_code": "HLRT",
+    "name": "Nguyễn Thị Nga",
+    "address": "",
+    "tax_code": "",
+    "original_code": "HLRT"
+  },
+  {
+    "vendor_code": "HOLIKA",
+    "name": "CÔNG TY TNHH HOLIKA VIỆT NAM",
+    "address": "Thôn Đức Cung, Phường Xuân Hòa, Phú Thọ, Việt Nam.",
+    "tax_code": "2500471709",
+    "original_code": "HOLIKA"
+  },
+  {
+    "vendor_code": "HOLIKA__HUONG_LONG",
+    "name": "CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ HƯƠNG LONG",
+    "address": "Khu giãn dân, Đội 4, Thôn Bầu, Xã Thiên Lộc, TP Hà Nội, Việt Nam.",
+    "tax_code": "0111402963",
+    "original_code": "Holika = Hương Long"
+  },
+  {
+    "vendor_code": "HUNGDAU",
+    "name": "HTX Thanh niên Võng La",
+    "address": "Thôn Võng La, Xã Thiên Lộc, TP Hà Nội, Việt Nam.",
+    "tax_code": "",
+    "original_code": "HUNGDAU"
+  },
+  {
+    "vendor_code": "HUONG_CA_TIM",
+    "name": "Trần Thị Cần",
+    "address": "",
+    "tax_code": "",
+    "original_code": "HƯƠNG CÀ TÍM"
+  },
+  {
+    "vendor_code": "KH00004",
+    "name": "Nhóm bếp Hạnh Phúc - Hạnh Phúc",
+    "address": "",
+    "tax_code": "",
+    "original_code": "KH00004"
+  },
+  {
+    "vendor_code": "KHAC_CHO_XANH",
+    "name": "HTX Vân Nội",
+    "address": "Thôn Đầm, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "12345678",
+    "original_code": "KHẮC CHỢ XANH"
+  },
+  {
+    "vendor_code": "KHANH",
+    "name": "Chử Thị Khánh.",
+    "address": "",
+    "tax_code": "",
+    "original_code": "KHÁNH"
+  },
+  {
+    "vendor_code": "KHOA_MONG_TOI",
+    "name": "Nguyễn Thị Hoàn",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Khoa mồng tơi"
+  },
+  {
+    "vendor_code": "LAI_DUC_QUANG",
+    "name": "Lại Đức Quang",
+    "address": "Vân Nội, Đông Anh, Hà Nội",
+    "tax_code": "",
+    "original_code": "Lại Đức Quang"
+  },
+  {
+    "vendor_code": "LANNGO",
+    "name": "Nguyễn Doãn Kha",
+    "address": "Thôn Trung Oai, Xã Phúc Thịnh, Hà Nội",
+    "tax_code": "",
+    "original_code": "LANNGO"
+  },
+  {
+    "vendor_code": "LE",
+    "name": "NCC lẻ - ttoan ngay",
+    "address": "",
+    "tax_code": "",
+    "original_code": "LE"
+  },
+  {
+    "vendor_code": "LOCBUN",
+    "name": "CÔNG TY TNHH LAN THÀNH PHÁT 68.",
+    "address": "Tổ dân phố số 6, Xã Quang Minh, TP Hà Nội, Việt Nam.",
+    "tax_code": "",
+    "original_code": "LOCBUN"
+  },
+  {
+    "vendor_code": "LONG_CHAU",
+    "name": "CÔNG TY CỔ PHẦN  DƯỢC PHẨM FPT LONG CHÂU",
+    "address": "379-381 Hai Bà Trưng, Phường Xuân Hòa, TP Hồ Chí Minh, Việt Nam.",
+    "tax_code": "0315275368",
+    "original_code": "Long Châu"
+  },
+  {
+    "vendor_code": "LUYEN",
+    "name": "HKD Nguyễn Văn Nguyên 1989",
+    "address": "Chợ rau an toàn Vân Nội, xã Phúc Thịnh, Thành phố Hà Nội, Việt Nam",
+    "tax_code": "5300829319",
+    "original_code": "LUYẾN"
+  },
+  {
+    "vendor_code": "MINHNGO",
+    "name": "Nguyễn Văn Bính.",
+    "address": "Thôn Đông  Tây, xã Phúc Thịnh, Hà Nội",
+    "tax_code": "",
+    "original_code": "MINHNGO"
+  },
+  {
+    "vendor_code": "MINHTHUYET",
+    "name": "CÔNG TY TNHH MINH THUYẾT TH",
+    "address": "KM số 8, quốc lộ 45, cụm công nghiệp Đông Tiến, Phường Đông Sơn, Thanh Hóa, Việt Nam.",
+    "tax_code": "2802542699",
+    "original_code": "MINHTHUYET"
+  },
+  {
+    "vendor_code": "NAM_DUONG",
+    "name": "CÔNG TY TNHH MỘT THÀNH VIÊN THỰC PHẨM NAM DƯƠNG",
+    "address": "Nghiên Phấn, Phường Thạch Khôi, TP Hải Phòng, Việt Nam.",
+    "tax_code": "0800981859",
+    "original_code": "Nam Dương"
+  },
+  {
+    "vendor_code": "NCC",
+    "name": "CÔNG TY TNHH THƯƠNG MẠI TÍN NGHĨA",
+    "address": "Thôn Phú Thị, Xã Gia Lâm, Thành phố Hà Nội, Việt Nam.",
+    "tax_code": "0101219567",
+    "original_code": "NCC"
+  },
+  {
+    "vendor_code": "NCC_A_HUNG_BAU_DUA_MUOP",
+    "name": "Dương Văn Hùng",
+    "address": "Thôn Đông Tây, Phúc Thịnh, HN",
+    "tax_code": "",
+    "original_code": "NCC A Hùng bầu dưa mướp"
+  },
+  {
+    "vendor_code": "NCC_A_HUONG_CAI_XANH",
+    "name": "Trần Ngọc Hướng",
+    "address": "Thôn Đầm, Phúc Thịnh, Hà Nội",
+    "tax_code": "",
+    "original_code": "NCC A Hướng cải xanh"
+  },
+  {
+    "vendor_code": "NCC_CHI_DUNG_CAI_NGOT",
+    "name": "Nguyễn Thị Dung",
+    "address": "Thôn Do Thượng, Tiền Phong, Mê Linh, HN",
+    "tax_code": "",
+    "original_code": "NCC Chị Dung cải ngọt"
+  },
+  {
+    "vendor_code": "NCC_HAN_RAU_NGOT",
+    "name": "Nguyễn Thị Luyến",
+    "address": "Yên Tàng, Đa Phúc, HN",
+    "tax_code": "",
+    "original_code": "NCC Hân rau ngót"
+  },
+  {
+    "vendor_code": "NCC_THONG_RAU_CAN",
+    "name": "Chử Thị Khánh",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCC Thông rau cần"
+  },
+  {
+    "vendor_code": "NCC_TIEN_CA_PHAO_COVE",
+    "name": "Quách Minh Tiến",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCC Tiến cà pháo, cove"
+  },
+  {
+    "vendor_code": "NCC_TRUONG_VAN_TIEN_BAP_CAI",
+    "name": "Trương Văn Tiến",
+    "address": "Xóm Nhì, xã Phúc Thịnh, Hà Nội",
+    "tax_code": "",
+    "original_code": "NCC Trương Văn Tiến bắp cải"
+  },
+  {
+    "vendor_code": "NCC00002",
+    "name": "CHI NHÁNH CÔNG TY TNHH MTV ĐT & PT NÔNG NGHIỆP HÀ NỘI - XN BẮC HÀ",
+    "address": "Thôn Nhì, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0100103305-019",
+    "original_code": "NCC00002"
+  },
+  {
+    "vendor_code": "NCC00007",
+    "name": "Hộ kinh doanh Trần Văn Thạo",
+    "address": "Thôn Viên Nội,Xã Phúc Thịnh , Thành phố Hà Nội, Việt Nam",
+    "tax_code": "0108393733",
+    "original_code": "NCC00007"
+  },
+  {
+    "vendor_code": "NCC00008",
+    "name": "CÔNG TY CỔ PHẦN CHẾ BIẾN THỰC PHẨM SẠCH THƯỜNG LOAN",
+    "address": "Xóm Đoài, Xã Thiên Lộc, TP Hà Nội, Việt Nam.",
+    "tax_code": "0106913225",
+    "original_code": "NCC00008"
+  },
+  {
+    "vendor_code": "NCC00010",
+    "name": "Lại Đức Dũng",
+    "address": "Xóm Tây, Vân Nội, Đông Anh, Hà Nội",
+    "tax_code": "",
+    "original_code": "NCC00010"
+  },
+  {
+    "vendor_code": "NCC00016",
+    "name": "Lại Đức Giáp",
+    "address": "Xóm Tây, Vân Nội, Đông Anh, Hà Nội",
+    "tax_code": "",
+    "original_code": "NCC00016"
+  },
+  {
+    "vendor_code": "NCC00019",
+    "name": "Hộ Kinh Doanh Nguyễn Hữu Thắng",
+    "address": "Cổ điển,Hải Bối,Đông Anh,Hà nội",
+    "tax_code": "",
+    "original_code": "NCC00019"
+  },
+  {
+    "vendor_code": "NCC00031",
+    "name": "A Huy Đoàn bánh mỳ",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCC00031"
+  },
+  {
+    "vendor_code": "NCC00034_MAU_QUANG",
+    "name": "HKD Trần Văn Quang",
+    "address": "Xóm Bảo, xã Phúc Thịnh, Hà Nội",
+    "tax_code": "",
+    "original_code": "NCC00034 Mậu Quang"
+  },
+  {
+    "vendor_code": "NCC00035",
+    "name": "Nam Tơ  - ổi",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCC00035"
+  },
+  {
+    "vendor_code": "NCC00037",
+    "name": "CÔNG TY CỔ PHẦN ĐẦU TƯ SẢN XUẤT VÀ THƯƠNG MẠI HÀ ÁNH",
+    "address": "Xóm Thượng, Xã Đông Anh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0106817472",
+    "original_code": "NCC00037"
+  },
+  {
+    "vendor_code": "NCC00039",
+    "name": "CÔNG TY TNHH LAN THÀNH PHÁT 68",
+    "address": "Tổ dân phố số 6, Xã Quang Minh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0110440941",
+    "original_code": "NCC00039"
+  },
+  {
+    "vendor_code": "NCCALABV3",
+    "name": "BÀ THUÝ - BẦU",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCALABV3"
+  },
+  {
+    "vendor_code": "NCCBINH",
+    "name": "Nguyễn Văn Bính",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCBINH"
+  },
+  {
+    "vendor_code": "NCCCHUQUAN",
+    "name": "Chú quân",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCCHUQUAN"
+  },
+  {
+    "vendor_code": "NCCD",
+    "name": "Công ty TNHH Toàn Lộc - Đường trắng",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCD"
+  },
+  {
+    "vendor_code": "NCCDOCMUNG_HANH_DOC_MUNG",
+    "name": "Lại Đức Chung",
+    "address": "",
+    "tax_code": "",
+    "original_code": "nccdocmung Hạnh Dọc mùng"
+  },
+  {
+    "vendor_code": "NCCDV1",
+    "name": "HỘ KINH DOANH LUYÊN THÚY",
+    "address": "Đường Vân Nội, Chợ Vân Trì, Thôn Thố Bảo, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0100631753",
+    "original_code": "NCCDV1"
+  },
+  {
+    "vendor_code": "NCCDV5",
+    "name": "CÔNG TY TNHH ĐẦU TƯ SẢN XUẤT VÀ KINH DOANH THƯƠNG MẠI THÀNH CÔNG",
+    "address": "Số 104 đường 23b, thôn Đìa, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0107778402",
+    "original_code": "NCCDV5"
+  },
+  {
+    "vendor_code": "NCCGNK",
+    "name": "CÔNG TY CỔ PHẦN PHÁT TRIỂN THƯƠNG MẠI TỔNG HỢP ÁNH DƯƠNG",
+    "address": "Số 43 đường Sơn Du, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0110686769",
+    "original_code": "NCCGNK"
+  },
+  {
+    "vendor_code": "NCCH_THIEN_CU_DAU",
+    "name": "Phạm Bá Thắng.",
+    "address": "Thôn Xuân Áng, Thanh Xuân, Thanh Hà, Hải Dương",
+    "tax_code": "",
+    "original_code": "NCCH Thiện củ đậu"
+  },
+  {
+    "vendor_code": "NCCKHAC10",
+    "name": "Siêu thị Lan Chi",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCKHAC10"
+  },
+  {
+    "vendor_code": "NCCKHAC12",
+    "name": "Duyên bếp định công",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCKHAC12"
+  },
+  {
+    "vendor_code": "NCCKHAC13",
+    "name": "E Oanh thanh long",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCKHAC13"
+  },
+  {
+    "vendor_code": "NCCKHAC16",
+    "name": "CÔNG TY TNHH MM MEGA MARKET (VIỆT NAM)",
+    "address": "Khu B, Khu đô thị mới An Phú-An Khánh, Phường An Phú, Thành phố Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam",
+    "tax_code": "0302249586",
+    "original_code": "NCCKHAC16"
+  },
+  {
+    "vendor_code": "NCCKHAC4_HOA_MONG_TOI",
+    "name": "Nguyễn Thị Hoàn.",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCKHAC4 Hòa mồng tơi"
+  },
+  {
+    "vendor_code": "NCCKHAC8",
+    "name": "Cô Tươi",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCKHAC8"
+  },
+  {
+    "vendor_code": "NCCLACNHANTHOTANG",
+    "name": "CÔNG TY TNHH NÔNG SẢN NAM ANH VĨNH PHÚC",
+    "address": "Khu chợ đầu mối, Xã Thổ Tang, Phú Thọ, Việt Nam.",
+    "tax_code": "2500712658",
+    "original_code": "NCCLACNHANTHOTANG"
+  },
+  {
+    "vendor_code": "NCCLALOT",
+    "name": "Vũ Thị Tiền (lá lốt)",
+    "address": "TT XN Bắc hà, xã Phúc Thịnh, Hà Nội",
+    "tax_code": "",
+    "original_code": "Ncclalot"
+  },
+  {
+    "vendor_code": "NCCLINH",
+    "name": "Linh",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCLinh"
+  },
+  {
+    "vendor_code": "NCCLTP70",
+    "name": "Hộ kinh doanh Lưu Văn Đại",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCLTP70"
+  },
+  {
+    "vendor_code": "NCCTHUY",
+    "name": "Cô Thúy bí xanh",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCTHUY"
+  },
+  {
+    "vendor_code": "NCCTHUYBV",
+    "name": "Chị thủy bếp bệnh viện",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCTHUYBV"
+  },
+  {
+    "vendor_code": "NCCTRUNGCUT",
+    "name": "Trứng cút chị Nhàn",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCTRUNGCUT"
+  },
+  {
+    "vendor_code": "NCCVAN_VAN_CAI_CHIP",
+    "name": "Đỗ Thị Xuyến.",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCCVAN Vân cải chíp"
+  },
+  {
+    "vendor_code": "NCQ22",
+    "name": "CÔ LỪNG - RAU XÀ LÁCH",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCQ22"
+  },
+  {
+    "vendor_code": "NCQ25",
+    "name": "CHỊ HƯỜNG - CÀ TÍM TRÒN",
+    "address": "",
+    "tax_code": "",
+    "original_code": "NCQ25"
+  },
+  {
+    "vendor_code": "NEN__GA_VIT",
+    "name": "CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ THỰC PHẨM SẠCH NHẬT MINH",
+    "address": "Số nhà 5 ngõ 4 thôn Mai Châu, Xã Thiên Lộc, TP Hà Nội, Việt Nam.",
+    "tax_code": "0110654478",
+    "original_code": "Nền - gà vịt"
+  },
+  {
+    "vendor_code": "NGUYEN_VIET_PHU",
+    "name": "Hộ KD Nguyễn Việt Phú",
+    "address": "Thôn Minh Hòa, xã Hàm Thuận Nam, tỉnh Lâm Đồng, Việt Nam",
+    "tax_code": "",
+    "original_code": "NGUYỄN VIỆT PHÚ"
+  },
+  {
+    "vendor_code": "NHAT_HAN",
+    "name": "Công ty TNHH in Nhật Hàn",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Nhật Hàn"
+  },
+  {
+    "vendor_code": "ONG_CHAT",
+    "name": "Ông Chắt",
+    "address": "Xóm Đầm, Phúc Thịnh, Hà Nội",
+    "tax_code": "",
+    "original_code": "Ông Chắt"
+  },
+  {
+    "vendor_code": "PHUNG_HUNG_DIEN_LANH",
+    "name": "Công ty CP cơ điện lạnh Phùng Hưng",
+    "address": "",
+    "tax_code": "",
+    "original_code": "PHÙNG HƯNG ĐIỆN LẠNH"
+  },
+  {
+    "vendor_code": "PICO",
+    "name": "Công ty Cổ Phần PICO RETAIL",
+    "address": "",
+    "tax_code": "",
+    "original_code": "PICO"
+  },
+  {
+    "vendor_code": "PICO1",
+    "name": "CHỊ MAI - THỊT LỢN",
+    "address": "THỊ TRẤN ĐÔNG ANH",
+    "tax_code": "",
+    "original_code": "PICO1"
+  },
+  {
+    "vendor_code": "TDA",
+    "name": "Công ty TNHH sản xuất thương mại TDA",
+    "address": "",
+    "tax_code": "",
+    "original_code": "TDA"
+  },
+  {
+    "vendor_code": "THAI_DUONG",
+    "name": "CÔNG TY TNHH MỘT THÀNH VIÊN THÁI DƯƠNG",
+    "address": "Đường Lâm Tiên, Thị trấn Đông Anh, Huyện Đông Anh, Thành phố Hà Nội, Việt Nam",
+    "tax_code": "0102305032",
+    "original_code": "THÁI DƯƠNG"
+  },
+  {
+    "vendor_code": "THANG_OI",
+    "name": "Phạm Bá Thắng",
+    "address": "Thanh Xuân, Thanh Hà, Hải Dương",
+    "tax_code": "",
+    "original_code": "Thắng Ổi"
+  },
+  {
+    "vendor_code": "THANG_RAU",
+    "name": "Anh Thăng",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Thăng rau"
+  },
+  {
+    "vendor_code": "THANH_LOI",
+    "name": "CÔNG TY TNHH THỰC PHẨM THƯƠNG MẠI THÀNH LỢI",
+    "address": "Thôn Đỗ Xá, Xã Phù Đổng, TP Hà Nội, Việt Nam.",
+    "tax_code": "0105860651",
+    "original_code": "THANH LOI"
+  },
+  {
+    "vendor_code": "THANH_THANG_VPP",
+    "name": "Công ty TNHH TM và DV Thanh Thắng",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Thanh Thắng VPP"
+  },
+  {
+    "vendor_code": "THAO_BO_CHO_XANH",
+    "name": "Trần Văn Quang.",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Thảo bơ chợ xanh"
+  },
+  {
+    "vendor_code": "THAOBA__KHOAI_TAY_HANH_TAY",
+    "name": "Ngô Thị Thảo",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Thaoba - khoai tây hành tây"
+  },
+  {
+    "vendor_code": "THIT_LON_C_DUNG",
+    "name": "Hộ kinh doanh thực phẩm Nguyễn Huyền",
+    "address": "Số nhà 51 Thôn Đoài. Xã Thiên Lộc, Thành phố Hà Nội, Việt Nam",
+    "tax_code": "",
+    "original_code": "thịt lợn c dung"
+  },
+  {
+    "vendor_code": "THIT_LON_THANH_HUAN",
+    "name": "Công ty TNHH TP THÀNH HUÂN",
+    "address": "Thôn Thanh Vân, Xã Tiến Thắng, TP Hà Nội",
+    "tax_code": "",
+    "original_code": "thịt lợn thành huân"
+  },
+  {
+    "vendor_code": "THITLONCHIDUNG",
+    "name": "Hộ kinh doanh Phạm Xuân Huynh",
+    "address": "Thôn Vệ, Xã Phúc Thịnh, Thành phố Hà Nội",
+    "tax_code": "",
+    "original_code": "THITLONCHIDUNG"
+  },
+  {
+    "vendor_code": "THUE_DICH_VU",
+    "name": "CÔNG TY TNHH TƯ VẤN VÀ ĐÀO TẠO VIỆT PHÁT",
+    "address": "Số 67, Phố Bắc Hồng, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0109621735",
+    "original_code": "Thuế dịch vụ"
+  },
+  {
+    "vendor_code": "THUY_CAI_BE",
+    "name": "Trương Xuân Thủy",
+    "address": "Xóm Nhì, xã Phúc Thịnh, TP Hà Nội",
+    "tax_code": "",
+    "original_code": "Thuỷ cải bẹ"
+  },
+  {
+    "vendor_code": "TIEP_BI",
+    "name": "Tiệp bí",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Tiệp bí"
+  },
+  {
+    "vendor_code": "TINH_CAI_XANH",
+    "name": "Anh Tính cải xanh",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Tính cải xanh"
+  },
+  {
+    "vendor_code": "TINH_MUOI_BI",
+    "name": "MƯỜI TÌNH - BÍ XANH",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Tình Mười bí"
+  },
+  {
+    "vendor_code": "TOMHAUKHICH",
+    "name": "Hợp tác xã Thủy sản công nghệ cao Đại Áng.",
+    "address": "Thôn Đại Áng, Xã Ngọc Hồi, TP Hà Nội, Việt Nam.",
+    "tax_code": "",
+    "original_code": "TOMHAUKHICH"
+  },
+  {
+    "vendor_code": "TRANVANLAY",
+    "name": "Trần Văn Lẫy",
+    "address": "Thôn Đầm Vân Nội, Phúc Thịnh Hà Nội",
+    "tax_code": "",
+    "original_code": "TRANVANLAY"
+  },
+  {
+    "vendor_code": "TRUONG_AN",
+    "name": "CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ TRƯỜNG AN",
+    "address": "Số 8 Ngách 15/66 Phố Đàm Quang Trung, Tổ 26, Phường Long Biên, TP Hà Nội, Việt Nam.",
+    "tax_code": "0101989446",
+    "original_code": "Trường An"
+  },
+  {
+    "vendor_code": "TUYET_CHUOI",
+    "name": "Đinh Thị Tuyết",
+    "address": "",
+    "tax_code": "",
+    "original_code": "Tuyết chuối"
+  },
+  {
+    "vendor_code": "VINH_LOAN",
+    "name": "CÔNG TY TNHH HOA QUẢ VINH LOAN",
+    "address": "Số 11 Thôn Sơn Du, Xã Phúc Thịnh, TP Hà Nội, Việt Nam.",
+    "tax_code": "0111081438",
+    "original_code": "Vinh Loan"
+  }
+]
