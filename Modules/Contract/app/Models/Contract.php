@@ -3,12 +3,25 @@
 namespace Modules\Contract\Models;
 
 use App\Foundation\Models\TenantAwareModel;
+use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Contract\Enums\ContractStatus;
 use Modules\Vendor\Models\Vendor;
 
 class Contract extends TenantAwareModel
 {
+    use HasAutoCode;
+
+    public function autoCodeColumn(): string
+    {
+        return 'contract_number';
+    }
+
+    public function autoCodeSequenceType(): string
+    {
+        return 'contract';
+    }
+
     protected $fillable = [
         'vendor_id',
         'contract_type_id',

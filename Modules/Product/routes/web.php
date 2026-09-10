@@ -12,7 +12,7 @@ use Modules\Product\Http\Controllers\PartnerProductController;
 use Modules\Product\Http\Controllers\ProductController;
 
 Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(function () {
-    Route::resource('products', ProductController::class);
+    Route::resource('products', ProductController::class)->except(['show']);
 
     Route::post('products/{product}/documents', [ComplianceDocumentController::class, 'storeForProduct'])
         ->name('products.documents.store');

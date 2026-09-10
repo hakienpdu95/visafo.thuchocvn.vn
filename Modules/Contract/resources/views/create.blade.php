@@ -88,14 +88,11 @@
 
                             <div class="form-control">
                                 <label class="label py-0 pb-1.5">
-                                    <span class="label-text font-medium">Số hợp đồng <span class="text-error">*</span></span>
+                                    <span class="label-text font-medium">Số hợp đồng</span>
                                 </label>
-                                <input type="text" name="contract_number" value="{{ old('contract_number') }}"
-                                       data-req="Vui lòng nhập số hợp đồng"
-                                       data-val-maxlength="100"
-                                       class="input input-bordered input-sm w-full font-mono @error('contract_number') input-error @enderror"
-                                       placeholder="VD: HD-2026-001" maxlength="100">
-                                @error('contract_number')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                                <input type="text" value="HĐ-000001" disabled
+                                       class="input input-bordered input-sm w-full font-mono text-base-content/40 bg-base-200/60">
+                                <p class="mt-1 text-xs text-base-content/40">Hệ thống tự động sinh mã khi lưu, không thể chỉnh sửa tại đây.</p>
                             </div>
 
                         </div>

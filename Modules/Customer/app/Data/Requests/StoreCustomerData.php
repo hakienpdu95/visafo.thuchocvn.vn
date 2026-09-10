@@ -10,19 +10,14 @@ use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
-use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\Size;
 use Spatie\LaravelData\Attributes\Validation\StringType;
-use Spatie\LaravelData\Attributes\Validation\Unique;
 use Spatie\LaravelData\Data;
 
 class StoreCustomerData extends Data
 {
     public function __construct(
-        #[Nullable, StringType, Max(50), Regex('/^[A-Za-z0-9\-]+$/'), Unique('customers', 'customer_code')]
-        public readonly ?string $customer_code,
-
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
@@ -77,11 +72,6 @@ class StoreCustomerData extends Data
     public static function messages(): array
     {
         return [
-            'customer_code.string' => 'Mã khách hàng không hợp lệ.',
-            'customer_code.regex'  => 'Mã khách hàng chỉ được chứa chữ, số và dấu gạch ngang.',
-            'customer_code.max'    => 'Mã khách hàng không được vượt quá 50 ký tự.',
-            'customer_code.unique' => 'Mã khách hàng này đã tồn tại.',
-
             'name.required' => 'Vui lòng nhập tên khách hàng.',
             'name.string'   => 'Tên khách hàng không hợp lệ.',
             'name.max'      => 'Tên khách hàng không được vượt quá 255 ký tự.',

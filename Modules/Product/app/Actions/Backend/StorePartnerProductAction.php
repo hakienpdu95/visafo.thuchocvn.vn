@@ -15,7 +15,6 @@ class StorePartnerProductAction
         return PartnerProduct::create([
             'vendor_id'         => $data->vendor_id,
             'product_id'        => $data->product_id,
-            'vendor_sku'        => $data->vendor_sku,
             'name'              => $data->name,
             'manufacturer_name' => $data->manufacturer_name,
             'origin_address'    => $data->origin_address,

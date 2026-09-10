@@ -573,5 +573,14 @@
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
         "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "system_sequences///__///__///Bảng đếm độc lập sinh mã tự động — KHÔNG dùng max(id), an toàn khi xóa mềm/cứng bản ghi thực thể",
+        "code_type///string///50///NOT_NULL///__///->unique()///Mã phân loại bộ đếm — VD: vendor, employee",
+        "prefix///string///20///NOT_NULL///__///__///Tiền tố mã sinh ra — VD: NCC, NV",
+        "last_number///unsignedBigInteger///__///NOT_NULL///0///__///Số đếm cuối cùng đã cấp — chỉ tăng, không bao giờ lùi",
+        "padding_length///unsignedInteger///__///NOT_NULL///6///__///Độ dài chuỗi số, đệm 0 — VD: 6 => 000001",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật"
     ]
 ]

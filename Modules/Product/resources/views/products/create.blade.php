@@ -60,13 +60,13 @@
 
                     <div class="form-control">
                         <label class="label py-0 pb-1.5">
-                            <span class="label-text font-medium">Mã SKU <span class="text-error">*</span></span>
+                            <span class="label-text font-medium">Mã SKU</span>
                         </label>
                         <input type="text" name="sku" value="{{ old('sku') }}"
-                               data-req="Vui lòng nhập mã SKU"
                                data-val-maxlength="100"
                                class="input input-bordered input-sm w-full font-mono uppercase @error('sku') input-error @enderror"
-                               placeholder="VD: SP-000123" maxlength="100">
+                               placeholder="VD: SP-000001 (Để trống hệ thống sẽ tự tạo)" maxlength="100">
+                        <p class="mt-1 text-xs text-base-content/40">Có thể tự nhập, hoặc để trống để hệ thống tự động sinh mã.</p>
                         @error('sku')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 

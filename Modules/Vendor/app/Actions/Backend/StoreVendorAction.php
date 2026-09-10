@@ -13,7 +13,6 @@ class StoreVendorAction
     public function handle(StoreVendorData $data): Vendor
     {
         return Vendor::create([
-            'vendor_code'           => $data->vendor_code,
             'name'                  => $data->name,
             'tax_code'              => $data->tax_code,
             'address'               => $data->address,

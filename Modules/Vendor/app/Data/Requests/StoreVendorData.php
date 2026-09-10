@@ -17,9 +17,6 @@ use Spatie\LaravelData\Data;
 class StoreVendorData extends Data
 {
     public function __construct(
-        #[Nullable, StringType, Max(50), Regex('/^[A-Za-z0-9\-]+$/'), Unique('vendors', 'vendor_code')]
-        public readonly ?string $vendor_code,
-
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
@@ -74,11 +71,6 @@ class StoreVendorData extends Data
     public static function messages(): array
     {
         return [
-            'vendor_code.string' => 'Mã nhà cung cấp không hợp lệ.',
-            'vendor_code.regex'  => 'Mã nhà cung cấp chỉ được chứa chữ, số và dấu gạch ngang.',
-            'vendor_code.max'    => 'Mã nhà cung cấp không được vượt quá 50 ký tự.',
-            'vendor_code.unique' => 'Mã nhà cung cấp này đã tồn tại.',
-
             'name.required' => 'Vui lòng nhập tên nhà cung cấp.',
             'name.string'   => 'Tên nhà cung cấp không hợp lệ.',
             'name.max'      => 'Tên nhà cung cấp không được vượt quá 255 ký tự.',

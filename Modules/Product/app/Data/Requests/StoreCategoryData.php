@@ -13,8 +13,8 @@ use Spatie\LaravelData\Data;
 class StoreCategoryData extends Data
 {
     public function __construct(
-        #[Required, StringType, Max(60), Regex('/^[a-z0-9_]+$/'), Unique('categories', 'code')]
-        public readonly string $code,
+        #[Nullable, StringType, Max(60), Regex('/^[a-z0-9_]+$/'), Unique('categories', 'code')]
+        public readonly ?string $code,
 
         #[Required, StringType, Max(255)]
         public readonly string $name,
@@ -28,7 +28,6 @@ class StoreCategoryData extends Data
     public static function messages(): array
     {
         return [
-            'code.required' => 'Vui lòng nhập mã nhóm hàng.',
             'code.string'   => 'Mã nhóm hàng không hợp lệ.',
             'code.max'      => 'Mã nhóm hàng không được vượt quá 60 ký tự.',
             'code.regex'    => 'Mã nhóm hàng chỉ được chứa chữ thường, số và dấu gạch dưới.',

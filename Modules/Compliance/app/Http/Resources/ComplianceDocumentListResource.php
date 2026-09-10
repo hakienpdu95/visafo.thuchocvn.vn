@@ -15,7 +15,7 @@ class ComplianceDocumentListResource extends JsonResource
 
     private const DOCUMENTABLE_ROUTES = [
         'vendor'          => 'backend.vendors.show',
-        'product'         => 'backend.products.show',
+        'product'         => 'backend.products.edit',
         'partner_product' => 'backend.partner-products.show',
     ];
 

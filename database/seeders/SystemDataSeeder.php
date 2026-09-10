@@ -37,6 +37,9 @@ class SystemDataSeeder extends Seeder
         $this->command->newLine();
 
         $this->call([
+            // ── 0. Bộ đếm sinh mã tự động (system_sequences) ──────────────
+            SystemSequenceSeeder::class,
+
             // ── 1. IAM: 8 tenant roles + 40+ permissions ─────────────────
             RolePermissionSeeder::class,
 

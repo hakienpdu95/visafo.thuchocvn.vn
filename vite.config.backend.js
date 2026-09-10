@@ -98,6 +98,7 @@ const CSS_OUTPUT = {
   'customer.css':             'assets/modules/customer.[hash].css',
   'product.css':              'assets/modules/product.[hash].css',
   'contract.css':             'assets/modules/contract.[hash].css',
+  'employee.css':             'assets/modules/employee.[hash].css',
 };
 
 // ─── Module input entries ─────────────────────────────────────────────
@@ -124,6 +125,7 @@ const MODULE_ENTRIES = [
   // Compliance
   'Modules/Compliance/resources/assets/js/compliance.js',
   // Employee
+  'Modules/Employee/resources/assets/sass/employee.scss',
   'Modules/Employee/resources/assets/js/employee.js',
   // Contract
   'Modules/Contract/resources/assets/sass/contract.scss',

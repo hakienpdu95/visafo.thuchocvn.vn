@@ -5,6 +5,7 @@ namespace Modules\Customer\Models;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\Province;
 use App\Models\Ward;
+use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,18 @@ use Modules\Product\Models\Product;
 
 class Customer extends TenantAwareModel
 {
+    use HasAutoCode;
+
+    public function autoCodeColumn(): string
+    {
+        return 'customer_code';
+    }
+
+    public function autoCodeSequenceType(): string
+    {
+        return 'customer';
+    }
+
     protected $fillable = [
         'customer_code',
         'name',

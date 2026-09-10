@@ -19,7 +19,6 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->unsignedInteger('order_column')->nullable()->index()->comment('Thứ tự sắp xếp — Spatie Sortable / ORDER BY');
             $table->string('sku', 100)->comment('Mã nội bộ');
-            $table->string('barcode', 50)->nullable()->index()->comment('Mã vạch nhà sản xuất');
             $table->string('name', 255)->comment('Tên sản phẩm');
             $table->foreignUlid('brand_id')->nullable()->constrained('brands')->nullOnDelete()->comment('Thương hiệu');
             $table->string('category_type', 30)->index()->comment('food | cosmetic | medical_device | toy_plastic | textile');

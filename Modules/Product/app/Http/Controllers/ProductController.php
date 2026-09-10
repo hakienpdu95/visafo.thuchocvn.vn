@@ -15,8 +15,6 @@ use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
 use Modules\Product\Models\Category;
 use Modules\Product\Models\Product;
-use Modules\Product\Queries\GetProductHandler;
-use Modules\Product\Queries\GetProductQuery;
 
 class ProductController extends Controller
 {
@@ -54,25 +52,8 @@ class ProductController extends Controller
         $data    = StoreProductData::validateAndCreate($request->all());
         $product = $action->handle($data);
 
-        return redirect()->route('backend.products.show', $product)
+        return redirect()->route('backend.products.index')
             ->with('success', 'Sản phẩm "' . $product->name . '" đã được tạo thành công.');
-    }
-
-    public function show(Product $product, GetProductHandler $handler)
-    {
-        $product = $handler->handle(new GetProductQuery($product));
-
-        $groupOrder = collect(\Modules\Product\Enums\DocumentGroupType::cases())
-            ->map(fn ($g) => "'{$g->value}'")
-            ->implode(',');
-
-        $documentTypes = \Modules\Product\Models\DocumentMasterType::query()
-            ->orderByRaw("FIELD(document_group, $groupOrder)")
-            ->orderBy('name')
-            ->get()
-            ->groupBy(fn ($type) => $type->document_group?->label() ?? 'Chưa phân nhóm');
-
-        return view('product::products.show', compact('product', 'documentTypes'));
     }
 
     public function edit(Product $product)
@@ -87,7 +68,7 @@ class ProductController extends Controller
         $data = UpdateProductData::validateAndCreate($request->all());
         $action->handle($product, $data);
 
-        return redirect()->route('backend.products.show', $product)
+        return redirect()->route('backend.products.index')
             ->with('success', 'Cập nhật sản phẩm thành công.');
     }
 

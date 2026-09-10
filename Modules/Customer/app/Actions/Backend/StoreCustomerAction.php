@@ -13,7 +13,6 @@ class StoreCustomerAction
     public function handle(StoreCustomerData $data): Customer
     {
         return Customer::create([
-            'customer_code'         => $data->customer_code,
             'name'                  => $data->name,
             'customer_group'        => $data->customer_group->value,
             'meal_model'            => $data->meal_model->value,

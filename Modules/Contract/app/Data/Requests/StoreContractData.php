@@ -23,9 +23,6 @@ class StoreContractData extends Data
         #[Required]
         public readonly string $contract_type_id,
 
-        #[Required, StringType, Max(100)]
-        public readonly string $contract_number,
-
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
@@ -51,7 +48,6 @@ class StoreContractData extends Data
         return [
             'vendor_id'              => ['required', Rule::exists('vendors', 'id')],
             'contract_type_id'       => ['required', Rule::exists('contract_types', 'id')],
-            'contract_number'        => ['required', 'string', 'max:100', Rule::unique('contracts', 'contract_number')],
             'renewal_period_months'  => ['nullable', 'integer', 'min:1', 'max:120', 'required_if:is_auto_renew,1'],
             'status'                 => ['required', Rule::enum(ContractStatus::class)],
         ];
@@ -65,11 +61,6 @@ class StoreContractData extends Data
 
             'contract_type_id.required' => 'Vui lòng chọn loại hợp đồng.',
             'contract_type_id.exists'   => 'Loại hợp đồng không hợp lệ.',
-
-            'contract_number.required' => 'Vui lòng nhập số hợp đồng.',
-            'contract_number.string'   => 'Số hợp đồng không hợp lệ.',
-            'contract_number.max'      => 'Số hợp đồng không được vượt quá 100 ký tự.',
-            'contract_number.unique'   => 'Số hợp đồng này đã tồn tại.',
 
             'name.required' => 'Vui lòng nhập tên hợp đồng.',
             'name.string'   => 'Tên hợp đồng không hợp lệ.',

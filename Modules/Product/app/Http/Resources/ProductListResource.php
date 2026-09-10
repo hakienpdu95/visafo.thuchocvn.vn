@@ -34,7 +34,6 @@ class ProductListResource extends JsonResource
 
             'created_at' => $this->created_at?->format('d/m/Y'),
 
-            'show_url'   => route('backend.products.show', $this->resource),
             'edit_url'   => route('backend.products.edit', $this->resource),
             'delete_url' => route('backend.products.destroy', $this->resource),
             'can_delete' => true,

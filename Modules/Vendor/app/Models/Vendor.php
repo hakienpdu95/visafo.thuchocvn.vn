@@ -5,6 +5,7 @@ namespace Modules\Vendor\Models;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\Province;
 use App\Models\Ward;
+use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -16,6 +17,18 @@ use Modules\Vendor\Enums\VendorStatus;
 
 class Vendor extends TenantAwareModel
 {
+    use HasAutoCode;
+
+    public function autoCodeColumn(): string
+    {
+        return 'vendor_code';
+    }
+
+    public function autoCodeSequenceType(): string
+    {
+        return 'vendor';
+    }
+
     protected $fillable = [
         'vendor_code',
         'name',

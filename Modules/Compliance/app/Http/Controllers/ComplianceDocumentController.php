@@ -55,14 +55,14 @@ class ComplianceDocumentController extends Controller
     {
         $this->authorize('update', $product);
 
-        return $this->store($request, $product, $action, 'backend.products.show');
+        return $this->store($request, $product, $action, 'backend.products.edit');
     }
 
     public function destroyForProduct(Product $product, ComplianceDocument $document, DestroyComplianceDocumentAction $action): RedirectResponse
     {
         $this->authorize('update', $product);
 
-        return $this->destroy($document, $action, 'backend.products.show', $product);
+        return $this->destroy($document, $action, 'backend.products.edit', $product);
     }
 
     public function storeForPartnerProduct(Request $request, PartnerProduct $partnerProduct, StoreComplianceDocumentAction $action): RedirectResponse

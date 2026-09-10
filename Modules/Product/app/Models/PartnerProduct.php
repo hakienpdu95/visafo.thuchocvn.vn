@@ -3,6 +3,7 @@
 namespace Modules\Product\Models;
 
 use App\Foundation\Models\TenantAwareModel;
+use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
@@ -12,6 +13,18 @@ use Modules\Vendor\Models\Vendor;
 
 class PartnerProduct extends TenantAwareModel
 {
+    use HasAutoCode;
+
+    public function autoCodeColumn(): string
+    {
+        return 'vendor_sku';
+    }
+
+    public function autoCodeSequenceType(): string
+    {
+        return 'partner_product';
+    }
+
     protected $fillable = [
         'vendor_id',
         'product_id',

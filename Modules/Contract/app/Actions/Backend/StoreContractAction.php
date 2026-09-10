@@ -15,7 +15,6 @@ class StoreContractAction
         return Contract::create([
             'vendor_id'              => $data->vendor_id,
             'contract_type_id'       => $data->contract_type_id,
-            'contract_number'        => $data->contract_number,
             'name'                   => $data->name,
             'total_value'            => $data->total_value,
             'start_date'             => $data->start_date,

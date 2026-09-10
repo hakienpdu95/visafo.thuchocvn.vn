@@ -93,13 +93,10 @@
                         <div class="form-control">
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Mã hàng của NCC</span>
-                                <span class="label-text-alt text-xs text-base-content/40">Tuỳ chọn</span>
                             </label>
-                            <input type="text" name="vendor_sku" value="{{ old('vendor_sku') }}"
-                                   data-val-maxlength="100"
-                                   class="input input-bordered input-sm w-full font-mono @error('vendor_sku') input-error @enderror"
-                                   placeholder="Mã nội bộ do NCC tự đặt" maxlength="100">
-                            @error('vendor_sku')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                            <input type="text" value="MHCC-000001" disabled
+                                   class="input input-bordered input-sm w-full font-mono text-base-content/40 bg-base-200/60">
+                            <p class="mt-1 text-xs text-base-content/40">Hệ thống tự động sinh mã khi lưu, không thể chỉnh sửa tại đây.</p>
                         </div>
 
                         <div class="form-control">

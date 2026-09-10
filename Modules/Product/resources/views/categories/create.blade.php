@@ -38,13 +38,13 @@
 
             <div class="form-control">
                 <label class="label py-0 pb-1.5">
-                    <span class="label-text font-medium">Mã nhóm (code) <span class="text-error">*</span></span>
+                    <span class="label-text font-medium">Mã nhóm (code)</span>
                     <span class="label-text-alt text-xs text-base-content/40">chữ thường, số, gạch dưới</span>
                 </label>
                 <input type="text" name="code" value="{{ old('code') }}"
-                       data-req="Vui lòng nhập mã nhóm hàng"
                        class="input input-bordered input-sm w-full font-mono @error('code') input-error @enderror"
-                       placeholder="VD: fresh_food">
+                       placeholder="VD: fresh_food (Để trống hệ thống sẽ tự tạo DMNH-000001)">
+                <p class="mt-1 text-xs text-base-content/40">Có thể tự nhập, hoặc để trống để hệ thống tự động sinh mã.</p>
                 @error('code')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
             </div>
 

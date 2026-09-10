@@ -76,14 +76,10 @@
                             <div class="form-control">
                                 <label class="label py-0 pb-1.5">
                                     <span class="label-text font-medium">Mã nhà cung cấp</span>
-                                    <span class="label-text-alt text-xs text-base-content/40">Tuỳ chọn</span>
                                 </label>
-                                <input type="text" name="vendor_code" value="{{ old('vendor_code') }}"
-                                       data-val-maxlength="50"
-                                       class="input input-bordered input-sm w-full font-mono uppercase @error('vendor_code') input-error @enderror"
-                                       placeholder="VD: NCC-001" maxlength="50">
-                                <p class="mt-1 text-xs text-base-content/40">Chỉ chữ, số và dấu <code class="bg-base-200 px-1 rounded">-</code></p>
-                                @error('vendor_code')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                                <input type="text" value="NCC-000001" disabled
+                                       class="input input-bordered input-sm w-full font-mono text-base-content/40 bg-base-200/60">
+                                <p class="mt-1 text-xs text-base-content/40">Hệ thống tự động sinh mã khi lưu, không thể chỉnh sửa tại đây.</p>
                             </div>
 
                             <div class="form-control">

@@ -19,9 +19,6 @@ class StorePartnerProductData extends Data
         #[Required]
         public readonly string $product_id,
 
-        #[Nullable, StringType, Max(100)]
-        public readonly ?string $vendor_sku,
-
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
@@ -51,9 +48,6 @@ class StorePartnerProductData extends Data
 
             'product_id.required' => 'Vui lòng ánh xạ với sản phẩm chuẩn của Visafo.',
             'product_id.exists'   => 'Sản phẩm chuẩn không hợp lệ.',
-
-            'vendor_sku.string' => 'Mã hàng của NCC không hợp lệ.',
-            'vendor_sku.max'    => 'Mã hàng của NCC không được vượt quá 100 ký tự.',
 
             'name.required' => 'Vui lòng nhập tên hàng do NCC kê khai.',
             'name.string'   => 'Tên hàng không hợp lệ.',

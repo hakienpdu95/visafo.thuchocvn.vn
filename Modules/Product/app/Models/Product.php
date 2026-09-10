@@ -3,6 +3,7 @@
 namespace Modules\Product\Models;
 
 use App\Foundation\Models\TenantAwareModel;
+use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,6 +18,18 @@ use Modules\Product\Enums\ProductType;
 
 class Product extends TenantAwareModel
 {
+    use HasAutoCode;
+
+    public function autoCodeColumn(): string
+    {
+        return 'sku';
+    }
+
+    public function autoCodeSequenceType(): string
+    {
+        return 'product';
+    }
+
     protected $fillable = [
         'sku',
         'name',

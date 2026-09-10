@@ -15,8 +15,8 @@ use Spatie\LaravelData\Data;
 class StoreDocumentMasterTypeData extends Data
 {
     public function __construct(
-        #[Required, StringType, Max(60), Regex('/^[a-z0-9_]+$/'), Unique('document_master_types', 'code')]
-        public readonly string $code,
+        #[Nullable, StringType, Max(60), Regex('/^[a-z0-9_]+$/'), Unique('document_master_types', 'code')]
+        public readonly ?string $code,
 
         #[Required, StringType, Max(255)]
         public readonly string $name,
@@ -34,7 +34,6 @@ class StoreDocumentMasterTypeData extends Data
     public static function messages(): array
     {
         return [
-            'code.required' => 'Vui lòng nhập mã loại giấy tờ.',
             'code.string'   => 'Mã loại giấy tờ không hợp lệ.',
             'code.max'      => 'Mã loại giấy tờ không được vượt quá 60 ký tự.',
             'code.regex'    => 'Mã loại giấy tờ chỉ được chứa chữ thường, số và dấu gạch dưới.',

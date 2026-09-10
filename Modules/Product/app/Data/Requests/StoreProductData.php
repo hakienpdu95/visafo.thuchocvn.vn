@@ -6,6 +6,7 @@ use Illuminate\Validation\Rule;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
@@ -13,8 +14,8 @@ use Spatie\LaravelData\Data;
 class StoreProductData extends Data
 {
     public function __construct(
-        #[Required, StringType, Max(100)]
-        public readonly string $sku,
+        #[Nullable, StringType, Max(100)]
+        public readonly ?string $sku,
 
         #[Required, StringType, Max(255)]
         public readonly string $name,
@@ -34,7 +35,7 @@ class StoreProductData extends Data
     {
         return [
             'sku' => [
-                'required', 'string', 'max:100',
+                'nullable', 'string', 'max:100',
                 Rule::unique('products', 'sku'),
             ],
             'category_id'  => ['required', Rule::exists('categories', 'id')],
@@ -45,10 +46,9 @@ class StoreProductData extends Data
     public static function messages(): array
     {
         return [
-            'sku.required' => 'Vui lòng nhập mã SKU.',
-            'sku.string'   => 'Mã SKU không hợp lệ.',
-            'sku.max'      => 'Mã SKU không được vượt quá 100 ký tự.',
-            'sku.unique'   => 'Mã SKU này đã tồn tại.',
+            'sku.string' => 'Mã SKU không hợp lệ.',
+            'sku.max'    => 'Mã SKU không được vượt quá 100 ký tự.',
+            'sku.unique' => 'Mã SKU này đã tồn tại.',
 
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'name.string'   => 'Tên sản phẩm không hợp lệ.',

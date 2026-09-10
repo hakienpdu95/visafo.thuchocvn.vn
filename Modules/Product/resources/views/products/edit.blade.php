@@ -8,7 +8,7 @@
         <h1 class="text-2xl font-bold text-base-content">Chỉnh sửa sản phẩm</h1>
         <p class="text-sm text-base-content/50 mt-0.5">{{ $product->sku }} · {{ $product->name }}</p>
     </div>
-    <a href="{{ route('backend.products.show', $product) }}" class="btn btn-ghost btn-sm gap-1.5">
+    <a href="{{ route('backend.products.index') }}" class="btn btn-ghost btn-sm gap-1.5">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
@@ -148,7 +148,7 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <a href="{{ route('backend.products.show', $product) }}" class="btn btn-ghost btn-sm flex-1">Hủy</a>
+                        <a href="{{ route('backend.products.index') }}" class="btn btn-ghost btn-sm flex-1">Hủy</a>
                         <button type="submit" class="btn btn-primary btn-sm flex-1 gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
