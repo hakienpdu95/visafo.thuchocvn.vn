@@ -8,6 +8,7 @@ use Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
 use Modules\Employee\Database\Seeders\DepartmentSeeder;
 use Modules\Product\Database\Seeders\CategorySeeder;
 use Modules\Product\Database\Seeders\DocumentMasterTypeSeeder;
+use Modules\Product\Database\Seeders\ProductMasterDataSeeder;
 
 /**
  * Master Seeder — điểm khởi chạy duy nhất cho toàn bộ dữ liệu mặc định hệ thống.
@@ -53,6 +54,9 @@ class SystemDataSeeder extends Seeder
 
             // ── 6. 6 nhóm thực phẩm chuẩn ATTP (categories) — Rule Engine ─
             CategorySeeder::class,
+
+            // ── 7. Master data sản phẩm (datafiles/products_master_data.json) ─
+            ProductMasterDataSeeder::class,
 
             DepartmentSeeder::class,
         ]);
