@@ -11,55 +11,24 @@
 // ── Module-level constants (compile once) ───────────────────────────────────
 
 const LEVEL_META = Object.freeze({
-    'Full':          { cls: 'badge badge-xs badge-success',                       desc: 'Toàn quyền CRUD + gán' },
-    'Assigned':      { cls: 'badge badge-xs badge-info',                          desc: 'Chỉ record được gán' },
-    'Full team':     { cls: 'badge badge-xs badge-success',                       desc: 'Toàn quyền cả team' },
-    'Limited':       { cls: 'badge badge-xs badge-warning',                       desc: 'Xem, không sửa/xóa' },
-    'Source view':   { cls: 'badge badge-xs badge-primary',                       desc: 'Xem nguồn, ẩn thông tin cá nhân' },
-    'Config':        { cls: 'badge badge-xs badge-ghost border border-base-300',  desc: 'Cấu hình module' },
-    'Config prompt': { cls: 'badge badge-xs badge-ghost border border-base-300',  desc: 'Chỉnh prompt AI' },
-    'Admin config':  { cls: 'badge badge-xs badge-ghost border border-base-300',  desc: 'Cấu hình admin' },
-    'Full config':   { cls: 'badge badge-xs badge-ghost border border-base-300',  desc: 'Toàn quyền cấu hình' },
-    'AI config':     { cls: 'badge badge-xs badge-ghost border border-base-300',  desc: 'Cấu hình AI' },
-    'Use':           { cls: 'badge badge-xs badge-accent',                        desc: 'Dùng AI output, không config' },
-    'Monitor':       { cls: 'badge badge-xs badge-warning',                       desc: 'Xem trạng thái, không sửa' },
-    'Monitor/Edit':  { cls: 'badge badge-xs badge-warning',                       desc: 'Xem + sửa workflow' },
-    'Approve/View':  { cls: 'badge badge-xs badge-secondary',                     desc: 'Xem + phê duyệt' },
-    'View':          { cls: 'badge badge-xs badge-ghost',                         desc: 'Chỉ xem' },
-    'View related':  { cls: 'badge badge-xs badge-ghost',                         desc: 'Xem tài liệu liên quan' },
-    'View summary':  { cls: 'badge badge-xs badge-ghost',                         desc: 'Xem tóm tắt' },
-    'View ltd':      { cls: 'badge badge-xs badge-ghost',                         desc: 'Xem giới hạn' },
-    'HR tasks':      { cls: 'badge badge-xs badge-info',                          desc: 'Chỉ task bộ phận HR' },
-    'Create/Edit':   { cls: 'badge badge-xs badge-success',                       desc: 'Tạo và sửa' },
-    'Create HR SOP': { cls: 'badge badge-xs badge-info',                          desc: 'Tạo SOP HR' },
-    'Personal/team': { cls: 'badge badge-xs badge-info',                          desc: 'Báo cáo cá nhân/team' },
-    'Operations':    { cls: 'badge badge-xs badge-info',                          desc: 'Báo cáo vận hành' },
-    'Marketing':     { cls: 'badge badge-xs badge-info',                          desc: 'Báo cáo marketing' },
-    'HR':            { cls: 'badge badge-xs badge-info',                          desc: 'Báo cáo nhân sự' },
-    'AI usage':      { cls: 'badge badge-xs badge-info',                          desc: 'Báo cáo dùng AI' },
-    'Shared only':   { cls: 'badge badge-xs badge-ghost',                         desc: 'Chỉ dữ liệu được chia sẻ' },
+    'Full': { cls: 'badge badge-xs badge-success', desc: 'Toàn quyền xem, tạo, sửa, xóa' },
+    'View': { cls: 'badge badge-xs badge-ghost',   desc: 'Chỉ xem, không chỉnh sửa' },
 });
 
 const SIDEBAR_MODULES = Object.freeze({
-    ceo:          ['CEO Dashboard','CRM','Sales AI','Tasks','SOP','Workflow','Prompt Mgmt','AI Logs','Users','Reports'],
-    sales:        ['CRM','Sales AI','Tasks','SOP','Reports'],
-    ops:          ['CEO Dashboard','CRM','Tasks','SOP','Workflow','AI Logs','Reports'],
-    marketing:    ['CRM','Sales AI','Tasks','SOP','Reports'],
-    hr:           ['Tasks','SOP','Users','Reports'],
-    ai_operator:  ['CEO Dashboard','CRM','Tasks','SOP','Workflow','Prompt Mgmt','AI Logs','Reports'],
-    system_admin: ['CEO Dashboard','CRM','Sales AI','Tasks','SOP','Workflow','Prompt Mgmt','AI Logs','Users','Roles/Perms','Reports'],
-    viewer:       ['CEO Dashboard','Tasks','SOP','Reports'],
+    system_admin:      ['Dashboard','Sản phẩm','Nhà cung cấp','Khách hàng','Hợp đồng','Compliance','Truy xuất','Nhân sự','Tài khoản'],
+    director:           ['Dashboard','Sản phẩm','Nhà cung cấp','Khách hàng','Hợp đồng','Compliance','Truy xuất','Nhân sự','Tài khoản'],
+    qa_qc_manager:      ['Dashboard','Sản phẩm','Nhà cung cấp','Khách hàng','Compliance','Truy xuất'],
+    purchasing_staff:   ['Dashboard','Sản phẩm','Nhà cung cấp','Hợp đồng'],
+    sales_staff:        ['Dashboard','Khách hàng','Hợp đồng','Truy xuất'],
 });
 
 const ALL_PRESETS = Object.freeze([
-    { role: 'ceo',          label: 'CEO / Điều hành', icon: '👔' },
-    { role: 'sales',        label: 'Kinh doanh',       icon: '💼' },
-    { role: 'ops',          label: 'Vận hành',         icon: '⚙️'  },
-    { role: 'marketing',    label: 'Marketing',        icon: '📢' },
-    { role: 'hr',           label: 'Nhân sự (HR)',     icon: '👥' },
-    { role: 'ai_operator',  label: 'AI Operator',      icon: '🤖' },
-    { role: 'system_admin', label: 'Quản trị HT',      icon: '🛡️'  },
-    { role: 'viewer',       label: 'Xem giới hạn',     icon: '👁️'  },
+    { role: 'system_admin',      label: 'Quản trị hệ thống', icon: '🛡️'  },
+    { role: 'director',          label: 'Ban Giám đốc',      icon: '👔' },
+    { role: 'qa_qc_manager',     label: 'QL Chất lượng/ATTP', icon: '🔬' },
+    { role: 'purchasing_staff',  label: 'NV Cung ứng',        icon: '📦' },
+    { role: 'sales_staff',       label: 'NV Kinh doanh',      icon: '💼' },
 ]);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;

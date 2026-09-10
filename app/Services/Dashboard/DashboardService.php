@@ -2,7 +2,6 @@
 
 namespace App\Services\Dashboard;
 
-use App\Enums\RoleEnum;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Modules\ActivityLog\Models\ActivityLog;
@@ -17,7 +16,7 @@ class DashboardService
 {
     public function getData(User $user): array
     {
-        $primaryRole = $user->getRoleNames()->first() ?? RoleEnum::VIEWER->value;
+        $primaryRole = $user->getRoleNames()->first() ?? '';
 
         return [
             'kpi_cards'       => [],

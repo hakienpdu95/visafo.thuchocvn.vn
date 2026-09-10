@@ -2,7 +2,6 @@
 
 namespace Modules\Auth\Actions;
 
-use App\Enums\RoleEnum;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -23,7 +22,9 @@ class RegisterOrganizationAction
                 'password' => Hash::make($data->password),
             ]);
 
-            $user->assignRole(RoleEnum::VIEWER->value);
+            // Tài khoản tự đăng ký chưa có vai trò — System Admin gán vai trò
+            // phù hợp (director/qa_qc_manager/purchasing_staff/sales_staff)
+            // sau khi duyệt, tại màn Quản lý tài khoản.
 
             ActivityLogger::info('Auth', 'user_registered', $user, [
                 'email' => $user->email,

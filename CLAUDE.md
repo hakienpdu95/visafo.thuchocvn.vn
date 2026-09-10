@@ -46,7 +46,7 @@ Base classes enforce tenant isolation:
 
 ### RBAC
 
-Eight roles (CEO, Sales, Ops, Marketing, HR, AI_Operator, System_Admin, Viewer) with 40+ permissions across 11 domains. `config/permissions.php` maps roles to visible sidebar modules — the UI is rendered from this config, not hardcoded.
+Five roles matching the F&B Traceability domain: `system_admin` (full), `director` (view-only across all modules), `qa_qc_manager` (Compliance/Traceability/Products), `purchasing_staff` (Vendors/Contracts), `sales_staff` (Customers). Defined in `app/Enums/RoleEnum.php` / `app/Enums/PermissionEnum.php`, seeded by `database/seeders/RolePermissionSeeder.php`. Sidebar and route gating read real Spatie permissions (`vendor.view`, `compliance.manage`, etc.) via `@can`/`permission:` middleware — no separate config file.
 
 ### Module System (NWIDART)
 

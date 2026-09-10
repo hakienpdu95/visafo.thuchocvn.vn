@@ -61,7 +61,7 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
     // ── Traceability Report (Farm-to-Fork) ─────────────────────────────────
     Route::get('/traceability', [TraceabilityController::class, 'index'])
-        ->middleware('permission:compliance.view')
+        ->middleware('permission:traceability.view')
         ->name('traceability.index');
 
     // ── Kho tài liệu & Minh chứng ────────────────────────────────────────

@@ -2,7 +2,6 @@
 
 namespace Modules\User\Policies;
 
-use App\Enums\RoleEnum;
 use App\Models\User;
 
 class UserPolicy
@@ -11,30 +10,17 @@ class UserPolicy
 
     public function viewAny(User $actor): bool
     {
-        return $actor->hasAnyRole([
-            'super-admin',
-            RoleEnum::ADMIN->value,
-            RoleEnum::CEO->value,
-            RoleEnum::HR->value,
-        ]);
+        return $actor->can('users.view') || $actor->can('users.manage');
     }
 
     public function view(User $actor, User $target): bool
     {
-        if ($actor->hasAnyRole(['super-admin', RoleEnum::ADMIN->value])) {
-            return true;
-        }
-
-        if ($actor->hasAnyRole([RoleEnum::CEO->value, RoleEnum::HR->value])) {
-            return true;
-        }
-
-        return false;
+        return $this->viewAny($actor);
     }
 
     public function create(User $actor): bool
     {
-        return $actor->hasAnyRole(['super-admin', RoleEnum::ADMIN->value, RoleEnum::HR->value]);
+        return $actor->can('users.manage');
     }
 
     public function update(User $actor, User $target): bool
@@ -44,15 +30,7 @@ class UserPolicy
             return false;
         }
 
-        if ($actor->hasAnyRole(['super-admin', RoleEnum::ADMIN->value])) {
-            return true;
-        }
-
-        if ($actor->hasRole(RoleEnum::HR->value)) {
-            return true;
-        }
-
-        return false;
+        return $actor->can('users.manage');
     }
 
     public function delete(User $actor, User $target): bool
@@ -62,6 +40,6 @@ class UserPolicy
             return false;
         }
 
-        return $actor->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
+        return $actor->can('users.manage');
     }
 }

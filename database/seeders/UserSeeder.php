@@ -8,31 +8,25 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Tạo 8 users mẫu — một user cho mỗi role. Password mặc định: password
+ * Tạo 5 users mẫu — một user cho mỗi vai trò F&B Traceability. Password mặc định: password
  *
  * Email test:
- *   ceo@demo.test       → CEO
- *   sales@demo.test     → Sales
- *   ops@demo.test       → Ops
- *   marketing@demo.test → Marketing
- *   hr@demo.test        → HR
- *   ai_op@demo.test     → AI Operator
- *   admin@demo.test     → System Admin
- *   viewer@demo.test    → Viewer
+ *   admin@demo.test      → System Admin
+ *   director@demo.test   → Director (Ban Giám đốc)
+ *   qaqc@demo.test        → QA/QC Manager
+ *   purchasing@demo.test → Purchasing Staff
+ *   sales@demo.test      → Sales Staff
  */
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
         $definitions = [
-            ['name' => 'CEO User',       'email' => 'ceo@demo.test',       'role' => RoleEnum::CEO],
-            ['name' => 'Sales User',     'email' => 'sales@demo.test',     'role' => RoleEnum::SALES],
-            ['name' => 'Ops User',       'email' => 'ops@demo.test',       'role' => RoleEnum::OPS],
-            ['name' => 'Marketing User', 'email' => 'marketing@demo.test', 'role' => RoleEnum::MARKETING],
-            ['name' => 'HR User',        'email' => 'hr@demo.test',        'role' => RoleEnum::HR],
-            ['name' => 'AI Operator',    'email' => 'ai_op@demo.test',     'role' => RoleEnum::AI_OP],
-            ['name' => 'System Admin',   'email' => 'admin@demo.test',     'role' => RoleEnum::ADMIN],
-            ['name' => 'Viewer User',    'email' => 'viewer@demo.test',    'role' => RoleEnum::VIEWER],
+            ['name' => 'System Admin',      'email' => 'admin@demo.test',      'role' => RoleEnum::ADMIN],
+            ['name' => 'Director User',     'email' => 'director@demo.test',   'role' => RoleEnum::DIRECTOR],
+            ['name' => 'QA/QC Manager',     'email' => 'qaqc@demo.test',       'role' => RoleEnum::QA_QC_MANAGER],
+            ['name' => 'Purchasing Staff',  'email' => 'purchasing@demo.test', 'role' => RoleEnum::PURCHASING_STAFF],
+            ['name' => 'Sales Staff',       'email' => 'sales@demo.test',      'role' => RoleEnum::SALES_STAFF],
         ];
 
         foreach ($definitions as $def) {

@@ -35,7 +35,7 @@
 
         <p class="section-title" style="margin-top:16px;">Đối tác & Chuỗi cung ứng</p>
         <div class="nav-group">
-            @canany(['vendor.view', 'contract.view', 'product.view'])
+            @canany(['vendor.view', 'contract.view', 'product.view', 'customer.view'])
             <details {{ request()->routeIs('backend.vendors.*', 'backend.contracts.*', 'backend.partner-products.*', 'backend.customers.*') ? 'open' : '' }}>
                 <summary class="nav-summary {{ request()->routeIs('backend.vendors.*', 'backend.contracts.*', 'backend.partner-products.*', 'backend.customers.*') ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h18v4H3V3zm2 4h14v14H5V7zm3 4h8m-8 4h5"/></svg>
@@ -52,7 +52,9 @@
                     @can('contract.view')
                     <a href="{{ route('backend.contracts.index') }}" class="sub-link {{ request()->routeIs('backend.contracts.*') ? 'active' : '' }}">Quản lý Hợp đồng</a>
                     @endcan
+                    @can('customer.view')
                     <a href="{{ route('backend.customers.index') }}" class="sub-link {{ request()->routeIs('backend.customers.*') ? 'active' : '' }}">Quản lý Khách hàng</a>
+                    @endcan
                 </div>
             </details>
             @endcanany
@@ -68,7 +70,7 @@
                     <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
                 </summary>
                 <div class="sub-menu">
-                    <a href="{{ route('backend.products.index') }}" class="sub-link {{ request()->routeIs('backend.products.*') ? 'active' : '' }}">Danh mục Sản phẩm chuẩn</a>
+                    <a href="{{ route('backend.products.index') }}" class="sub-link {{ request()->routeIs('backend.products.*') ? 'active' : '' }}">Danh mục Sản phẩm</a>
                     <a href="{{ route('backend.categories.index') }}" class="sub-link {{ request()->routeIs('backend.categories.*') ? 'active' : '' }}">Danh mục Nhóm hàng</a>
                 </div>
             </details>
@@ -77,7 +79,7 @@
 
         <p class="section-title" style="margin-top:16px;">Quản trị Tuân thủ</p>
         <div class="nav-group">
-            @canany(['product.manage', 'compliance.view'])
+            @canany(['compliance.view', 'product.manage', 'traceability.view'])
             <details {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*') ? 'open' : '' }}>
                 <summary class="nav-summary {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*') ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
@@ -85,12 +87,16 @@
                     <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
                 </summary>
                 <div class="sub-menu">
-                    @can('product.manage')
+                    @can('compliance.view')
                     <a href="{{ route('backend.document-repository.index') }}" class="sub-link {{ request()->routeIs('backend.document-repository.*') ? 'active' : '' }}">Kho tài liệu & Minh chứng</a>
+                    @endcan
+                    @can('product.manage')
                     <a href="{{ route('backend.document-master-types.index') }}" class="sub-link {{ request()->routeIs('backend.document-master-types.*') ? 'active' : '' }}">Từ điển giấy tờ pháp lý</a>
                     @endcan
-                    @can('compliance.view')
+                    @can('traceability.view')
                     <a href="{{ route('backend.traceability.index') }}" class="sub-link {{ request()->routeIs('backend.traceability.*') ? 'active' : '' }}">Báo cáo Truy vết liên thông</a>
+                    @endcan
+                    @can('compliance.view')
                     <a href="{{ route('backend.readiness-check.index') }}" class="sub-link {{ request()->routeIs('backend.readiness-check.*') ? 'active' : '' }}">Kiểm tra Readiness</a>
                     @endcan
                 </div>
@@ -115,6 +121,7 @@
             </details>
             @endcan
 
+            @can('users.view')
             <details {{ request()->routeIs('backend.users.*') ? 'open' : '' }}>
                 <summary class="nav-summary {{ request()->routeIs('backend.users.*') ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -123,9 +130,12 @@
                 </summary>
                 <div class="sub-menu">
                     <a href="{{ route('backend.users.index') }}" class="sub-link {{ request()->routeIs('backend.users.index') ? 'active' : '' }}">Danh sách tài khoản</a>
+                    @can('users.manage')
                     <a href="{{ route('backend.users.create') }}" class="sub-link {{ request()->routeIs('backend.users.create') ? 'active' : '' }}">Thêm tài khoản</a>
+                    @endcan
                 </div>
             </details>
+            @endcan
 
             @can('activitylog.view')
             <details {{ request()->routeIs('activitylog.*') ? 'open' : '' }}>

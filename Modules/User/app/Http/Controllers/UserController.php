@@ -113,7 +113,7 @@ class UserController extends Controller
     {
         $isAdmin = $actor->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
 
-        $excluded = $isAdmin ? [] : [RoleEnum::CEO->value, RoleEnum::ADMIN->value];
+        $excluded = $isAdmin ? [] : [RoleEnum::DIRECTOR->value, RoleEnum::ADMIN->value];
 
         return collect(RoleEnum::cases())
             ->reject(fn ($r) => in_array($r->value, $excluded, true))
@@ -126,7 +126,7 @@ class UserController extends Controller
     {
         if ($requestedRole === null) return;
 
-        $restricted = [RoleEnum::CEO->value, RoleEnum::ADMIN->value];
+        $restricted = [RoleEnum::DIRECTOR->value, RoleEnum::ADMIN->value];
         $isAdmin    = $actor->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
 
         if (! $isAdmin && in_array($requestedRole, $restricted, true)) {
@@ -142,17 +142,38 @@ class UserController extends Controller
     private function permissionMatrix(): array
     {
         return [
-            'CEO Dashboard' => ['ceo' => 'Full',         'ops' => 'Limited',       'ai_operator' => 'Limited',       'system_admin' => 'Config',       'viewer' => 'View ltd'],
-            'CRM Leads'     => ['ceo' => 'Full',         'sales' => 'Assigned',    'ops' => 'Limited',               'marketing' => 'Source view',     'ai_operator' => 'Limited', 'system_admin' => 'Config'],
-            'Sales AI'      => ['ceo' => 'Full',         'sales' => 'Use',         'marketing' => 'Limited',         'ai_operator' => 'Config prompt',  'system_admin' => 'Config'],
-            'Tasks'         => ['ceo' => 'Full',         'sales' => 'Assigned',    'ops' => 'Full team',             'marketing' => 'Limited',          'hr' => 'HR tasks',         'ai_operator' => 'Limited',  'system_admin' => 'Config', 'viewer' => 'View ltd'],
-            'SOP'           => ['ceo' => 'Approve/View', 'sales' => 'View related','ops' => 'Create/Edit',           'marketing' => 'View related',     'hr' => 'Create HR SOP',    'ai_operator' => 'AI config','system_admin' => 'Config', 'viewer' => 'View ltd'],
-            'Workflow'      => ['ceo' => 'Monitor',      'sales' => 'Limited',     'ops' => 'Monitor/Edit',          'marketing' => 'Limited',          'hr' => 'Limited',          'ai_operator' => 'AI config','system_admin' => 'Full config'],
-            'Prompt Mgmt'   => ['ceo' => 'View',         'ai_operator' => 'Full',  'system_admin' => 'Admin config'],
-            'AI Logs'       => ['ceo' => 'View summary', 'ops' => 'Limited',       'ai_operator' => 'Full',          'system_admin' => 'Full'],
-            'Users'         => ['ceo' => 'View',         'hr' => 'Limited',        'system_admin' => 'Full'],
-            'Roles/Perms'   => ['system_admin' => 'Full'],
-            'Reports'       => ['ceo' => 'Full',         'sales' => 'Personal/team','ops' => 'Operations',           'marketing' => 'Marketing',        'hr' => 'HR',               'ai_operator' => 'AI usage', 'system_admin' => 'Full',   'viewer' => 'Shared only'],
+            'Dashboard (Tổng quan)' => [
+                'system_admin' => 'View', 'director' => 'View', 'qa_qc_manager' => 'View',
+                'purchasing_staff' => 'View', 'sales_staff' => 'View',
+            ],
+            'Products (Sản phẩm & Danh mục)' => [
+                'system_admin' => 'Full', 'director' => 'View', 'qa_qc_manager' => 'Full',
+                'purchasing_staff' => 'View',
+            ],
+            'Vendors (Nhà cung cấp & Hàng hóa NCC)' => [
+                'system_admin' => 'Full', 'director' => 'View', 'qa_qc_manager' => 'View',
+                'purchasing_staff' => 'Full',
+            ],
+            'Customers (Khách hàng)' => [
+                'system_admin' => 'Full', 'director' => 'View', 'qa_qc_manager' => 'View',
+                'sales_staff' => 'Full',
+            ],
+            'Contracts (Hợp đồng)' => [
+                'system_admin' => 'Full', 'director' => 'View',
+                'purchasing_staff' => 'Full', 'sales_staff' => 'View',
+            ],
+            'Compliance (Kho tài liệu & Readiness)' => [
+                'system_admin' => 'Full', 'director' => 'View', 'qa_qc_manager' => 'Full',
+            ],
+            'Traceability (Truy xuất nguồn gốc)' => [
+                'system_admin' => 'View', 'director' => 'View', 'qa_qc_manager' => 'View', 'sales_staff' => 'View',
+            ],
+            'Employees (Nhân sự & Y tế)' => [
+                'system_admin' => 'Full', 'director' => 'View',
+            ],
+            'System (Tài khoản, Nhật ký)' => [
+                'system_admin' => 'Full', 'director' => 'View',
+            ],
         ];
     }
 }

@@ -1,98 +1,46 @@
 <?php
 namespace App\Enums;
 
+/**
+ * Permission thực tế của hệ thống Visafo F&B Traceability — khớp 1:1 với các
+ * module đang triển khai (Modules/Vendor, Customer, Contract, Product,
+ * Compliance, Employee, User, ActivityLog + báo cáo Traceability).
+ *
+ * Không còn permission "rác" kế thừa từ template SaaS/Agency cũ (CRM Leads,
+ * Sales AI, Prompt Mgmt, AI Logs, AI Copilot, CEO Dashboard config, Workflow,
+ * SOP, Warehouse, Recall, Subscription, Export Request...) — các module đó
+ * không tồn tại trong codebase này.
+ */
 enum PermissionEnum: string
 {
-    // ══ CEO DASHBOARD ══════════════════════════════════════════════
-    // CEO=Full | Ops=Limited | AI_OP=Limited | Admin=Config | Viewer=View limited
-    case CEO_DASH_FULL   = 'ceo_dashboard.full';    // CEO
-    case CEO_DASH_VIEW   = 'ceo_dashboard.view';    // Ops(limited), AI_OP(limited), Viewer
-    case CEO_DASH_CONFIG = 'ceo_dashboard.config';  // System Admin
-
-    // ══ SALES AI ═══════════════════════════════════════════════════
-    // CEO=Full | Sales=Use | Marketing=Limited | AI_OP=Config prompt | Admin=Config
-    case SALES_AI_VIEW          = 'sales_ai.view';          // CEO(full), Marketing(limited)
-    case SALES_AI_USE           = 'sales_ai.use';           // Sales — gọi AI, nhận output
-    case SALES_AI_CONFIG_PROMPT = 'sales_ai.config_prompt'; // AI Operator
-    case SALES_AI_CONFIG        = 'sales_ai.config';        // System Admin
-
-    // ══ PROMPT MANAGEMENT ══════════════════════════════════════════
-    // CEO=View | AI_OP=Full | Admin=Admin config
-    case PROMPT_VIEW         = 'prompt.view';         // CEO (read-only)
-    case PROMPT_FULL         = 'prompt.full';         // AI Operator
-    case PROMPT_ADMIN_CONFIG = 'prompt.admin_config'; // System Admin
-
-    // ══ AI LOGS ════════════════════════════════════════════════════
-    // CEO=View summary | Ops=Limited | AI_OP=Full | Admin=Full
-    case AI_LOGS_FULL    = 'ai_logs.full';    // AI Operator, Admin
-    case AI_LOGS_VIEW    = 'ai_logs.view';    // CEO(summary), Ops(limited)
-
-    // ══ AI COPILOT ═════════════════════════════════════════════════
-    // CEO=Use+ViewUsage | Sales=Use | Ops=Use | HR=Use | Marketing=Use | AI_OP=Use+Config | Admin=Use+Config
-    case AI_COPILOT_USE        = 'ai_copilot.use';        // Sử dụng AI task execution
-    case AI_COPILOT_CONFIG     = 'ai_copilot.config';     // Quản lý agents + prompts
-    case AI_COPILOT_VIEW_USAGE = 'ai_copilot.view_usage'; // Xem usage stats / logs
-
-    // ══ USERS ══════════════════════════════════════════════════════
-    // CEO=View | HR=Limited | Admin=Full
-    case USERS_VIEW   = 'users.view';   // CEO
-    case USERS_HR     = 'users.hr';     // HR (tạo user nội bộ, onboarding)
-    case USERS_MANAGE = 'users.manage'; // System Admin
-
-    // ══ ROLES & PERMISSIONS ════════════════════════════════════════
-    // Admin=Full only
-    case ROLES_MANAGE = 'roles.manage';
-
-    // ══ ASSESSMENT ═════════════════════════════════════════════════
-    // Đã bị gỡ cùng Modules/Assessment (cleanup/remove-non-competency-modules).
-    // assessment.view/config/results/reprocess không còn permission nào tham chiếu.
-
-    // ══ VENDOR (Quản lý Nhà cung cấp) ════════════════════════════════
-    case VENDOR_VIEW   = 'vendor.view';
-    case VENDOR_MANAGE = 'vendor.manage';
-
-    // ══ CUSTOMER (Quản lý Khách hàng B2B F&B) ══════════════════════════
-    case CUSTOMER_VIEW   = 'customer.view';
-    case CUSTOMER_MANAGE = 'customer.manage';
-
-    // ══ CONTRACT (Quản lý Hợp đồng nhà cung cấp) ══════════════════════
-    case CONTRACT_VIEW   = 'contract.view';
-    case CONTRACT_MANAGE = 'contract.manage';
-
-    // ══ PRODUCT (Quản lý Danh mục / SKU Master) ═══════════════════════
+    // ══ PRODUCT (Sản phẩm & Danh mục — bao gồm Hàng hóa NCC khai báo) ══
     case PRODUCT_VIEW   = 'product.view';
     case PRODUCT_MANAGE = 'product.manage';
 
-    // ══ WAREHOUSE (Nhập kho / Lô hàng / Truy xuất nguồn gốc) ═══════════
-    case WAREHOUSE_VIEW   = 'warehouse.view';
-    case WAREHOUSE_MANAGE = 'warehouse.manage';
+    // ══ VENDOR (Nhà cung cấp) ══
+    case VENDOR_VIEW   = 'vendor.view';
+    case VENDOR_MANAGE = 'vendor.manage';
 
-    // ══ RECALL (Thu hồi sản phẩm / Báo cáo tác dụng bất lợi) ═══════════
-    case RECALL_VIEW   = 'recall.view';
-    case RECALL_MANAGE = 'recall.manage';
+    // ══ CUSTOMER (Khách hàng B2B F&B) ══
+    case CUSTOMER_VIEW   = 'customer.view';
+    case CUSTOMER_MANAGE = 'customer.manage';
 
-    // ══ COMPLIANCE (Hộp thư cảnh báo pháp lý/hạn dùng tập trung) ═══════
+    // ══ CONTRACT (Hợp đồng nhà cung cấp) ══
+    case CONTRACT_VIEW   = 'contract.view';
+    case CONTRACT_MANAGE = 'contract.manage';
+
+    // ══ COMPLIANCE (Kho tài liệu & Kiểm tra Readiness) ══
     case COMPLIANCE_VIEW   = 'compliance.view';
     case COMPLIANCE_MANAGE = 'compliance.manage';
 
-    // ══ EMPLOYEE (Nhân sự — Phòng ban/Nhân viên/Hồ sơ y tế & ATTP) ═════
+    // ══ TRACEABILITY (Báo cáo Truy xuất nguồn gốc — chỉ xem) ══
+    case TRACEABILITY_VIEW = 'traceability.view';
+
+    // ══ EMPLOYEE (Nhân sự — Phòng ban/Nhân viên/Hồ sơ y tế & ATTP) ══
     case EMPLOYEE_VIEW   = 'employee.view';
     case EMPLOYEE_MANAGE = 'employee.manage';
 
-    // ══ SUBSCRIPTION ═══════════════════════════════════════════════
-    // Chỉ còn VIEW — MANAGE/BILLING/ADMIN gate các route quản trị thuộc
-    // Modules/Subscription (đã xóa, xem cleanup/remove-non-competency-modules).
-    // VIEW vẫn hợp lệ: hiển thị thông tin plan hiện tại qua vendor package
-    // laravelcm/laravel-subscriptions (Modules/Organization/resources/views/show.blade.php),
-    // không phụ thuộc module đã xóa.
-    case SUBSCRIPTION_VIEW = 'subscription.view';
-
-    // ══ SYSTEM ═════════════════════════════════════════════════════
-    case INTEGRATION_MANAGE = 'integration.manage';
-    case AUDIT_VIEW         = 'audit.view';
-    case SYSTEM_CONFIG      = 'system.config';
-
-    // ── Export dữ liệu nhạy cảm (GAP_ANALYSIS_v1.0.md §3.3 OPS-02) ──
-    case EXPORT_REQUEST_VIEW    = 'export_request.view';    // Xem Export Request register (minh bạch nội bộ)
-    case EXPORT_REQUEST_APPROVE = 'export_request.approve'; // Phê duyệt/từ chối — SoD, không tự duyệt request của mình
+    // ══ SYSTEM (Tài khoản người dùng) ══
+    case USERS_VIEW   = 'users.view';
+    case USERS_MANAGE = 'users.manage';
 }

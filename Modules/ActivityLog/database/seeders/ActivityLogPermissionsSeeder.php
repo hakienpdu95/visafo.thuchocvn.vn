@@ -16,8 +16,8 @@ class ActivityLogPermissionsSeeder extends Seeder
     ];
 
     private const ADMIN_ROLES = [
-        RoleEnum::ADMIN->value, // 'system_admin'
-        RoleEnum::CEO->value,   // 'ceo'
+        RoleEnum::ADMIN->value,    // 'system_admin'
+        RoleEnum::DIRECTOR->value, // 'director'
     ];
 
     public function run(): void
