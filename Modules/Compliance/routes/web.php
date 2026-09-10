@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Compliance\Http\Controllers\Api\ComplianceDocumentApiController;
 use Modules\Compliance\Http\Controllers\Api\ComplianceWarningApiController;
+use Modules\Compliance\Http\Controllers\Api\ReadinessApiController;
 use Modules\Compliance\Http\Controllers\ComplianceWarningController;
 
 Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(function () {
@@ -12,4 +14,6 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
 Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(function () {
     Route::get('compliance-warnings', [ComplianceWarningApiController::class, 'index'])->name('compliance-warnings');
+    Route::get('documents', [ComplianceDocumentApiController::class, 'index'])->name('documents');
+    Route::get('readiness', [ReadinessApiController::class, 'index'])->name('readiness');
 });

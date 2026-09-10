@@ -15,7 +15,7 @@ class GetProductHandler implements QueryHandlerInterface
 
         $product->load([
             'category',
-            'compliances' => fn ($q) => $q->with('documentType')->latest('issue_date'),
+            'documents' => fn ($q) => $q->with('documentType')->latest('issue_date'),
         ]);
 
         return $product;

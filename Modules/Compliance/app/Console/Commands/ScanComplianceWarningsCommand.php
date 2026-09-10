@@ -3,15 +3,13 @@
 namespace Modules\Compliance\Console\Commands;
 
 use Illuminate\Console\Command;
+use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Enums\WarningCategory;
 use Modules\Compliance\Enums\WarningSeverity;
 use Modules\Compliance\Enums\WarningStatus;
+use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Compliance\Models\ComplianceWarning;
 use Modules\Employee\Models\Employee;
-use Modules\Product\Enums\ComplianceStatus;
-use Modules\Product\Models\Product;
-use Modules\Vendor\Enums\VendorCertificateType;
-use Modules\Vendor\Models\Vendor;
 
 class ScanComplianceWarningsCommand extends Command
 {
@@ -21,6 +19,11 @@ class ScanComplianceWarningsCommand extends Command
 
     public function handle(): int
     {
+        $expiredCount = $this->autoExpireDocuments();
+        if ($expiredCount > 0) {
+            $this->info("Đã chuyển {$expiredCount} hồ sơ pháp lý sang trạng thái hết hạn.");
+        }
+
         $productIds = $this->scanProductCompliances();
         $this->resolveStale(WarningCategory::ProductComplianceExpiry, $productIds);
 
@@ -38,86 +41,88 @@ class ScanComplianceWarningsCommand extends Command
         return self::SUCCESS;
     }
 
+    private function autoExpireDocuments(): int
+    {
+        return ComplianceDocument::query()
+            ->where('status', ComplianceDocumentStatus::Active->value)
+            ->whereNotNull('expiration_date')
+            ->where('expiration_date', '<', now()->toDateString())
+            ->update(['status' => ComplianceDocumentStatus::Expired->value]);
+    }
+
     /** @return string[] */
     private function scanProductCompliances(): array
     {
-        $activeIds = [];
-
-        $products = Product::withoutTenant()
-            ->with(['compliances' => fn ($q) => $q->where('status', ComplianceStatus::Active->value)
-                ->whereNotNull('expiration_date')
-                ->with('documentType')])
-            ->get();
-
-        foreach ($products as $product) {
-            $threshold = (int) config('compliance.thresholds.product_compliance_default_days');
-
-            foreach ($product->compliances as $compliance) {
-                $daysRemaining = $this->daysRemaining($compliance->expiration_date);
-
-                if ($daysRemaining > $threshold) {
-                    continue;
-                }
-
-                ComplianceWarning::withoutTenant()->updateOrCreate(
-                    [
-                        'warnable_type' => 'product_compliance',
-                        'warnable_id'   => $compliance->id,
-                        'category'      => WarningCategory::ProductComplianceExpiry->value,
-                    ],
-                    [
-                        'title'           => "{$compliance->documentType->name} — {$product->name}",
-                        'message'         => "Hồ sơ \"{$compliance->documentType->name}\" của sản phẩm \"{$product->name}\" (SKU {$product->sku}) sẽ hết hạn vào {$compliance->expiration_date->format('d/m/Y')}.",
-                        'due_date'        => $compliance->expiration_date,
-                        'severity'        => $this->severity($daysRemaining)->value,
-                    ],
-                );
-
-                $activeIds[] = $compliance->id;
-            }
-        }
-
-        return $activeIds;
+        return $this->scanDocumentsFor(
+            documentableType: 'product',
+            category: WarningCategory::ProductComplianceExpiry,
+            threshold: (int) config('compliance.thresholds.product_compliance_default_days'),
+            titleFor: fn ($document, $product) => "{$document->documentType->name} — {$product->name}",
+            messageFor: fn ($document, $product) => "Hồ sơ \"{$document->documentType->name}\" của sản phẩm \"{$product->name}\" (SKU {$product->sku}) sẽ hết hạn vào {$document->expiration_date->format('d/m/Y')}.",
+        );
     }
 
     /** @return string[] */
     private function scanVendorCertificates(): array
     {
-        $activeIds = [];
-        $gmpAndFoodSafety = [VendorCertificateType::Gmp->value, VendorCertificateType::FoodSafety->value];
+        $gmpAndFoodSafety = ['supplier_gmp', 'supplier_attp'];
 
-        $vendors = Vendor::withoutTenant()
-            ->with(['certificates' => fn ($q) => $q->where('is_active', true)->whereNotNull('expiry_date')])
+        return $this->scanDocumentsFor(
+            documentableType: 'vendor',
+            category: WarningCategory::VendorCertificateExpiry,
+            threshold: fn ($document) => in_array($document->documentType->code, $gmpAndFoodSafety, true)
+                ? (int) config('compliance.thresholds.vendor_certificate_gmp_days')
+                : (int) config('compliance.thresholds.vendor_certificate_default_days'),
+            titleFor: fn ($document, $vendor) => "{$document->documentType->name} — {$vendor->name}",
+            messageFor: fn ($document, $vendor) => "{$document->documentType->name} của nhà cung cấp \"{$vendor->name}\" sẽ hết hạn vào {$document->expiration_date->format('d/m/Y')}.",
+        );
+    }
+
+    /**
+     * @param int|(callable(ComplianceDocument): int) $threshold
+     * @param callable(ComplianceDocument, mixed): string $titleFor
+     * @param callable(ComplianceDocument, mixed): string $messageFor
+     * @return string[]
+     */
+    private function scanDocumentsFor(string $documentableType, WarningCategory $category, int|callable $threshold, callable $titleFor, callable $messageFor): array
+    {
+        $activeIds = [];
+
+        $documents = ComplianceDocument::query()
+            ->where('documentable_type', $documentableType)
+            ->where('status', ComplianceDocumentStatus::Active->value)
+            ->whereNotNull('expiration_date')
+            ->with(['documentType', 'documentable' => fn ($q) => $q->withoutTenant()])
             ->get();
 
-        foreach ($vendors as $vendor) {
-            foreach ($vendor->certificates as $certificate) {
-                $threshold = in_array($certificate->certificate_type->value, $gmpAndFoodSafety, true)
-                    ? (int) config('compliance.thresholds.vendor_certificate_gmp_days')
-                    : (int) config('compliance.thresholds.vendor_certificate_default_days');
-
-                $daysRemaining = $this->daysRemaining($certificate->expiry_date);
-
-                if ($daysRemaining > $threshold) {
-                    continue;
-                }
-
-                ComplianceWarning::withoutTenant()->updateOrCreate(
-                    [
-                        'warnable_type' => 'vendor_certificate',
-                        'warnable_id'   => $certificate->id,
-                        'category'      => WarningCategory::VendorCertificateExpiry->value,
-                    ],
-                    [
-                        'title'           => "{$certificate->certificate_type->label()} — {$vendor->name}",
-                        'message'         => "{$certificate->certificate_type->label()} của nhà cung cấp \"{$vendor->name}\" sẽ hết hạn vào {$certificate->expiry_date->format('d/m/Y')}.",
-                        'due_date'        => $certificate->expiry_date,
-                        'severity'        => $this->severity($daysRemaining)->value,
-                    ],
-                );
-
-                $activeIds[] = $certificate->id;
+        foreach ($documents as $document) {
+            $owner = $document->documentable;
+            if ($owner === null) {
+                continue;
             }
+
+            $days = is_callable($threshold) ? $threshold($document) : $threshold;
+            $daysRemaining = $this->daysRemaining($document->expiration_date);
+
+            if ($daysRemaining > $days) {
+                continue;
+            }
+
+            ComplianceWarning::withoutTenant()->updateOrCreate(
+                [
+                    'warnable_type' => 'compliance_document',
+                    'warnable_id'   => $document->id,
+                    'category'      => $category->value,
+                ],
+                [
+                    'title'    => $titleFor($document, $owner),
+                    'message'  => $messageFor($document, $owner),
+                    'due_date' => $document->expiration_date,
+                    'severity' => $this->severity($daysRemaining)->value,
+                ],
+            );
+
+            $activeIds[] = $document->id;
         }
 
         return $activeIds;

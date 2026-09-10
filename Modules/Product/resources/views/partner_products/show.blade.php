@@ -115,7 +115,7 @@
             <div class="card-body">
                 <h2 class="text-base font-semibold mb-4">Toàn bộ hồ sơ đã ghi nhận</h2>
 
-                @if($partnerProduct->compliances->isEmpty())
+                @if($partnerProduct->documents->isEmpty())
                 <p class="text-sm text-base-content/50">Chưa có hồ sơ nào được ghi nhận.</p>
                 @else
                 <div class="overflow-x-auto">
@@ -132,30 +132,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($partnerProduct->compliances as $compliance)
+                            @foreach($partnerProduct->documents as $document)
                             <tr>
-                                <td>{{ $compliance->documentType->name }}</td>
-                                <td class="font-mono">{{ $compliance->document_number }}</td>
-                                <td>{{ $compliance->issue_date?->format('d/m/Y') ?? '—' }}</td>
+                                <td>{{ $document->documentType->name }}</td>
+                                <td class="font-mono">{{ $document->document_number ?? '—' }}</td>
+                                <td>{{ $document->issue_date?->format('d/m/Y') ?? '—' }}</td>
                                 <td>
-                                    {{ $compliance->expiration_date?->format('d/m/Y') ?? '—' }}
-                                    @if($compliance->isExpired())
+                                    {{ $document->expiration_date?->format('d/m/Y') ?? '—' }}
+                                    @if($document->isExpired())
                                     <span class="badge badge-error badge-xs ml-1">Hết hạn</span>
-                                    @elseif($compliance->isExpiringWithinDays(30))
+                                    @elseif($document->isExpiringWithinDays(30))
                                     <span class="badge badge-warning badge-xs ml-1">Sắp hết hạn</span>
                                     @endif
                                 </td>
-                                <td><span class="badge {{ $compliance->status->badgeClass() }} badge-xs">{{ $compliance->status->label() }}</span></td>
+                                <td><span class="badge {{ $document->status->badgeClass() }} badge-xs">{{ $document->status->label() }}</span></td>
                                 <td>
-                                    @if($compliance->file_url)
-                                    <a href="{{ $compliance->file_url }}" target="_blank" class="link link-primary text-xs">File</a>
+                                    @if($document->getFirstMediaUrl('attachments_private'))
+                                    <a href="{{ $document->getFirstMediaUrl('attachments_private') }}" target="_blank" class="link link-primary text-xs">File</a>
                                     @else
                                     <span class="text-xs text-base-content/40">—</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @can('delete', $compliance)
-                                    <form method="POST" action="{{ route('backend.partner-products.compliances.destroy', [$partnerProduct, $compliance]) }}"
+                                    @can('delete', $document)
+                                    <form method="POST" action="{{ route('backend.partner-products.documents.destroy', [$partnerProduct, $document]) }}"
                                           onsubmit="return confirm('Xóa hồ sơ này?');">
                                         @csrf
                                         @method('DELETE')
@@ -176,20 +176,20 @@
 
     <div class="space-y-6">
 
-        @can('create', \Modules\Product\Models\PartnerProductCompliance::class)
+        @can('create', \Modules\Compliance\Models\ComplianceDocument::class)
         <div id="add-compliance" class="card bg-base-100 shadow-sm border border-base-200 scroll-mt-24">
             <div class="card-body">
                 <h2 class="text-base font-semibold mb-3">Thêm hồ sơ chất lượng mới</h2>
                 <p class="text-xs text-base-content/40 mb-3">Giấy tờ của nhà sản xuất gốc (VD: ISO, OCOP, kiểm dịch của {{ $partnerProduct->manufacturer_name ?? 'nhà sản xuất' }})</p>
 
-                <form method="POST" action="{{ route('backend.partner-products.compliances.store', $partnerProduct) }}" class="space-y-3">
+                <form method="POST" action="{{ route('backend.partner-products.documents.store', $partnerProduct) }}" enctype="multipart/form-data" class="space-y-3">
                     @csrf
 
                     <div class="form-control">
                         <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Loại giấy tờ</span></label>
-                        <select name="document_type_id" class="select select-bordered select-sm w-full">
+                        <select name="document_master_type_id" class="select select-bordered select-sm w-full">
                             @foreach(\Modules\Product\Models\DocumentMasterType::orderBy('name')->get() as $type)
-                            <option value="{{ $type->id }}" @selected(old('document_type_id') === $type->id)>{{ $type->name }}</option>
+                            <option value="{{ $type->id }}" @selected(old('document_master_type_id') === $type->id)>{{ $type->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -211,8 +211,8 @@
                     </div>
 
                     <div class="form-control">
-                        <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Đường dẫn file scan</span></label>
-                        <input type="url" name="file_url" value="{{ old('file_url') }}" class="input input-bordered input-sm w-full">
+                        <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">File PDF/Scan</span></label>
+                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered file-input-sm w-full">
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-sm w-full">Thêm hồ sơ</button>

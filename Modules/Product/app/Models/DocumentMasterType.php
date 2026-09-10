@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Product\Enums\DocumentGroupType;
 
 class DocumentMasterType extends Model
@@ -34,8 +35,8 @@ class DocumentMasterType extends Model
         ];
     }
 
-    public function compliances(): HasMany
+    public function documents(): HasMany
     {
-        return $this->hasMany(ProductCompliance::class, 'document_type_id');
+        return $this->hasMany(ComplianceDocument::class, 'document_master_type_id');
     }
 }

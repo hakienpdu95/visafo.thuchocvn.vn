@@ -28,10 +28,10 @@
 
     <div class="card bg-base-100 shadow-sm border border-base-200">
         <div class="card-body">
-            <h2 class="text-base font-semibold mb-4">Hồ sơ pháp lý (Chứng chỉ)</h2>
+            <h2 class="text-base font-semibold mb-4">Hồ sơ pháp lý</h2>
 
-            @if($vendor->certificates->isEmpty())
-            <p class="text-sm text-base-content/50">Chưa có chứng chỉ nào được ghi nhận.</p>
+            @if($vendor->documents->isEmpty())
+            <p class="text-sm text-base-content/50">Chưa có hồ sơ nào được ghi nhận.</p>
             @else
             <div class="overflow-x-auto">
                 <table class="table table-sm">
@@ -47,37 +47,33 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($vendor->certificates as $certificate)
+                        @foreach($vendor->documents as $document)
                         <tr>
-                            <td>{{ $certificate->certificate_type->label() }}</td>
-                            <td class="font-mono">{{ $certificate->certificate_number }}</td>
-                            <td>{{ $certificate->issue_date->format('d/m/Y') }}</td>
+                            <td>{{ $document->documentType->name }}</td>
+                            <td class="font-mono">{{ $document->document_number ?? '—' }}</td>
+                            <td>{{ $document->issue_date?->format('d/m/Y') ?? '—' }}</td>
                             <td>
-                                {{ $certificate->expiry_date?->format('d/m/Y') ?? '—' }}
-                                @if($certificate->isExpired())
+                                {{ $document->expiration_date?->format('d/m/Y') ?? '—' }}
+                                @if($document->isExpired())
                                 <span class="badge badge-error badge-xs ml-1">Hết hạn</span>
-                                @elseif($certificate->isExpiringWithinDays(30))
+                                @elseif($document->isExpiringWithinDays(30))
                                 <span class="badge badge-warning badge-xs ml-1">Sắp hết hạn</span>
                                 @endif
                             </td>
                             <td>
-                                @if($certificate->is_active)
-                                <span class="badge badge-success badge-xs">Đang hiệu lực</span>
-                                @else
-                                <span class="badge badge-ghost badge-xs">Đã thay thế</span>
-                                @endif
+                                <span class="badge {{ $document->status->badgeClass() }} badge-xs">{{ $document->status->label() }}</span>
                             </td>
                             <td>
-                                @if($certificate->getFirstMediaUrl('attachments_private'))
-                                <a href="{{ $certificate->getFirstMediaUrl('attachments_private') }}" target="_blank" class="link link-primary text-xs">Xem file</a>
+                                @if($document->getFirstMediaUrl('attachments_private'))
+                                <a href="{{ $document->getFirstMediaUrl('attachments_private') }}" target="_blank" class="link link-primary text-xs">Xem file</a>
                                 @else
                                 <span class="text-xs text-base-content/40">—</span>
                                 @endif
                             </td>
                             <td>
                                 @can('update', $vendor)
-                                <form method="POST" action="{{ route('backend.vendors.certificates.destroy', [$vendor, $certificate]) }}"
-                                      onsubmit="return confirm('Xóa chứng chỉ này?');">
+                                <form method="POST" action="{{ route('backend.vendors.documents.destroy', [$vendor, $document]) }}"
+                                      onsubmit="return confirm('Xóa hồ sơ này?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-ghost btn-xs text-error">Xóa</button>
@@ -140,7 +136,7 @@
         @can('update', $vendor)
         <div class="card bg-base-100 shadow-sm border border-base-200">
             <div class="card-body">
-                <h2 class="text-base font-semibold mb-3">Thêm chứng chỉ mới</h2>
+                <h2 class="text-base font-semibold mb-3">Thêm hồ sơ mới</h2>
 
                 @if($errors->any())
                 <div class="alert alert-error py-2 px-3 mb-3 text-xs">
@@ -150,21 +146,21 @@
                 </div>
                 @endif
 
-                <form method="POST" action="{{ route('backend.vendors.certificates.store', $vendor) }}" enctype="multipart/form-data" class="space-y-3">
+                <form method="POST" action="{{ route('backend.vendors.documents.store', $vendor) }}" enctype="multipart/form-data" class="space-y-3">
                     @csrf
 
                     <div class="form-control">
-                        <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Loại chứng chỉ</span></label>
-                        <select name="certificate_type" class="select select-bordered select-sm w-full">
-                            @foreach(\Modules\Vendor\Enums\VendorCertificateType::cases() as $type)
-                            <option value="{{ $type->value }}" @selected(old('certificate_type') === $type->value)>{{ $type->label() }}</option>
+                        <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Loại giấy tờ</span></label>
+                        <select name="document_master_type_id" class="select select-bordered select-sm w-full">
+                            @foreach($documentTypes as $type)
+                            <option value="{{ $type->id }}" @selected(old('document_master_type_id') === $type->id)>{{ $type->name }}</option>
                             @endforeach
                         </select>
                     </div>
 
                     <div class="form-control">
                         <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Số hiệu</span></label>
-                        <input type="text" name="certificate_number" value="{{ old('certificate_number') }}" class="input input-bordered input-sm w-full">
+                        <input type="text" name="document_number" value="{{ old('document_number') }}" class="input input-bordered input-sm w-full">
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -174,7 +170,7 @@
                         </div>
                         <div class="form-control">
                             <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày hết hạn</span></label>
-                            <input type="date" name="expiry_date" value="{{ old('expiry_date') }}" class="input input-bordered input-sm w-full">
+                            <input type="date" name="expiration_date" value="{{ old('expiration_date') }}" class="input input-bordered input-sm w-full">
                         </div>
                     </div>
 
@@ -188,7 +184,7 @@
                         <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered file-input-sm w-full">
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-sm w-full">Thêm chứng chỉ</button>
+                    <button type="submit" class="btn btn-primary btn-sm w-full">Thêm hồ sơ</button>
                 </form>
             </div>
         </div>

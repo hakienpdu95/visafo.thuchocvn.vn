@@ -14,7 +14,6 @@ class UpdateProductAction
     {
         $product->update([
             'sku'          => $data->sku,
-            'barcode'      => $data->barcode,
             'name'         => $data->name,
             'category_id'  => $data->category_id,
             'product_type' => $data->product_type->value,

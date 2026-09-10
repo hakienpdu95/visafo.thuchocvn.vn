@@ -6,11 +6,15 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
 use Modules\Compliance\Console\Commands\ScanComplianceWarningsCommand;
+use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Compliance\Models\ComplianceWarning;
+use Modules\Compliance\Observers\ComplianceDocumentObserver;
+use Modules\Compliance\Policies\ComplianceDocumentPolicy;
 use Modules\Compliance\Policies\ComplianceWarningPolicy;
 use Modules\Employee\Models\EmployeeHealthRecord;
-use Modules\Product\Models\ProductCompliance;
-use Modules\Vendor\Models\VendorCertificate;
+use Modules\Product\Models\PartnerProduct;
+use Modules\Product\Models\Product;
+use Modules\Vendor\Models\Vendor;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class ComplianceServiceProvider extends ModuleServiceProvider
@@ -37,12 +41,17 @@ class ComplianceServiceProvider extends ModuleServiceProvider
         parent::boot();
 
         Relation::morphMap([
-            'product_compliance'      => ProductCompliance::class,
-            'vendor_certificate'      => VendorCertificate::class,
-            'employee_health_record'  => EmployeeHealthRecord::class,
+            'employee_health_record' => EmployeeHealthRecord::class,
+            'compliance_document'    => ComplianceDocument::class,
+            'vendor'                 => Vendor::class,
+            'product'                => Product::class,
+            'partner_product'        => PartnerProduct::class,
         ]);
 
         Gate::policy(ComplianceWarning::class, ComplianceWarningPolicy::class);
+        Gate::policy(ComplianceDocument::class, ComplianceDocumentPolicy::class);
+
+        ComplianceDocument::observe(ComplianceDocumentObserver::class);
     }
 
     protected function configureSchedules(Schedule $schedule): void

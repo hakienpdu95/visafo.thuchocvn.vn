@@ -4,8 +4,9 @@ namespace Modules\Product\Models;
 
 use App\Foundation\Models\TenantAwareModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Modules\Product\Enums\ComplianceStatus;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Modules\Compliance\Enums\ComplianceDocumentStatus;
+use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Product\Enums\PartnerProductStatus;
 use Modules\Vendor\Models\Vendor;
 
@@ -38,13 +39,13 @@ class PartnerProduct extends TenantAwareModel
         return $this->belongsTo(Product::class);
     }
 
-    public function compliances(): HasMany
+    public function documents(): MorphMany
     {
-        return $this->hasMany(PartnerProductCompliance::class);
+        return $this->morphMany(ComplianceDocument::class, 'documentable');
     }
 
-    public function activeCompliances(): HasMany
+    public function activeDocuments(): MorphMany
     {
-        return $this->compliances()->where('status', ComplianceStatus::Active->value);
+        return $this->documents()->where('status', ComplianceDocumentStatus::Active->value);
     }
 }

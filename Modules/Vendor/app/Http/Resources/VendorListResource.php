@@ -10,7 +10,7 @@ class VendorListResource extends JsonResource
     public function toArray(Request $request): array
     {
         $status = $this->status;
-        $cert   = $this->latestCertificate;
+        $cert   = $this->latestDocument;
 
         return [
             'id'                   => $this->id,
@@ -25,7 +25,7 @@ class VendorListResource extends JsonResource
             'status_label' => $status->label(),
             'status_badge' => $status->badgeClass(),
 
-            'certificate_type'     => $cert?->certificate_type?->label(),
+            'certificate_type'     => $cert?->documentType?->name,
             'certificate_expired'  => (bool) $cert?->isExpired(),
             'certificate_expiring' => (bool) $cert?->isExpiringWithinDays(30),
 

@@ -18,14 +18,6 @@ function buildColumns(canDelete) {
             },
         },
         {
-            title: 'Mã vạch', field: 'barcode', width: 140, headerSort: false,
-            formatter(cell) {
-                const v = cell.getValue();
-                return v ? '<span class="font-mono text-xs">' + esc(v) + '</span>'
-                         : '<span class="text-base-content/25 text-xs">—</span>';
-            },
-        },
-        {
             title: 'Ngành hàng', field: 'category_name', minWidth: 160, headerSort: false,
         },
         {

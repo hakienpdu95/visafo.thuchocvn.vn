@@ -21,9 +21,12 @@ class DepartmentController extends Controller
 
     public function index()
     {
-        $departments = Department::withCount('employees')->orderBy('name')->get();
+        $foodContactOptions = [
+            ['value' => 'yes', 'text' => 'Có'],
+            ['value' => 'no', 'text' => 'Không'],
+        ];
 
-        return view('employee::departments.index', compact('departments'));
+        return view('employee::departments.index', compact('foodContactOptions'));
     }
 
     public function create()

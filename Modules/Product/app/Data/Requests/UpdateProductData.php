@@ -6,7 +6,6 @@ use Illuminate\Validation\Rule;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
 use Spatie\LaravelData\Attributes\Validation\Max;
-use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
@@ -16,9 +15,6 @@ class UpdateProductData extends Data
     public function __construct(
         #[Required, StringType, Max(100)]
         public readonly string $sku,
-
-        #[Nullable, StringType, Max(50)]
-        public readonly ?string $barcode,
 
         #[Required, StringType, Max(255)]
         public readonly string $name,

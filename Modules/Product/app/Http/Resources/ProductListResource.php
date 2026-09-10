@@ -11,12 +11,11 @@ class ProductListResource extends JsonResource
     {
         $status      = $this->status;
         $productType = $this->product_type;
-        $cert        = $this->latestCompliance;
+        $cert        = $this->latestDocument;
 
         return [
             'id'      => $this->id,
             'sku'     => $this->sku,
-            'barcode' => $this->barcode,
             'name'    => $this->name,
 
             'category_id'   => $this->category_id,

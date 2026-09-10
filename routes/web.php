@@ -8,6 +8,8 @@ use App\Http\Controllers\Backend\NotificationCenterController;
 use App\Http\Controllers\Backend\NotificationPreferenceController;
 use App\Http\Controllers\Backend\TraceabilityController;
 use Illuminate\Support\Facades\Route;
+use Modules\Compliance\Http\Controllers\ComplianceDocumentController;
+use Modules\Compliance\Http\Controllers\ReadinessController;
 
 Route::get('/', fn () => redirect()->route('backend.dashboard'));
 
@@ -56,13 +58,21 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::get('/orders',           fn () => abort(503, 'Module đang phát triển'))->name('orders.index');
     Route::get('/settings',         fn () => abort(503, 'Module đang phát triển'))->name('settings.index');
     Route::get('/reports',          fn () => abort(503, 'Module đang phát triển'))->name('reports.index');
-    Route::get('/document-repository', fn () => abort(503, 'Module đang phát triển'))->name('document-repository.index');
-    Route::get('/readiness-check',     fn () => abort(503, 'Module đang phát triển'))->name('readiness-check.index');
 
     // ── Traceability Report (Farm-to-Fork) ─────────────────────────────────
     Route::get('/traceability', [TraceabilityController::class, 'index'])
         ->middleware('permission:compliance.view')
         ->name('traceability.index');
+
+    // ── Kho tài liệu & Minh chứng ────────────────────────────────────────
+    Route::get('/documents', [ComplianceDocumentController::class, 'index'])
+        ->middleware('permission:compliance.view')
+        ->name('document-repository.index');
+
+    // ── Kiểm tra Readiness ──────────────────────────────────────────────
+    Route::get('/readiness', [ReadinessController::class, 'index'])
+        ->middleware('permission:compliance.view')
+        ->name('readiness-check.index');
 
     // ── Notification Center ───────────────────────────────────────────────
     Route::prefix('notifications')->name('notifications.')->group(function () {

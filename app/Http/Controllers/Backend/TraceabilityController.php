@@ -28,7 +28,7 @@ class TraceabilityController extends Controller
                     $query->with(['partnerProducts' => function ($query) {
                         $query->with([
                             'vendor:id,name',
-                            'activeCompliances' => fn ($query) => $query
+                            'activeDocuments' => fn ($query) => $query
                                 ->with('documentType:id,name')
                                 ->orderByDesc('issue_date'),
                         ]);
@@ -82,20 +82,20 @@ class TraceabilityController extends Controller
 
     private function complianceStatus(PartnerProduct $partnerProduct): array
     {
-        $compliances = $partnerProduct->activeCompliances;
+        $documents = $partnerProduct->activeDocuments;
 
-        if ($compliances->isEmpty()) {
-            return ['level' => 'red', 'label' => 'Thiếu hồ sơ', 'docs' => $compliances];
+        if ($documents->isEmpty()) {
+            return ['level' => 'red', 'label' => 'Thiếu hồ sơ', 'docs' => $documents];
         }
 
-        if ($compliances->contains(fn ($c) => $c->isExpired())) {
-            return ['level' => 'red', 'label' => 'Hết hạn', 'docs' => $compliances];
+        if ($documents->contains(fn ($d) => $d->isExpired())) {
+            return ['level' => 'red', 'label' => 'Hết hạn', 'docs' => $documents];
         }
 
-        if ($compliances->contains(fn ($c) => $c->isExpiringWithinDays(self::EXPIRING_SOON_DAYS))) {
-            return ['level' => 'yellow', 'label' => 'Sắp hết hạn', 'docs' => $compliances];
+        if ($documents->contains(fn ($d) => $d->isExpiringWithinDays(self::EXPIRING_SOON_DAYS))) {
+            return ['level' => 'yellow', 'label' => 'Sắp hết hạn', 'docs' => $documents];
         }
 
-        return ['level' => 'green', 'label' => 'Đủ hồ sơ', 'docs' => $compliances];
+        return ['level' => 'green', 'label' => 'Đủ hồ sơ', 'docs' => $documents];
     }
 }

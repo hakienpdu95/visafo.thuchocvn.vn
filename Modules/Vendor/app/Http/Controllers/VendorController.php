@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Modules\Product\Models\DocumentMasterType;
 use Modules\Vendor\Actions\Backend\DestroyVendorAction;
 use Modules\Vendor\Actions\Backend\StoreVendorAction;
 use Modules\Vendor\Actions\Backend\UpdateVendorAction;
@@ -49,8 +50,9 @@ class VendorController extends Controller
     public function show(Vendor $vendor, GetVendorHandler $handler)
     {
         $vendor = $handler->handle(new GetVendorQuery($vendor));
+        $documentTypes = DocumentMasterType::query()->orderBy('name')->get();
 
-        return view('vendor::show', compact('vendor'));
+        return view('vendor::show', compact('vendor', 'documentTypes'));
     }
 
     public function edit(Vendor $vendor)

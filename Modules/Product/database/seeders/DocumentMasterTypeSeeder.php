@@ -110,6 +110,14 @@ class DocumentMasterTypeSeeder extends Seeder
                 'default_validity_months'  => 12,
             ],
             [
+                'code'                     => 'supplier_gmp',
+                'name'                     => 'Giấy chứng nhận Thực hành sản xuất tốt (GMP)',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'default_validity_months'  => 36,
+            ],
+            [
                 'code'                     => 'supplier_vet',
                 'name'                     => 'Giấy chứng nhận kiểm dịch thú y',
                 'document_group'           => DocumentGroupType::Traceability->value,

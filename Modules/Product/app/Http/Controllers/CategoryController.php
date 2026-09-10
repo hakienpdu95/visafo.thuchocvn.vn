@@ -21,9 +21,12 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $categories = Category::query()->orderBy('name')->get();
+        $statuses = [
+            ['value' => 'active', 'text' => 'Đang dùng'],
+            ['value' => 'inactive', 'text' => 'Ngừng dùng'],
+        ];
 
-        return view('product::categories.index', compact('categories'));
+        return view('product::categories.index', compact('statuses'));
     }
 
     public function create()

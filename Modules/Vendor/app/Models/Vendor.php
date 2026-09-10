@@ -7,7 +7,11 @@ use App\Models\Province;
 use App\Models\Ward;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Modules\Compliance\Enums\ComplianceDocumentStatus;
+use Modules\Compliance\Models\ComplianceDocument;
+use Modules\Product\Models\PartnerProduct;
 use Modules\Vendor\Enums\VendorStatus;
 
 class Vendor extends TenantAwareModel
@@ -49,26 +53,31 @@ class Vendor extends TenantAwareModel
         return $this->belongsTo(Ward::class, 'ward_code', 'ward_code');
     }
 
-    public function certificates(): HasMany
+    public function partnerProducts(): HasMany
     {
-        return $this->hasMany(VendorCertificate::class);
+        return $this->hasMany(PartnerProduct::class);
     }
 
-    public function activeCertificates(): HasMany
+    public function documents(): MorphMany
     {
-        return $this->certificates()->where('is_active', true);
+        return $this->morphMany(ComplianceDocument::class, 'documentable');
     }
 
-    public function latestCertificate(): HasOne
+    public function activeDocuments(): MorphMany
     {
-        return $this->hasOne(VendorCertificate::class)->ofMany('issue_date', 'max');
+        return $this->documents()->where('status', ComplianceDocumentStatus::Active->value);
     }
 
-    public function hasValidCertificate(\Modules\Vendor\Enums\VendorCertificateType $type): bool
+    public function latestDocument(): MorphOne
     {
-        return $this->activeCertificates()
-            ->where('certificate_type', $type->value)
-            ->where(fn ($q) => $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()))
+        return $this->morphOne(ComplianceDocument::class, 'documentable')->ofMany('issue_date', 'max');
+    }
+
+    public function hasValidDocument(int|string $documentMasterTypeId): bool
+    {
+        return $this->activeDocuments()
+            ->where('document_master_type_id', $documentMasterTypeId)
+            ->where(fn ($q) => $q->whereNull('expiration_date')->orWhere('expiration_date', '>=', now()))
             ->exists();
     }
 }

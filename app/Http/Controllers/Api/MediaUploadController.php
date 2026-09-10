@@ -51,7 +51,7 @@ class MediaUploadController extends Controller
      * Add new models as they adopt HasTenantMedia.
      */
     private const ENTITY_MAP = [
-        'vendor_certificate'      => \Modules\Vendor\Models\VendorCertificate::class,
+        'compliance_document' => \Modules\Compliance\Models\ComplianceDocument::class,
     ];
 
     public function __construct(

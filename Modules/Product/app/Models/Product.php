@@ -6,10 +6,12 @@ use App\Foundation\Models\TenantAwareModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Modules\Compliance\Enums\ComplianceDocumentStatus;
+use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Models\CustomerProduct;
-use Modules\Product\Enums\ComplianceStatus;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
 
@@ -17,7 +19,6 @@ class Product extends TenantAwareModel
 {
     protected $fillable = [
         'sku',
-        'barcode',
         'name',
         'category_id',
         'product_type',
@@ -42,30 +43,30 @@ class Product extends TenantAwareModel
         return $this->belongsTo(Category::class);
     }
 
-    public function compliances(): HasMany
-    {
-        return $this->hasMany(ProductCompliance::class);
-    }
-
     public function partnerProducts(): HasMany
     {
         return $this->hasMany(PartnerProduct::class);
     }
 
-    public function activeCompliances(): HasMany
+    public function documents(): MorphMany
     {
-        return $this->compliances()->where('status', ComplianceStatus::Active->value);
+        return $this->morphMany(ComplianceDocument::class, 'documentable');
     }
 
-    public function latestCompliance(): HasOne
+    public function activeDocuments(): MorphMany
     {
-        return $this->hasOne(ProductCompliance::class)->ofMany('issue_date', 'max');
+        return $this->documents()->where('status', ComplianceDocumentStatus::Active->value);
     }
 
-    public function hasValidCompliance(DocumentMasterType $documentType): bool
+    public function latestDocument(): MorphOne
     {
-        return $this->activeCompliances()
-            ->where('document_type_id', $documentType->id)
+        return $this->morphOne(ComplianceDocument::class, 'documentable')->ofMany('issue_date', 'max');
+    }
+
+    public function hasValidDocument(DocumentMasterType $documentType): bool
+    {
+        return $this->activeDocuments()
+            ->where('document_master_type_id', $documentType->id)
             ->where(fn ($q) => $q->whereNull('expiration_date')->orWhere('expiration_date', '>=', now()))
             ->exists();
     }

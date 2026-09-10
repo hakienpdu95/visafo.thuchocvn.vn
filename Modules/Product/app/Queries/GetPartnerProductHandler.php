@@ -13,7 +13,7 @@ class GetPartnerProductHandler implements QueryHandlerInterface
         /** @var GetPartnerProductQuery $query */
         $partnerProduct = $query->partnerProduct;
 
-        $partnerProduct->load(['vendor', 'product.category', 'compliances.documentType']);
+        $partnerProduct->load(['vendor', 'product.category', 'documents.documentType']);
 
         return $partnerProduct;
     }

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Employee\Http\Controllers\Api\DepartmentApiController;
 use Modules\Employee\Http\Controllers\Api\EmployeeApiController;
 use Modules\Employee\Http\Controllers\DepartmentController;
 use Modules\Employee\Http\Controllers\EmployeeController;
@@ -19,4 +20,5 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
 Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(function () {
     Route::get('employees', [EmployeeApiController::class, 'index'])->name('employees');
+    Route::get('departments', [DepartmentApiController::class, 'index'])->name('departments');
 });

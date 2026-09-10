@@ -58,32 +58,16 @@
                         @error('name')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                        <div class="form-control">
-                            <label class="label py-0 pb-1.5">
-                                <span class="label-text font-medium">Mã SKU <span class="text-error">*</span></span>
-                            </label>
-                            <input type="text" name="sku" value="{{ old('sku') }}"
-                                   data-req="Vui lòng nhập mã SKU"
-                                   data-val-maxlength="100"
-                                   class="input input-bordered input-sm w-full font-mono uppercase @error('sku') input-error @enderror"
-                                   placeholder="VD: SP-000123" maxlength="100">
-                            @error('sku')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
-                        </div>
-
-                        <div class="form-control">
-                            <label class="label py-0 pb-1.5">
-                                <span class="label-text font-medium">Mã vạch</span>
-                                <span class="label-text-alt text-xs text-base-content/40">Tuỳ chọn</span>
-                            </label>
-                            <input type="text" name="barcode" value="{{ old('barcode') }}"
-                                   data-val-maxlength="50"
-                                   class="input input-bordered input-sm w-full font-mono @error('barcode') input-error @enderror"
-                                   placeholder="VD: 8938501234567" maxlength="50">
-                            @error('barcode')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
-                        </div>
-
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5">
+                            <span class="label-text font-medium">Mã SKU <span class="text-error">*</span></span>
+                        </label>
+                        <input type="text" name="sku" value="{{ old('sku') }}"
+                               data-req="Vui lòng nhập mã SKU"
+                               data-val-maxlength="100"
+                               class="input input-bordered input-sm w-full font-mono uppercase @error('sku') input-error @enderror"
+                               placeholder="VD: SP-000123" maxlength="100">
+                        @error('sku')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
                     <div class="form-control">

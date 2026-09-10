@@ -6,7 +6,6 @@ use Illuminate\Validation\Rule;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
 use Spatie\LaravelData\Attributes\Validation\Max;
-use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
@@ -16,9 +15,6 @@ class StoreProductData extends Data
     public function __construct(
         #[Required, StringType, Max(100)]
         public readonly string $sku,
-
-        #[Nullable, StringType, Max(50)]
-        public readonly ?string $barcode,
 
         #[Required, StringType, Max(255)]
         public readonly string $name,
@@ -53,9 +49,6 @@ class StoreProductData extends Data
             'sku.string'   => 'Mã SKU không hợp lệ.',
             'sku.max'      => 'Mã SKU không được vượt quá 100 ký tự.',
             'sku.unique'   => 'Mã SKU này đã tồn tại.',
-
-            'barcode.string' => 'Mã vạch không hợp lệ.',
-            'barcode.max'    => 'Mã vạch không được vượt quá 50 ký tự.',
 
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'name.string'   => 'Tên sản phẩm không hợp lệ.',

@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 use Modules\ActivityLog\Core\LogEntryBuilder;
 use Modules\ActivityLog\Observers\AuditableObserver;
-use Modules\Product\Models\ProductCompliance;
-use Modules\Vendor\Models\VendorCertificate;
+use Modules\Compliance\Models\ComplianceDocument;
 
 class ActivityLogServiceProvider extends ServiceProvider
 {
@@ -39,8 +38,7 @@ class ActivityLogServiceProvider extends ServiceProvider
 
     private function registerAuditObservers(): void
     {
-        ProductCompliance::observe(AuditableObserver::class);
-        VendorCertificate::observe(AuditableObserver::class);
+        ComplianceDocument::observe(AuditableObserver::class);
     }
 
     private function registerSchedule(): void

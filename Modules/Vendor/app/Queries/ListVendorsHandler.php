@@ -19,7 +19,7 @@ class ListVendorsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir   = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = Vendor::query()->with('latestCertificate');
+        $q = Vendor::query()->with('latestDocument.documentType');
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

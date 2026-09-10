@@ -150,20 +150,6 @@
         "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
     ],
     [
-        "vendor_certificates///__///__///Hồ sơ minh chứng pháp lý theo thời gian của nhà cung cấp",
-        "vendor_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('vendors')->onDelete('cascade')///__",
-        "certificate_type///string///50///NOT_NULL///__///__///business_registration | food_safety | gmp",
-        "certificate_number///string///100///NOT_NULL///__///__///__",
-        "issue_date///date///__///NOT_NULL///__///__///__",
-        "expiry_date///date///__///_NULL///NULL///->index()///__",
-        "issued_by///string///255///_NULL///NULL///__///__",
-        "is_active///boolean///__///NOT_NULL///true///->index()///Chứng chỉ đang hiệu lực cho certificate_type này",
-        "renewal_deadline///date///__///_NULL///NULL///__///__",
-        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
-        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
-        "__index///index///__///__///__///vendor_id,certificate_type,is_active|idx_vendor_cert_active///__"
-    ],
-    [
         "brands///__///__///Thương hiệu sản phẩm — tránh nhập tay gây trùng lặp dữ liệu",
         "name///string///150///NOT_NULL///__///__///Tên thương hiệu",
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
@@ -174,7 +160,6 @@
     [
         "products///__///__///Định danh vật lý sản phẩm — SKU master",
         "sku///string///100///NOT_NULL///__///__///Mã nội bộ",
-        "barcode///string///50///_NULL///NULL///->index()///Mã vạch nhà sản xuất",
         "name///string///255///NOT_NULL///__///__///Tên sản phẩm",
         "brand_id///unsignedBigInteger///__///_NULL///NULL///->constrained('brands')->onDelete('set null')///Thương hiệu",
         "category_type///string///30///NOT_NULL///__///->index()///food | cosmetic | medical_device | toy_plastic | textile",
@@ -199,19 +184,21 @@
         "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
     ],
     [
-        "product_compliances///__///__///Hồ sơ pháp lý theo thời gian của sản phẩm — mỗi dòng là 1 lần cấp/gia hạn",
-        "product_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('products')->onDelete('cascade')///__",
-        "document_type_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('document_master_types')->onDelete('restrict')///__",
-        "document_number///string///150///NOT_NULL///__///__///Số tiếp nhận / số chứng nhận / số lưu hành",
-        "classification_grade///string///5///_NULL///NULL///__///A | B | C | D — chỉ dùng cho thiết bị y tế",
+        "compliance_documents///__///__///Kho hồ sơ pháp lý đa hình — gắn cho Vendor, Product hoặc PartnerProduct (thay thế vendor_certificates/product_compliances/partner_product_compliances)",
+        "document_master_type_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('document_master_types')->onDelete('restrict')///__",
+        "documentable_type///string///50///NOT_NULL///__///->index()///Morph alias — vendor | product | partner_product",
+        "documentable_id///ulid///__///NOT_NULL///__///->index()///__",
+        "document_number///string///150///_NULL///NULL///__///Số tiếp nhận / số chứng nhận",
+        "classification_grade///string///10///_NULL///NULL///__///A | B | C | D — chỉ có ý nghĩa khi documentable_type=product",
         "issue_date///date///__///_NULL///NULL///__///Ngày cấp",
         "expiration_date///date///__///_NULL///NULL///->index()///Ngày hết hạn — phục vụ cronjob cảnh báo",
-        "file_url///string///500///_NULL///NULL///__///File scan bản chính",
-        "pif_file_url///string///500///_NULL///NULL///__///File đính kèm PIF — chỉ bắt buộc với mỹ phẩm",
-        "status///string///20///NOT_NULL///'active'///->index()///active | expired | superseded",
+        "issued_by///string///255///_NULL///NULL///__///Nơi cấp",
+        "status///string///20///NOT_NULL///'pending'///->index()///pending | active | expired | superseded",
+        "notes///string///500///_NULL///NULL///__///__",
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
-        "__index///index///__///__///__///product_id,document_type_id,status|idx_product_compliance_active///__"
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm",
+        "__index///index///__///__///__///documentable_type,documentable_id|idx_compliance_documents_documentable///__"
     ],
     [
         "inbound_receipts///__///__///Phiếu nhập kho — 1 chuyến hàng nhận từ 1 nhà cung cấp",
@@ -576,19 +563,6 @@
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
         "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
-    ],
-    [
-        "partner_product_compliances///__///__///",
-        "partner_product_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('partner_products')->onDelete('cascade')///__",
-        "document_type_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('document_master_types')->onDelete('restrict')///__",
-        "document_number///string///150///NOT_NULL///__///__///Số tiếp nhận / số chứng nhận",
-        "issue_date///date///__///_NULL///NULL///__///Ngày cấp",
-        "expiration_date///date///__///_NULL///NULL///->index()///Ngày hết hạn — phục vụ cronjob cảnh báo",
-        "file_url///string///500///_NULL///NULL///__///File scan bản chính",
-        "status///string///20///NOT_NULL///'active'///->index()///active | expired | superseded",
-        "__index///index///__///__///__///partner_product_id,document_type_id,status|idx_partner_product_compliance_active///__",
-        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
-        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật"
     ],
     [
         "categories///__///__///",

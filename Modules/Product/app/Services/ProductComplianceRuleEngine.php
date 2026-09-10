@@ -2,7 +2,7 @@
 
 namespace Modules\Product\Services;
 
-use Modules\Product\Enums\ComplianceStatus;
+use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
 
@@ -68,13 +68,13 @@ class ProductComplianceRuleEngine
             return [];
         }
 
-        $validCompliances = $partnerProduct->compliances
-            ->filter(fn ($c) => $c->status === ComplianceStatus::Active && ! $c->isExpired());
+        $validDocuments = $partnerProduct->documents
+            ->filter(fn ($d) => $d->status === ComplianceDocumentStatus::Active && ! $d->isExpired());
 
         return array_map(
-            function (ComplianceRequirement $requirement) use ($validCompliances) {
-                $match = $validCompliances->first(
-                    fn ($c) => in_array($c->documentType?->code, $requirement->documentTypeCodes, true)
+            function (ComplianceRequirement $requirement) use ($validDocuments) {
+                $match = $validDocuments->first(
+                    fn ($d) => in_array($d->documentType?->code, $requirement->documentTypeCodes, true)
                 );
 
                 return new ComplianceRequirementResult($requirement, $match !== null, $match);

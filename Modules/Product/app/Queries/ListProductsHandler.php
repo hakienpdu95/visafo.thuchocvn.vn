@@ -19,14 +19,13 @@ class ListProductsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir   = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = Product::query()->with(['category', 'latestCompliance.documentType']);
+        $q = Product::query()->with(['category', 'latestDocument.documentType']);
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';
             $q->where(function (Builder $sub) use ($term): void {
                 $sub->where('name', 'like', $term)
-                    ->orWhere('sku', 'like', $term)
-                    ->orWhere('barcode', 'like', $term);
+                    ->orWhere('sku', 'like', $term);
             });
         }
 
