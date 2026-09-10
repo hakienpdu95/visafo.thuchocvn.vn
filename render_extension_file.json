@@ -49,5 +49,13 @@
         "province_code///char///2///_NULL///NULL///->references('province_code')->constrained('provinces')->nullOnDelete()///Tỉnh/thành phố trụ sở — FK tới provinces.province_code",
         "ward_code///char///5///_NULL///NULL///->references('ward_code')->constrained('wards')->nullOnDelete()///Phường/xã trụ sở — FK tới wards.ward_code",
         "__index///index///__///__///__///province_code,ward_code|idx_vendors_address///__"
+    ],
+    [
+        "products///add///__///",
+        "sapo_product_id///string///100///_NULL///NULL///->index()///ID sản phẩm bên Sapo POS",
+        "sapo_variant_id///string///100///_NULL///NULL///->index()///ID variant bên Sapo POS",
+        "image_url///string///500///_NULL///NULL///__///Ảnh đại diện — đồng bộ từ Sapo POS",
+        "category_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('categories')->onDelete('restrict')///__",
+        "product_type///string///20///NOT_NULL///__///__///raw_material | finished_good | trading_good"
     ]
 ]

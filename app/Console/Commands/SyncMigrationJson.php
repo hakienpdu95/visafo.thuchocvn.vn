@@ -947,6 +947,10 @@ class SyncMigrationJson extends Command
         if (preg_match('/^dropColumn\(/', $s)) {
             return ['type' => '__drop', 'names' => $this->extractDropColumnNames($s)];
         }
+        // dropConstrainedForeignId('col') drops both the FK and the column itself
+        if (preg_match("/^dropConstrainedForeignId\(['\"]([^'\"]+)['\"]\)/", $s, $m)) {
+            return ['type' => '__drop', 'names' => [$m[1]]];
+        }
         // Track dropped index names so we can cancel out re-adds
         if (preg_match("/^(dropUnique|dropIndex)\(['\"]([^'\"]+)['\"]\)/", $s, $m)) {
             return ['type' => '__drop_index', 'name' => $m[2]];

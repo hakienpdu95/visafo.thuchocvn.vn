@@ -491,5 +491,73 @@
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
         "__index///index///__///__///__///employee_id,record_type,issue_date|idx_employee_health_latest///__"
+    ],
+    [
+        "contract_types///__///__///",
+        "ulid///ulid///__///NOT_NULL///__///__///__",
+        "code///string///60///NOT_NULL///__///->unique()///framework_agreement | agricultural_offtake | spot_purchase | consignment",
+        "name///string///255///NOT_NULL///__///__///Tên loại hợp đồng",
+        "description///text///__///_NULL///NULL///__///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "contracts///__///__///",
+        "ulid///ulid///__///NOT_NULL///__///__///__",
+        "vendor_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('vendors')->onDelete('restrict')///Nhà cung cấp ký hợp đồng",
+        "contract_type_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('contract_types')->onDelete('restrict')///__",
+        "contract_number///string///100///NOT_NULL///__///__///Số hợp đồng",
+        "name///string///255///NOT_NULL///__///__///Tên hợp đồng",
+        "total_value///decimal///15,2///_NULL///NULL///__///Giá trị hợp đồng — NULL với hợp đồng nguyên tắc không định giá trị tổng",
+        "start_date///date///__///NOT_NULL///__///__///__",
+        "end_date///date///__///_NULL///NULL///__///NULL = hợp đồng vô thời hạn",
+        "is_auto_renew///boolean///__///NOT_NULL///false///__///Tự động gia hạn khi hết hạn",
+        "renewal_period_months///unsignedSmallInteger///__///_NULL///NULL///__///Số tháng gia hạn thêm mỗi chu kỳ — bắt buộc khi is_auto_renew=true",
+        "status///string///20///NOT_NULL///'active'///->index()///active | expired | terminated",
+        "__index///unique///__///__///__///contract_number|contracts_contract_number_unique///__",
+        "__index///index///__///__///__///status,end_date|idx_contracts_status_end_date///__",
+        "__index///index///__///__///__///is_auto_renew,status,end_date|idx_contracts_renewal_scan///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "partner_products///__///__///",
+        "ulid///ulid///__///NOT_NULL///__///__///__",
+        "vendor_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('vendors')->onDelete('restrict')///NCC kê khai mặt hàng này",
+        "product_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('products')->onDelete('restrict')///Ánh xạ tới danh mục chuẩn (master catalog) của Visafo",
+        "vendor_sku///string///100///_NULL///NULL///__///Mã hàng nội bộ do NCC tự đặt",
+        "name///string///255///NOT_NULL///__///__///Tên hàng do NCC tự kê khai — VD: Nạc mông, Ba chỉ",
+        "manufacturer_name///string///255///_NULL///NULL///__///Nhà sản xuất / nguồn gốc thực tế nếu mua qua trung gian — VD: CP Việt Nam",
+        "origin_address///string///500///_NULL///NULL///__///Địa chỉ / vùng trồng / lò mổ gốc — phục vụ truy xuất nguồn gốc theo HD-02/HD-BCĐ",
+        "status///string///20///NOT_NULL///'active'///->index()///active | inactive",
+        "__index///index///__///__///__///vendor_id,product_id|idx_partner_products_vendor_product///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "partner_product_compliances///__///__///",
+        "ulid///ulid///__///NOT_NULL///__///__///__",
+        "partner_product_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('partner_products')->onDelete('cascade')///__",
+        "document_type_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('document_master_types')->onDelete('restrict')///__",
+        "document_number///string///150///NOT_NULL///__///__///Số tiếp nhận / số chứng nhận",
+        "issue_date///date///__///_NULL///NULL///__///Ngày cấp",
+        "expiration_date///date///__///_NULL///NULL///->index()///Ngày hết hạn — phục vụ cronjob cảnh báo",
+        "file_url///string///500///_NULL///NULL///__///File scan bản chính",
+        "status///string///20///NOT_NULL///'active'///->index()///active | expired | superseded",
+        "__index///index///__///__///__///partner_product_id,document_type_id,status|idx_partner_product_compliance_active///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật"
+    ],
+    [
+        "categories///__///__///",
+        "ulid///ulid///__///NOT_NULL///__///__///__",
+        "code///string///60///NOT_NULL///__///->unique()///fresh_food | processed_food | prepackaged_food | additives_spices | functional_fortified_food | beverages_water",
+        "name///string///255///NOT_NULL///__///__///Tên nhóm thực phẩm",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
     ]
 ]
