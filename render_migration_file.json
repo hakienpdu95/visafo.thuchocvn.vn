@@ -325,6 +325,15 @@
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật"
     ],
     [
+        "customer_product///__///__///Liên kết đầu ra — mặt hàng Visafo nào khách hàng đang lấy, phục vụ Traceability Report",
+        "customer_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('customers')->onDelete('cascade')///__",
+        "product_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('products')->onDelete('cascade')///__",
+        "status///string///20///NOT_NULL///'active'///->index()///active | inactive",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "__index///unique///__///__///__///customer_id,product_id|uq_customer_product///__"
+    ],
+    [
         "external_orders///__///__///Đơn hàng đồng bộ về từ hệ thống POS bên ngoài (Sapo/KiotViet)",
         "customer_id///unsignedBigInteger///__///_NULL///NULL///->constrained('customers')->onDelete('set null')///__",
         "external_system///string///20///NOT_NULL///'sapo'///->index()///sapo | kiotviet",

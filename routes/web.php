@@ -6,6 +6,7 @@ use App\Http\Controllers\Backend\Api\DashboardChartController;
 use App\Http\Controllers\Backend\DashboardController;
 use App\Http\Controllers\Backend\NotificationCenterController;
 use App\Http\Controllers\Backend\NotificationPreferenceController;
+use App\Http\Controllers\Backend\TraceabilityController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('backend.dashboard'));
@@ -57,6 +58,11 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::get('/reports',          fn () => abort(503, 'Module đang phát triển'))->name('reports.index');
     Route::get('/document-repository', fn () => abort(503, 'Module đang phát triển'))->name('document-repository.index');
     Route::get('/readiness-check',     fn () => abort(503, 'Module đang phát triển'))->name('readiness-check.index');
+
+    // ── Traceability Report (Farm-to-Fork) ─────────────────────────────────
+    Route::get('/traceability', [TraceabilityController::class, 'index'])
+        ->middleware('permission:compliance.view')
+        ->name('traceability.index');
 
     // ── Notification Center ───────────────────────────────────────────────
     Route::prefix('notifications')->name('notifications.')->group(function () {

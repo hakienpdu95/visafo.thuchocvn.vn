@@ -4,8 +4,11 @@ namespace Modules\Product\Models;
 
 use App\Foundation\Models\TenantAwareModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Modules\Customer\Models\Customer;
+use Modules\Customer\Models\CustomerProduct;
 use Modules\Product\Enums\ComplianceStatus;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
@@ -65,5 +68,13 @@ class Product extends TenantAwareModel
             ->where('document_type_id', $documentType->id)
             ->where(fn ($q) => $q->whereNull('expiration_date')->orWhere('expiration_date', '>=', now()))
             ->exists();
+    }
+
+    public function customers(): BelongsToMany
+    {
+        return $this->belongsToMany(Customer::class)
+            ->using(CustomerProduct::class)
+            ->withPivot('status')
+            ->withTimestamps();
     }
 }

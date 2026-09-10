@@ -6,11 +6,13 @@ use App\Foundation\Models\TenantAwareModel;
 use App\Models\Province;
 use App\Models\Ward;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Customer\Enums\CustomerGroup;
 use Modules\Customer\Enums\CustomerStatus;
 use Modules\Customer\Enums\MealModel;
 use Modules\Employee\Models\Employee;
+use Modules\Product\Models\Product;
 
 class Customer extends TenantAwareModel
 {
@@ -65,5 +67,13 @@ class Customer extends TenantAwareModel
     public function deliveryPoints(): HasMany
     {
         return $this->hasMany(CustomerDeliveryPoint::class);
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class)
+            ->using(CustomerProduct::class)
+            ->withPivot('status')
+            ->withTimestamps();
     }
 }
