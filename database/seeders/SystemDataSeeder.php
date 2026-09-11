@@ -7,6 +7,9 @@ use Modules\ActivityLog\Database\Seeders\ActivityLogPermissionsSeeder;
 use Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
 use Modules\Customer\Database\Seeders\CustomerMasterDataSeeder;
 use Modules\Employee\Database\Seeders\DepartmentSeeder;
+use Modules\Product\Database\Seeders\AgriFertilizerSeeder;
+use Modules\Product\Database\Seeders\AgriPesticideSeeder;
+use Modules\Product\Database\Seeders\AgriSeedSeeder;
 use Modules\Product\Database\Seeders\CategorySeeder;
 use Modules\Product\Database\Seeders\DocumentMasterTypeSeeder;
 use Modules\Product\Database\Seeders\ProductMasterDataSeeder;
@@ -59,6 +62,15 @@ class SystemDataSeeder extends Seeder
 
             // ── 6. 6 nhóm thực phẩm chuẩn ATTP (categories) — Rule Engine ─
             CategorySeeder::class,
+
+            // ── 6b. Từ điển thuốc BVTV (datafiles/agri_pesticides_master_data.json) ─
+            AgriPesticideSeeder::class,
+
+            // ── 6c. Từ điển phân bón (datafiles/agri_fertilizers_master_data.json) ─
+            AgriFertilizerSeeder::class,
+
+            // ── 6d. Từ điển giống cây trồng (datafiles/agri_seeds_master_data.json) ─
+            AgriSeedSeeder::class,
 
             // ── 7. Master data sản phẩm (datafiles/products_master_data.json) ─
             ProductMasterDataSeeder::class,

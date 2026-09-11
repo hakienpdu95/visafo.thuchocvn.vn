@@ -1,0 +1,1157 @@
+[
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Lúa",
+    "author_applicant": "Hạt lúa để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Lúa mì Durum",
+    "author_applicant": "Hạt lúa mì Durum để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Lúa mì khác",
+    "author_applicant": "Hạt lúa mì khác để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Lúa mạch đen",
+    "author_applicant": "Hạt lúa mạch đen để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Lúa đại mạch",
+    "author_applicant": "Hạt lúa đại mạch để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Yến mạch",
+    "author_applicant": "Hạt yến mạch để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Kê",
+    "author_applicant": "Hạt kê để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Vừng",
+    "author_applicant": "Hạt vừng để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu tương",
+    "author_applicant": "Hạt đậu tương để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Lạc",
+    "author_applicant": "Hạt lạc để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cao lương (Lúa miến)",
+    "author_applicant": "Hạt cao lương (lúa miến) để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Ngô",
+    "author_applicant": "Hạt ngô để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Sắn",
+    "author_applicant": "Hom giống của cây sắn  không có rễ để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Sắn",
+    "author_applicant": "Hom giống của cây sắn có rễ để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Củ cải đường",
+    "author_applicant": "Hạt giống của củ cải đường để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Rau cải các loại: Củ cải thường, cải bắp, cải  bẹ, cải ngọt, cải bi, cải sen, súp lơ, su hào, cải  làn, cải xoăn, cải xanh, cải thìa, cải bẹ cuốn,  cải xoong, cải ngồng, cải trắng, cải thảo, xà  lách, rau diếp ...",
+    "author_applicant": "Hạt giống của các loại rau cải: cải bẹ, cải  ngọt, cải bi, cải sen, súp lơ, su hào, cải làn, cải  xoăn, cải xanh, cải thìa, cải bẹ cuốn, cải xoong,  cải ngồng, cải trắng, cải thảo, xà lách, rau diếp  ... để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu đen",
+    "author_applicant": "Hạt đậu đen để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu đỏ",
+    "author_applicant": "Hạt đậu đỏ để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu đũa",
+    "author_applicant": "Hạt đậu đũa để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu lăng",
+    "author_applicant": "Hạt đậu lăng để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu trắng",
+    "author_applicant": "Hạt đậu trắng để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu tương rau",
+    "author_applicant": "Hạt đậu tương rau để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu xanh",
+    "author_applicant": "Hạt đậu xanh để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu Hà Lan",
+    "author_applicant": "Hạt đậu Hà Lan để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu gà (Chickpeas) (đậu Hà Lan loại nhỏ)",
+    "author_applicant": "Hạt đậu gà (Chickpeas) để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu thuộc loài Vigna mungo (L.) Hepper hoặc  Vignaradiata (L.) Wilczek",
+    "author_applicant": "Hạt đậu thuộc loài Vigna mungo (L.) Hepper  hoặc Vignaradiata (L.) Wilczek, để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu hạt đỏ nhỏ (Adzuki) (Phaseolus hoặc Vigna  angularis)",
+    "author_applicant": "Đậu hạt đỏ nhỏ (Adzuki) (Phaseolus hoặc  Vigna angularis) để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu  bambara (Vigna  subterranean hoặc  Voandzeia subterranean)",
+    "author_applicant": "Hạt đậu bambara (Vigna  subterranean hoặc  Voandzeia subterranean) để  làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu tằm (Vicia  faba var. major) và đậu ngựa  (Vicia  faba var. equina, Vicia faba var. minor)",
+    "author_applicant": "Hạt đậu  tằm (Vicia  faba var. major)  và hạt đậu ngựa  (Vicia  faba var. equina, Vicia faba var. minor)  để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu tằm (trừ hạt cây thuộc loài Vicia faba )",
+    "author_applicant": "Hạt đậu tằm (trừ hạt cây thuộc  loài Vicia faba)  để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu triều, đậu săng",
+    "author_applicant": "Hạt đậu triều, đậu  săng để làm  giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đậu khác",
+    "author_applicant": "Hạt đậu khác để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dưa chuột",
+    "author_applicant": "Hạt dưa chuột để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Mướp đắng",
+    "author_applicant": "Hạt mướp đắng để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dưa hấu",
+    "author_applicant": "Hạt dưa hấu để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dưa lê",
+    "author_applicant": "Hạt dưa lê để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dưa hồng",
+    "author_applicant": "Hạt dưa hồng để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hành tây",
+    "author_applicant": "Củ hành tây để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hành tây",
+    "author_applicant": "Hạt hành tây để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hành",
+    "author_applicant": "Củ hành để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hành",
+    "author_applicant": "Hạt hành để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hẹ",
+    "author_applicant": "Củ hẹ để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hẹ",
+    "author_applicant": "Hạt hẹ để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Kiệu",
+    "author_applicant": "Củ kiệu để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Kiệu",
+    "author_applicant": "Hạt kiệu để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Tỏi",
+    "author_applicant": "Củ tỏi để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Tỏi",
+    "author_applicant": "Hạt tỏi để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Tỏi tây và các loại rau họ hành tỏi khác",
+    "author_applicant": "Củ giống tỏi tây và các loại rau họ hành tỏi khác  để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Tỏi tây và các loại rau họ hành tỏi khác",
+    "author_applicant": "Hạt giống tỏi tây và các loại rau họ hành tỏi  khác để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Khoai lang",
+    "author_applicant": "Củ khoai lang để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Khoai sọ",
+    "author_applicant": "Củ khoai sọ để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Khoai môn",
+    "author_applicant": "Củ khoai môn để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Từ",
+    "author_applicant": "Củ từ để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Khoai tây",
+    "author_applicant": "Củ khoai tây để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Nấm",
+    "author_applicant": "Cây nấm (bào tử nấm, hệ sợi nấm) để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Ớt cay làm gia vị",
+    "author_applicant": "Hạt ớt cay để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Ớt rau",
+    "author_applicant": "Hạt ớt rau (ớt ngọt) để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cà chua",
+    "author_applicant": "Hạt cà chua để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cà chua",
+    "author_applicant": "Cây ghép của cà chua",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Họ cà",
+    "author_applicant": "Hạt giống của các loại cây họ cà",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Bầu",
+    "author_applicant": "Hạt bầu để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Bí",
+    "author_applicant": "Hạt bí để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Mướp",
+    "author_applicant": "Hạt mướp để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cà rốt",
+    "author_applicant": "Hạt cà rốt để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dưa lưới",
+    "author_applicant": "Hạt dưa lưới để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dưa vàng",
+    "author_applicant": "Hạt dưa vàng để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa phong lan",
+    "author_applicant": "Cành giâm không có rễ  của phong lan để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa phong lan",
+    "author_applicant": "Cành giâm có rễ của phong lan để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa phong lan",
+    "author_applicant": "Cây phong lan để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa phong lan",
+    "author_applicant": "Cây phong lan nuôi cấy mô để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa hồng",
+    "author_applicant": "Cây hoa hồng để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa hồng",
+    "author_applicant": "Cây hoa hồng nuôi cấy mô để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa Lily",
+    "author_applicant": "Củ hoa lily để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa Lily",
+    "author_applicant": "Cây lily nuôi cấy mô để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa cúc",
+    "author_applicant": "Cành cúc để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa cúc",
+    "author_applicant": "Cây cúc để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa cúc",
+    "author_applicant": "Cây cúc nuôi cấy mô trong ống nghiệm để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa cúc",
+    "author_applicant": "Hạt hoa cúc để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa đỗ quyên",
+    "author_applicant": "Cây đỗ quyên giống để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hoa đỗ quyên",
+    "author_applicant": "Cây đỗ quyên nuôi cấy mô trong ống nghiệm để làm  giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Củ các loài hoa khác",
+    "author_applicant": "Củ các loài hoa khác để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cành các loài hoa khác",
+    "author_applicant": "Cành các loài hoa khác để nhân giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cây các loài hoa khác",
+    "author_applicant": "Cây các loài hoa khác để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cây nuôi cấy mô các loài hoa khác",
+    "author_applicant": "Cây nuôi cấy mô trong các ống nghiệm của các loài  hoa khác để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hạt các loài hoa khác",
+    "author_applicant": "Hạt của các loài hoa thân thảo (herbaceous plants) khác  để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hạt các loài hoa khác",
+    "author_applicant": "Hạt của các loài cây khác để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cỏ linh lăng (Alfalfa)",
+    "author_applicant": "Hạt cỏ linh lăng (Alfalfa) để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cỏ ba lá (Trifolium spp)",
+    "author_applicant": "Hạt cỏ ba lá (Trifolium spp) để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cỏ đuôi trâu",
+    "author_applicant": "Hạt cỏ đuôi trâu để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cỏ Kentucky màu xanh da trời (Poa pratensis L.)",
+    "author_applicant": "Hạt cỏ kentucky màu xanh da trời (Poa pratensis L.) để  làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cỏ mạch đen (Lolium multiflorum Lam., Lolium perenne L.)",
+    "author_applicant": "Hạt cỏ mạch đen (Lolium multiflorum Lam., Lolium perenne  L.) để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cỏ đuôi mèo",
+    "author_applicant": "Hạt cỏ đuôi mèo để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cỏ hạt của các loại cây dùng làm thức ăn gia súc  khác",
+    "author_applicant": "Hạt của các loại cây dùng làm thức ăn gia súc khác  để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Bông vải",
+    "author_applicant": "Hạt bông để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dâu",
+    "author_applicant": "Cành dâu để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dâu",
+    "author_applicant": "Cây dâu để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Mía",
+    "author_applicant": "Hom giống của mía để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Mía",
+    "author_applicant": "Cây mía để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Thuốc lá",
+    "author_applicant": "Hạt thuốc lá để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Thuốc lá",
+    "author_applicant": "Cây thuốc lá để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cà phê",
+    "author_applicant": "Hạt cà phê để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cà phê",
+    "author_applicant": "Cành ghép của cây cà phê để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cà phê",
+    "author_applicant": "Cây cà phê để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cao su",
+    "author_applicant": "Hạt cây cao su để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cao su",
+    "author_applicant": "Cành ghép của cây cao su để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cao su",
+    "author_applicant": "Cây giống cao su loại tum trần",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cao su",
+    "author_applicant": "Cây giống cao su loại có bầu",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Chè",
+    "author_applicant": "Hạt chè để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Chè",
+    "author_applicant": "Cành (hom) chè để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Chè",
+    "author_applicant": "Cây chè để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Ca cao",
+    "author_applicant": "Cành ghép của cây ca cao để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Ca cao",
+    "author_applicant": "Cây ca cao để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Điều",
+    "author_applicant": "Cành ghép của cây điều để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Điều",
+    "author_applicant": "Cây điều để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dừa",
+    "author_applicant": "Cây dừa để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Bưởi",
+    "author_applicant": "Cành ghép của cây bưởi để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Bưởi",
+    "author_applicant": "Cây bưởi để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cam",
+    "author_applicant": "Cành ghép của cây cam để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cam",
+    "author_applicant": "Cây cam để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Quýt",
+    "author_applicant": "Cành ghép của cây quýt để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Quýt",
+    "author_applicant": "Cây quýt để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Chanh",
+    "author_applicant": "Cành ghép của cây chanh để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Chanh",
+    "author_applicant": "Cây chanh để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Thanh long",
+    "author_applicant": "Cành thanh long để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Thanh long",
+    "author_applicant": "Cây thanh long để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Chôm chôm",
+    "author_applicant": "Cành ghép của cây chôm chôm để làm giống, không có  rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Chôm chôm",
+    "author_applicant": "Cây chôm chôm để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Chuối",
+    "author_applicant": "Cây chuối để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đào",
+    "author_applicant": "Cành ghép của cây đào để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đào",
+    "author_applicant": "Cây đào để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Đu đủ",
+    "author_applicant": "Cây đu đủ để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Dứa",
+    "author_applicant": "Cây dứa để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Lạc tiên",
+    "author_applicant": "Cây lạc tiên để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hồng",
+    "author_applicant": "Cành ghép của cây hồng để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hồng",
+    "author_applicant": "Cây hồng để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hồng xiêm",
+    "author_applicant": "Cành ghép của cây hồng xiêm để làm giống, không có  rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Hồng xiêm",
+    "author_applicant": "Cây hồng xiêm để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Khế",
+    "author_applicant": "Cành ghép của cây khế để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Khế",
+    "author_applicant": "Cây khế để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Lê",
+    "author_applicant": "Cành ghép của cây lê để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Lê",
+    "author_applicant": "Cây lê để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Mận",
+    "author_applicant": "Cành ghép của cây mận để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Mận",
+    "author_applicant": "Cây mận để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Măng cụt",
+    "author_applicant": "Cành ghép của cây măng cụt để làm giống, không có  rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Măng cụt",
+    "author_applicant": "Cây măng cụt để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Nhãn",
+    "author_applicant": "Cành ghép của cây nhãn để làm giống không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Nhãn",
+    "author_applicant": "Cây nhãn để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Nho",
+    "author_applicant": "Cành ghép của cây nho để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Nho",
+    "author_applicant": "Cây nho để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Ổi",
+    "author_applicant": "Cành ghép của cây ổi để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Ổi",
+    "author_applicant": "Cây ổi để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Quýt",
+    "author_applicant": "Cành ghép của cây quýt để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Quýt",
+    "author_applicant": "Cây quýt để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Roi",
+    "author_applicant": "Cành ghép của cây roi để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Roi",
+    "author_applicant": "Cây roi để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Sầu riêng",
+    "author_applicant": "Cành ghép của cây sầu riêng để làm giống, không có  rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Sầu riêng",
+    "author_applicant": "Cây sầu riêng để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Táo",
+    "author_applicant": "Cành ghép của cây táo để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Táo",
+    "author_applicant": "Cây táo để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Vải",
+    "author_applicant": "Cành ghép của cây vải để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Vải",
+    "author_applicant": "Cây vải để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Xoài",
+    "author_applicant": "Cành ghép của cây xoài để làm giống, không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Xoài",
+    "author_applicant": "Cây xoài để làm giống",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Chưa phân loại",
+    "name": "Cây ăn quả khác",
+    "author_applicant": "Cành giâm và cành ghép không có rễ",
+    "decision_number": "",
+    "is_banned": false
+  },
+  {
+    "crop_type": "Cây ăn quả khác",
+    "name": "Cây, cây bụi, đã hoặc không ghép cành, thuộc loại  có quả hoặc quả hạch ăn được",
+    "author_applicant": "",
+    "decision_number": "",
+    "is_banned": false
+  }
+]

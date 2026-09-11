@@ -1,0 +1,287 @@
+[
+  {
+    "hs_code": "10061010",
+    "name": "Lúa",
+    "description": "Hạt lúa để làm giống"
+  },
+  {
+    "hs_code": "10011100",
+    "name": "Lúa mì Durum",
+    "description": "Hạt lúa mì Durum để làm giống"
+  },
+  {
+    "hs_code": "10019100",
+    "name": "Lúa mì khác",
+    "description": "Hạt lúa mì khác để làm giống"
+  },
+  {
+    "hs_code": "10021000",
+    "name": "Lúa mạch đen",
+    "description": "Hạt lúa mạch đen để làm giống"
+  },
+  {
+    "hs_code": "10031000",
+    "name": "Lúa đại mạch",
+    "description": "Hạt lúa đại mạch để làm giống"
+  },
+  {
+    "hs_code": "10041000",
+    "name": "Yến mạch",
+    "description": "Hạt yến mạch để làm giống"
+  },
+  {
+    "hs_code": "10082100",
+    "name": "Kê",
+    "description": "Hạt kê để làm giống"
+  },
+  {
+    "hs_code": "12074090",
+    "name": "Vừng",
+    "description": "Hạt vừng để làm giống"
+  },
+  {
+    "hs_code": "12011000",
+    "name": "Đậu tương",
+    "description": "Hạt đậu tương để làm giống"
+  },
+  {
+    "hs_code": "12023000",
+    "name": "Lạc",
+    "description": "Hạt lạc để làm giống"
+  },
+  {
+    "hs_code": "10071000",
+    "name": "Cao lương (Lúa miến)",
+    "description": "Hạt cao lương (lúa miến) để làm giống"
+  },
+  {
+    "hs_code": "10051000",
+    "name": "Ngô",
+    "description": "Hạt ngô để làm giống"
+  },
+  {
+    "hs_code": "06021090",
+    "name": "Sắn",
+    "description": "Hom giống của cây sắn  không có rễ để làm giống"
+  },
+  {
+    "hs_code": "06029090",
+    "name": "Sắn",
+    "description": "Hom giống của cây sắn có rễ để làm giống"
+  },
+  {
+    "hs_code": "12091000",
+    "name": "Củ cải đường",
+    "description": "Hạt giống của củ cải đường để làm giống"
+  },
+  {
+    "hs_code": "12099190",
+    "name": "Rau cải các loại: Củ cải thường, cải bắp, cải  bẹ, cải ngọt, cải bi, cải sen, súp lơ, su hào, cải  làn, cải xoăn, cải xanh, cải thìa, cải bẹ cuốn,  cải xoong, cải ngồng, cải trắng, cải thảo, xà  lách, rau diếp ...",
+    "description": "Hạt giống của các loại rau cải: cải bẹ, cải  ngọt, cải bi, cải sen, súp lơ, su hào, cải làn, cải  xoăn, cải xanh, cải thìa, cải bẹ cuốn, cải xoong,  cải ngồng, cải trắng, cải thảo, xà lách, rau diếp  ... để làm giống"
+  },
+  {
+    "hs_code": "07139010",
+    "name": "Đậu đen",
+    "description": "Hạt đậu đen để làm giống"
+  },
+  {
+    "hs_code": "07133210",
+    "name": "Đậu đỏ",
+    "description": "Hạt đậu đỏ để làm giống"
+  },
+  {
+    "hs_code": "07133510",
+    "name": "Đậu đũa",
+    "description": "Hạt đậu đũa để làm giống"
+  },
+  {
+    "hs_code": "07134010",
+    "name": "Đậu lăng",
+    "description": "Hạt đậu lăng để làm giống"
+  },
+  {
+    "hs_code": "07133310",
+    "name": "Đậu trắng",
+    "description": "Hạt đậu trắng để làm giống"
+  },
+  {
+    "hs_code": "07133110",
+    "name": "Đậu xanh",
+    "description": "Hạt đậu xanh để làm giống"
+  },
+  {
+    "hs_code": "07131010",
+    "name": "Đậu Hà Lan",
+    "description": "Hạt đậu Hà Lan để làm giống"
+  },
+  {
+    "hs_code": "07132010",
+    "name": "Đậu gà (Chickpeas) (đậu Hà Lan loại nhỏ)",
+    "description": "Hạt đậu gà (Chickpeas) để làm giống"
+  },
+  {
+    "hs_code": "07133410",
+    "name": "Đậu  bambara (Vigna  subterranean hoặc  Voandzeia subterranean)",
+    "description": "Hạt đậu bambara (Vigna  subterranean hoặc  Voandzeia subterranean) để  làm giống"
+  },
+  {
+    "hs_code": "07135010",
+    "name": "Đậu tằm (Vicia  faba var. major) và đậu ngựa  (Vicia  faba var. equina, Vicia faba var. minor)",
+    "description": "Hạt đậu  tằm (Vicia  faba var. major)  và hạt đậu ngựa  (Vicia  faba var. equina, Vicia faba var. minor)  để làm giống"
+  },
+  {
+    "hs_code": "07136010",
+    "name": "Đậu triều, đậu săng",
+    "description": "Hạt đậu triều, đậu  săng để làm  giống"
+  },
+  {
+    "hs_code": "12099990",
+    "name": "Dưa hấu",
+    "description": "Hạt dưa hấu để làm giống"
+  },
+  {
+    "hs_code": "07031011",
+    "name": "Hành tây",
+    "description": "Củ hành tây để làm giống"
+  },
+  {
+    "hs_code": "12099110",
+    "name": "Hành tây",
+    "description": "Hạt hành tây để làm giống"
+  },
+  {
+    "hs_code": "07031021",
+    "name": "Hành",
+    "description": "Củ hành để làm giống"
+  },
+  {
+    "hs_code": "07039010",
+    "name": "Kiệu",
+    "description": "Củ kiệu để làm giống"
+  },
+  {
+    "hs_code": "07032010",
+    "name": "Tỏi",
+    "description": "Củ tỏi để làm giống"
+  },
+  {
+    "hs_code": "06011000",
+    "name": "Khoai lang",
+    "description": "Củ khoai lang để làm giống"
+  },
+  {
+    "hs_code": "07011000",
+    "name": "Khoai tây",
+    "description": "Củ khoai tây để làm giống"
+  },
+  {
+    "hs_code": "06022000",
+    "name": "Cà chua",
+    "description": "Cây ghép của cà chua"
+  },
+  {
+    "hs_code": "06021010",
+    "name": "Hoa phong lan",
+    "description": "Cành giâm không có rễ  của phong lan để làm giống"
+  },
+  {
+    "hs_code": "06029010",
+    "name": "Hoa phong lan",
+    "description": "Cành giâm có rễ của phong lan để làm giống"
+  },
+  {
+    "hs_code": "06029020",
+    "name": "Hoa phong lan",
+    "description": "Cây phong lan để làm giống"
+  },
+  {
+    "hs_code": "06024000",
+    "name": "Hoa hồng",
+    "description": "Cây hoa hồng để làm giống"
+  },
+  {
+    "hs_code": "12093000",
+    "name": "Hoa cúc",
+    "description": "Hạt hoa cúc để làm giống"
+  },
+  {
+    "hs_code": "06023000",
+    "name": "Hoa đỗ quyên",
+    "description": "Cây đỗ quyên giống để làm giống"
+  },
+  {
+    "hs_code": "12092100",
+    "name": "Cỏ linh lăng (Alfalfa)",
+    "description": "Hạt cỏ linh lăng (Alfalfa) để làm giống"
+  },
+  {
+    "hs_code": "12092200",
+    "name": "Cỏ ba lá (Trifolium spp)",
+    "description": "Hạt cỏ ba lá (Trifolium spp) để làm giống"
+  },
+  {
+    "hs_code": "12092300",
+    "name": "Cỏ đuôi trâu",
+    "description": "Hạt cỏ đuôi trâu để làm giống"
+  },
+  {
+    "hs_code": "12092400",
+    "name": "Cỏ Kentucky màu xanh da trời (Poa pratensis L.)",
+    "description": "Hạt cỏ kentucky màu xanh da trời (Poa pratensis L.) để  làm giống"
+  },
+  {
+    "hs_code": "12092500",
+    "name": "Cỏ mạch đen (Lolium multiflorum Lam., Lolium perenne L.)",
+    "description": "Hạt cỏ mạch đen (Lolium multiflorum Lam., Lolium perenne  L.) để làm giống"
+  },
+  {
+    "hs_code": "12092910",
+    "name": "Cỏ đuôi mèo",
+    "description": "Hạt cỏ đuôi mèo để làm giống"
+  },
+  {
+    "hs_code": "12092990",
+    "name": "Cỏ hạt của các loại cây dùng làm thức ăn gia súc  khác",
+    "description": "Hạt của các loại cây dùng làm thức ăn gia súc khác  để làm giống"
+  },
+  {
+    "hs_code": "12072100",
+    "name": "Bông vải",
+    "description": "Hạt bông để làm giống"
+  },
+  {
+    "hs_code": "12129310",
+    "name": "Mía",
+    "description": "Hom giống của mía để làm giống"
+  },
+  {
+    "hs_code": "12079990",
+    "name": "Cà phê",
+    "description": "Hạt cà phê để làm giống"
+  },
+  {
+    "hs_code": "12099910",
+    "name": "Cao su",
+    "description": "Hạt cây cao su để làm giống"
+  },
+  {
+    "hs_code": "06021020",
+    "name": "Cao su",
+    "description": "Cành ghép của cây cao su để làm giống, không có rễ"
+  },
+  {
+    "hs_code": "06029040",
+    "name": "Cao su",
+    "description": "Cây giống cao su loại tum trần"
+  },
+  {
+    "hs_code": "06029050",
+    "name": "Cao su",
+    "description": "Cây giống cao su loại có bầu"
+  },
+  {
+    "hs_code": "Cây ăn quả khác",
+    "name": "nan",
+    "description": "nan"
+  }
+]

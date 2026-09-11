@@ -1,0 +1,751 @@
+[
+  {
+    "category": "Phân hữu cơ",
+    "name": "TNP-Đồng tiền vàng  06",
+    "ingredients": "%: HC: 25; Axit Humic: 5; Axit Fulvic: 1,5; N:  2,5; Azadirachitin: 2; Nicotoids: 2; Mg: 0,04; Độ ẩm: 25 | ppm: Cu: 200; Zn: 200; Bo: 500; Fe: 200",
+    "applicant": "CT TNHH SX TM Thuận  Nông Phát",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ",
+    "name": "TNP-Đồng tiền vàng  08",
+    "ingredients": "%: HC: 25; Axit Humic: 6; Axit Fulvic: 2; N:  2,5; CaO: 2; S: 0,05; Mg: 0,04; Độ ẩm: 25 | ppm: Cu: 200; Zn: 200; Bo: 500; Fe: 200",
+    "applicant": "CT TNHH SX TM Thuận  Nông Phát",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ khoáng",
+    "name": "FOUNDAN AGRO NPK  12-3-3+OM+TE",
+    "ingredients": "%: HC: 19; N-P2O5-K2O:  12-3-3; Ca: 2,4; S: 7; Độ ẩm 16 | ppm: Fe: 2000; Zn: 35; Cu: 6",
+    "applicant": "CT TNHH Foundan  Agro",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ khoáng",
+    "name": "Ích Nông IN2 4-2-2",
+    "ingredients": "%: HC: 18; N-P2O5-K2O:  4-2-2; Độ ẩm: 25 | ppm: Zn: 300; Fe: 200; B: 200",
+    "applicant": "CT TNHH TMDV XNK Lộc  Vừng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ khoáng",
+    "name": "Phú Hưng",
+    "ingredients": "%: HC: 16; N-P2O5-K2O:  3-2,5-2,5; Độ ẩm: 25",
+    "applicant": "HKD CS Phân bón lá  Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ khoáng",
+    "name": "Bông Sen 1 (NPK)",
+    "ingredients": "%: HC: 19; N-P2O5-K2O:  6-4-4; Ca: 0,5; Mg: 0,5; S: 1; Độ ẩm: 25 | ppm: Fe: 50; Cu: 50; Zn: 30; Mn: 20; B: 20 | pH: 5-7",
+    "applicant": "CT TNHH TVĐT SX TM  DV Thuận Thảo Thiện",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ khoáng",
+    "name": "Bông Sen 2",
+    "ingredients": "%: HC: 19; N-P2O5-K2O:  7-1-3; Ca: 0,5; Mg: 0,5; S: 1; Độ ẩm: 25 | ppm: Fe: 50; Cu: 50; Zn: 30; Mn: 20; B: 20 | pH: 5-7",
+    "applicant": "CT TNHH TVĐT SX TM  DV Thuận Thảo Thiện",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ khoáng",
+    "name": "Bông Sen 4",
+    "ingredients": "%: HC: 19; N-P2O5-K2O:  2-3-7; Ca: 0,5; Mg: 0,5; S: 1; Độ ẩm: 25 | ppm: Fe: 50; Cu: 50; Zn: 30; Mn: 20; B: 20 | pH: 5-7",
+    "applicant": "CT TNHH TVĐT SX TM  DV Thuận Thảo Thiện",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ khoáng",
+    "name": "Bông Sen 5",
+    "ingredients": "%: HC: 19; N-P2O5-K2O:  2-4-2; Ca: 0,5; Mg: 0,5; S: 1; Độ ẩm: 25 | ppm: Fe: 50; Cu: 50; Zn: 30; Mn: 20; B: 20 | pH: 5-7",
+    "applicant": "CT TNHH TVĐT SX TM  DV Thuận Thảo Thiện",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ khoáng",
+    "name": "VT-GROW cho cây ngắn  ngày",
+    "ingredients": "HC: 20; Axit Humic: 15; Axit Fulvic: 5; N-P2O5-K2O:  1-2-5; SiO2: 1; Ca: 5; Zn: 0,05; Cu: 0,05; B: 0,03; Fe: 0,025; Mn:  0,025; Mg: 0,05; Độ ẩm: 25 | ppm: a-NAA:  50 | pH: 7,6",
+    "applicant": "CT TNHH SX&TM  Việt Trung",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "AMI-AMI-a",
+    "ingredients": "%: HC: 23 (Axit Humic: 0,5); N-P2O5-K2O:  4-2-2; Axit Amin (Alanine; Axit Glutamic; Lysine; Threonine): 2,5 | pH: 5-7; Tỷ trọng: 1,1-1,25",
+    "applicant": "CT Ajinomoto Việt  Nam",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "BM-HUMIC",
+    "ingredients": "%: HC: 22; Axit Humic: 10; N-P2O5-K2O:  2,5-1-2; Ca: 0,1; S: 0,1; Mg: 0,05; Độ ẩm: 20 | ppm: Cu: 500 | pH: 5-7",
+    "applicant": "CT TNHH DV NC SX  GCT Bình Minh",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "Alaska 5-1-1",
+    "ingredients": "%: HC: 22; Axit Humic: 2,5; N-P2O5-K2O:  5-1-1; Độ ẩm: 25 | ppm: Ca: 200; S: 100; Mg: 100; Fe: 100; Mn: 100;  Zn: 100; Cu: 100",
+    "applicant": "CT TNHH Đạt Nông  [NK từ Hoa Kỳ]",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "Điền  Trang-Trimix-Super cho cây ngắn ngày",
+    "ingredients": "%: HC: 22; Axit Humic: 2,5; N: 2,5; Độ ẩm: 25",
+    "applicant": "CT TNHH Điền Trang",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "Bông Lúa Vàng NPK:  2,5-1-1-23HC",
+    "ingredients": "%: HC: 23; N-P2O5-K2O:  2,5-1-1; Độ ẩm: 25",
+    "applicant": "CT CP VSMTĐT Hà Nội",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "Phú Nông 2-1-1",
+    "ingredients": "%: HC: 23; Axit Humic: 2,5; N-P2O5-K2O:  2-1-1; Độ ẩm: 25 | pH: 5,5-7",
+    "applicant": "DN TN TM DV Xây Dựng  Huỳnh Ngân",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "HTC 18",
+    "ingredients": "%: HC: 23; Axit Humic: 2,5; N-P2O5-K2O:  2,5-3-1; Độ ẩm: 25",
+    "applicant": "CT CP KT và DV TMPT  HTC COM",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "Ích Nông IN1  3-1,5-1,5",
+    "ingredients": "%: HC: 23; Axit Humic: 2,5; N-P2O5-K2O:  3-1,5-1,5; CaO: 4; MgO: 2,5; Độ ẩm: 25 | ppm: Zn: 300; Fe: 200; B: 200",
+    "applicant": "CT TNHH TMDV XNK Lộc  Vừng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "Bioted-PB 4-3-2",
+    "ingredients": "%: HC: 45; Axit Humic: 2,5; N-P2O5-K2O:  4-3-2; Ca: 4,5; Mn: 0,02; Mg: 0,3; Cu: 0,02; S: 0,3; B: 0,2; Fe: 0,16; Zn:  0,004; Mo: 0,003; Độ ẩm: 25 | pH: 5-7",
+    "applicant": "CT TNHH PTKT Vĩnh  Long",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "Wokozim",
+    "ingredients": "%: HC: 25,6; N-P2O5-K2O:  7-0,05-1; Axit amin (Proline; Alanine; Glycine): 2 | ppm: Fe: 900; Cu: 500; Zn: 1.800; Mn: 2.100 | pH: 5-7; Tỷ trọng: 1,01",
+    "applicant": "CT CP CN TCSH Vĩnh  Thịnh [NK từ Ấn Độ]",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "Con Sóc (DSM) 4-2-2",
+    "ingredients": "%: HC: 23; Axit Humic: 2,5; N-P2O5-K2O:  4-2-2; Ca: 0,05; Mg: 0,012; Fe: 0,01; Độ ẩm: 20 | pH: 5-7",
+    "applicant": "CT TNHH Dòng Sông Mới",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ sinh học",
+    "name": "Nam Việt NV2: 3-2-2  (Navi-Bio Organic)",
+    "ingredients": "%: HC: 23; Axit Humic: 2,5; N-P2O5-K2O:  3-2-2; CaO: 4; MgO: 1,5; Độ ẩm: 20 | ppm: Zn: 300; Fe: 200; B: 200 | pH: 6,5",
+    "applicant": "CT TNHH SX & TM  Nam Việt; CT TNHH SX & TM Nam Việt Ninh Thuận",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "Điền Trang-Tricho  mix- N cho cây ngắn ngày",
+    "ingredients": "%: HC: 15; Độ ẩm: 30 | Cfu/g: Trichoderma spp; Azotobacter: 1x106  mỗi loại",
+    "applicant": "CT TNHH Điền Trang",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "Điền Trang-Tricho  mix-P cho cây ngắn ngày",
+    "ingredients": "%: HC: 15; Độ ẩm: 30 | Cfu/g: Trichoderma spp; Bacillus subtillis: 1x106  mỗi loại",
+    "applicant": "CT TNHH Điền Trang",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "Điền Trang-NEEM cho  cây ngắn ngày",
+    "ingredients": "%: HC: 15; Độ ẩm: 30 | Cfu/g: Trichoderma spp: 1x106  mỗi loại",
+    "applicant": "CT TNHH Điền Trang",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "Fitohoocmon 34",
+    "ingredients": "%: HC: 15; Axit Humic: 0,5; Độ ẩm: 30 | Cfu/g: Pseudomonas.sp; Mucor; Bacillus.sp: 1 x 106  mỗi loại",
+    "applicant": "CT CP PB  Fitohoocmon",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "HN 2000  (BIO-HN2000)",
+    "ingredients": "%: HC: 23; Axit Humic: 5; N-P2O5-K2O:  3-1-1; CaO: 1,5; MgO: 1,2; S: 1; Độ ẩm: 28 | ppm: Cu: 70; Zn: 500; Mo: 10; Co: 1; Fe: 1000;  Zn: 26; B: 1; Na: 15 | Cfu/g: Azotobacter chrocccum; Bacillus subtillis;  Trichoderma spp:  1x106 mỗi loại",
+    "applicant": "Liên hiệp  KH-SXCNHH, Viện Hóa học Các hợp chất TN, Viện KH&CN Việt Nam",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "Ích Nông IN3 2-1-1",
+    "ingredients": "%: HC: 20; N-P2O5-K2O:  2-1-1; Độ ẩm: 28 | ppm: Zn: 200; B: 200 | Cfu/g: Trichoderma sp : 1x106",
+    "applicant": "CT TNHH TMDV XNK Lộc  Vừng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "TNP-Đồng Tiền Vàng  02 2-2-1+TE",
+    "ingredients": "%: HC: 15; Axit Humic: 2; Axit Fulvic: 0,5;  N-P2O5-K2O: 2-2-1; Mg: 0,04; Độ ẩm: 30 | Cfu/g: Trichoderma.sp: 1x106 | ppm: Cu: 200; Zn: 200; Bo: 500; Fe: 200",
+    "applicant": "CT TNHH SX TM Thuận  Nông Phát",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "TNP-Đồng tiền vàng  03 1-3-1+TE",
+    "ingredients": "%: HC: 15; Axit Humic: 2; Axit Fulvic: 0,5;  N-P2O5-K2O: 1-3-1; Mg: 0,04; Độ ẩm: 30 | Cfu/g: Bacilus.sp; Trichoderma.sp: 1x106  mỗi loại | ppm: Cu: 200; Zn: 200; Bo: 500; Fe: 200",
+    "applicant": "CT TNHH SX TM Thuận  Nông Phát",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "TNP-Đồng tiền vàng  04 1-1-1+TE",
+    "ingredients": "%: HC: 20; Axit Humic: 3; Axit Fulvic: 0,5;  N-P2O5-K2O: 1-1-1; Mg: 0,04; Độ ẩm: 30 | Cfu/g: Streptomyces.sp; Bacilus.sp; Trichoderma.sp: 1 x 106  mỗi loại | ppm: Cu: 200; Zn: 200; Bo: 500; Fe: 200",
+    "applicant": "CT TNHH SX TM Thuận  Nông Phát",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "TNP-Đồng tiền vàng  11",
+    "ingredients": "%: HC: 25; P2O5-K2O:  4-1; CaO: 5; SiO2: 5; MgO: 2; S: 1; Độ ẩm: 25 | Cfu/g: Trichoderma.sp: 1 x 106 | ppm: Cu: 200; Zn: 200; Bo: 200; Fe: 200",
+    "applicant": "CT TNHH SX TM Thuận  Nông Phát",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "VK.A.Trichoderma  +TE",
+    "ingredients": "%: HC: 18; Axit Humic: 1; N-P2O5-K2O:  2,5-3-1,5; CaO: 4; MgO: 0,3; S: 1; Độ ẩm: 30 | ppm: Zn: 50; Mn: 40; B: 120; Fe: 2000 | Cfu/g: Trichoderma sp: 1 x 107",
+    "applicant": "CT TNHH SX&TM  Viễn Khang",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "VK.16 NPK +TE",
+    "ingredients": "%: HC: 15; Axit Humic: 1; N-P2O5-K2O:  6-5-5; CaO: 1; MgO: 0,03; S: 0,04; Độ ẩm: 30 | ppm: Mn: 20; B: 120; Fe: 1000 | Cfu/g: Trichoderma sp: 1 x 106",
+    "applicant": "CT TNHH SX&TM  Viễn Khang",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "VK.3+TE",
+    "ingredients": "%: HC: 18; Axit Humic: 1; N-P2O5-K2O:  5-0,5-0,5; CaO: 4; MgO: 0,06; S: 0,08; Độ ẩm: 30 | ppm: Mn: 40; B: 120; Fe: 2000 | Cfu/g: Trichoderma sp: 1 x 106",
+    "applicant": "CT TNHH SX&TM  Viễn Khang",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "VK.A.7 Trichoderma  +TE",
+    "ingredients": "%: HC: 18; Axit Humic: 1; N-P2O5-K2O:  1,2-0,5-0,5; CaO: 2; SiO2: 4; MgO: 0,06; S: 0,08; Độ ẩm: 30 | ppm: Mn: 40; B: 120; Fe: 2000 | Cfu/g: Trichoderma sp: 1 x 107",
+    "applicant": "CT TNHH SX&TM  Viễn Khang",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "VK.A.8 Trichoderma  +TE",
+    "ingredients": "%: HC: 18; Axit Humic: 1; N-P2O5-K2O:  1,2-4-1; CaO: 4; Độ ẩm: 30 | ppm: Zn: 50; B: 120 | Cfu/g: Trichoderma sp: 1 x 106",
+    "applicant": "CT TNHH SX&TM  Viễn Khang",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "Nam Việt NV1: 2-1-1  (Navi-Bionavi3)",
+    "ingredients": "%: HC: 23; N-P2O5-K2O:  2-1-1; Độ ẩm: 30 | ppm: B: 200 | Cfu/g: Aspergillus sp.; Trichoderma spp: 1x106 mỗi  loại",
+    "applicant": "CT TNHH SX & TM  Nam Việt; CT TNHH SX & TM Nam Việt Ninh Thuận",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "ANFA-07",
+    "ingredients": "%: HC: 16; N-P2O5-K2O:  3-3-1; B: 0,01; Zn: 0,01; Mn: 0,03; Độ ẩm: 29 | Cfu/g: Trichoderma sp: 1x106",
+    "applicant": "CT CP QT Anfaco",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "ANFA-10",
+    "ingredients": "%: HC: 18; Axit Humic: 0,1; N-P2O5-K2O:  2-1-1; Mg: 0,1; S: 0,15; Cu: 0,1; Zn: 0,2; Ca: 0,2; Fe: 0,1; B: 0,1; Độ ẩm:  30 | Cfu/g: Baccilus sp: 1x106 | pH: 5,5-6,5",
+    "applicant": "CT CP QT Anfaco",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "HAC 1-1,5",
+    "ingredients": "%: HC: 15; N-P2O5:  1-1,5; Ca: 0,02; Mg: 0,005; Độ ẩm: 30 | ppm: Axit Humic: 500; Fe: 50; Mn: 70; Cu: 30; B:  20 | Cfu/g: Nitrobacter spp; Bacillus sp; Trichoderma  sp: 1x106  mỗi loại",
+    "applicant": "CT CP XNK Nông dược  Hoàn Ân",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "ANFA 3-1-0,5",
+    "ingredients": "%: HC: 15; N-P2O5-K2O:  3-1-0,5; Mg: 0,015; Ca: 0,02; S: 0,002; Độ ẩm: 30 | ppm: Axit Humic: 300; Fe: 100; Mn: 70; Cu: 200;  B: 50; Zn: 200 | Cfu/g: Nitrobacter spp; Bacillus sp; Trichoderma  sp:  1x106 mỗi loại",
+    "applicant": "CT CP QT Anfaco",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "Biovina (TrichoBio)",
+    "ingredients": "%: HC: 20; N: 2; Độ ẩm: 30 | Cfu/g: Trichoderma sp: 2,5 x 106;  Streptomyces sp: 1,9 x 106",
+    "applicant": "CT TNHH BIOVINA",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "Phú Nông HN",
+    "ingredients": "%: HC: 15; Axit Humic: 0,5; N-P2O5-K2O:  0,6-0,4-0,4; Độ ẩm: 30 | ppm: Cu: 60; Zn: 60; Mn: 38; B: 10; Mo: 2; Fe: 3 | Cfu/g: Azotobacter; Trichoderma; Bacillus Polymixa: 1x106  mỗi loại",
+    "applicant": "DN TN TM-DV XD Huỳnh  Ngân",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "Đất Xanh",
+    "ingredients": "%: HC: 15; Axit Humic: 0,5; N-P2O5-K2O:  0,5-3-0,5; Độ ẩm: 30 | ppm: Cu: 60; Zn: 60; Mn: 38; B: 10; Mo: 2; Fe: 3 | Cfu/g: Azotobacter; Trichoderma; Bacillus Polymixa: 1 x 106  mỗi loại",
+    "applicant": "CT CP SX TM Đất  Xanh",
+    "is_banned": false
+  },
+  {
+    "category": "Phân hữu cơ vi sinh",
+    "name": "EMZ-USA",
+    "ingredients": "%: HC: 15 | Cfu/ml: Aerobic Bacter; Anaerobic Bacter: 5x107  mỗi loại; Azotobacter, Clostridium, Bacillus, Micrococcus, Nitrosomonas,  Pseudomonas, Rhizobium, Streptomyces: 5x106 mỗi loại. | pH: 6; Tỷ trọng: 1,05-1",
+    "applicant": "CT CP ĐTPT CNM  ALATCA; CT TNHH GNVT Bình Minh; CT CP Thiên Hà [NK từ Hoa Kỳ]",
+    "is_banned": false
+  },
+  {
+    "category": "Phân vi sinh vật",
+    "name": "BIO Trichoderma,  cho ngô",
+    "ingredients": "%: Độ ẩm: 30 | Cfu/g: Trichoderma sp: 1,2 x 109",
+    "applicant": "CT TNHH Agri Hitech",
+    "is_banned": false
+  },
+  {
+    "category": "Phân vi sinh vật",
+    "name": "SINH HÓA (TRACATU) Chuyên rau",
+    "ingredients": "Cfu/g: Bacillus subtilis: 1,5 x 108; Aspergillus  niger: 1,3 x 106 | %: Độ ẩm: 40",
+    "applicant": "CT CP Sinh Hóa Nam Định",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "AC-HB101",
+    "ingredients": "%: K2O: 7,5; Mg: 2,9; Ca: 5,8; Na:  5,6; Fe: 0,43; Độ ẩm: 5",
+    "applicant": "CT TNHH Hóa sinh Á Châu",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "AUMY-No1 (MICROTOP)  cho cây ngắn ngày",
+    "ingredients": "%: ZnO: 4; B2O3: 4; N-K2O:  4-4 | ppm: NAA: 400 | pH: 6-7; Tỷ trọng: 1,2",
+    "applicant": "CT TNHH MTV HC QT  Âu Mỹ",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "AUMY 11-8-6  (BAYFOLIAR) cho cây ngắn ngày",
+    "ingredients": "%: N-P2O5-K2O:  11-8-6 | ppm: B2O3 400; ZnO: 100;  NAA: 400 | pH: 6-7; Tỷ trọng: 1,2",
+    "applicant": "CT TNHH MTV HC QT  Âu Mỹ",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "AUMY-HQ101 cho cây  ngắn ngày",
+    "ingredients": "%: N-P2O5-K2O:  3-3-3 | ppm: B2O3: 400; NAA: 100 | pH: 6-7; Tỷ trọng: 1,2",
+    "applicant": "CT TNHH MTV HC QT  Âu Mỹ",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "AUMY-LÂN ĐỎ (Multi  Phos Mag) cho cây ngắn ngày",
+    "ingredients": "g/lít: P2O5-K2O:  450-75; MgO: 100 | pH: 6-7; Tỷ trọng: 1,5",
+    "applicant": "CT TNHH MTV HC QT  Âu Mỹ",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Kali Photpho Ban  Mai",
+    "ingredients": "%: P2O5-K2O:  5-52; MgO: 0,5; Độ ẩm: 1,5 | ppm: Cu: 500; Zn: 500; Bo: 500; Mn: 200",
+    "applicant": "CT CP TM & SX  Ban Mai",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "HC Ban Mai (BM 5B)",
+    "ingredients": "%: HC: 35; N-P2O5-K2O:  4-4-5; MgO: 0,3; Ca: 10 | ppm: Cu: 500; Zn: 500; Bo: 500; Mn: 200 | pH: 5; Tỷ trọng: 1,25",
+    "applicant": "CT CP TM & SX  Ban Mai",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "BM-MÙA VÀNG 1 (BEST  K.HUMATE)",
+    "ingredients": "%: HC: 70 (Axit Humic: 40); N-P2O5-K2O:  3-3-3; Ca: 0,1; S: 2,5; Mg: 0,05; SiO2: 0,05; Độ ẩm: 8 | ppm: Cu: 500; Bo: 500; Zn: 500 | pH: 5-7; Tỷ trọng: 1,2",
+    "applicant": "CT TNHH DV NC SX  GCT Bình Minh",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "DH 01 (BONJOUR)",
+    "ingredients": "%: N-P2O5-K2O:  2-4-3 | ppm: Ca: 750; Zn: 250; Uniconazole: 1000; a-NAA: 250 | pH: 5,5-7; Tỷ trọng: 1,1 - 1,2",
+    "applicant": "CT TNHH SX DV TM Đặng  Huỳnh",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Gold Star 01",
+    "ingredients": "%: N-P2O5-K2O:  15-30-15; MgO: 1; Độ ẩm: 10 | ppm: a-NAA:  2500; GA3: 2000; Cu: 1000; Zn: 1000 | pH: 5-6",
+    "applicant": "CT TNHH TM GOLD  STAR",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Gold GSA 1",
+    "ingredients": "%: N-P2O5-K2O:  2-2-2; MgO: 0,2 | ppm: GA3: 4000; B: 2000; Vitamin B1:  200 | pH: 5-6; Tỷ trọng: 1,12",
+    "applicant": "CT TNHH TM GOLD  STAR",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Gold GSA 2",
+    "ingredients": "%: N-P2O5-K2O:  5-5-30; MgO: 0,5; Độ ẩm: 10 | ppm: a-NAA:  2000; GA3: 2000; B: 2000 | pH: 5-6",
+    "applicant": "CT TNHH TM GOLD  STAR",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Gold GSA 3 (GA3+  NAA)",
+    "ingredients": "%: N-P2O5-K2O:  1-2-3; CaO: 0,1; Độ ẩm: 10 | ppm: Cytokinin: 100; a-NAA: 200; GA3: 2000; B: 1000 | pH: 5-6; Tỷ trọng: 1,15",
+    "applicant": "CT TNHH TM GOLD  STAR",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "KTP P40+NAA+GA3",
+    "ingredients": "%: P2O5: 40 | ppm: a-NAA:  3000; GA3: 1000 | pH: 4-6; Tỷ trọng: 1,14",
+    "applicant": "CT TNHH TM GOLD  STAR",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "BIO-PLANT",
+    "ingredients": "Cfu/ml: Bacillus, Clostridium, Stromyes,  Achoromobacter, aerobacter, Nitrobacter, Nitrosomonas, Pseudomonas;  Aspegillus, Fusarium, Polyporus, Rhizopus: 109 mỗi loại | pH: 4,5; tỷ trọng: 1,015 - 1,1",
+    "applicant": "CT TNHH SPSH  H&H [NK từ Thái Lan]",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "PRO-PLANT",
+    "ingredients": "%: N-P2O5-K2O:  5,4-0,9-1,2; CaO: 2,5; MgO: 0,1; S: 0,3; Cl: 11,4 | ppm: Mn: 200; B: 6000; Zn: 34,8; Fe: 181,2; Cu:  2,2 | pH: 4,9; tỷ trọng: 1,015 -1,1",
+    "applicant": "CT TNHH SPSH  H&H [NK từ Thái Lan]",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "BIOMASS- Phú Gia",
+    "ingredients": "%: Axit Humic: 25; K2O: 2; NAA:  0,4; Độ ẩm: 9",
+    "applicant": "CT CP Hóc Môn",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Ích Nông IN4  6/2/2004",
+    "ingredients": "%: HC: 6; N-P2O5-K2O:  6-2-4; MgO: 0,03; Axit amin (Alanine, Histidine, Valine, Leucine,  Aspartic): 6 | ppm: Zn: 300; Mo: 50; Fe: 200; Mn: 200; NAA:  300; GA3: 50 | pH: 5-5,5; Tỷ trọng: 1,25",
+    "applicant": "CT TNHH TMDV XNK Lộc  Vừng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Nam Nông Phát",
+    "ingredients": "%: N-P2O5-K2O:  10,0-8,0-2,0 | ppm: Zn: 0,3; B: 5,9; Mn: 0,13; Cu: 0,42 | g/l: Axit Amin (Lysine; Aspartic;  Cystine; Glycine):  17,3 | pH: 5-6; Tỷ trọng: 1,15",
+    "applicant": "CT TNHH Nam Nông  Phát",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "NITEX 30-10-10+TE",
+    "ingredients": "%: N-P2O5-K2O:  30-10-10; Độ ẩm: 15 | ppm: Cu: 50; Zn: 100; Bo: 200; Fe: 100",
+    "applicant": "CT CP NICOTEX",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "NITEX 10-40-10+TE",
+    "ingredients": "%: N-P2O5-K2O:  10-40-10; Độ ẩm: 15 | ppm: Cu: 50; Zn: 100; Bo: 200; Fe: 100",
+    "applicant": "CT CP NICOTEX",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "NITEX 10-10-40+TE",
+    "ingredients": "%: N-P2O5-K2O:  10-10-40; Độ ẩm: 15 | ppm: Cu: 50; Zn: 100; Bo: 200; Fe: 100",
+    "applicant": "CT CP NICOTEX",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "NITEX 7-5-44+TE",
+    "ingredients": "%: N-P2O5-K2O:  7-5-44; Độ ẩm: 15 | ppm: Cu: 50; Zn: 100; Bo: 200; Fe: 100",
+    "applicant": "CT CP NICOTEX",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "NITEX 16-16-8+TE",
+    "ingredients": "%: N-P2O5-K2O:  16-16-8 | ppm: Cu: 50; Zn: 100; Bo: 200; Fe: 100 | pH: 6,5; Tỷ trọng: 1,2",
+    "applicant": "CT CP NICOTEX",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "NITEX-Bo",
+    "ingredients": "%: N-P2O5-K2O:  5-4-2; Độ ẩm: 15 | ppm: B: 80.000",
+    "applicant": "CT CP NICOTEX",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "NITEX-Zn",
+    "ingredients": "%: N-K2O: 3-3; Độ ẩm: 15 | ppm: Zn: 80.000",
+    "applicant": "CT CP NICOTEX",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "NITEX - CanxiBo",
+    "ingredients": "%: N-P2O5-K2O:  1-1-1; CaO: 12 | ppm: Cu: 50; Zn: 100; Bo: 400; Fe: 100 | pH: 6; Tỷ trọng: 1,2",
+    "applicant": "CT CP NICOTEX",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Aminomix 16.8.8)",
+    "ingredients": "%: N-P2O5-K2O:  16-8-8 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16 | pH: 6,5-7,5; Tỷ trọng: 1,28-1,4",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Aminomix 8.10.8)",
+    "ingredients": "%: N-P2O5-K2O:  8-10-8 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16 | pH: 6,5-7,5; Tỷ trọng: 1,28-1,4",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (GF 99)",
+    "ingredients": "%: N-K2O: 12- 45; Độ ẩm: 2 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Pronic 4)",
+    "ingredients": "%: K2O: 5; Ca: 4; B: 0,4; Mo: 0,02;  Mn: 0,5; Cu: 0,01; Zn: 0,2; Fe: 0,8; Mg: 3,5; Độ ẩm: 5",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề (Miracle fort  4.8.8)",
+    "ingredients": "%: N-P2O5-K2O:  4-8-8; Độ ẩm: 30 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề (Miracle fort  7.7.7)",
+    "ingredients": "%: N-P2O5-K2O:  7-7-7; Độ ẩm: 30 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Miracle fort 8.8.6)",
+    "ingredients": "%: N-P2O5-K2O:  8-8-6 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16 | pH: 6,5-7,5; Tỷ trọng: 1,17-1,29",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Miracle fort 10.20.10)",
+    "ingredients": "%: N-P2O5-K2O:  10-20-10 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16 | pH: 6,5-7,5; Tỷ trọng: 1,28-1,4",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Miracle fort 14.8.6)",
+    "ingredients": "%: N-P2O5-K2O:  14-8-6 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16 | pH: 6,5-7,5; Tỷ trọng: 1,21-1,33",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Miracle fort 16.6.2)",
+    "ingredients": "%: N-P2O5-K2O:  16-6-2 | ppm: B: 1300; Mo: 100; Mo: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16 | pH: 6,5-7,5; Tỷ trọng: 1,14-1,26",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Miracle fort 16.16.8)",
+    "ingredients": "%: N-P2O5-K2O:  16-16-8 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16 | pH: 6,5-7,5; Tỷ trọng: 1,28-1,4",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Miracle fort 15.30.15)",
+    "ingredients": "%: N-P2O5-K2O:  15-30-15; Độ ẩm: 2 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề  (Miracle fort 5.8.8)",
+    "ingredients": "%: N-P2O5-K2O:  5-8-8 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16 | pH: 6,5-7,5; Tỷ trọng: 1,28-1,4",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Phú Hưng Lá Bồ Đề (Miracle fort  15.10.15)",
+    "ingredients": "%: N-P2O5-K2O:  15-10-15; Độ ẩm: 2 | ppm: B: 1300; Mo: 100; Mn: 58; Cu: 42; Zn: 32;  Fe: 44; Mg: 16",
+    "applicant": "HKD CS PBL Phú Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "FUTONONG",
+    "ingredients": "%: HC: 24,8; Axit Aspartic: 0,04; Axit  Glutamic: 0,08; Serine: 0,03; Glycine: 0,01; Histidine: 0,02; Aginine: 0,16;  Alanine: 0,13; Tyrosine: 0,03; Valine: 0,11; Methionine: 0,01; Isoleucine:  0,08; Leucine: 0,13; Phenylalanine: 0,07; Lysine: 0,04 | ppm: Ca: 230; Mg: 660; Mn: 13,3; Cu: 2,8 | pH: 3,6-4; Tỷ trọng: 1,3",
+    "applicant": "CT TNHH TMDV XNK  Phước Tâm",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Tứ Quý-CanxiBo",
+    "ingredients": "%: N: 2; CaO: 8 | ppm: B2O3: 250000 | pH: 5,5-7,5; Tỷ trọng: 1,05-1,30",
+    "applicant": "CT TNHH SX-TM Tứ  Quý",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "VT-TEPRO cho cây ngắn  ngày",
+    "ingredients": "%: N-P2O5-K2O:  3,5-1-2,5; a-NAA: 0,35 | ppm: Fe: 300; Mo: 200; Mn: 250; B: 100; Mg: 60;  Zn: 50 | pH: 6-7; Tỷ trọng: 1,05",
+    "applicant": "CT TNHH SX&TM  Việt Trung",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "OMIX - 02",
+    "ingredients": "%: Axit Humic: 3; N-P2O5-K2O:  3-2-8 | ppm: Mg: 250; B: 500; Mo: 10; Zn: 200; Mn: 300 | pH: 6,5-8; Tỷ trọng: 1,08-1,12",
+    "applicant": "CT TNHH Thảo Nông",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Nam Việt NV4: 8-2-5  (Navi-Growth)",
+    "ingredients": "%: N-P2O5-K2O:  8-2-5; MgO: 0,05; Protein thủy phân: 3 | ppm: Zn: 300; Mn: 200; B: 200; a-NAA: 300; GA3: 300 | pH: 7-7,5; Tỷ trọng: 1,05-1,15",
+    "applicant": "CT TNHH SX & TM  Nam Việt; CT TNHH SX & TM Nam Việt Ninh Thuận",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Hữu cơ AGRO POWER",
+    "ingredients": "%: HC: 90 (Axit Humic: 5); N-P2O5-K2O:  3-1-2 | pH: 7; Tỷ trọng: 1,2",
+    "applicant": "CT TNHH MTV Sakura  Eco Tech [NK từ Nhật Bản]",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "THC. B.O.KIN cho  cây ngắn ngày",
+    "ingredients": "%: HC: 25,8; Axit Humic: 22; Axit Fulvic: 2;  N-P2O5-K2O: 0,13-0,18-7,2; Ca: 0,03; S: 0,1;  Si: 0,15; Độ ẩm: 12 | ppm: Mn: 300; Fe: 1500; Cu: 7,3; B: 34,6; Zn:  6,2; Co: 2,7",
+    "applicant": "CT TNHH TM DV Tấn  Hưng",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Humic-ANFA",
+    "ingredients": "%: Axit Humic: 55; Axit Fulvic: 20; K2O:  10; Mg: 0,05; S: 0,03; Ca: 0,05; Độ ẩm: 10 | ppm: Zn: 400; Fe: 400; Cu: 150; Mn: 400; B: 500;  Mo: 50; a-NAA: 200",
+    "applicant": "CT CP QT Anfaco",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Biovina 1 (AmiBio)",
+    "ingredients": "%: N-P2O5-K2O:  1,7-0,2-1,6; Axit amin (Alanine; Glycine; Valine; Leucine; Isoleucine;  Threonine; Serine; Proline; Axít Aspatic; Methionine; Axít Glutamic;  Phenylalanine; Lysine; Histidine; Tyrosine): 6,2 | %: pH: 6,0-7,5; Tỷ trọng: 1,1-1,2",
+    "applicant": "CT TNHH BIOVINA",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "SUMA GROW (Suma  Grow insideTM; Tall Harvest Suma Grow InsideTM)",
+    "ingredients": "%: HC: 20 | mg/lít: N-P2O5-K2O:  673-7,932-10800; Ca: 228; Mg: 33,3; S: 3630; Cu: 0,394; Fe: 103; Mn: 2,45;  Na: 157; Zn: 7,59; B: 2,3 | Cfu/g: Baccillus sp, Trichoderma sp; Pseudomonas  sp; Azotobacter sp; Metarhizium sp: 2x10­12 mỗi loại | pH: 4-4,5; Tỷ trọng: 1,07",
+    "applicant": "Phạm Thị Thu Hồng  [NK từ Hoa Kỳ]",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Đồng Xanh (Green  Field) 6-Amino cho cây ngắn ngày",
+    "ingredients": "%: N-P2O5-K2O:  2-5-5; Mg: 0,04; Amino Axit (Glycine, Glutamic axit, Tyrosine, Methionine,  Arginine): 3 | ppm: Fe: 100; Zn: 300; B: 500 | pH: 7-8; Tỷ trọng: 1,13",
+    "applicant": "CT TNHH MTV  SXTMDVXNK Cánh Đồng Xanh",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "BoTam Nông",
+    "ingredients": "%: N: 5; Axit Amin (Proline; Phenyl  alanine; Asparagine): 9 | ppm: B: 45000 | pH: 7,3; Tỷ trọng: 1,2",
+    "applicant": "CT TNHH Tam Nông",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Canxi Tam Nông",
+    "ingredients": "%: N: 5; CaO: 9; MgO: 6 | ppm: Fe: 200; Zn: 300; Cu: 200; B: 300; Mn: 200;  Mo: 10 | pH: 7,2; Tỷ trọng: 1,4",
+    "applicant": "CT TNHH Tam Nông",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Tam Nông Sáp Vàng",
+    "ingredients": "%: Axit Miristic [CH3(CH2)12COOH]:  9; Miristat Kali [CH3(CH2)12COOK]: 29 (K2O:  1.9) | %: pH: 7,2; Tỷ trọng: 1,05",
+    "applicant": "CT TNHH Tam Nông",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Tam Nông Đồng Xanh",
+    "ingredients": "%: N: 2; Axit Amin (Proline; Phenyl alanine): 3,5 | ppm: Cu: 45000 | pH: 6,8; Tỷ trọng: 1,2",
+    "applicant": "CT TNHH Tam Nông",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Tam Nông",
+    "ingredients": "%: N: 5; Axit Arain (Proline; Phenyl Alanine/ Glycine ): 15 | ppm: Cu: 5000 | pH: 7,1; Tỷ trọng: 1,2",
+    "applicant": "CT TNHH Tam Nông",
+    "is_banned": false
+  },
+  {
+    "category": "Phân bón lá",
+    "name": "Tam Nông Vườn Xanh",
+    "ingredients": "%: N-P2O5-K2O:  7,1-6,1-7,1; CaO: 0,035; MgO: 1,6; Axit amin (Histidine; Glutamic axit):  0,5 | ppm: Mn: 400; Cu: 300; Fe: 300; Zn: 3000; B:  2500; Mo: 10 | pH: 6,8; Tỷ trọng: 1,2",
+    "applicant": "CT TNHH Tam Nông",
+    "is_banned": false
+  },
+  {
+    "category": "Chất giữ ẩm, cải tạo đất",
+    "name": "Black Earth Powder  chuyên dùng cho cây ngắn ngày",
+    "ingredients": "%: HC: 75,8 (Axit Humic: 41,9); N-P2O5-K2O:  2,51-0,01-0,04; Ca: 0,9; Mg: 0,12; Fe: 0,36; Độ ẩm: 12 | ppm: Cu: 6,8; Zn: 19; Mn: 162; B: 148",
+    "applicant": "CT TNHH SX-TM-DV XD  Cọp Sinh Thái (ETC Production CO., LTD) [NK từ Hoa Kỳ và Canada]",
+    "is_banned": false
+  }
+]

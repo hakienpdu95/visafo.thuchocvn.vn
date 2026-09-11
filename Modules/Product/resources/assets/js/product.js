@@ -6,3 +6,8 @@ import './pages/partner-product-form.js';
 import './pages/partner-product-index.js';
 import './pages/partner-product-show.js';
 import './pages/category-index.js';
+import './pages/agri-pesticide-index.js';
+import './pages/agri-pesticide-form.js';
+import './pages/agri-fertilizer-index.js';
+import './pages/agri-seed-index.js';
+import './pages/agri-seed-form.js';

@@ -1,0 +1,3125 @@
+[
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Abamectin 0.7% + Cyromazine 30.3%",
+    "trade_name": "Cyromaz 31SC",
+    "target_pest": "dòi đục lá/khoai tây",
+    "applicant": "Công ty CP Hóa chất SAM",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Abamectin 2% + Chlorantraniliprole 8%",
+    "trade_name": "Hatathonplus 10SC",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty TNHH BVTV Hoàng Anh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Abamectin 4% + Chlorfenapyr 10%",
+    "trade_name": "Bigbang 14SC",
+    "target_pest": "sâu khoang/khoai lang",
+    "applicant": "Công ty CP Green Mê Kông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Abamectin 0.45% + Fosthiazate 4.55%",
+    "trade_name": "Itafost 5GR",
+    "target_pest": "tuyến trùng/hồ tiêu",
+    "applicant": "Công ty CP Itagro Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Acequinocyl (min 96%)",
+    "trade_name": "Acquino 15SC",
+    "target_pest": "nhện đỏ/hoa hồng; nhện đỏ/đậu tương",
+    "applicant": "Công ty CP Global Farm",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Acetamiprid (min 97%)",
+    "trade_name": "Tink 70WG",
+    "target_pest": "rệp muội/đậu tương",
+    "applicant": "Ningbo Sunjoy Agroscience Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Acetamiprid 2.5% + Beta-cypermethrin 5%",
+    "trade_name": "Rinride 7.5ME",
+    "target_pest": "rệp sáp/cà phê",
+    "applicant": "Công ty TNHH Bio Delta",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Acetamiprid 100g/kg + Buprofezin 150g/kg",
+    "trade_name": "New Miten 250WP",
+    "target_pest": "rệp sáp/cà phê",
+    "applicant": "Công ty CP S New Rice",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Acetamiprid 106g/l + Flonicamid 133g/l",
+    "trade_name": "Aphistar 239OD",
+    "target_pest": "rệp muội/ngô",
+    "applicant": "Ningbo Sunjoy Agroscience Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Acetamiprid 10% + Flonicamid 15%",
+    "trade_name": "NL Aceflo 25ME",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty TNHH Nguyệt Liên",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Acetamiprid 30% + Lambda-cyhalothrin 10%",
+    "trade_name": "Aceta Extra 40WG",
+    "target_pest": "bọ trĩ/hoa cúc",
+    "applicant": "Công ty TNHH One Bee Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Acetamiprid 23.5% + Lambda-cyhalothrin 2.5%",
+    "trade_name": "Fentakill 26WG",
+    "target_pest": "sâu xanh da láng/đậu tương",
+    "applicant": "Công ty CP Cali Agritech USA",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Acetamiprid 24% + Spiropidion 30%",
+    "trade_name": "Flocento® 54WG",
+    "target_pest": "bọ phấn trắng/lúa",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Alpha-cypermethrin 20% + Chlorpyrifos-methyl 30%",
+    "trade_name": "Alfos 50EC",
+    "target_pest": "sâu xanh da láng/đậu tương",
+    "applicant": "Công ty CP Global Farm",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bacillus thuringiensis",
+    "trade_name": "Finis 16WP",
+    "target_pest": "sâu xanh da láng/lạc",
+    "applicant": "Công ty TNHH TM Hải Thụy",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bacillus thuringiensis subsp aizawai 10.4% (4 x 108 CFU/ml) + Bacillus thuringiensis subsp kurstaki 15.6% (6 x 108 CFU/ml)",
+    "trade_name": "Sympatico 26SE",
+    "target_pest": "sâu đục quả/ớt",
+    "applicant": "Công ty TNHH Hóa chất Sumitomo Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Beauveria bassiana",
+    "trade_name": "Bassia 300WP",
+    "target_pest": "sâu xanh da láng/cà chua",
+    "applicant": "Công ty TNHH BVTV Akita Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenazate (min 95%)",
+    "trade_name": "Bimite 480SC",
+    "target_pest": "nhện đỏ/sầu riêng",
+    "applicant": "Công ty CP Hợp Trí Summit",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenazate (min 95%)",
+    "trade_name": "Mafente xtra 50WG",
+    "target_pest": "nhện đỏ/cam",
+    "applicant": "Shandong Weifang Rainbow Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenazate (min 95%)",
+    "trade_name": "Redking 43SC",
+    "target_pest": "nhện đỏ/sắn",
+    "applicant": "Công ty CP Green Mê Kông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenazate 20% + Clofentezine 10%",
+    "trade_name": "Mecomite 30SC",
+    "target_pest": "nhện đỏ/lạc",
+    "applicant": "Công ty TNHH TM Hải Thụy",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenazate 10% + Cyenopyrafen 20%",
+    "trade_name": "Birafen 30SC",
+    "target_pest": "nhện đỏ/ớt",
+    "applicant": "Công ty CP Global Farm",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenazate 25% + Etoxazole 15%",
+    "trade_name": "Simon Extra 40SC",
+    "target_pest": "nhện đỏ hai chấm/hoa cúc",
+    "applicant": "Công ty TNHH One Bee Science",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenazate 20% + Spirodiclofen 20%",
+    "trade_name": "Anmite 40SC",
+    "target_pest": "rệp muội/cải bắp; bọ trĩ/dưa hấu",
+    "applicant": "Công ty CP Tập đoàn Lộc Trời",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenthrin 9.4% + Diafenthiuron 47%",
+    "trade_name": "Extra-Spiderindia 56.4SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty CP Hóa chất SAM",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenthrin 50g/l + Flonicamid 100g/l",
+    "trade_name": "Bica Ggo 150SC",
+    "target_pest": "bọ trĩ/hoa hồng",
+    "applicant": "Công ty TNHH TM Nam Hải Group",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenthrin 10% + Flonicamid 10%",
+    "trade_name": "NL Yijiete 20SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty TNHH Nguyệt Liên",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenthrin 10% + Pyriproxyfen 10%",
+    "trade_name": "BH-Biroxy 20EC",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty TNHH Radiant AG",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Bifenthrin 10% + Pyriproxyfen 10%",
+    "trade_name": "Xyfe Ggo 20EC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty TNHH Nông nghiệp Công nghệ xanh Bắc Giang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Buprofezin 20% + Fenpyroximate 4%",
+    "trade_name": "Hosaku 24SC",
+    "target_pest": "rệp sáp/cà phê; nhện đỏ/đậu tương",
+    "applicant": "Công ty TNHH Nichino Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Buprofezin 100g/kg + Imidacloprid 200g/kg",
+    "trade_name": "Sun Datanal 300WP",
+    "target_pest": "bọ phấn trắng/sắn",
+    "applicant": "Công ty TNHH Đầu tư và Phát triển Hagrochem",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Cartap (min 97%)",
+    "trade_name": "Cotap Gold 50SP",
+    "target_pest": "sâu đục thân bốn vạch đầu vàng/mía",
+    "applicant": "Công ty TNHH SX TM DV Hợp Thịnh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Clothianidin (min 95%)",
+    "trade_name": "Natosu 50WG",
+    "target_pest": "bọ phấn trắng/sắn; rệp muội/ngô",
+    "applicant": "Nanjing Agrochemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Clothianidin (min 95%)",
+    "trade_name": "SV-Stellar 30SC",
+    "target_pest": "rệp muội/ngô",
+    "applicant": "Công ty TNHH Saturn Chemical Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Clothianidin 20% + Flonicamid 50%",
+    "trade_name": "Tpeki 70WG",
+    "target_pest": "bọ phấn trắng/sắn",
+    "applicant": "Công ty TNHH Tenup",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Clothianidin 0.08% + Monosultap 0.42%",
+    "trade_name": "Sumo Extra 0.5GR",
+    "target_pest": "bọ hà/khoai lang",
+    "applicant": "Công ty TNHH A2T Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Clothianidin 5% + Pymetrozine 25%",
+    "trade_name": "Vdifos 30SC",
+    "target_pest": "rệp muội/ngô",
+    "applicant": "Công ty TNHH Hóa chất Nông nghiệp Long An",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Cyenopyrafen (min 93.5%)",
+    "trade_name": "Nopyra 30SC",
+    "target_pest": "nhện đỏ/cam, ớt",
+    "applicant": "Công ty CP Global Farm",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Cyflumetofen 212g/l + Etoxazole 106g/l",
+    "trade_name": "NL-Cyeto 318SC",
+    "target_pest": "nhện đỏ/hoa hồng",
+    "applicant": "Công ty TNHH Nguyệt Liên",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Cypermethrin (min 90%)",
+    "trade_name": "AT - Arin 500EC",
+    "target_pest": "sâu cuốn lá/lạc",
+    "applicant": "Công ty TNHH TM Anh Thơ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Cypermethrin 4% + Profenofos 40%",
+    "trade_name": "Gli-Phos 44EC",
+    "target_pest": "sâu xanh da láng/lạc",
+    "applicant": "Công ty CP Gia Linh Agritech",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Cypermethrin 4% + Profenofos 40%",
+    "trade_name": "Prolindia 44EC",
+    "target_pest": "sâu xanh da láng/lạc",
+    "applicant": "Công ty TNHH B.Helmer",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Cypermethrin 4% + Profenofos 40%",
+    "trade_name": "Tadopro 44EC",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty CP Vật tư Tây Đô Long An",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Cypermethrin 40g/l + Profenofos 400g/l",
+    "trade_name": "Canathion 440EC",
+    "target_pest": "rệp bông xơ/mía",
+    "applicant": "Công ty CP Nông dược Canada",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Cypermethrin 2% + Phoxim 38%",
+    "trade_name": "Dargon VIP 40EC",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty TNHH Khoa học Kỹ thuật Pharma USA",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole (min 93%)",
+    "trade_name": "Agristar 200SC",
+    "target_pest": "sâu đục thân/ngô",
+    "applicant": "Công ty TNHH Youdao (Việt Nam)",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole (min 93%)",
+    "trade_name": "Bestrole 400SC",
+    "target_pest": "sâu vẽ bùa/cam",
+    "applicant": "Shandong Weifang Rainbow Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole (min 93%)",
+    "trade_name": "Centuri 18.5SC",
+    "target_pest": "sâu tơ/cải bắp",
+    "applicant": "Công ty CP Nông dược HAI",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole (min 93%)",
+    "trade_name": "Gatobom 200SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Fuzhou Yousifu Import and Export Trade Co. Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole (min 93%)",
+    "trade_name": "Prevathon® 200SC",
+    "target_pest": "sâu đục thân mình hồng lớn/mía",
+    "applicant": "Công ty TNHH FMC Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole (min 93%)",
+    "trade_name": "Python super 18.5SC",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty CP SX và TM Công nghệ Châu Âu",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole 5% + Chlorfenapyr 10%",
+    "trade_name": "Babylon 15SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty TNHH TM Gem Sky",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole 100g/l + Chlorfenapyr 200g/l",
+    "trade_name": "Bestrole Plus 300SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Shandong Weifang Rainbow Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole 5% + Deltamethrin 2%",
+    "trade_name": "Samart 7SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty CP Kỹ thuật công nghệ Klever",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole 4% + Emamectin benzoate 2%",
+    "trade_name": "Loran Extra 6SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty TNHH One Bee Science",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole 9% + Emamectin benzoate 3%",
+    "trade_name": "Rosettel 12SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty TNHH Bio Delta",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole 10% + Methoxyfenozide 20%",
+    "trade_name": "Midway 30SC",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty TNHH TM và PT Phú Thịnh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorantraniliprole 2% + Monosultap 32%",
+    "trade_name": "Rigen Ggo 34 SC",
+    "target_pest": "sâu đục thân/ngô",
+    "applicant": "Công ty TNHH Nông nghiệp Công nghệ xanh Bắc Giang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorfenapyr 80g/l + Clothianidin 200g/l",
+    "trade_name": "AKB Solar 280SC",
+    "target_pest": "sâu xanh da láng/đậu tương",
+    "applicant": "Công ty CP Hóa sinh Akai Bara Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorfenapyr 10% + Diafenthiuron 25%",
+    "trade_name": "Mdan Kill 35SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty CP Mạnh Đan",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorfenapyr 18% + Indoxacarb 12%",
+    "trade_name": "Dura Flex 30SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty CP KHNN Vinacoop",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorfenapyr 19% + Lufenuron 5%",
+    "trade_name": "Cotella 24SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Beijing Bioseen Crop Sciences Co., Ltd",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorfenapyr 19% + Lufenuron 5%",
+    "trade_name": "Maloch 24SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty CP US Farm Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorfenapyr 9.5% + Lufenuron 2.5%",
+    "trade_name": "Dra-Lupy 12SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty CP BVTV Long Khánh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorfenapyr 9.5% + Lufenuron 2.5%",
+    "trade_name": "Estiz 12SC",
+    "target_pest": "sâu cuốn lá/lúa",
+    "applicant": "Công ty TNHH TM Tân Thành",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorfluazuron (min 94%)",
+    "trade_name": "Centaur 5EC",
+    "target_pest": "sâu xanh da láng/lạc",
+    "applicant": "Công ty TNHH Alfa (Sài Gòn)",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Chlorfluazuron 100g/l + Indoxacarb 150g/l",
+    "trade_name": "Sinchi 250SC",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Agria S.A.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Deltamethrin (min 98%)",
+    "trade_name": "Delthrin 1.8EC",
+    "target_pest": "sâu đục thân/ngô",
+    "applicant": "Công ty TNHH Nam Bắc",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Deltamethrin 5.56% + Flubendiamide 8.33%",
+    "trade_name": "Fde Ggo 13.89 SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty TNHH Nông nghiệp Công nghệ xanh Bắc Giang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Diafenthiuron (min 97%)",
+    "trade_name": "Spiderindia 47.8SC",
+    "target_pest": "nhện đỏ hai chấm/hoa hồng",
+    "applicant": "Công ty CP Hóa chất SAM",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Diafenthiuron (min 97%)",
+    "trade_name": "TD-Bogia 50SC",
+    "target_pest": "nhện đỏ/hoa hồng",
+    "applicant": "Công ty TNHH Nông Thái Dương",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Dinotefuran (min 89%)",
+    "trade_name": "Nema stop 0.1GR",
+    "target_pest": "rệp sáp/cà phê",
+    "applicant": "Công ty TNHH VTNN Mia",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Dinotefuran 40g/l + Pymetrozine 100g/l",
+    "trade_name": "Lim-Win 140 OD",
+    "target_pest": "rệp sáp/cà phê",
+    "applicant": "Công ty TNHH Nông nghiệp Limin",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Dinotefuran 10% + Pymetrozine 40%",
+    "trade_name": "Mdan Sam 50WG",
+    "target_pest": "rệp sáp/cà phê",
+    "applicant": "Công ty CP Mạnh Đan",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Dinotefuran 15% + Spirotetramat 15%",
+    "trade_name": "LionMaxx 30SC",
+    "target_pest": "bọ trĩ/lạc",
+    "applicant": "Công ty TNHH Brightmart Cropscience (Việt Nam)",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Dinotefuran 100g/l + Thiamethoxam 200g/l",
+    "trade_name": "Centerosin 300SC",
+    "target_pest": "bọ trĩ/hoa cúc; bọ phấn trắng/sắn; rầy xanh/lạc",
+    "applicant": "Công ty TNHH Hóa nông Mê Kông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Emamectin benzoate (Avermectin B1a 90% + Avermectin B1b 10%) (min 70%)",
+    "trade_name": "Jedi 9.1WG",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Ningbo Sunjoy Agroscience Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Emamectin benzoate (Avermectin B1a 90% + Avermectin B1b 10%) (min 70%)",
+    "trade_name": "Mekotin plus 155WG, 80EC",
+    "target_pest": "155WG: sâu khoang/đậu tương 80EC: sâu xanh da láng/Lạc",
+    "applicant": "Công ty TNHH USA Agro",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Emamectin benzoate 3% + Lufenuron 12%",
+    "trade_name": "Luci Extra 15SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty TNHH One Bee Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Etofenprox (min 96%)",
+    "trade_name": "M79 Gon 100EC",
+    "target_pest": "sâu cuốn lá/lạc",
+    "applicant": "Công ty TNHH Tấn Hưng Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Etofenprox (min 96%)",
+    "trade_name": "Urano 150SC",
+    "target_pest": "rệp muội xám/cải bắp",
+    "applicant": "Công ty TNHH Được Mùa",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Etoxazole (min 95%)",
+    "trade_name": "Thibizol 20SC",
+    "target_pest": "nhện đỏ/chè",
+    "applicant": "Công ty TNHH Thuốc BVTV Thiên Bình",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Etoxazole (min 95%)",
+    "trade_name": "Trigger 110SC",
+    "target_pest": "nhện đỏ/cam",
+    "applicant": "Công ty TNHH Alfa (Sài Gòn)",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Etoxazole 5% + Pyridaben 20%",
+    "trade_name": "Spinner 25SC",
+    "target_pest": "bọ phấn trắng, bọ trĩ/lúa",
+    "applicant": "Công ty CP Tập đoàn Lộc Trời",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Etoxazole 8% + Spirodiclofen 32%",
+    "trade_name": "Fosy 40SC",
+    "target_pest": "nhện đỏ/hoa hồng",
+    "applicant": "Công ty TNHH Nông nghiệp Nhật Nguyệt",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Fenbutatin oxide 20% + Spirodiclofen 5%",
+    "trade_name": "DB-Sunshine 25SC",
+    "target_pest": "nhện đỏ/sắn, cam",
+    "applicant": "Công ty TNHH Hóa chất Phân bón, Thuốc BVTV Dubai",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Fenpropathrin 5% + Phoxim 20%",
+    "trade_name": "Gallup 25EC",
+    "target_pest": "sâu khoang/đậu tương; rệp sáp/hồ tiêu",
+    "applicant": "Công ty CP Hóc Môn",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Fenpyroximate (min 96%)",
+    "trade_name": "Waspred 20SC",
+    "target_pest": "nhện đỏ/hoa hồng",
+    "applicant": "Công ty TNHH MTV Hóa sinh Cửu Long",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Fenvalerate 2.2% + Phoxim 22.8%",
+    "trade_name": "SV-Hamata 25EC",
+    "target_pest": "rệp sáp/mía",
+    "applicant": "Công ty TNHH Saturn Chemical Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Flonicamid (min 96%)",
+    "trade_name": "Alfamid 20SC",
+    "target_pest": "rầy nâu/lúa",
+    "applicant": "Công ty TNHH TM Tân Thành",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Flonicamid (min 96%)",
+    "trade_name": "ZQ-flourish 50WG",
+    "target_pest": "rệp muội/ngô",
+    "applicant": "Công ty TNHH Bio Delta",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Flubendiamide (min 95%)",
+    "trade_name": "Adiamide 39.35SC",
+    "target_pest": "sâu cuốn lá/đậu xanh",
+    "applicant": "Công ty TNHH Pesticide Nhật Bản",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Flubendiamide (min 95%)",
+    "trade_name": "Flurhone 39.35SC",
+    "target_pest": "sâu xanh/lạc",
+    "applicant": "Công ty TNHH Rhone Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Fosthiazate (min 93%)",
+    "trade_name": "Tipho-si 10GR",
+    "target_pest": "tuyến trùng/cà phê",
+    "applicant": "Công ty TNHH TM Thái Phong",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Imidacloprid (min 96%)",
+    "trade_name": "Imitado 350SC",
+    "target_pest": "bọ phấn trắng/sắn",
+    "applicant": "Công ty CP Vật tư Tây Đô Long An",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Imidacloprid (min 96%)",
+    "trade_name": "Imitop 10WP",
+    "target_pest": "sâu cuốn lá/đậu tương",
+    "applicant": "Công ty CP Hóa sinh Takashi Nhật Bản",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Imidacloprid (min 96%)",
+    "trade_name": "Netla 400SC",
+    "target_pest": "rệp muội/đậu tương",
+    "applicant": "Công ty TNHH TM và PT Phú Thịnh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Imidacloprid 1.5% + Isoprocarb 22.5%",
+    "trade_name": "Wealth 24WP",
+    "target_pest": "bọ phấn trắng/sắn",
+    "applicant": "Công ty TNHH Anh Dẩu Tiền Giang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Isocycloseram (min 96%)",
+    "trade_name": "Incipio® 100DC",
+    "target_pest": "rầy xanh/sầu riêng; sâu tơ/cải bắp",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Lufenuron (min 96%)",
+    "trade_name": "T-P Owner 5EW",
+    "target_pest": "sâu tơ/cải bắp",
+    "applicant": "Công ty TNHH TM Thái Phong",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Metaflumizone (min 96%)",
+    "trade_name": "Atmelyzo 22SC",
+    "target_pest": "sâu xanh/ngô",
+    "applicant": "Công ty TNHH MTV XNK Quốc tế An Thành",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Metarhizium anisopliae",
+    "trade_name": "Metaran 108 CFU/g WP",
+    "target_pest": "sâu xanh bướm trắng/cải xanh",
+    "applicant": "Công ty CP Tập đoàn Lộc Trời",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Methoxyfenozide 150g/l + Pyridalyl 90g/l",
+    "trade_name": "Melysau 240SC",
+    "target_pest": "sâu tơ/cải bắp; sâu keo mùa thu/ngô; sâu cuốn lá đầu đen/lạc",
+    "applicant": "Công ty CP Kiên Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Methoxyfenozide 300g/l + Spinetoram 60g/l",
+    "trade_name": "VT. Zara 360SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty CP VT Chem",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Nitenpyram 20% + Pymetrozine 60%",
+    "trade_name": "Hostile 80WG",
+    "target_pest": "bọ phấn trắng/sắn",
+    "applicant": "Công ty CP Hóc Môn",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Nitenpyram 20% + Pymetrozine 60%",
+    "trade_name": "Metro penxita 80WG",
+    "target_pest": "rệp muội/ngô",
+    "applicant": "Công ty TNHH Pesticide Nhật Bản",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Novaluron (min 96%)",
+    "trade_name": "Aova 10EC",
+    "target_pest": "sâu cuốn lá/đậu xanh",
+    "applicant": "Công ty TNHH Pesticide Nhật Bản",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Permethrin (min 92%)",
+    "trade_name": "Most Tox 25EC",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty TNHH United Pesticides",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Profenofos (min 87%)",
+    "trade_name": "IKD-Rico 50EC",
+    "target_pest": "rệp sáp bột hồng/sắn",
+    "applicant": "Công ty CP Nghiên cứu Ứng dụng Công nghệ sinh học IKD - Hoa Kỳ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Profenofos (min 87%)",
+    "trade_name": "Profos gold 50EC",
+    "target_pest": "sâu khoang/khoai lang",
+    "applicant": "Công ty TNHH Hóa sinh Mùa Vàng",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Profenofos 100g/l + Thiamethoxam 147g/l",
+    "trade_name": "Tiwepusa 247EC, 247SC",
+    "target_pest": "sâu keo mùa thu/ngô",
+    "applicant": "Công ty CP SAM",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Propargite (min 85%)",
+    "trade_name": "Camikte 730EC",
+    "target_pest": "nhện đỏ/hoa hồng",
+    "applicant": "Công ty CP Genta Thụy Sĩ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Propargite (min 85%)",
+    "trade_name": "Rapova 73EC",
+    "target_pest": "nhện đỏ/hoa cúc",
+    "applicant": "Công ty TNHH TM SX Thôn Trang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Pyridalyl (min 91%)",
+    "trade_name": "Xilanh 100EC",
+    "target_pest": "sâu khoang/lạc; sâu xanh da láng/đậu tương",
+    "applicant": "Công ty TNHH TM SX Thôn Trang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Pyriproxyfen (min 95%)",
+    "trade_name": "Cori 100EW",
+    "target_pest": "bọ phấn trắng/ớt",
+    "applicant": "Công ty TNHH Hóa chất Sumitomo Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Pyriproxyfen 15% + Spirotetramat 10%",
+    "trade_name": "Gold Sun 25SC",
+    "target_pest": "rệp sáp/sầu riêng",
+    "applicant": "Công ty CP Hóa sinh Takashi Nhật Bản",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Phoxim (min 90%)",
+    "trade_name": "Ximsur 40EC",
+    "target_pest": "rệp sáp bột/cà phê",
+    "applicant": "Công ty TNHH Thuốc B VTV Nam Nông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Quinalphos (min 70%)",
+    "trade_name": "Hariphos 25EC",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty TNHH BVTV Hoàng Anh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spinetoram (min 86.4%)",
+    "trade_name": "Neweto 60SC",
+    "target_pest": "sâu xanh da láng/hành",
+    "applicant": "Công ty CP S New Rice",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spinetoram (min 86.4%)",
+    "trade_name": "Radiant® 60SC",
+    "target_pest": "sâu đục cuống/vải",
+    "applicant": "Công ty TNHH Corteva Agriscience Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spinosad (min 85%)",
+    "trade_name": "Qiluspin Full 480SC",
+    "target_pest": "sâu tơ/cải bắp",
+    "applicant": "Công ty TNHH SSA Cropcare",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spinosad (min 85%)",
+    "trade_name": "Rollercide 20WG",
+    "target_pest": "bọ trĩ/dưa chuột",
+    "applicant": "Beijing Bioseen Crop Sciences Co., Ltd",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spirodiclofen (min 98%)",
+    "trade_name": "Spiromax 300SC",
+    "target_pest": "nhện đỏ/hoa hồng",
+    "applicant": "Công ty TNHH Tập đoàn An Nông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spiromesifen (min 97%)",
+    "trade_name": "Seprain 240SC",
+    "target_pest": "nhện đỏ/cam",
+    "applicant": "Shandong Weifang Rainbow Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spiromesifen (min 97%)",
+    "trade_name": "Vdimex 22.9SC",
+    "target_pest": "nhện đỏ/hoa hồng",
+    "applicant": "Công ty CP Quốc tế Việt Đức",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spirotetramat (min 96%)",
+    "trade_name": "Dotramat 150OD",
+    "target_pest": "rầy xanh/sầu riêng",
+    "applicant": "Công ty CP Đồng Xanh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spirotetramat (min 96%)",
+    "trade_name": "Oomoo 150 OD",
+    "target_pest": "rệp sáp/thanh long",
+    "applicant": "Công ty TNHH Tấn Hưng Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spirotetramat 10% + Tolfenpyrad 8%",
+    "trade_name": "Tamatra S 18SC",
+    "target_pest": "rệp sáp/cà phê",
+    "applicant": "Công ty CP BMC Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spirotetramat 11% + Thiacloprid 11%",
+    "trade_name": "Avento Gold 22SC",
+    "target_pest": "rệp sáp/cà phê",
+    "applicant": "Công ty TNHH Thuốc BVTV Thiên Bình",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Spodoptera exigua nucleopolyhedrovirus",
+    "trade_name": "Poly-virus 500 million PIB/ml SC",
+    "target_pest": "sâu xanh da láng/dưa hấu",
+    "applicant": "Công ty TNHH Spring Development",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Sulfur (min 99%)",
+    "trade_name": "Sunfusa 80WG",
+    "target_pest": "nhện đỏ/hoa hồng",
+    "applicant": "Công ty CP SAM",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Tebufenozide (min 98%)",
+    "trade_name": "Tezide 200SC",
+    "target_pest": "sâu tơ/cải bắp",
+    "applicant": "Công ty CP Hitaka",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Thiamethoxam (min 95%)",
+    "trade_name": "Actime 350SC",
+    "target_pest": "rệp bông xơ/mía",
+    "applicant": "Công ty TNHH Asia Agro",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Thiamethoxam (min 95%)",
+    "trade_name": "Bastara 25WG",
+    "target_pest": "rầy xanh/đậu tương",
+    "applicant": "Công ty CP Vision Chemical",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Thiamethoxam (min 95%)",
+    "trade_name": "Lanomethoxam 25WG",
+    "target_pest": "sâu khoang/lạc",
+    "applicant": "Công ty CP Hóa nông Lâm Ngọc",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ sâu",
+    "active_ingredients": "Thiamethoxam (min 95%)",
+    "trade_name": "Thiagold 111WP, 500SC, 680WG",
+    "target_pest": "111WP: rệp muội/ngô 500SC: bọ phấn trắng/sắn 680WG: bọ trĩ/lạc",
+    "applicant": "Công ty CP Bigfive Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 250g/kg + Boscalid 350g/kg",
+    "trade_name": "Anorka Axo 600WG",
+    "target_pest": "giả sương mai/dưa hấu",
+    "applicant": "Công ty TNHH UPL Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 30% + Difenoconazole 18%",
+    "trade_name": "ADU-Azomax 48SC",
+    "target_pest": "đốm nâu/lạc",
+    "applicant": "Công ty TNHH ADU Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 250g/l + Difenoconazole 250g/l",
+    "trade_name": "Armytatopusa 500SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty TNHH Agritech Sài Gòn",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 250g/l + Difenoconazole 250g/l",
+    "trade_name": "Newone 500SC",
+    "target_pest": "chết nhanh/hồ tiêu",
+    "applicant": "Công ty CP S New Rice",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 20% + Difenoconazole 12.5%",
+    "trade_name": "Azobin gold 32.5SC",
+    "target_pest": "thán thư/cà phê; khô vằn/ngô",
+    "applicant": "Công ty TNHH Thuốc BVTV Thiên Bình",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 200g/l + Difenoconazole 125g/l",
+    "trade_name": "Damanso 325SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Sinon Corporation",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 200g/l + Difenoconazole 125g/l",
+    "trade_name": "Linkstar 325SC",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Limin Group Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 20% + Dimethomorph 40%",
+    "trade_name": "Avatop 60WG",
+    "target_pest": "mốc sương/cà chua",
+    "applicant": "Beijing Bioseen Crop Sciences Co., Ltd",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 50g/l + Hexaconazole 100g/l",
+    "trade_name": "Sun Cotrobil 150SC",
+    "target_pest": "đốm nâu/lạc",
+    "applicant": "Công ty TNHH Đầu tư và Phát triển Hagrochem",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 200g/l + Isopyrazam 125g/l",
+    "trade_name": "Reflect® Xtra 325 SC",
+    "target_pest": "lem lép hạt/lúa",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 200g/l + Kasugamycin 50g/l",
+    "trade_name": "Hottawa 250SC",
+    "target_pest": "lở cổ rễ/lạc",
+    "applicant": "Công ty CP Kiên Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 11% + Tebuconazole 18.3%",
+    "trade_name": "Azota 29.3SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty CP Gia Linh Agritech",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 120g/l + Tebuconazole 160g/l",
+    "trade_name": "Tamiz 280SE",
+    "target_pest": "thán thư/cà phê; rỉ sắt/hoa cúc; đốm nâu/lạc",
+    "applicant": "Công ty TNHH Nufarm Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Azoxystrobin 20% + Zinc thiazole 30%",
+    "trade_name": "Begold 50SC",
+    "target_pest": "giả sương mai/dưa chuột",
+    "applicant": "Zhejiang Xinnong Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Bacillus amyloliquefaciens H201",
+    "trade_name": "Hataka WP",
+    "target_pest": "đốm vòng/cà chua; phấn trắng/dưa chuột",
+    "applicant": "Công ty TNHH B.Helmer",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Bacillus amyloliquefaciens (Bacillus subtilis') QST 713",
+    "trade_name": "Serenade SC",
+    "target_pest": "thối rễ/bưởi",
+    "applicant": "Bayer Vietnam Ltd (BVL)",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Boscalid (min 96%)",
+    "trade_name": "Wasaki 500WG",
+    "target_pest": "thán thư/hồ tiêu",
+    "applicant": "Công ty TNHH TM và SX ASVN",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Boscalid 30% + Pyraclostrobin 15%",
+    "trade_name": "Becket 45SC",
+    "target_pest": "mốc sương/cà chua",
+    "applicant": "Công ty TNHH Vestaron",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Boscalid 20% + Pyraclostrobin 10%",
+    "trade_name": "Fujiboss 30SC",
+    "target_pest": "phấn trắng/hoa hồng",
+    "applicant": "Công ty CP BMC Vĩnh Phúc",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Boscalid 22.5% + Pyrimethanil 27.5%",
+    "trade_name": "Boyka 50WG",
+    "target_pest": "chết nhanh/hồ tiêu",
+    "applicant": "Công ty TNHH ADU Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Boscalid 20% + Pyrimethanil 20%",
+    "trade_name": "ET-Pymelid 40SC",
+    "target_pest": "thán thư/ớt",
+    "applicant": "Shanghai E-tong Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Bronopol 450g/kg + Salicylic acid 250g/kg",
+    "trade_name": "New Salic 700WP",
+    "target_pest": "héo xanh/lạc",
+    "applicant": "Công ty CP S New Rice",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper acetate 4% + Moroxydine hydrochloride 16%",
+    "trade_name": "Moroxy 20WP",
+    "target_pest": "đốm lá/ngô",
+    "applicant": "Công ty CP BMC Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper acetate 10% + Moroxydine hydrochloride 10%",
+    "trade_name": "Vadavir 20WP",
+    "target_pest": "héo xanh/lạc",
+    "applicant": "Công ty TNHH TM-DV VAD",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper hydroxide (min Cu 57.3%)",
+    "trade_name": "Babo 77WP",
+    "target_pest": "đốm nâu/lạc",
+    "applicant": "Công ty CP Hóc Môn",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper hydroxide (min Cu 57.3%)",
+    "trade_name": "Copperindiavb 77WP",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Công ty TNHH Vbook Hoa Kỳ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper hydroxide (min Cu 57.3%)",
+    "trade_name": "Champigold 77WP",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Công ty CP ADN Châu Á",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper hydroxide 461g/kg + Cymoxanil (min 97%) 60g/kg",
+    "trade_name": "Cipi 521WG",
+    "target_pest": "chết nhanh/hồ tiêu; thán thư/cà phê",
+    "applicant": "Agria S.A.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper oxychloride (min Cu 55%)",
+    "trade_name": "Cocide super 880WP",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty TNHH Hóa chất Phân bón, Thuốc BVTV Dubai",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper oxychloride (min Cu 55%)",
+    "trade_name": "Mocopindiatv 50WP",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Công ty TNHH Hóa chất và TM Trần Vũ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper oxychloride 45% + Kasugamycin 5%",
+    "trade_name": "Kacop 50WP",
+    "target_pest": "mốc sương/khoai tây",
+    "applicant": "Công ty TNHH Nông nghiệp New Season",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper sulfate (min 98%)",
+    "trade_name": "Cophatevbindia 20WP",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Công ty TNHH Vbook Hoa Kỳ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Copper sulfate pentahydrate (min 98%)",
+    "trade_name": "Super Mastercop 21SC",
+    "target_pest": "héo xanh vi khuẩn/khoai tây",
+    "applicant": "Công ty TNHH DVTM Witip",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Cyazofamid (min 93.5%)",
+    "trade_name": "Cyfarost 100SC",
+    "target_pest": "mốc sương/cà chua",
+    "applicant": "Công ty CP Kiên Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Cyazofamid (min 93.5%)",
+    "trade_name": "Zucanew 100SC",
+    "target_pest": "giả sương mai/dưa hấu",
+    "applicant": "Công ty TNHH TM SX Thôn Trang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Cyazofamid 8% + Dimethomorph 32%",
+    "trade_name": "Akita-Konho 40SC",
+    "target_pest": "chết nhanh/hồ tiêu",
+    "applicant": "Công ty TNHH BVTV Akita Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Cyazofamid 5% + Pyraclostrobin 20%",
+    "trade_name": "ET-Isac 25SC",
+    "target_pest": "phấn trắng/nho; mốc sương/cà chua; sẹo/cam",
+    "applicant": "Shanghai E-tong Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Cyclobutrifluram (min 95%)",
+    "trade_name": "Vaniva® 450SC",
+    "target_pest": "héo vàng/chuối",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Cymoxanil 8% + Dimethomorph 40%",
+    "trade_name": "Dimexil 48SC",
+    "target_pest": "chết nhanh/hồ tiêu; mốc sương/khoai tây",
+    "applicant": "Shandong Runke Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Cymoxanil 20% + Dimethomorph 50%",
+    "trade_name": "Sala 70WG",
+    "target_pest": "chết nhanh/hồ tiêu",
+    "applicant": "Công ty CP Hóc Môn",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Cyprodinil 25% + Picoxystrobin 25%",
+    "trade_name": "Cypico 50WG",
+    "target_pest": "đốm lá/đậu tương; thán thư/xoài",
+    "applicant": "Công ty TNHH Hóa sinh Á Châu",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Cyprodinil 17% + Pyrisoxazole 8%",
+    "trade_name": "Dinil-Pro 25SC",
+    "target_pest": "đốm lá/đậu tương",
+    "applicant": "Công ty TNHH MTV BVTV Omega",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Difenoconazole 125g/l + Pydiflumetofen 75g/l",
+    "trade_name": "Lorito 200SC",
+    "target_pest": "đốm vòng/khoai tây",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Difenoconazole 10% + Pyraclostrobin 20%",
+    "trade_name": "Opertop 30EC",
+    "target_pest": "rỉ sắt/đậu tương",
+    "applicant": "Công ty CP Genta Thụy Sĩ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Difenoconazole 150g/l + Pyraclostrobin 250g/l",
+    "trade_name": "Defender 400SC",
+    "target_pest": "thán thư/hoa hồng",
+    "applicant": "Công ty TNHH thuốc BVTV NCC",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Difenoconazole 15% + Pyraclostrobin 25%",
+    "trade_name": "TGreen 40SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty CP Nông dược Nhật Thành",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph (min 98%)",
+    "trade_name": "DB-Goat 40SC",
+    "target_pest": "xì mủ/cam, sầu riêng; giả sương mai/dưa chuột",
+    "applicant": "Công ty TNHH Hóa chất Phân bón, Thuốc BVTV Dubai",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph (min 98%)",
+    "trade_name": "Dime Super 50WP",
+    "target_pest": "chết nhanh/hồ tiêu",
+    "applicant": "Công ty TNHH Khoa học Kỹ thuật Pharma USA",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph (min 98%)",
+    "trade_name": "Hafking 40SC",
+    "target_pest": "mốc sương/khoai tây",
+    "applicant": "Công ty TNHH TM Haflife Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph (min 98%)",
+    "trade_name": "Halminton 40SC",
+    "target_pest": "chết nhanh/hồ tiêu",
+    "applicant": "Công ty CP Hóa chất SAM",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph (min 98%)",
+    "trade_name": "Promode 40SC",
+    "target_pest": "mốc sương/khoai tây",
+    "applicant": "Công ty TNHH Kona Crop Science",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph 240g/l + Fluazinam 240g/l",
+    "trade_name": "Aphytop 480SC",
+    "target_pest": "mốc sương/khoai tây",
+    "applicant": "Công ty CP US Farm Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph 200g/l + Fluazinam 200g/l",
+    "trade_name": "Banjo Forte 400SC",
+    "target_pest": "sương mai/khoai tây",
+    "applicant": "Công ty TNHH DVTM Witip",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph 30% + Fluopicolide 6%",
+    "trade_name": "Atdimatca 36SC",
+    "target_pest": "chết cây con/dưa chuột",
+    "applicant": "Công ty TNHH MTV XNK Quốc tế An Thành",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph 30% + Fluopicolide 10%",
+    "trade_name": "HF-Phyto 40SC",
+    "target_pest": "mốc sương/khoai tây",
+    "applicant": "Công ty TNHH TM Haflife Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph 9% + Mancozeb 60%",
+    "trade_name": "Arobate MD 69WP",
+    "target_pest": "giả sương mai/dưa chuột",
+    "applicant": "Công ty TNHH Thuốc BVTV Nam Nông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph 380g/kg + Pyraclostrobin 100g/kg",
+    "trade_name": "Dimetop 480WP",
+    "target_pest": "chết nhanh/hồ tiêu",
+    "applicant": "Công ty CP Kiên Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph 380g/l + Pyraclostrobin 100g/l",
+    "trade_name": "Hillstart 480SC",
+    "target_pest": "rỉ sắt/đậu tương; thán thư/cà phê",
+    "applicant": "Công ty TNHH TM SX Thôn Trang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Dimethomorph 600g/kg + Pyraclostrobin 60g/kg",
+    "trade_name": "Pyramix 660WG",
+    "target_pest": "nứt thân xì mủ/sầu riêng",
+    "applicant": "Công ty TNHH TM Vĩnh Thạnh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Diniconazole (min 94%)",
+    "trade_name": "Dinazo 25EC",
+    "target_pest": "đốm đen/lạc",
+    "applicant": "Công ty TNHH Á Châu Hoá Sinh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "D-limonene (Orange oil) (min 94.5%)",
+    "trade_name": "Prev-AM™ 5.4ME",
+    "target_pest": "phấn trắng/dưa chuột; đạo ôn/lúa",
+    "applicant": "Oro Agri International B.V.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Famoxadone 300g/l + Oxathiapiprolin 30g/l",
+    "trade_name": "Zorvec® Encantia® 330SE",
+    "target_pest": "sương mai/vải",
+    "applicant": "Công ty TNHH Corteva Agriscience Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fenoxanil (min 95%)",
+    "trade_name": "Titliss 40SC",
+    "target_pest": "đạo ôn/lúa",
+    "applicant": "Công ty TNHH Nam Bắc",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fenoxanil (min 95%)",
+    "trade_name": "Xanil Top 40SC",
+    "target_pest": "đạo ôn/lúa",
+    "applicant": "Công ty TNHH MTV Lucky",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fenoxanil 60g/l + Isoprothiolane 300g/l",
+    "trade_name": "Newpro 360EC",
+    "target_pest": "đạo ôn/lúa",
+    "applicant": "Công ty CP S New Rice",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fenoxanil 20% + Propiconazole 10%",
+    "trade_name": "Fenotil 30SC",
+    "target_pest": "nấm hồng/cà phê",
+    "applicant": "Công ty TNHH Hoá sinh Thái Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fenhexamid (min 97%) 350g/l + Tebuconazole 66.7g/l",
+    "trade_name": "Roleguard 416.7SC",
+    "target_pest": "khô vằn/ngô",
+    "applicant": "Shandong Runke Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fluazinam (min 96%)",
+    "trade_name": "Fluzi 500SC",
+    "target_pest": "sương mai/cà chua",
+    "applicant": "Công ty CP Hợp Trí Summit",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fluazinam (min 96%)",
+    "trade_name": "Navi-fluzi 500SC",
+    "target_pest": "đốm vòng/khoai tây",
+    "applicant": "Công ty CP Khử trùng Nam Việt",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fluazinam (min 96%)",
+    "trade_name": "Topnam 500SC",
+    "target_pest": "thán thư/đào cảnh; ghẻ/cam",
+    "applicant": "Công ty CP BMC Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fluopicolide 62.5g/l + Propamocarb hydrochloride 625g/l",
+    "trade_name": "Naflucarb 687.5SC",
+    "target_pest": "giả sương mai/dưa hấu; sương mai/vải",
+    "applicant": "Nanjing Agrochemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fluopicolide 8% + Pyraclostrobin 24%",
+    "trade_name": "Spring Inner 32SC",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Công ty TNHH Spring Development",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Flusilazole 250g/l + Pyraclostrobin 150g/l",
+    "trade_name": "Mizuki 400EC",
+    "target_pest": "thán thư/hoa hồng",
+    "applicant": "Công ty TNHH XNK Nông dược Uy Nông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fluxapyroxad 200g/l + Mefentrifluconazole 200g/l",
+    "trade_name": "Mibelya 400SC",
+    "target_pest": "sẹo/cam",
+    "applicant": "BASF Vietnam Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Folpet (min 90%)",
+    "trade_name": "Crystal 500SC",
+    "target_pest": "giả sương mai/dưa chuột",
+    "applicant": "Công ty CP Bigfive Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fosetyl-aluminium (min 95%)",
+    "trade_name": "Nanox 40WP",
+    "target_pest": "chết cây con/lạc",
+    "applicant": "Công ty TNHH A2T Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fungous Proteoglycan",
+    "trade_name": "Biosuper 1SL",
+    "target_pest": "héo xanh/cà chua",
+    "applicant": "Công ty CP Công nghệ sinh học và môi trường",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Fungous Proteoglycan",
+    "trade_name": "Family 1SL",
+    "target_pest": "bạc lá/lúa; héo xanh/hoa cúc",
+    "applicant": "Công ty TNHH Fujimoto Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Hexaconazole (min 85%)",
+    "trade_name": "Anvil® 5 SC",
+    "target_pest": "khô vằn/lúa",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Hexaconazole (min 85%)",
+    "trade_name": "Sinavil 10SC",
+    "target_pest": "rỉ sắt/cà phê; phấn trắng/hoa hồng",
+    "applicant": "Công ty TNHH Sinaco Chemical",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Hexaconazole 50g/l + Sulfur 49.9g/l",
+    "trade_name": "New Floxy 99.9SC",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Công ty CP S New Rice",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Hexaconazole 105g/l + Thifluzamide 25g/l",
+    "trade_name": "Gavil 130SC",
+    "target_pest": "khô vằn/ngô",
+    "applicant": "Công ty CP Genta Thụy Sĩ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Hexaconazole 13.9% + Thifluzamide 13.9%",
+    "trade_name": "Hezamide 27.8SC",
+    "target_pest": "khô vằn/ngô",
+    "applicant": "Shandong Weifang Rainbow Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Hexaconazole 15% + Thifluzamide 15%",
+    "trade_name": "Longwolf 30SC",
+    "target_pest": "khô vằn/ngô",
+    "applicant": "Công ty TNHH MTV Hóa sinh Cửu Long",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Hymexazol 24% + Metalaxyl 6%",
+    "trade_name": "AF-Hymexyl 30SL",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty TNHH Agrifuture",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Iprodione 20% + Pyrimethanil 20%",
+    "trade_name": "Prothanil 40SC",
+    "target_pest": "phấn trắng/hoa hồng",
+    "applicant": "Công ty TNHH TM Hải Thụy",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Isoprothiolane 390g/l + Prochloraz 130g/l",
+    "trade_name": "Unitop 520EC",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Công ty CP Nông nghiệp Unilas Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Kasugamycin (min 70%)",
+    "trade_name": "Kasuplus 4SL",
+    "target_pest": "thối nhũn/hành, cải bắp; loét/cam",
+    "applicant": "Công ty TNHH Hoá sinh Thái Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Kasugamycin (min 70%)",
+    "trade_name": "Tutin 40SL",
+    "target_pest": "thán thư/sầu riêng; đốm nâu/thanh long",
+    "applicant": "Công ty CP Công nghệ cao Kyoto Japan",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Kasugamycin (min 70%)",
+    "trade_name": "VT-Kagami 3SL",
+    "target_pest": "thối nhũn/cải bắp",
+    "applicant": "Công ty TNHH CNSH Quốc tế Việt Thái",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Kasugamycin 7% + Oligosaccharins 3%",
+    "trade_name": "Biolisa 10SL",
+    "target_pest": "thán thư/sầu riêng",
+    "applicant": "Công ty TNHH BVTV Akita Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Kasugamycin 3% + Oxine copper 30%",
+    "trade_name": "Oxicoperusavb 33SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty TNHH Vbook Hoa Kỳ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Kasugamycin 3% + Oxine copper 33%",
+    "trade_name": "AU-Perfect 36SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty TNHH Authentique Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Kresoxim-methyl (min 95%)",
+    "trade_name": "Krexim 44.3SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty CP SAM",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Mancozeb (min 85%)",
+    "trade_name": "Zebbul 800WP",
+    "target_pest": "rỉ sắt/lạc",
+    "applicant": "Công ty CP Green Mê Kông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Mancozeb 48% + Metalaxyl 10%",
+    "trade_name": "Metala 2M 58WP",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty TNHH Pesticide Nhật Bản",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Mancozeb 28% + Sulfur 42%",
+    "trade_name": "T-Double 70WP",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Công ty CP Nông dược Nhật Thành",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Mandipropamid 250g/l + Oxathiapiprolin 30g/l",
+    "trade_name": "Orande® 280SC",
+    "target_pest": "thối quả/sầu riêng",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Mefentrifluconazole (min 97%)",
+    "trade_name": "Cevya 400SC",
+    "target_pest": "nứt thân chảy nhựa/dưa hấu",
+    "applicant": "BASF Vietnam Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Metalaxyl (min 95%)",
+    "trade_name": "Eroxyl Gold 250WP",
+    "target_pest": "sương mai/hoa hồng",
+    "applicant": "Công ty CP SX và TM Công nghệ Châu Âu",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Metalaxyl (min 95%)",
+    "trade_name": "Shaika 250SC",
+    "target_pest": "mốc sương/khoai tây",
+    "applicant": "Công ty TNHH TM SX Vỹ Tâm",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Metiram Complex (min 85%)",
+    "trade_name": "Topride 80 WG",
+    "target_pest": "thán thư/cà phê",
+    "applicant": "Công ty CP VT Chem",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Metiram 55% + Pyraclostrobin 5%",
+    "trade_name": "Fabulous-AA 60WG",
+    "target_pest": "phấn trắng/hoa hồng",
+    "applicant": "Công ty CP Hưng Toàn Vĩnh Phát",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Oligosaccharins",
+    "trade_name": "Dotpha 5SL",
+    "target_pest": "mốc sương/cà chua; rỉ sắt/đậu tương, hoa cúc",
+    "applicant": "Công ty TNHH TM SX Vỹ Tâm",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Oligosaccharins",
+    "trade_name": "KT-Oligosa 0.5SL",
+    "target_pest": "chấm xám/chè",
+    "applicant": "Công ty TNHH TM DV NN Kiên Thịnh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Oligosaccharins",
+    "trade_name": "Omi Extra 5SL",
+    "target_pest": "đốm nâu/lạc",
+    "applicant": "Công ty TNHH One Bee Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Oxine copper (min 99%)",
+    "trade_name": "HF-Copper 40SC",
+    "target_pest": "đốm lá/lạc",
+    "applicant": "Công ty TNHH TM Haflife Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Papain",
+    "trade_name": "Map Oni 2SL",
+    "target_pest": "bệnh loét/cam",
+    "applicant": "Map Pacific Pte Ltd",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Picoxystrobin (min 98.5%)",
+    "trade_name": "Aproach® 250SC",
+    "target_pest": "lem lép hạt/lúa",
+    "applicant": "Công ty TNHH Corteva Agriscience Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Picoxystrobin 7.05% + Propiconazole 11.71%",
+    "trade_name": "BV Picozole 18.76SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty TNHH NN Công nghệ cao Bản Việt",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Picoxystrobin 7.05% + Propiconazole 11.71%",
+    "trade_name": "Propitat 18.76SC",
+    "target_pest": "đốm nâu/lạc",
+    "applicant": "Công ty TNHH TAT Hà Nội",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Picoxystrobin 250g/l + Prothioconazole 50g/l",
+    "trade_name": "Picoros 300SC",
+    "target_pest": "đốm vòng/cà chua; phấn trắng/hoa hồng; nứt thân xì mủ/sầu riêng",
+    "applicant": "Công ty TNHH Phú Nông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Polyoxin B",
+    "trade_name": "Bio Top 30WP",
+    "target_pest": "bạc lá/lúa",
+    "applicant": "Công ty CP Công nghệ cao Kyoto Japan",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Prochloraz (min 97%)",
+    "trade_name": "Khabib 250EC",
+    "target_pest": "thán thư/hoa hồng",
+    "applicant": "Công ty TNHH TM SX Thôn Trang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Prochloraz 300g/kg + Tebuconazole 150g/kg",
+    "trade_name": "Tecoraz 450WP",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty CP Vision Chemical",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Prochloraz 267g/l + Tebuconazole 133g/l",
+    "trade_name": "VT-Naraz 400EW",
+    "target_pest": "đốm lá/ngô",
+    "applicant": "Công ty TNHH CNSH Quốc tế Việt Thái",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Propiconazole 125g/l + Tricyclazole 400g/l",
+    "trade_name": "Filia® 525 SE",
+    "target_pest": "đạo ôn cổ bông/lúa",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Pydiflumetofen (min 98%)",
+    "trade_name": "Miravis® 200SC",
+    "target_pest": "phấn trắng/dưa chuột",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Pyraclostrobin (min 95%)",
+    "trade_name": "Aclobin 350SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty TNHH Asia Agro",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Pyraclostrobin (min 95%)",
+    "trade_name": "Itabym 25SC",
+    "target_pest": "mốc sương/khoai tây",
+    "applicant": "Công ty TNHH TM Haflife Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Pyraclostrobin (min 95%)",
+    "trade_name": "Paskin 25SC",
+    "target_pest": "thán thư/xoài; ghẻ/cam",
+    "applicant": "Công ty CP BMC Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Pyraclostrobin 8% + Tebuconazole 24%",
+    "trade_name": "Sickking 32SC",
+    "target_pest": "đốm vòng/khoai tây",
+    "applicant": "Công ty CP Công nghệ Israel Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Pyraclostrobin 15% + Thifluzamide 20%",
+    "trade_name": "Forvilsuper 35SC",
+    "target_pest": "nứt thân chảy nhựa/dưa hấu; thán thư/cam",
+    "applicant": "Công ty CP BVTV Phú Nông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Pyrimethanil (min 95%)",
+    "trade_name": "Crown Extra 40WG",
+    "target_pest": "đốm nâu/lạc",
+    "applicant": "Công ty TNHH One Bee Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Pyrimethanil (min 95%)",
+    "trade_name": "Madona 400SC",
+    "target_pest": "chết nhanh/hồ tiêu",
+    "applicant": "Công ty CP Nông nghiệp CMP",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Pyrimethanil (min 95%)",
+    "trade_name": "Story 40SC",
+    "target_pest": "phấn trắng/hoa hồng",
+    "applicant": "Công ty CP BMC Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Resveratrol",
+    "trade_name": "Reve 0.2SL",
+    "target_pest": "đốm nâu/lạc",
+    "applicant": "Công ty CP Agrilas",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Saisentong (min 95%)",
+    "trade_name": "Dutyfree 200SC",
+    "target_pest": "héo xanh/lạc",
+    "applicant": "Công ty TNHH TM SX Thôn Trang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Spiroxamine (min 95%)",
+    "trade_name": "Sparkup 800EC",
+    "target_pest": "rỉ sắt/lạc",
+    "applicant": "Shandong Weifang Rainbow Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Tebuconazole 150g/l + Thiram 300g/l",
+    "trade_name": "Thitivo 450SC",
+    "target_pest": "đốm lá/đậu tương",
+    "applicant": "Công ty CP Vision Chemical",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Tebuconazole 20% + Trifloxystrobin 10%",
+    "trade_name": "Aaron 30SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Xuzhou Jinhe Chemicals Co., Ltd",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Tebuconazole 500g/kg (50%) + Trifloxystrobin 250g/kg (25%)",
+    "trade_name": "Itamax 75WG",
+    "target_pest": "rỉ sắt/hoa cúc",
+    "applicant": "Công ty CP Itagro Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Tebuconazole 500g/kg (50%) + Trifloxystrobin 250g/kg (25%)",
+    "trade_name": "Trivo Top 750WG",
+    "target_pest": "đốm nâu/lạc",
+    "applicant": "Công ty CP US Farm Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Tetraconazole (min 94%)",
+    "trade_name": "Domark 40ME",
+    "target_pest": "thán thư/cà phê; mốc xám, phấn trắng/hoa hồng",
+    "applicant": "Công ty TNHH Kỹ thuật sinh học Mekong",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Thifluzamide (min 96%)",
+    "trade_name": "Luza plus 240SC",
+    "target_pest": "thối quả/ca cao",
+    "applicant": "Công ty TNHH Rồng Đại Dương",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Thifluzamide (min 96%)",
+    "trade_name": "Luzamin 240SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty TNHH Fujimoto Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Thifluzamide (min 96%)",
+    "trade_name": "Notizamide 24SC",
+    "target_pest": "mốc sương/khoai tây",
+    "applicant": "Công ty TNHH Hóa sinh Nông Thịnh",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Thifluzamide (min 96%)",
+    "trade_name": "Thiflu-Tpas 24SC",
+    "target_pest": "khô vằn/ngô",
+    "applicant": "Công ty TNHH DVNN Thuận Phát",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Thifluzamide (min 96%)",
+    "trade_name": "Vdimot 24SC",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty CP Quốc tế Việt Đức",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Thiodiazole Zinc (min 95%)",
+    "trade_name": "Anti-one 200SC",
+    "target_pest": "héo xanh vi khuẩn/ớt",
+    "applicant": "Công ty TNHH Phú Nông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Thiram (TMTD) (min 96%)",
+    "trade_name": "Itaboom 50WP",
+    "target_pest": "mốc sương/khoai tây",
+    "applicant": "Công ty CP Itagro Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Thiram (TMTD) (min 96%)",
+    "trade_name": "Solmis 800WG",
+    "target_pest": "đốm lá/phong lan",
+    "applicant": "Công ty TNHH TM SX Thôn Trang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Triadimefon (min 96%)",
+    "trade_name": "Himefon 25WP",
+    "target_pest": "rỉ sắt/cà phê",
+    "applicant": "Công ty CP Hitaka",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Triadimefon (min 96%)",
+    "trade_name": "Nicalusa 250WP",
+    "target_pest": "đốm lá/đậu tương",
+    "applicant": "Công ty TNHH TM SX Thôn Trang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Tricyclazole (min 95%)",
+    "trade_name": "Beyond 40SC",
+    "target_pest": "đạo ôn/lúa",
+    "applicant": "Công ty TNHH Phương Nam Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Zhongshengmycin (min 95%)",
+    "trade_name": "Mdan Hero 3WP",
+    "target_pest": "bạc lá/lúa",
+    "applicant": "Công ty CP Mạnh Đan",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ bệnh",
+    "active_ingredients": "Zhongshengmycin (min 95%)",
+    "trade_name": "Shemycin 3WP",
+    "target_pest": "thối nhũn/cải thảo; héo xanh/cà chua",
+    "applicant": "Công ty CP Agri Shop",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Benazolin-ethyl 12% + Quizalofop-p-ethyl 2%",
+    "trade_name": "Quinzolin 14EC",
+    "target_pest": "cỏ/lạc",
+    "applicant": "Công ty TNHH TAT Hà Nội",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Bentazone (min 96%)",
+    "trade_name": "Bambuu 480SL",
+    "target_pest": "cỏ/đậu tương",
+    "applicant": "Công ty TNHH Tấn Hưng Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Bentazone 40% + MCPA 9%",
+    "trade_name": "AA-Shunshine 49SL",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH XNK TM Agriasian",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Bentazone 33% + MCPA 5%",
+    "trade_name": "Tvazone 38SL",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Hóa chất và TM Trần Vũ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Bentazone 40% + MCPA- sodium 10%",
+    "trade_name": "AF-Stenzone 50SL",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Agrifuture",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Butachlor (min 93%)",
+    "trade_name": "Butpas 50EC",
+    "target_pest": "cỏ/lạc",
+    "applicant": "Công ty TNHH DVNN Thuận Phát",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Butachlor 32% + Oxadiazon 10%",
+    "trade_name": "Gentanil 42EC",
+    "target_pest": "cỏ/lạc",
+    "applicant": "Công ty CP Genta Thụy Sĩ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Butachlor 275g/l + Propanil 275g/l",
+    "trade_name": "Matda 550EC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Tấn Hưng Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Cyhalofop-butyl 12% + Metamifop 8%",
+    "trade_name": "Alofop 20EC",
+    "target_pest": "cỏ/lúa gieo thẳng",
+    "applicant": "Công ty TNHH MTV Lucky",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Cyhalofop-butyl 150g/l + Metamifop 100g/l",
+    "trade_name": "Fop Super 250EC",
+    "target_pest": "cỏ/lạc",
+    "applicant": "Công ty TNHH Fujimoto Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Cyhalofop-butyl 15% + Metamifop 10%",
+    "trade_name": "Tenco 25OD",
+    "target_pest": "cỏ/lạc",
+    "applicant": "Công ty CP Nông dược Nhật Thành",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Cyhalofop-butyl 100g/l + Propanil 300g/l",
+    "trade_name": "Protanil 400EC",
+    "target_pest": "cỏ/lúa gieo thẳng",
+    "applicant": "Công ty TNHH XNK TM Agriasian",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Diquat (min 95%)",
+    "trade_name": "ET-Diquick 200SL",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Shanghai E-tong Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Diquat (min 95%)",
+    "trade_name": "Dimosa 373 SL",
+    "target_pest": "cỏ/cà phê",
+    "applicant": "Sinon Corporation",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Diuron (min 97%)",
+    "trade_name": "XinRon 80SC",
+    "target_pest": "cỏ/xoài",
+    "applicant": "Anhui Guangxin Agrochemical Co. Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Florpyrauxifen-benzyl 12.5g/l + Penoxsulam 20g/l",
+    "trade_name": "Novixid® 32.5OD",
+    "target_pest": "cỏ/lúa gieo thẳng",
+    "applicant": "Công ty TNHH Corteva Agriscience Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Florpyrauxifen-benzyl 10g/l + Pretilachlor 300g/l (chất an toàn Fenclorim 75g/l)",
+    "trade_name": "Baloric® 310EC",
+    "target_pest": "cỏ/lúa gieo thẳng",
+    "applicant": "Công ty TNHH Syngenta Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Fluazifop-p-butyl (min 90%)",
+    "trade_name": "Ziforsuper 150EC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty CP VT Chem",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Flumioxazin 15g/l + Glufosinate ammonium 185g/l",
+    "trade_name": "Bistar Plus 200OD",
+    "target_pest": "cỏ/cao su",
+    "applicant": "Shandong Runke Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Fluroxypyr-meptyl (min 95%)",
+    "trade_name": "New-meptyl 288EC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Mekong Agro",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Fluroxypyr-meptyl 6.5% + MCPA-isooctyl 36.5%",
+    "trade_name": "Nevi-Isotyl 43OD",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty CP Newfarm Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Afvglufo 30SL",
+    "target_pest": "cỏ/cà phê",
+    "applicant": "Công ty CP Agrifarm Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Atglyxim 200SL",
+    "target_pest": "cỏ/cà phê",
+    "applicant": "Công ty TNHH MTV XNK Quốc tế An Thành",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Gluking 200SL",
+    "target_pest": "cỏ/cà phê",
+    "applicant": "Công ty TNHH Nông nghiệp Nhật Nguyệt",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Glunium 200SL",
+    "target_pest": "cỏ/cà phê",
+    "applicant": "Công ty TNHH Liên Minh Nông Nghiệp Bền Vững",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Glusat 200SL",
+    "target_pest": "cỏ/cao su",
+    "applicant": "Công ty CP Hoá chất Nông nghiệp và Công nghiệp AIC",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Glu-up 200SL",
+    "target_pest": "cỏ/cà phê",
+    "applicant": "Công ty CP SX và TM Công nghệ Châu Âu",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Lanofosinate 200SL",
+    "target_pest": "cỏ/cao su",
+    "applicant": "Công ty CP Hóa nông Lâm Ngọc",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Oh Sate 13.5SL",
+    "target_pest": "cỏ/cao su, cà phê",
+    "applicant": "Công ty TNHH Kona Crop Science",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Paraxon 13.5SL",
+    "target_pest": "cỏ/cà phê",
+    "applicant": "Công ty TNHH Thần Nông Việt",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "Silvodor 200SL",
+    "target_pest": "cỏ/cà phê",
+    "applicant": "Công ty CP Đầu tư Quốc tế Long Hưng",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Glufosinate ammonium (min 95%)",
+    "trade_name": "VT-Fastar 300SL",
+    "target_pest": "cỏ/cà phê",
+    "applicant": "Công ty TNhH CNSH Quốc tế Việt Thái",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Halosulfuron-methyl (min 95%)",
+    "trade_name": "Halofine 75WG",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Jiangsu Agrochem Laboratory Co., Ltd",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Haloxyfop-p-methyl (min 94%)",
+    "trade_name": "Hallaan 108EC",
+    "target_pest": "cỏ/lạc",
+    "applicant": "Công ty TNHH Hoá nông Á Châu Hà Nội",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Haloxyfop-p-methyl (min 94%)",
+    "trade_name": "Nevi-Halo H 108EC",
+    "target_pest": "cỏ/đậu tương",
+    "applicant": "Công ty CP Newfarm Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Imazethapyr 2% + Pendimethalin 30%",
+    "trade_name": "Medalylindiavb 32EC",
+    "target_pest": "cỏ/lạc",
+    "applicant": "Công ty TNHH Vbook Hoa Kỳ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Isoxaflutole 5% + Terbuthylazine 50%",
+    "trade_name": "Terbu rio 55SC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Nông nghiệp Công nghệ xanh Bắc Giang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Mesotrione (min 97%)",
+    "trade_name": "Margin 150 SC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Alfa (Sài Gòn)",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Mesotrione (min 97%)",
+    "trade_name": "Metsocali 15SC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty CP Hóa chất Nông nghiệp Hoàng Nông",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Metamifop (min 96%)",
+    "trade_name": "DB-Naga 15EC",
+    "target_pest": "cỏ/lạc, đậu tương",
+    "applicant": "Công ty TNHH Hóa chất Phân bón, Thuốc BVTV Dubai",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Metolachlor (min 96%)",
+    "trade_name": "Nimeto 720EC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty CP Nicotex",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Metolachlor (min 96%)",
+    "trade_name": "T-Cotot 720EC",
+    "target_pest": "cỏ/lạc",
+    "applicant": "Công ty CP Nông dược Nhật Thành",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Metsulfuron-methyl (min 93%)",
+    "trade_name": "Canyon 20WG",
+    "target_pest": "cỏ/cao su",
+    "applicant": "Công ty CP Thương mại và Đầu tư Bắc Mỹ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Pendimethalin (min 90%)",
+    "trade_name": "AF-Pendimex 40SC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Agrifuture",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Penoxsulam 6% + Pyrazosulfuron-ethyl 4%",
+    "trade_name": "Thanset 10OD",
+    "target_pest": "cỏ/lúa gieo thẳng",
+    "applicant": "Công ty CP ĐT TM và PTNN ADI",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Sulfentrazone (min 95%)",
+    "trade_name": "Sentazone 500SC",
+    "target_pest": "cỏ/mía",
+    "applicant": "Shandong Weifang Rainbow Chemical Co., Ltd.",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Tembotrione (min 94.5%)",
+    "trade_name": "Navada 34.4SC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Giải pháp Nông nghiệp Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Tembotrione (min 94.5%)",
+    "trade_name": "Temone 34.4SC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH BVTV TAT Hà Nội",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Tembotrione (min 94.5%)",
+    "trade_name": "Teppi 8 OD",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Fujimoto Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Tembotrione (min 94.5%)",
+    "trade_name": "Vietembo 8 OD",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH TM DV Vietcropchem",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Topramezone (min 96%)",
+    "trade_name": "Cornean 30SC",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH Bio Delta",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Topramezone (min 96%)",
+    "trade_name": "Hirosu 30 OD",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty CP BVTV I TW",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ cỏ",
+    "active_ingredients": "Topramezone (min 96%)",
+    "trade_name": "Top Helmer 10 OD",
+    "target_pest": "cỏ/ngô",
+    "applicant": "Công ty TNHH B.Helmer",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc điều hòa sinh trưởng",
+    "active_ingredients": "24-Epibrassinolide (min 90%)",
+    "trade_name": "Basino 0.01SL",
+    "target_pest": "kích thích sinh trưởng/cam",
+    "applicant": "Công ty CP Hợp Trí Summit",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc điều hòa sinh trưởng",
+    "active_ingredients": "24-Epibrassinolide (min 90%)",
+    "trade_name": "Brano 0.01SL",
+    "target_pest": "kích thích sinh trưởng/cam",
+    "applicant": "Công ty CP Tập đoàn Lộc Trời",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc điều hòa sinh trưởng",
+    "active_ingredients": "24-Epibrassinolide (min 90%)",
+    "trade_name": "Petersens 0.01SL",
+    "target_pest": "kích thích sinh trưởng/xoài, cam",
+    "applicant": "Công ty TNHH TM SX Thôn Trang",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc điều hòa sinh trưởng",
+    "active_ingredients": "28-Homobrassinolide (min 95%)",
+    "trade_name": "Grow Fast 0.004SL",
+    "target_pest": "kích thích sinh trưởng/cà chua",
+    "applicant": "Công ty TNHH BVTV TAT Hà Nội",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc điều hòa sinh trưởng",
+    "active_ingredients": "Flumetralin (min 98%)",
+    "trade_name": "ADS-Rantio 250SC",
+    "target_pest": "diệt chồi nách/thuốc lá",
+    "applicant": "Công ty TNHH ADU Việt Nam",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc điều hòa sinh trưởng",
+    "active_ingredients": "Paclobutrazol (min 95%)",
+    "trade_name": "Pacitaly 15WP",
+    "target_pest": "điều hòa sinh trưởng/khoai lang",
+    "applicant": "Công ty CP SAM",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc điều hòa sinh trưởng",
+    "active_ingredients": "Paclobutrazol (min 95%)",
+    "trade_name": "Pakloindia 23SC",
+    "target_pest": "điều hòa sinh trưởng/khoai lang",
+    "applicant": "Công ty CP Hóa chất SAM",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ ốc",
+    "active_ingredients": "Metaldehyde (min 98.5%)",
+    "trade_name": "Galix 6GR",
+    "target_pest": "ốc sên nhỏ/hoa hồng",
+    "applicant": "Công ty CP Genta Thụy Sĩ",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ ốc",
+    "active_ingredients": "6. Thuốc trừ mối",
+    "trade_name": "nan",
+    "target_pest": "",
+    "applicant": "",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ ốc",
+    "active_ingredients": "Bifenthrin (min 97%)",
+    "trade_name": "Bifencid 5.0SC",
+    "target_pest": "mối/công trình xây dựng",
+    "applicant": "Công ty TNHH Hóa sinh Vinchem",
+    "quarantine_days": null,
+    "is_banned": false
+  },
+  {
+    "category": "Thuốc trừ ốc",
+    "active_ingredients": "Chlorantraniliprole (min 93%)",
+    "trade_name": "Safe 200SC",
+    "target_pest": "mối/công trình xây dựng",
+    "applicant": "Công ty TNHH Đầu tư và Phát triển Ngọc Lâm",
+    "quarantine_days": null,
+    "is_banned": false
+  }
+]

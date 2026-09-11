@@ -586,5 +586,43 @@
         "padding_length///unsignedInteger///__///NOT_NULL///6///__///Độ dài chuỗi số, đệm 0 — VD: 6 => 000001",
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật"
+    ],
+    [
+      "agri_pesticides///__///__///Bảng danh mục thuốc BVTV",
+      "category///string///100///NOT_NULL///__///->index()///Nhóm thuốc (VD: Thuốc trừ sâu, Thuốc trừ bệnh, Thuốc trừ cỏ)",
+      "active_ingredients///string///500///NOT_NULL///__///__///Thành phần hoạt chất (COMMON NAME)",
+      "trade_name///string///255///NOT_NULL///__///->index()///Tên thương phẩm (TRADE NAME)",
+      "target_pest///string///500///_NULL///NULL///__///Đối tượng phòng trừ (PEST/CROP)",
+      "applicant///string///255///_NULL///NULL///__///Tổ chức đăng ký (APPLICANT)",
+      "quarantine_days///unsignedInteger///__///_NULL///NULL///__///Thời gian cách ly (ngày) - Data cực quan trọng để chặn thu hoạch",
+      "is_banned///boolean///__///NOT_NULL///false///__///Cờ đánh dấu thuốc đã bị NN cấm lưu hành",
+      "status///string///20///NOT_NULL///'active'///->index()///active | inactive",
+      "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+      "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+      "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "agri_fertilizers///__///__///Bảng danh mục phân bón",
+        "category///string///100///NOT_NULL///__///->index()///Nhóm phân bón (VD: Phân hữu cơ, Phân bón lá...)",
+        "name///string///255///NOT_NULL///__///->index()///Tên phân bón",
+        "ingredients///string///1000///_NULL///NULL///__///Thành phần và hàm lượng đăng ký",
+        "applicant///string///255///_NULL///NULL///__///Tổ chức đăng ký (APPLICANT)",
+        "is_banned///boolean///__///NOT_NULL///false///__///Cờ đánh dấu phân bón bị cấm/loại bỏ",
+        "status///string///20///NOT_NULL///'active'///->index()///active | inactive",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "agri_seeds///__///__///Bảng danh mục giống cây trồng",
+        "crop_type///string///100///NOT_NULL///__///->index()///Loại cây trồng (VD: Lúa, Ngô, Rau ăn lá)",
+        "name///string///255///NOT_NULL///__///->index()///Tên giống cây trồng (VD: Khang Dân 18, ST25)",
+        "author_applicant///string///500///_NULL///NULL///__///Tác giả / Cơ quan đăng ký",
+        "decision_number///string///255///_NULL///NULL///__///Số Quyết định / Năm công nhận",
+        "is_banned///boolean///__///NOT_NULL///false///__///Cờ đánh dấu giống bị loại khỏi danh mục",
+        "status///string///20///NOT_NULL///'active'///->index()///active | inactive",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
     ]
 ]
