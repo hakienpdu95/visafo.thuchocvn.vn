@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\ComplianceDocument;
+use Modules\Product\Models\FarmingBatch;
+use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Vendor\Enums\VendorStatus;
 
@@ -69,6 +71,16 @@ class Vendor extends TenantAwareModel
     public function partnerProducts(): HasMany
     {
         return $this->hasMany(PartnerProduct::class);
+    }
+
+    public function farmingSources(): HasMany
+    {
+        return $this->hasMany(FarmingSource::class);
+    }
+
+    public function farmingBatches(): HasMany
+    {
+        return $this->hasMany(FarmingBatch::class);
     }
 
     public function documents(): MorphMany

@@ -7,6 +7,8 @@ use Modules\Product\Http\Controllers\Api\AgriPesticideApiController;
 use Modules\Product\Http\Controllers\Api\AgriSeedApiController;
 use Modules\Product\Http\Controllers\Api\CategoryApiController;
 use Modules\Product\Http\Controllers\Api\DocumentMasterTypeApiController;
+use Modules\Product\Http\Controllers\Api\FarmingBatchApiController;
+use Modules\Product\Http\Controllers\Api\FarmingSourceApiController;
 use Modules\Product\Http\Controllers\Api\PartnerProductApiController;
 use Modules\Product\Http\Controllers\Api\ProductApiController;
 use Modules\Product\Http\Controllers\AgriFertilizerController;
@@ -14,6 +16,8 @@ use Modules\Product\Http\Controllers\AgriPesticideController;
 use Modules\Product\Http\Controllers\AgriSeedController;
 use Modules\Product\Http\Controllers\CategoryController;
 use Modules\Product\Http\Controllers\DocumentMasterTypeController;
+use Modules\Product\Http\Controllers\FarmingBatchController;
+use Modules\Product\Http\Controllers\FarmingSourceController;
 use Modules\Product\Http\Controllers\PartnerProductController;
 use Modules\Product\Http\Controllers\ProductController;
 
@@ -52,6 +56,20 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
         Route::get('{agri_seed}/edit', [AgriSeedController::class, 'edit'])->name('edit');
         Route::put('{agri_seed}', [AgriSeedController::class, 'update'])->name('update');
     });
+
+    Route::prefix('farming-sources')->name('farming-sources.')->group(function () {
+        Route::get('/', [FarmingSourceController::class, 'index'])->name('index');
+        Route::post('/', [FarmingSourceController::class, 'store'])->name('store');
+        Route::put('{farming_source}', [FarmingSourceController::class, 'update'])->name('update');
+        Route::post('{farming_source}/confirm-pre-season', [FarmingSourceController::class, 'confirmPreSeason'])->name('confirm-pre-season');
+    });
+
+    Route::prefix('farming-batches')->name('farming-batches.')->group(function () {
+        Route::get('/', [FarmingBatchController::class, 'index'])->name('index');
+        Route::post('/', [FarmingBatchController::class, 'store'])->name('store');
+        Route::get('{farming_batch}', [FarmingBatchController::class, 'show'])->name('show');
+        Route::post('{farming_batch}/approve-harvest', [FarmingBatchController::class, 'approveHarvest'])->name('approve-harvest');
+    });
 });
 
 Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(function () {
@@ -62,4 +80,6 @@ Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(
     Route::get('agri-pesticides', [AgriPesticideApiController::class, 'index'])->name('agri-pesticides');
     Route::get('agri-fertilizers', [AgriFertilizerApiController::class, 'index'])->name('agri-fertilizers');
     Route::get('agri-seeds', [AgriSeedApiController::class, 'index'])->name('agri-seeds');
+    Route::get('farming-sources', [FarmingSourceApiController::class, 'index'])->name('farming-sources');
+    Route::get('farming-batches', [FarmingBatchApiController::class, 'index'])->name('farming-batches');
 });

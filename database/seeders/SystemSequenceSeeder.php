@@ -36,6 +36,7 @@ class SystemSequenceSeeder extends Seeder
             ['code_type' => 'product', 'prefix' => 'SP', 'last_number' => 0, 'padding_length' => 6],
             ['code_type' => 'category', 'prefix' => 'DMNH', 'last_number' => 0, 'padding_length' => 6],
             ['code_type' => 'document_master_type', 'prefix' => 'LGT', 'last_number' => 0, 'padding_length' => 6],
+            ['code_type' => 'farming_source', 'prefix' => 'VT', 'last_number' => 0, 'padding_length' => 6],
         ];
     }
 }

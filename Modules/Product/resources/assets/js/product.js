@@ -11,3 +11,5 @@ import './pages/agri-pesticide-form.js';
 import './pages/agri-fertilizer-index.js';
 import './pages/agri-seed-index.js';
 import './pages/agri-seed-form.js';
+import './pages/farming-source-index.js';
+import './pages/farming-batch-index.js';

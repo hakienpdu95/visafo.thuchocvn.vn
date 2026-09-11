@@ -109,6 +109,23 @@
             @endcanany
         </div>
 
+        @can('compliance.view')
+        <p class="section-title" style="margin-top:16px;">Nhật ký Sản xuất Nông hộ</p>
+        <div class="nav-group">
+            <details {{ request()->routeIs('backend.farming-sources.*', 'backend.farming-batches.*') ? 'open' : '' }}>
+                <summary class="nav-summary {{ request()->routeIs('backend.farming-sources.*', 'backend.farming-batches.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3c-4 3-6 6-6 10a6 6 0 0012 0c0-4-2-7-6-10z"/></svg>
+                    <span class="nav-label">Nhật ký Sản xuất Nông hộ</span>
+                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
+                </summary>
+                <div class="sub-menu">
+                    <a href="{{ route('backend.farming-sources.index') }}" class="sub-link {{ request()->routeIs('backend.farming-sources.*') ? 'active' : '' }}">Quản lý Vùng trồng</a>
+                    <a href="{{ route('backend.farming-batches.index') }}" class="sub-link {{ request()->routeIs('backend.farming-batches.*') ? 'active' : '' }}">Quản lý Vụ / Lô sản xuất</a>
+                </div>
+            </details>
+        </div>
+        @endcan
+
         <p class="section-title" style="margin-top:16px;">Quản trị Hệ thống & Nội bộ</p>
         <div class="nav-group">
 

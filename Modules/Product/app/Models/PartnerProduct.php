@@ -5,6 +5,7 @@ namespace Modules\Product\Models;
 use App\Foundation\Models\TenantAwareModel;
 use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\ComplianceDocument;
@@ -60,5 +61,10 @@ class PartnerProduct extends TenantAwareModel
     public function activeDocuments(): MorphMany
     {
         return $this->documents()->where('status', ComplianceDocumentStatus::Active->value);
+    }
+
+    public function farmingBatches(): HasMany
+    {
+        return $this->hasMany(FarmingBatch::class);
     }
 }

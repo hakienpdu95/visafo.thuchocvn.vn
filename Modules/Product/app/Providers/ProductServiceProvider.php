@@ -8,6 +8,8 @@ use Modules\Product\Models\AgriPesticide;
 use Modules\Product\Models\AgriSeed;
 use Modules\Product\Models\Category;
 use Modules\Product\Models\DocumentMasterType;
+use Modules\Product\Models\FarmingBatch;
+use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
 use Modules\Product\Policies\AgriFertilizerPolicy;
@@ -15,6 +17,8 @@ use Modules\Product\Policies\AgriPesticidePolicy;
 use Modules\Product\Policies\AgriSeedPolicy;
 use Modules\Product\Policies\CategoryPolicy;
 use Modules\Product\Policies\DocumentMasterTypePolicy;
+use Modules\Product\Policies\FarmingBatchPolicy;
+use Modules\Product\Policies\FarmingSourcePolicy;
 use Modules\Product\Policies\PartnerProductPolicy;
 use Modules\Product\Policies\ProductPolicy;
 use Nwidart\Modules\Support\ModuleServiceProvider;
@@ -45,5 +49,7 @@ class ProductServiceProvider extends ModuleServiceProvider
         Gate::policy(AgriPesticide::class, AgriPesticidePolicy::class);
         Gate::policy(AgriFertilizer::class, AgriFertilizerPolicy::class);
         Gate::policy(AgriSeed::class, AgriSeedPolicy::class);
+        Gate::policy(FarmingSource::class, FarmingSourcePolicy::class);
+        Gate::policy(FarmingBatch::class, FarmingBatchPolicy::class);
     }
 }
