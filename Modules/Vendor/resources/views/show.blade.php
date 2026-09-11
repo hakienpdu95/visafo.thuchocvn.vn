@@ -24,172 +24,225 @@
 <div class="alert alert-success py-2.5 px-4 mb-5 text-sm">{{ session('success') }}</div>
 @endif
 
-<div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 items-start">
+@php $initialTab = $errors->any() || str_contains((string) session('success'), 'hồ sơ') ? 'documents' : 'general'; @endphp
+<div x-data="{ tab: '{{ $initialTab }}' }" data-initial-tab="{{ $initialTab }}">
 
-    <div class="card bg-base-100 shadow-sm border border-base-200">
-        <div class="card-body">
-            <h2 class="text-base font-semibold mb-4">Hồ sơ pháp lý</h2>
-
-            @if($vendor->documents->isEmpty())
-            <p class="text-sm text-base-content/50">Chưa có hồ sơ nào được ghi nhận.</p>
-            @else
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Loại</th>
-                            <th>Số hiệu</th>
-                            <th>Ngày cấp</th>
-                            <th>Hạn dùng</th>
-                            <th>Trạng thái</th>
-                            <th>File</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($vendor->documents as $document)
-                        <tr>
-                            <td>{{ $document->documentType->name }}</td>
-                            <td class="font-mono">{{ $document->document_number ?? '—' }}</td>
-                            <td>{{ $document->issue_date?->format('d/m/Y') ?? '—' }}</td>
-                            <td>
-                                {{ $document->expiration_date?->format('d/m/Y') ?? '—' }}
-                                @if($document->isExpired())
-                                <span class="badge badge-error badge-xs ml-1">Hết hạn</span>
-                                @elseif($document->isExpiringWithinDays(30))
-                                <span class="badge badge-warning badge-xs ml-1">Sắp hết hạn</span>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="badge {{ $document->status->badgeClass() }} badge-xs">{{ $document->status->label() }}</span>
-                            </td>
-                            <td>
-                                @if($document->getFirstMediaUrl('attachments_private'))
-                                <a href="{{ $document->getFirstMediaUrl('attachments_private') }}" target="_blank" class="link link-primary text-xs">Xem file</a>
-                                @else
-                                <span class="text-xs text-base-content/40">—</span>
-                                @endif
-                            </td>
-                            <td>
-                                @can('update', $vendor)
-                                <form method="POST" action="{{ route('backend.vendors.documents.destroy', [$vendor, $document]) }}"
-                                      onsubmit="return confirm('Xóa hồ sơ này?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error">Xóa</button>
-                                </form>
-                                @endcan
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @endif
-        </div>
+    <div role="tablist" class="tabs tabs-lift mb-6">
+        <a role="tab" class="tab" :class="tab === 'general' ? 'tab-active' : ''" @click.prevent="tab = 'general'" href="#">
+            Thông tin chung &amp; Đầu mối liên hệ
+        </a>
+        <a role="tab" class="tab" :class="tab === 'products' ? 'tab-active' : ''" @click.prevent="tab = 'products'; window.onVendorTabShown('products')" href="#">
+            Hàng hóa cung cấp
+            <span class="badge badge-neutral badge-xs ml-1.5">{{ $vendor->partnerProducts->count() }}</span>
+        </a>
+        <a role="tab" class="tab" :class="tab === 'documents' ? 'tab-active' : ''" @click.prevent="tab = 'documents'; window.onVendorTabShown('documents')" href="#">
+            Hồ sơ pháp lý &amp; ATTP
+            <span class="badge badge-neutral badge-xs ml-1.5">{{ $vendor->documents->count() }}</span>
+        </a>
     </div>
 
-    <div class="space-y-6">
+    {{-- ── Tab 1: Thông tin chung & Đầu mối liên hệ ────────────────────── --}}
+    <div x-show="tab === 'general'">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <div class="card bg-base-100 shadow-sm border border-base-200">
-            <div class="card-body">
-                <h2 class="text-base font-semibold mb-3">Thông tin pháp nhân</h2>
-                <dl class="text-sm space-y-2">
-                    <div><dt class="text-base-content/50 text-xs">Địa chỉ</dt>
-                        <dd>
-                            {{ $vendor->address ?? '—' }}
-                            @if($vendor->ward || $vendor->province)
-                                <br>{{ trim(($vendor->ward?->name ?? '') . ', ' . ($vendor->province?->name ?? ''), ', ') }}
-                            @endif
-                        </dd>
-                    </div>
-                    <div><dt class="text-base-content/50 text-xs">Điện thoại công ty</dt><dd>{{ $vendor->phone_number ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Email công ty</dt><dd>{{ $vendor->email ?? '—' }}</dd></div>
-                </dl>
-            </div>
-        </div>
-
-        <div class="card bg-base-100 shadow-sm border border-base-200">
-            <div class="card-body">
-                <h2 class="text-base font-semibold mb-3">Người đại diện theo pháp luật</h2>
-                <dl class="text-sm space-y-2">
-                    <div><dt class="text-base-content/50 text-xs">Họ và tên</dt><dd>{{ $vendor->representative_name ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Chức danh</dt><dd>{{ $vendor->representative_title ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Điện thoại</dt><dd>{{ $vendor->representative_phone ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Email</dt><dd>{{ $vendor->representative_email ?? '—' }}</dd></div>
-                </dl>
-            </div>
-        </div>
-
-        <div class="card bg-base-100 shadow-sm border border-base-200">
-            <div class="card-body">
-                <h2 class="text-base font-semibold mb-3">Đầu mối liên hệ về công việc</h2>
-                <dl class="text-sm space-y-2">
-                    <div><dt class="text-base-content/50 text-xs">Họ và tên</dt><dd>{{ $vendor->contact_person_name ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Chức vụ</dt><dd>{{ $vendor->contact_person_title ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Điện thoại</dt><dd>{{ $vendor->contact_person_phone ?? '—' }}</dd></div>
-                    <div><dt class="text-base-content/50 text-xs">Email</dt><dd>{{ $vendor->contact_person_email ?? '—' }}</dd></div>
-                </dl>
-            </div>
-        </div>
-
-        @can('update', $vendor)
-        <div class="card bg-base-100 shadow-sm border border-base-200">
-            <div class="card-body">
-                <h2 class="text-base font-semibold mb-3">Thêm hồ sơ mới</h2>
-
-                @if($errors->any())
-                <div class="alert alert-error py-2 px-3 mb-3 text-xs">
-                    <ul class="list-disc list-inside space-y-0.5">
-                        @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-                    </ul>
+            <div class="card bg-base-100 shadow-sm border border-base-200">
+                <div class="card-body">
+                    <h2 class="text-base font-semibold mb-3">Thông tin pháp nhân</h2>
+                    <dl class="text-sm space-y-2">
+                        <div><dt class="text-base-content/50 text-xs">Địa chỉ</dt>
+                            <dd>
+                                {{ $vendor->address ?? '—' }}
+                                @if($vendor->ward || $vendor->province)
+                                    <br>{{ trim(($vendor->ward?->name ?? '') . ', ' . ($vendor->province?->name ?? ''), ', ') }}
+                                @endif
+                            </dd>
+                        </div>
+                        <div><dt class="text-base-content/50 text-xs">Điện thoại công ty</dt><dd>{{ $vendor->phone_number ?? '—' }}</dd></div>
+                        <div><dt class="text-base-content/50 text-xs">Email công ty</dt><dd>{{ $vendor->email ?? '—' }}</dd></div>
+                    </dl>
                 </div>
-                @endif
+            </div>
 
-                <form method="POST" action="{{ route('backend.vendors.documents.store', $vendor) }}" enctype="multipart/form-data" class="space-y-3">
-                    @csrf
+            <div class="card bg-base-100 shadow-sm border border-base-200">
+                <div class="card-body">
+                    <h2 class="text-base font-semibold mb-3">Người đại diện theo pháp luật</h2>
+                    <dl class="text-sm space-y-2">
+                        <div><dt class="text-base-content/50 text-xs">Họ và tên</dt><dd>{{ $vendor->representative_name ?? '—' }}</dd></div>
+                        <div><dt class="text-base-content/50 text-xs">Chức danh</dt><dd>{{ $vendor->representative_title ?? '—' }}</dd></div>
+                        <div><dt class="text-base-content/50 text-xs">Điện thoại</dt><dd>{{ $vendor->representative_phone ?? '—' }}</dd></div>
+                        <div><dt class="text-base-content/50 text-xs">Email</dt><dd>{{ $vendor->representative_email ?? '—' }}</dd></div>
+                    </dl>
+                </div>
+            </div>
 
-                    <div class="form-control">
-                        <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Loại giấy tờ</span></label>
-                        <select name="document_master_type_id" class="select select-bordered select-sm w-full">
-                            @foreach($documentTypes as $type)
-                            <option value="{{ $type->id }}" @selected(old('document_master_type_id') === $type->id)>{{ $type->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+            <div class="card bg-base-100 shadow-sm border border-base-200">
+                <div class="card-body">
+                    <h2 class="text-base font-semibold mb-3">Đầu mối liên hệ về công việc</h2>
+                    <dl class="text-sm space-y-2">
+                        <div><dt class="text-base-content/50 text-xs">Họ và tên</dt><dd>{{ $vendor->contact_person_name ?? '—' }}</dd></div>
+                        <div><dt class="text-base-content/50 text-xs">Chức vụ</dt><dd>{{ $vendor->contact_person_title ?? '—' }}</dd></div>
+                        <div><dt class="text-base-content/50 text-xs">Điện thoại</dt><dd>{{ $vendor->contact_person_phone ?? '—' }}</dd></div>
+                        <div><dt class="text-base-content/50 text-xs">Email</dt><dd>{{ $vendor->contact_person_email ?? '—' }}</dd></div>
+                    </dl>
+                </div>
+            </div>
 
-                    <div class="form-control">
-                        <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Số hiệu</span></label>
-                        <input type="text" name="document_number" value="{{ old('document_number') }}" class="input input-bordered input-sm w-full">
-                    </div>
+        </div>
+    </div>
 
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="form-control">
-                            <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày cấp</span></label>
-                            <input type="date" name="issue_date" value="{{ old('issue_date') }}" class="input input-bordered input-sm w-full">
-                        </div>
-                        <div class="form-control">
-                            <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày hết hạn</span></label>
-                            <input type="date" name="expiration_date" value="{{ old('expiration_date') }}" class="input input-bordered input-sm w-full">
-                        </div>
-                    </div>
+    {{-- ── Tab 2: Hàng hóa cung cấp ──────────────────────────────────────── --}}
+    <div x-show="tab === 'products'" x-cloak>
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold">Hàng hóa nhà cung cấp đang giao</h2>
+                    @can('create', \Modules\Product\Models\PartnerProduct::class)
+                    <a href="{{ route('backend.partner-products.create', ['vendor_id' => $vendor->id]) }}" class="btn btn-primary btn-sm">+ Thêm hàng hóa</a>
+                    @endcan
+                </div>
 
-                    <div class="form-control">
-                        <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Nơi cấp</span></label>
-                        <input type="text" name="issued_by" value="{{ old('issued_by') }}" class="input input-bordered input-sm w-full">
-                    </div>
-
-                    <div class="form-control">
-                        <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">File PDF/Scan</span></label>
-                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered file-input-sm w-full">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-sm w-full">Thêm hồ sơ</button>
-                </form>
+                <div class="tabulator-daisy">
+                    <div id="vendor-partner-products-table" data-rows="{{ json_encode($vendor->partnerProducts->map(fn ($p) => [
+                        'name'              => $p->name,
+                        'vendor_sku'        => $p->vendor_sku,
+                        'product_name'      => $p->product?->name,
+                        'product_sku'       => $p->product?->sku,
+                        'manufacturer_name' => $p->manufacturer_name,
+                        'status_label'      => $p->status->label(),
+                        'status_badge'      => $p->status->badgeClass(),
+                        'show_url'          => auth()->user()->can('view', $p) ? route('backend.partner-products.show', $p) : null,
+                    ])->values(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
+                </div>
             </div>
         </div>
-        @endcan
-
     </div>
+
+    {{-- ── Tab 3: Hồ sơ pháp lý & ATTP ───────────────────────────────────── --}}
+    <div x-show="tab === 'documents'" x-cloak>
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold">Hồ sơ pháp lý &amp; ATTP</h2>
+                    @can('update', $vendor)
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openAddDocumentModal()">Tải lên hồ sơ mới</button>
+                    @endcan
+                </div>
+
+                @php $canManageDocuments = auth()->user()->can('update', $vendor); @endphp
+                <div class="tabulator-daisy">
+                    <div id="vendor-documents-table"
+                         data-can-manage="{{ $canManageDocuments ? '1' : '0' }}"
+                         data-delete-url-template="{{ route('backend.vendors.documents.destroy', [$vendor, '__ID__']) }}"
+                         data-rows="{{ json_encode($vendor->documents->map(fn ($d) => [
+                             'id'                      => $d->id,
+                             'document_master_type_id' => $d->document_master_type_id,
+                             'type_name'               => $d->documentType->name,
+                             'document_number'         => $d->document_number,
+                             'issued_by'               => $d->issued_by,
+                             'issue_date'              => $d->issue_date?->format('Y-m-d'),
+                             'issue_date_display'      => $d->issue_date?->format('d/m/Y'),
+                             'expiration_date'         => $d->expiration_date?->format('Y-m-d'),
+                             'expiration_date_display' => $d->expiration_date?->format('d/m/Y'),
+                             'is_expired'              => $d->isExpired(),
+                             'is_expiring_soon'        => $d->isExpiringWithinDays(30),
+                             'status_label'            => $d->status->label(),
+                             'status_badge'            => $d->status->badgeClass(),
+                             'file_url'                => $d->getFirstMediaUrl('attachments_private'),
+                         ])->values(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+{{-- ── Modal: Tải lên hồ sơ mới ─────────────────────────────────────────── --}}
+@can('update', $vendor)
+<dialog id="addDocumentModal" class="modal" @if($errors->any()) data-autoopen="1" @endif>
+    <div class="modal-box max-w-lg">
+        <h3 class="font-bold text-lg mb-1" id="documentModalTitle">{{ old('_document_id') ? 'Sửa hồ sơ' : 'Tải lên hồ sơ mới' }}</h3>
+        <p class="text-xs text-base-content/40 mb-4">Hồ sơ pháp lý / ATTP do nhà cung cấp này nộp</p>
+
+        @if($errors->any())
+        <div class="alert alert-error py-2 px-3 mb-3 text-xs">
+            <ul class="list-disc list-inside space-y-0.5">
+                @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+            </ul>
+        </div>
+        @endif
+
+        <form method="POST"
+              action="{{ old('_document_id') ? route('backend.vendors.documents.update', [$vendor, old('_document_id')]) : route('backend.vendors.documents.store', $vendor) }}"
+              enctype="multipart/form-data" class="space-y-3"
+              data-create-url="{{ route('backend.vendors.documents.store', $vendor) }}"
+              data-update-url-template="{{ route('backend.vendors.documents.update', [$vendor, '__ID__']) }}"
+              x-data="documentUploadForm({{ Js::from($documentTypes->map(fn ($t) => ['id' => $t->id, 'has_expiration_date' => (bool) $t->has_expiration_date, 'has_issue_place' => (bool) $t->has_issue_place, 'default_validity_months' => $t->default_validity_months])) }}, {{ Js::from((string) old('document_master_type_id', '')) }})">
+            @csrf
+            <input type="hidden" name="_method" value="{{ old('_document_id') ? 'PUT' : '' }}">
+            <input type="hidden" name="_document_id" value="{{ old('_document_id') }}">
+
+            <div class="form-control">
+                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Loại giấy tờ</span></label>
+                <select id="ts-document_master_type_id" name="document_master_type_id" class="select select-bordered select-sm w-full" data-ts-placeholder="— Chọn loại giấy tờ —" @change="selectedId = $event.target.value">
+                    @foreach($documentTypes as $type)
+                    <option value="{{ $type->id }}" @selected(old('document_master_type_id') === $type->id)>{{ $type->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="form-control" :class="selected.has_issue_place ? '' : 'col-span-2'">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Số hiệu</span></label>
+                    <input type="text" name="document_number" value="{{ old('document_number') }}" class="input input-bordered input-sm w-full">
+                </div>
+                <div class="form-control" x-show="selected.has_issue_place">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Nơi cấp</span></label>
+                    <input type="text" name="issued_by" value="{{ old('issued_by') }}" class="input input-bordered input-sm w-full">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="form-control" :class="selected.has_expiration_date ? '' : 'col-span-2'">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày cấp</span></label>
+                    <input type="text" id="fp-issue_date" name="issue_date" value="{{ old('issue_date') }}"
+                           class="input input-bordered input-sm w-full" placeholder="dd/mm/yyyy" autocomplete="off">
+                </div>
+                <div class="form-control" x-show="selected.has_expiration_date">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày hết hạn</span></label>
+                    <input type="text" id="fp-expiration_date" name="expiration_date" value="{{ old('expiration_date') }}"
+                           class="input input-bordered input-sm w-full" placeholder="dd/mm/yyyy" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="form-control">
+                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">File PDF/Scan</span></label>
+                <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered file-input-sm w-full">
+                <p class="mt-1 text-xs text-base-content/50" id="documentCurrentFileInfo" hidden>
+                    File hiện tại: <a href="#" target="_blank" class="link link-primary" id="documentCurrentFileLink">Xem file</a> — chọn file mới để thay thế
+                </p>
+            </div>
+
+            <div class="modal-action mt-2">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="addDocumentModal.close()">Hủy</button>
+                <button type="submit" class="btn btn-primary btn-sm" id="documentModalSubmit">{{ old('_document_id') ? 'Lưu thay đổi' : 'Lưu hồ sơ' }}</button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+@endcan
 @endsection
+
+@push('styles')
+    <x-tabulator-theme />
+    @vite(['Modules/Vendor/resources/assets/sass/vendor.scss'], 'build/backend')
+@endpush
+
+@push('scripts')
+    @vite([
+        'resources/js/modules/flatpickr.js',
+        'resources/js/modules/tom-select.js',
+        'resources/js/modules/tabulator.js',
+        'Modules/Vendor/resources/assets/js/vendor.js',
+    ], 'build/backend')
+@endpush

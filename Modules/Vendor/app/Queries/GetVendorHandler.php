@@ -15,6 +15,7 @@ class GetVendorHandler implements QueryHandlerInterface
 
         $vendor->load([
             'documents' => fn ($q) => $q->with('documentType')->latest('issue_date'),
+            'partnerProducts' => fn ($q) => $q->with('product')->latest(),
             'province',
             'ward',
         ]);

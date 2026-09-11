@@ -50,7 +50,10 @@ class VendorController extends Controller
     public function show(Vendor $vendor, GetVendorHandler $handler)
     {
         $vendor = $handler->handle(new GetVendorQuery($vendor));
-        $documentTypes = DocumentMasterType::query()->orderBy('name')->get();
+        $documentTypes = DocumentMasterType::query()
+            ->applicableTo('vendor')
+            ->orderBy('name')
+            ->get();
 
         return view('vendor::show', compact('vendor', 'documentTypes'));
     }

@@ -3,6 +3,7 @@
 namespace Modules\Product\Models;
 
 use App\Traits\HasAutoCode;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -32,8 +33,12 @@ class DocumentMasterType extends Model
         'code',
         'name',
         'document_group',
+        'applicable_to',
         'is_required_issue_date',
         'is_required_expiry_date',
+        'has_expiration_date',
+        'has_issue_place',
+        'is_transactional',
         'default_validity_months',
     ];
 
@@ -41,8 +46,12 @@ class DocumentMasterType extends Model
     {
         return [
             'document_group'          => DocumentGroupType::class,
+            'applicable_to'           => 'array',
             'is_required_issue_date'  => 'boolean',
             'is_required_expiry_date' => 'boolean',
+            'has_expiration_date'     => 'boolean',
+            'has_issue_place'         => 'boolean',
+            'is_transactional'        => 'boolean',
             'default_validity_months' => 'integer',
         ];
     }
@@ -50,5 +59,13 @@ class DocumentMasterType extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(ComplianceDocument::class, 'document_master_type_id');
+    }
+
+    /**
+     * Lọc loại giấy tờ theo đối tượng áp dụng (vendor | product | partner_product | internal).
+     */
+    public function scopeApplicableTo(Builder $query, string $context): Builder
+    {
+        return $query->whereJsonContains('applicable_to', $context);
     }
 }

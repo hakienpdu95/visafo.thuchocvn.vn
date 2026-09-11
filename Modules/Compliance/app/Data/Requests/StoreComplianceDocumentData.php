@@ -3,8 +3,6 @@
 namespace Modules\Compliance\Data\Requests;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Validation\Rule;
-use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Spatie\LaravelData\Attributes\Validation\AfterOrEqual;
 use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\Validation\Exists;
@@ -45,16 +43,7 @@ class StoreComplianceDocumentData extends Data
 
         #[Nullable, File, Mimes(['pdf', 'jpg', 'jpeg', 'png']), Max(10240)]
         public readonly ?UploadedFile $pif_file,
-
-        public readonly ComplianceDocumentStatus $status = ComplianceDocumentStatus::Active,
     ) {}
-
-    public static function rules(): array
-    {
-        return [
-            'status' => ['required', Rule::enum(ComplianceDocumentStatus::class)],
-        ];
-    }
 
     public static function messages(): array
     {
@@ -79,9 +68,6 @@ class StoreComplianceDocumentData extends Data
             'file.file'  => 'Tệp tải lên không hợp lệ.',
             'file.mimes' => 'Chỉ chấp nhận file PDF, JPG hoặc PNG.',
             'file.max'   => 'Dung lượng file không được vượt quá 10MB.',
-
-            'status.required' => 'Vui lòng chọn trạng thái.',
-            'status.enum'     => 'Trạng thái không hợp lệ.',
         ];
     }
 }

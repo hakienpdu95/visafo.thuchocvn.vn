@@ -10,6 +10,8 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
     Route::post('vendors/{vendor}/documents', [ComplianceDocumentController::class, 'storeForVendor'])
         ->name('vendors.documents.store');
+    Route::put('vendors/{vendor}/documents/{document}', [ComplianceDocumentController::class, 'updateForVendor'])
+        ->name('vendors.documents.update');
     Route::delete('vendors/{vendor}/documents/{document}', [ComplianceDocumentController::class, 'destroyForVendor'])
         ->name('vendors.documents.destroy');
 });

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Modules\Compliance\Actions\Backend\DestroyComplianceDocumentAction;
 use Modules\Compliance\Actions\Backend\StoreComplianceDocumentAction;
+use Modules\Compliance\Actions\Backend\UpdateComplianceDocumentAction;
 use Modules\Compliance\Data\Requests\StoreComplianceDocumentData;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Product\Models\PartnerProduct;
@@ -44,6 +45,13 @@ class ComplianceDocumentController extends Controller
         return $this->store($request, $vendor, $action, 'backend.vendors.show');
     }
 
+    public function updateForVendor(Request $request, Vendor $vendor, ComplianceDocument $document, UpdateComplianceDocumentAction $action): RedirectResponse
+    {
+        $this->authorize('update', $vendor);
+
+        return $this->update($request, $document, $action, 'backend.vendors.show', $vendor);
+    }
+
     public function destroyForVendor(Vendor $vendor, ComplianceDocument $document, DestroyComplianceDocumentAction $action): RedirectResponse
     {
         $this->authorize('update', $vendor);
@@ -72,6 +80,13 @@ class ComplianceDocumentController extends Controller
         return $this->store($request, $partnerProduct, $action, 'backend.partner-products.show');
     }
 
+    public function updateForPartnerProduct(Request $request, PartnerProduct $partnerProduct, ComplianceDocument $document, UpdateComplianceDocumentAction $action): RedirectResponse
+    {
+        $this->authorize('update', $partnerProduct);
+
+        return $this->update($request, $document, $action, 'backend.partner-products.show', $partnerProduct);
+    }
+
     public function destroyForPartnerProduct(PartnerProduct $partnerProduct, ComplianceDocument $document, DestroyComplianceDocumentAction $action): RedirectResponse
     {
         $this->authorize('update', $partnerProduct);
@@ -86,6 +101,15 @@ class ComplianceDocumentController extends Controller
 
         return redirect()->route($redirectRoute, $documentable)
             ->with('success', 'Đã thêm hồ sơ mới.');
+    }
+
+    private function update(Request $request, ComplianceDocument $document, UpdateComplianceDocumentAction $action, string $redirectRoute, Model $documentable): RedirectResponse
+    {
+        $data = StoreComplianceDocumentData::validateAndCreate($request->all());
+        $action->handle($document, $data);
+
+        return redirect()->route($redirectRoute, $documentable)
+            ->with('success', 'Đã cập nhật hồ sơ.');
     }
 
     private function destroy(ComplianceDocument $document, DestroyComplianceDocumentAction $action, string $redirectRoute, Model $documentable): RedirectResponse

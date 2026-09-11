@@ -57,7 +57,7 @@
                                 data-req="Vui lòng chọn nhà cung cấp">
                             <option value="">— Chọn nhà cung cấp —</option>
                             @foreach($vendors as $vendor)
-                            <option value="{{ $vendor->id }}" @selected(old('vendor_id') === $vendor->id)>{{ $vendor->name }}</option>
+                            <option value="{{ $vendor->id }}" @selected(old('vendor_id', request()->query('vendor_id')) === $vendor->id)>{{ $vendor->name }}</option>
                             @endforeach
                         </select>
                         @error('vendor_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror

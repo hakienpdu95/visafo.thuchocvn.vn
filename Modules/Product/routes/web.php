@@ -27,6 +27,8 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
     Route::post('partner-products/{partner_product}/documents', [ComplianceDocumentController::class, 'storeForPartnerProduct'])
         ->name('partner-products.documents.store');
+    Route::put('partner-products/{partner_product}/documents/{document}', [ComplianceDocumentController::class, 'updateForPartnerProduct'])
+        ->name('partner-products.documents.update');
     Route::delete('partner-products/{partner_product}/documents/{document}', [ComplianceDocumentController::class, 'destroyForPartnerProduct'])
         ->name('partner-products.documents.destroy');
 });

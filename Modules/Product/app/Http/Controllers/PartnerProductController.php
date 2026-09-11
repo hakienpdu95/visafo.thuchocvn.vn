@@ -12,6 +12,7 @@ use Modules\Product\Actions\Backend\UpdatePartnerProductAction;
 use Modules\Product\Data\Requests\StorePartnerProductData;
 use Modules\Product\Data\Requests\UpdatePartnerProductData;
 use Modules\Product\Enums\PartnerProductStatus;
+use Modules\Product\Models\DocumentMasterType;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
 use Modules\Product\Queries\GetPartnerProductHandler;
@@ -57,7 +58,24 @@ class PartnerProductController extends Controller
         $partnerProduct = $handler->handle(new GetPartnerProductQuery($partnerProduct));
         $complianceResults = $ruleEngine->evaluate($partnerProduct);
 
-        return view('product::partner_products.show', compact('partnerProduct', 'complianceResults'));
+        $missingCodes = collect($ruleEngine->missing($complianceResults))
+            ->flatMap(fn ($result) => $result->requirement->documentTypeCodes)
+            ->unique()
+            ->values();
+
+        $codeToId = DocumentMasterType::query()->pluck('id', 'code');
+        $missingTypeIds = $codeToId->only($missingCodes->all())->values();
+
+        $documentTypes = DocumentMasterType::query()
+            ->applicableTo('partner_product')
+            ->orderBy('name')
+            ->get()
+            ->sortBy(fn ($type) => $missingTypeIds->contains($type->id) ? 0 : 1)
+            ->values();
+
+        return view('product::partner_products.show', compact(
+            'partnerProduct', 'complianceResults', 'documentTypes', 'missingTypeIds', 'codeToId'
+        ));
     }
 
     public function edit(PartnerProduct $partnerProduct)

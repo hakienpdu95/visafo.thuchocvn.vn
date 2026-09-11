@@ -3,14 +3,13 @@
 namespace Modules\Compliance\Actions\Backend;
 
 use App\Services\Media\MediaUploadService;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\Compliance\Data\Requests\StoreComplianceDocumentData;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\ComplianceDocument;
 
-class StoreComplianceDocumentAction
+class UpdateComplianceDocumentAction
 {
     use AsAction;
 
@@ -18,10 +17,9 @@ class StoreComplianceDocumentAction
         private readonly MediaUploadService $uploadService,
     ) {}
 
-    public function handle(Model $documentable, StoreComplianceDocumentData $data): ComplianceDocument
+    public function handle(ComplianceDocument $document, StoreComplianceDocumentData $data): ComplianceDocument
     {
-        /** @var ComplianceDocument $document */
-        $document = $documentable->documents()->create([
+        $document->update([
             'document_master_type_id' => $data->document_master_type_id,
             'document_number'         => $data->document_number,
             'classification_grade'    => $data->classification_grade,
@@ -33,14 +31,16 @@ class StoreComplianceDocumentAction
         ]);
 
         if ($data->file !== null) {
+            $this->uploadService->bulkDelete($document, 'attachments_private');
             $this->uploadService->upload($data->file, $document, 'attachments_private');
         }
 
         if ($data->pif_file !== null) {
+            $this->uploadService->bulkDelete($document, 'pif');
             $this->uploadService->upload($data->pif_file, $document, 'pif');
         }
 
-        return $document;
+        return $document->fresh();
     }
 
     private function resolveStatus(?string $expirationDate): ComplianceDocumentStatus
