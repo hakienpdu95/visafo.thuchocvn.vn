@@ -277,7 +277,7 @@ $avatarUrl = 'https://api.dicebear.com/9.x/initials/svg?seed=' . urlencode($user
                             <span class="label-text font-medium">Nông hộ liên kết <span class="text-error">*</span></span>
                             <span class="label-text-alt text-xs text-base-content/40">Web App Ghi Nhật Ký sẽ lọc theo Nông hộ này</span>
                         </label>
-                        <select name="vendor_id" class="select select-bordered select-sm w-full @error('vendor_id') select-error @enderror">
+                        <select id="ts-vendor_id" name="vendor_id" class="select select-bordered select-sm w-full @error('vendor_id') select-error @enderror" data-ts-placeholder="— Chọn nông hộ —">
                             <option value="">— Chọn nông hộ —</option>
                             @foreach($vendors as $vendor)
                             <option value="{{ $vendor->id }}" {{ old('vendor_id', $user->vendor_id) == $vendor->id ? 'selected' : '' }}>{{ $vendor->name }}</option>

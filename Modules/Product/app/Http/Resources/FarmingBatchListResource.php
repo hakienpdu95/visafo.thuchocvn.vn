@@ -21,6 +21,17 @@ class FarmingBatchListResource extends JsonResource
             'status'                 => $this->status,
             'pre_harvest_status'     => $this->pre_harvest_status,
 
+            // ── Raw fields cho form Sửa (prefill modal) ──────────────────
+            'farming_source_id'          => $this->farming_source_id,
+            'agri_seed_id'                => $this->agri_seed_id,
+            'partner_product_id'          => $this->partner_product_id,
+            'vendor_id'                    => $this->vendor_id,
+            'sowing_date_raw'              => $this->sowing_date?->format('Y-m-d'),
+            'expected_harvest_date_raw'    => $this->expected_harvest_date?->format('Y-m-d'),
+            'notes'                         => $this->notes,
+            'update_url'                    => route('backend.farming-batches.update', $this->resource),
+            'delete_url'                    => route('backend.farming-batches.destroy', $this->resource),
+
             'show_url' => route('backend.farming-batches.show', $this->resource),
         ];
     }

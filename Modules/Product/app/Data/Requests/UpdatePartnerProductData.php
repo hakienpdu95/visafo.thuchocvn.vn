@@ -19,9 +19,6 @@ class UpdatePartnerProductData extends Data
         #[Required]
         public readonly string $product_id,
 
-        #[Nullable, StringType, Max(100)]
-        public readonly ?string $vendor_sku,
-
         #[Required, StringType, Max(255)]
         public readonly string $name,
 

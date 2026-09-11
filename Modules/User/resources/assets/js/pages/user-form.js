@@ -8,6 +8,8 @@
  * Requires globals (core bundle): window.Alpine, window.TomSelect
  */
 
+import { createTs } from '@shared/tom-select-factory.js';
+
 // ── Module-level constants (compile once) ───────────────────────────────────
 
 const LEVEL_META = Object.freeze({
@@ -114,6 +116,14 @@ function _setupRoleTs(selector, roles, initial, onChange) {
     });
 }
 
+// Select nằm trong x-show ẩn mặc định (chỉ hiện khi role = farmer) — không dùng
+// ts-init, init thủ công khi role chuyển sang farmer (spec §22.6).
+function _initVendorTs() {
+    const el = document.getElementById('ts-vendor_id');
+    if (!el || el.tomselect) return;
+    createTs(el, { placeholder: '— Chọn nông hộ —' });
+}
+
 // ── Alpine components ────────────────────────────────────────────────────────
 
 document.addEventListener('alpine:init', () => {
@@ -215,6 +225,7 @@ document.addEventListener('alpine:init', () => {
                 const found = roles.find(r => r.value === role);
                 this.selectedRoleLabel = found?.label ?? '';
                 roleTsInst?.setValue(role, false);
+                if (role === 'farmer') this.$nextTick(() => requestAnimationFrame(_initVendorTs));
             },
 
             // Lifecycle
@@ -233,7 +244,11 @@ document.addEventListener('alpine:init', () => {
                     this.touched.system_role = true;
                     const found = roles.find(r => r.value === val);
                     this.selectedRoleLabel = found?.label ?? '';
+                    if (val === 'farmer') this.$nextTick(() => requestAnimationFrame(_initVendorTs));
                 });
+                if (this.selectedRole === 'farmer') {
+                    requestAnimationFrame(_initVendorTs);
+                }
             },
         };
     });
@@ -273,6 +288,7 @@ document.addEventListener('alpine:init', () => {
                 const found = roles.find(r => r.value === role);
                 this.selectedRoleLabel = found?.label ?? '';
                 roleTsInst?.setValue(role, false);
+                if (role === 'farmer') this.$nextTick(() => requestAnimationFrame(_initVendorTs));
             },
 
             // Lifecycle
@@ -289,7 +305,11 @@ document.addEventListener('alpine:init', () => {
                     this.selectedRole = val || '';
                     const found = roles.find(r => r.value === val);
                     this.selectedRoleLabel = found?.label ?? '';
+                    if (val === 'farmer') this.$nextTick(() => requestAnimationFrame(_initVendorTs));
                 });
+                if (this.selectedRole === 'farmer') {
+                    requestAnimationFrame(_initVendorTs);
+                }
             },
         };
     });

@@ -3,7 +3,8 @@
 
 @section('content')
 <div x-data="farmingBatchListPage({{ Js::from([
-    'apiUrl' => route('backend.api.farming-batches'),
+    'apiUrl'    => route('backend.api.farming-batches'),
+    'canManage' => auth()->user()->can('compliance.manage'),
 ]) }})">
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -71,7 +72,7 @@
 @can('create', \Modules\Product\Models\FarmingBatch::class)
 <dialog id="farmingBatchModal" class="modal" @if($errors->any()) data-autoopen="1" @endif>
     <div class="modal-box max-w-lg">
-        <h3 class="font-bold text-lg mb-1">Mở vụ / lô sản xuất mới</h3>
+        <h3 class="font-bold text-lg mb-1" id="farmingBatchModalTitle">Mở vụ / lô sản xuất mới</h3>
         <p class="text-xs text-base-content/40 mb-4">BM-NH-03 — chỉ hiển thị vùng trồng đã được duyệt (Đạt) và giống hợp lệ</p>
 
         @if($errors->any())
@@ -82,8 +83,10 @@
         </div>
         @endif
 
-        <form method="POST" action="{{ route('backend.farming-batches.store') }}" class="space-y-3">
+        <form method="POST" id="farmingBatchForm" action="{{ route('backend.farming-batches.store') }}" class="space-y-3"
+              data-create-url="{{ route('backend.farming-batches.store') }}">
             @csrf
+            <input type="hidden" name="_method" id="farmingBatchMethod" value="">
 
             <div class="form-control">
                 <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Vùng trồng (đã duyệt) <span class="text-error">*</span></span></label>
@@ -121,30 +124,31 @@
                 <p class="mt-1 text-xs text-base-content/40">Chỉ hiện mặt hàng do đúng Nông hộ của vùng trồng đã chọn kê khai.</p>
             </div>
 
-            <div class="form-control">
-                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Mã lô (LOT_ID) <span class="text-error">*</span></span></label>
-                <input type="text" name="batch_code" class="input input-bordered input-sm w-full font-mono" placeholder="VD: SP-202609-01">
-            </div>
-
             <div class="grid grid-cols-2 gap-3">
                 <div class="form-control">
                     <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày gieo</span></label>
-                    <input type="date" name="sowing_date" class="input input-bordered input-sm w-full">
+                    <input type="text" name="sowing_date" id="fp-sowing_date" value="{{ old('sowing_date') }}"
+                           class="input input-bordered input-sm w-full fp-init @error('sowing_date') input-error @enderror"
+                           placeholder="DD/MM/YYYY" autocomplete="off">
+                    @error('sowing_date')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="form-control">
                     <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Dự kiến thu hoạch</span></label>
-                    <input type="date" name="expected_harvest_date" class="input input-bordered input-sm w-full">
+                    <input type="text" name="expected_harvest_date" id="fp-expected_harvest_date" value="{{ old('expected_harvest_date') }}"
+                           class="input input-bordered input-sm w-full fp-init @error('expected_harvest_date') input-error @enderror"
+                           placeholder="DD/MM/YYYY" autocomplete="off">
+                    @error('expected_harvest_date')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                 </div>
             </div>
 
             <div class="form-control">
                 <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ghi chú</span></label>
-                <textarea name="notes" rows="2" class="textarea textarea-bordered textarea-sm w-full"></textarea>
+                <textarea name="notes" id="farmingBatchNotes" rows="2" class="textarea textarea-bordered textarea-sm w-full"></textarea>
             </div>
 
             <div class="modal-action mt-2">
                 <button type="button" class="btn btn-ghost btn-sm" onclick="farmingBatchModal.close()">Hủy</button>
-                <button type="submit" class="btn btn-primary btn-sm">Mở vụ / lô</button>
+                <button type="submit" class="btn btn-primary btn-sm" id="farmingBatchModalSubmit">Mở vụ / lô</button>
             </div>
         </form>
     </div>
@@ -160,6 +164,7 @@
 
 @push('scripts')
     @vite([
+        'resources/js/modules/flatpickr.js',
         'resources/js/modules/tom-select.js',
         'resources/js/modules/tabulator.js',
         'Modules/Product/resources/assets/js/product.js',

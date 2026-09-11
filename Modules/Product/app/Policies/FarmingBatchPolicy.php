@@ -23,6 +23,16 @@ class FarmingBatchPolicy
         return $user->can('compliance.manage');
     }
 
+    public function update(User $user, FarmingBatch $farmingBatch): bool
+    {
+        return $user->can('compliance.manage');
+    }
+
+    public function delete(User $user, FarmingBatch $farmingBatch): bool
+    {
+        return $user->can('compliance.manage');
+    }
+
     /**
      * Nút "Phê duyệt cho phép thu hoạch" — quyền sinh tử, chỉ role qa_qc_manager
      * (không dùng permission chung compliance.manage như các thao tác khác).

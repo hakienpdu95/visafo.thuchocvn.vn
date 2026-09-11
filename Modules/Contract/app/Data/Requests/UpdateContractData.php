@@ -23,9 +23,6 @@ class UpdateContractData extends Data
         #[Required]
         public readonly string $contract_type_id,
 
-        #[Required, StringType, Max(100)]
-        public readonly string $contract_number,
-
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
@@ -48,15 +45,9 @@ class UpdateContractData extends Data
 
     public static function rules(): array
     {
-        $currentId = request()->route('contract')?->id;
-
         return [
             'vendor_id'              => ['required', Rule::exists('vendors', 'id')],
             'contract_type_id'       => ['required', Rule::exists('contract_types', 'id')],
-            'contract_number'        => [
-                'required', 'string', 'max:100',
-                Rule::unique('contracts', 'contract_number')->ignore($currentId),
-            ],
             'renewal_period_months'  => ['nullable', 'integer', 'min:1', 'max:120', 'required_if:is_auto_renew,1'],
             'status'                 => ['required', Rule::enum(ContractStatus::class)],
         ];

@@ -8,7 +8,6 @@ use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
-use Spatie\LaravelData\Attributes\Validation\Unique;
 use Spatie\LaravelData\Data;
 
 class StoreFarmingBatchData extends Data
@@ -22,9 +21,6 @@ class StoreFarmingBatchData extends Data
 
         #[Required, Exists('partner_products', 'id')]
         public readonly string $partner_product_id,
-
-        #[Required, StringType, Max(60), Unique('farming_batches', 'batch_code')]
-        public readonly string $batch_code,
 
         #[Nullable, Date]
         public readonly ?string $sowing_date,
@@ -45,8 +41,6 @@ class StoreFarmingBatchData extends Data
             'agri_seed_id.exists'        => 'Giống cây trồng được chọn không hợp lệ.',
             'partner_product_id.required' => 'Vui lòng chọn mặt hàng thương mại.',
             'partner_product_id.exists'   => 'Mặt hàng được chọn không hợp lệ.',
-            'batch_code.required'        => 'Vui lòng nhập mã lô.',
-            'batch_code.unique'          => 'Mã lô này đã tồn tại.',
             'expected_harvest_date.after_or_equal' => 'Ngày dự kiến thu hoạch phải sau hoặc bằng ngày gieo.',
         ];
     }

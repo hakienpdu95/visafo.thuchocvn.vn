@@ -13,7 +13,6 @@ class UpdateVendorAction
     public function handle(Vendor $vendor, UpdateVendorData $data): Vendor
     {
         $vendor->update([
-            'vendor_code'           => $data->vendor_code,
             'name'                  => $data->name,
             'tax_code'              => $data->tax_code,
             'address'               => $data->address,

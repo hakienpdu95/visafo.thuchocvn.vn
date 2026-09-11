@@ -9,11 +9,11 @@ use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
 
-class StoreFarmingBatchAction
+class UpdateFarmingBatchAction
 {
     use AsAction;
 
-    public function handle(StoreFarmingBatchData $data): FarmingBatch
+    public function handle(FarmingBatch $farmingBatch, StoreFarmingBatchData $data): FarmingBatch
     {
         $farmingSource = FarmingSource::query()->findOrFail($data->farming_source_id);
         $partnerProduct = PartnerProduct::query()->findOrFail($data->partner_product_id);
@@ -24,7 +24,7 @@ class StoreFarmingBatchAction
             ]);
         }
 
-        return FarmingBatch::query()->create([
+        $farmingBatch->update([
             'farming_source_id'      => $data->farming_source_id,
             'vendor_id'              => $farmingSource->vendor_id,
             'agri_seed_id'           => $data->agri_seed_id,
@@ -32,8 +32,8 @@ class StoreFarmingBatchAction
             'sowing_date'            => $data->sowing_date,
             'expected_harvest_date'  => $data->expected_harvest_date,
             'notes'                  => $data->notes,
-            'status'                 => 'active',
-            'pre_harvest_status'     => 'pending',
         ]);
+
+        return $farmingBatch;
     }
 }

@@ -70,6 +70,8 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
         Route::get('/', [FarmingBatchController::class, 'index'])->name('index');
         Route::post('/', [FarmingBatchController::class, 'store'])->name('store');
         Route::get('{farming_batch}', [FarmingBatchController::class, 'show'])->name('show');
+        Route::put('{farming_batch}', [FarmingBatchController::class, 'update'])->name('update');
+        Route::delete('{farming_batch}', [FarmingBatchController::class, 'destroy'])->name('destroy');
         Route::post('{farming_batch}/approve-harvest', [FarmingBatchController::class, 'approveHarvest'])->name('approve-harvest');
     });
 });

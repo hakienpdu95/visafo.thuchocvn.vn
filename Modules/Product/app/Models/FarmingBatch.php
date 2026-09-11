@@ -4,12 +4,25 @@ namespace Modules\Product\Models;
 
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
+use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Vendor\Models\Vendor;
 
 class FarmingBatch extends TenantAwareModel
 {
+    use HasAutoCode;
+
+    public function autoCodeColumn(): string
+    {
+        return 'batch_code';
+    }
+
+    public function autoCodeSequenceType(): string
+    {
+        return 'farming_batch';
+    }
+
     protected $fillable = [
         'farming_source_id',
         'vendor_id',

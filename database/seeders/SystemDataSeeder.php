@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Modules\ActivityLog\Database\Seeders\ActivityLogPermissionsSeeder;
 use Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
+use Modules\Contract\Database\Seeders\ContractTypeSeeder;
 use Modules\Customer\Database\Seeders\CustomerMasterDataSeeder;
 use Modules\Employee\Database\Seeders\DepartmentSeeder;
 use Modules\Product\Database\Seeders\AgriFertilizerSeeder;
@@ -59,6 +60,9 @@ class SystemDataSeeder extends Seeder
 
             // ── 5. Từ điển loại giấy tờ pháp lý (document_master_types) ──
             DocumentMasterTypeSeeder::class,
+
+            // ── 5b. Từ điển loại hợp đồng (contract_types) ────────────────
+            ContractTypeSeeder::class,
 
             // ── 6. 6 nhóm thực phẩm chuẩn ATTP (categories) — Rule Engine ─
             CategorySeeder::class,
