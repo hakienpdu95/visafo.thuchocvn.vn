@@ -39,6 +39,10 @@
             Hồ sơ pháp lý &amp; ATTP
             <span class="badge badge-neutral badge-xs ml-1.5">{{ $vendor->documents->count() }}</span>
         </a>
+        <a role="tab" class="tab" :class="tab === 'farming-steps' ? 'tab-active' : ''" @click.prevent="tab = 'farming-steps'" href="#">
+            Cấu hình Nhật ký Canh tác
+            <span class="badge badge-neutral badge-xs ml-1.5">{{ $vendor->farmingSteps->count() }}</span>
+        </a>
     </div>
 
     {{-- ── Tab 1: Thông tin chung & Đầu mối liên hệ ────────────────────── --}}
@@ -154,6 +158,75 @@
         </div>
     </div>
 
+    {{-- ── Tab 4: Cấu hình Nhật ký Canh tác (Vỏ mềm) ─────────────────────── --}}
+    <div x-show="tab === 'farming-steps'" x-cloak>
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-base font-semibold">Cấu hình Nhật ký Canh tác (Vỏ mềm)</h2>
+                    @can('create', \Modules\Product\Models\VendorFarmingStep::class)
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openFarmingStepModal()">+ Thêm bước canh tác</button>
+                    @endcan
+                </div>
+                <p class="text-xs text-base-content/50 mb-4">
+                    Các công đoạn đặc thù (Tỉa cành, Bọc trái, Phơi sấy...) do Nông hộ/QC tự định nghĩa — chỉ ghi nhận với
+                    <span class="font-mono">activity_type</span> = <span class="font-mono">cultivation</span> hoặc <span class="font-mono">other</span>,
+                    không ảnh hưởng thuật toán Readiness ATTP. 3 công đoạn "Vỏ cứng" (Bón phân, Phun thuốc BVTV, Thu hoạch) luôn cố định trên App Nông hộ.
+                </p>
+
+                @if($vendor->farmingSteps->isEmpty())
+                <div class="text-center py-10 text-base-content/40 text-sm">Chưa có bước canh tác tùy biến nào.</div>
+                @else
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr class="text-xs uppercase text-base-content/40">
+                                <th class="w-16">Thứ tự</th>
+                                <th>Tên công đoạn</th>
+                                <th>Áp dụng cho</th>
+                                <th>Loại gốc</th>
+                                <th class="text-right">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($vendor->farmingSteps as $step)
+                            @php
+                                $stepPayload = json_encode([
+                                    'id'                  => $step->id,
+                                    'step_name'           => $step->step_name,
+                                    'partner_product_id'  => $step->partner_product_id,
+                                    'base_activity_type'  => $step->base_activity_type,
+                                    'order_index'         => $step->order_index,
+                                ], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP);
+                            @endphp
+                            <tr>
+                                <td class="text-base-content/50">{{ $step->order_index }}</td>
+                                <td class="font-medium">{{ $step->step_name }}</td>
+                                <td class="text-sm text-base-content/70">{{ $step->partnerProduct?->name ?? 'Áp dụng chung' }}</td>
+                                <td><span class="badge badge-ghost badge-xs font-mono">{{ $step->base_activity_type }}</span></td>
+                                <td class="text-right whitespace-nowrap">
+                                    @can('update', $step)
+                                    <button type="button" class="btn btn-ghost btn-xs" onclick="openFarmingStepModal({{ $stepPayload }})">Sửa</button>
+                                    @endcan
+                                    @can('delete', $step)
+                                    <form method="POST" action="{{ route('backend.vendors.farming-steps.destroy', [$vendor, $step]) }}"
+                                          onsubmit="return confirm('Xóa bước canh tác &quot;{{ $step->step_name }}&quot;?');" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-ghost btn-xs text-error">Xóa</button>
+                                    </form>
+                                    @endcan
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
 </div>
 
 {{-- ── Modal: Tải lên hồ sơ mới ─────────────────────────────────────────── --}}
@@ -230,6 +303,82 @@
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
 </dialog>
+@endcan
+
+{{-- ── Modal: Thêm/Sửa bước canh tác (Vỏ mềm) ───────────────────────────── --}}
+@can('create', \Modules\Product\Models\VendorFarmingStep::class)
+<dialog id="farmingStepModal" class="modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg mb-1" id="farmingStepModalTitle">Thêm bước canh tác</h3>
+        <p class="text-xs text-base-content/40 mb-4">Chỉ áp dụng với activity_type = cultivation | other, không ảnh hưởng thuật toán ATTP</p>
+
+        <form method="POST" id="farmingStepForm" action="{{ route('backend.vendors.farming-steps.store', $vendor) }}" class="space-y-3">
+            @csrf
+            <input type="hidden" name="_method" id="farmingStepMethod" value="">
+
+            <div class="form-control">
+                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Tên công đoạn <span class="text-error">*</span></span></label>
+                <input type="text" id="farmingStepName" name="step_name" class="input input-bordered input-sm w-full" placeholder="VD: Bọc trái ổi" required>
+            </div>
+
+            <div class="form-control">
+                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Áp dụng cho mặt hàng</span></label>
+                <select id="farmingStepProduct" name="partner_product_id" class="select select-bordered select-sm w-full">
+                    <option value="">— Áp dụng chung mọi mặt hàng —</option>
+                    @foreach($vendor->partnerProducts as $product)
+                    <option value="{{ $product->id }}">{{ $product->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="form-control">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Phân loại gốc <span class="text-error">*</span></span></label>
+                    <select id="farmingStepType" name="base_activity_type" class="select select-bordered select-sm w-full">
+                        <option value="cultivation">Canh tác (cultivation)</option>
+                        <option value="other">Khác (other)</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Thứ tự</span></label>
+                    <input type="number" id="farmingStepOrder" name="order_index" value="0" class="input input-bordered input-sm w-full">
+                </div>
+            </div>
+
+            <div class="modal-action mt-2">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="farmingStepModal.close()">Hủy</button>
+                <button type="submit" class="btn btn-primary btn-sm">Lưu</button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<script>
+function openFarmingStepModal(step) {
+    const form = document.getElementById('farmingStepForm');
+    const storeUrl = @json(route('backend.vendors.farming-steps.store', $vendor));
+    const updateUrlTemplate = @json(route('backend.vendors.farming-steps.update', [$vendor, '__ID__']));
+
+    if (step && step.id) {
+        form.action = updateUrlTemplate.replace('__ID__', step.id);
+        document.getElementById('farmingStepMethod').value = 'PUT';
+        document.getElementById('farmingStepModalTitle').textContent = 'Sửa bước canh tác';
+        document.getElementById('farmingStepName').value = step.step_name ?? '';
+        document.getElementById('farmingStepProduct').value = step.partner_product_id ?? '';
+        document.getElementById('farmingStepType').value = step.base_activity_type ?? 'cultivation';
+        document.getElementById('farmingStepOrder').value = step.order_index ?? 0;
+    } else {
+        form.reset();
+        form.action = storeUrl;
+        document.getElementById('farmingStepMethod').value = '';
+        document.getElementById('farmingStepModalTitle').textContent = 'Thêm bước canh tác';
+        document.getElementById('farmingStepOrder').value = 0;
+    }
+
+    farmingStepModal.showModal();
+}
+</script>
 @endcan
 @endsection
 

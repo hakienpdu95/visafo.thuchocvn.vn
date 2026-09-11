@@ -35,7 +35,10 @@ class ScanComplianceWarningsCommand extends Command
         $employeeRecordIds = $this->scanEmployeeHealthRecords();
         $this->resolveStale(WarningCategory::EmployeeHealthRecordExpiry, $employeeRecordIds);
 
-        $total = count($productIds) + count($vendorIds) + count($employeeRecordIds);
+        $internalFacilityIds = $this->scanInternalFacilityDocuments();
+        $this->resolveStale(WarningCategory::InternalFacilityComplianceExpiry, $internalFacilityIds);
+
+        $total = count($productIds) + count($vendorIds) + count($employeeRecordIds) + count($internalFacilityIds);
         $this->info("Đã cập nhật {$total} cảnh báo đang hiệu lực.");
 
         return self::SUCCESS;
@@ -75,6 +78,18 @@ class ScanComplianceWarningsCommand extends Command
                 : (int) config('compliance.thresholds.vendor_certificate_default_days'),
             titleFor: fn ($document, $vendor) => "{$document->documentType->name} — {$vendor->name}",
             messageFor: fn ($document, $vendor) => "{$document->documentType->name} của nhà cung cấp \"{$vendor->name}\" sẽ hết hạn vào {$document->expiration_date->format('d/m/Y')}.",
+        );
+    }
+
+    /** @return string[] */
+    private function scanInternalFacilityDocuments(): array
+    {
+        return $this->scanDocumentsFor(
+            documentableType: 'internal_facility',
+            category: WarningCategory::InternalFacilityComplianceExpiry,
+            threshold: (int) config('compliance.thresholds.internal_facility_default_days'),
+            titleFor: fn ($document, $facility) => "{$document->documentType->name} — {$facility->name}",
+            messageFor: fn ($document, $facility) => "{$document->documentType->name} của cơ sở \"{$facility->name}\" sẽ hết hạn vào {$document->expiration_date->format('d/m/Y')}.",
         );
     }
 

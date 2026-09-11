@@ -97,6 +97,7 @@ const CSS_OUTPUT = {
   'vendor.css':               'assets/modules/vendor.[hash].css',
   'customer.css':             'assets/modules/customer.[hash].css',
   'product.css':              'assets/modules/product.[hash].css',
+  'compliance.css':           'assets/modules/compliance.[hash].css',
   'contract.css':             'assets/modules/contract.[hash].css',
   'employee.css':             'assets/modules/employee.[hash].css',
 };
@@ -123,6 +124,7 @@ const MODULE_ENTRIES = [
   'Modules/Product/resources/assets/sass/product.scss',
   'Modules/Product/resources/assets/js/product.js',
   // Compliance
+  'Modules/Compliance/resources/assets/sass/compliance.scss',
   'Modules/Compliance/resources/assets/js/compliance.js',
   // Employee
   'Modules/Employee/resources/assets/sass/employee.scss',

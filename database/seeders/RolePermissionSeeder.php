@@ -138,6 +138,12 @@ class RolePermissionSeeder extends Seeder
                 P::TRACEABILITY_VIEW->value,
                 P::CONTRACT_VIEW->value,
             ],
+
+            // ─────────────────────────────────────────────────────────
+            // Farmer (Nông hộ) — không có quyền dashboard nào, chỉ dùng
+            // Web App ghi nhật ký riêng ở /farmer/* (role:farmer middleware)
+            // ─────────────────────────────────────────────────────────
+            RoleEnum::FARMER->value => [],
         ];
     }
 }

@@ -16,6 +16,8 @@ use Modules\Product\Http\Controllers\AgriPesticideController;
 use Modules\Product\Http\Controllers\AgriSeedController;
 use Modules\Product\Http\Controllers\CategoryController;
 use Modules\Product\Http\Controllers\DocumentMasterTypeController;
+use Modules\Product\Http\Controllers\Farmer\FarmerDashboardController;
+use Modules\Product\Http\Controllers\Farmer\FarmingLogController;
 use Modules\Product\Http\Controllers\FarmingBatchController;
 use Modules\Product\Http\Controllers\FarmingSourceController;
 use Modules\Product\Http\Controllers\PartnerProductController;
@@ -70,6 +72,15 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
         Route::get('{farming_batch}', [FarmingBatchController::class, 'show'])->name('show');
         Route::post('{farming_batch}/approve-harvest', [FarmingBatchController::class, 'approveHarvest'])->name('approve-harvest');
     });
+});
+
+Route::middleware(['auth', 'role_or_permission:farmer|compliance.manage'])->prefix('farmer')->name('farmer.')->group(function () {
+    Route::get('dashboard', [FarmerDashboardController::class, 'index'])->name('dashboard');
+    Route::get('batches/{farming_batch}/log', [FarmingLogController::class, 'create'])->name('batches.log.create');
+    Route::post('batches/{farming_batch}/log', [FarmingLogController::class, 'store'])->name('batches.log.store');
+    Route::get('logs/{farming_log}/edit', [FarmingLogController::class, 'edit'])->name('logs.edit');
+    Route::put('logs/{farming_log}', [FarmingLogController::class, 'update'])->name('logs.update');
+    Route::delete('logs/{farming_log}', [FarmingLogController::class, 'destroy'])->name('logs.destroy');
 });
 
 Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(function () {

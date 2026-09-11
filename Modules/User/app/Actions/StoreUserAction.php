@@ -25,6 +25,7 @@ class StoreUserAction
                 'email'      => $data->email,
                 'password'   => Hash::make($data->password),
                 'department' => $data->department,
+                'vendor_id'  => $data->vendor_id,
                 'is_active'  => $data->is_active,
             ]);
 

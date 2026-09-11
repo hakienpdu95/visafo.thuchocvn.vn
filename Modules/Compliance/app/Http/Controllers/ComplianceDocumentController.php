@@ -12,6 +12,7 @@ use Modules\Compliance\Actions\Backend\StoreComplianceDocumentAction;
 use Modules\Compliance\Actions\Backend\UpdateComplianceDocumentAction;
 use Modules\Compliance\Data\Requests\StoreComplianceDocumentData;
 use Modules\Compliance\Models\ComplianceDocument;
+use Modules\Compliance\Models\InternalFacility;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
 use Modules\Vendor\Models\Vendor;
@@ -19,9 +20,10 @@ use Modules\Vendor\Models\Vendor;
 class ComplianceDocumentController extends Controller
 {
     private const DOCUMENTABLE_LABELS = [
-        'vendor'           => 'Nhà cung cấp',
-        'product'          => 'Sản phẩm Visafo',
-        'partner_product'  => 'Hàng hóa NCC',
+        'vendor'             => 'Nhà cung cấp',
+        'product'            => 'Sản phẩm Visafo',
+        'partner_product'    => 'Hàng hóa NCC',
+        'internal_facility'  => 'Cơ sở nội bộ',
     ];
 
     public function index(Request $request): View
@@ -94,29 +96,50 @@ class ComplianceDocumentController extends Controller
         return $this->destroy($document, $action, 'backend.partner-products.show', $partnerProduct);
     }
 
-    private function store(Request $request, Model $documentable, StoreComplianceDocumentAction $action, string $redirectRoute): RedirectResponse
+    public function storeForInternalFacility(Request $request, InternalFacility $internalFacility, StoreComplianceDocumentAction $action): RedirectResponse
+    {
+        $this->authorize('update', $internalFacility);
+
+        return $this->store($request, $internalFacility, $action, 'backend.internal-compliance.index', ['facility' => $internalFacility->id]);
+    }
+
+    public function updateForInternalFacility(Request $request, InternalFacility $internalFacility, ComplianceDocument $document, UpdateComplianceDocumentAction $action): RedirectResponse
+    {
+        $this->authorize('update', $internalFacility);
+
+        return $this->update($request, $document, $action, 'backend.internal-compliance.index', $internalFacility, ['facility' => $internalFacility->id]);
+    }
+
+    public function destroyForInternalFacility(InternalFacility $internalFacility, ComplianceDocument $document, DestroyComplianceDocumentAction $action): RedirectResponse
+    {
+        $this->authorize('update', $internalFacility);
+
+        return $this->destroy($document, $action, 'backend.internal-compliance.index', $internalFacility, ['facility' => $internalFacility->id]);
+    }
+
+    private function store(Request $request, Model $documentable, StoreComplianceDocumentAction $action, string $redirectRoute, array $redirectParams = []): RedirectResponse
     {
         $data = StoreComplianceDocumentData::validateAndCreate($request->all());
         $action->handle($documentable, $data);
 
-        return redirect()->route($redirectRoute, $documentable)
+        return redirect()->route($redirectRoute, $redirectParams ?: [$documentable])
             ->with('success', 'Đã thêm hồ sơ mới.');
     }
 
-    private function update(Request $request, ComplianceDocument $document, UpdateComplianceDocumentAction $action, string $redirectRoute, Model $documentable): RedirectResponse
+    private function update(Request $request, ComplianceDocument $document, UpdateComplianceDocumentAction $action, string $redirectRoute, Model $documentable, array $redirectParams = []): RedirectResponse
     {
         $data = StoreComplianceDocumentData::validateAndCreate($request->all());
         $action->handle($document, $data);
 
-        return redirect()->route($redirectRoute, $documentable)
+        return redirect()->route($redirectRoute, $redirectParams ?: [$documentable])
             ->with('success', 'Đã cập nhật hồ sơ.');
     }
 
-    private function destroy(ComplianceDocument $document, DestroyComplianceDocumentAction $action, string $redirectRoute, Model $documentable): RedirectResponse
+    private function destroy(ComplianceDocument $document, DestroyComplianceDocumentAction $action, string $redirectRoute, Model $documentable, array $redirectParams = []): RedirectResponse
     {
         $action->handle($document);
 
-        return redirect()->route($redirectRoute, $documentable)
+        return redirect()->route($redirectRoute, $redirectParams ?: [$documentable])
             ->with('success', 'Đã xóa hồ sơ.');
     }
 }

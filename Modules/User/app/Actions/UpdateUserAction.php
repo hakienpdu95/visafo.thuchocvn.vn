@@ -23,6 +23,7 @@ class UpdateUserAction
                 'name'       => $data->name,
                 'email'      => $data->email,
                 'department' => $data->department,
+                'vendor_id'  => $data->vendor_id,
                 'is_active'  => $data->is_active,
             ];
 

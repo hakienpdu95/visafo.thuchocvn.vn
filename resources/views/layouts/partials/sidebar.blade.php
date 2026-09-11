@@ -80,8 +80,8 @@
         <p class="section-title" style="margin-top:16px;">Quản trị Tuân thủ</p>
         <div class="nav-group">
             @canany(['compliance.view', 'product.manage', 'traceability.view'])
-            <details {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*') ? 'open' : '' }}>
-                <summary class="nav-summary {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*') ? 'active' : '' }}">
+            <details {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*', 'backend.internal-compliance.*') ? 'open' : '' }}>
+                <summary class="nav-summary {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*', 'backend.internal-compliance.*') ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
                     <span class="nav-label">Quản trị Tuân thủ</span>
                     <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
@@ -89,6 +89,7 @@
                 <div class="sub-menu">
                     @can('compliance.view')
                     <a href="{{ route('backend.document-repository.index') }}" class="sub-link {{ request()->routeIs('backend.document-repository.*') ? 'active' : '' }}">Kho tài liệu & Minh chứng</a>
+                    <a href="{{ route('backend.internal-compliance.index') }}" class="sub-link {{ request()->routeIs('backend.internal-compliance.*') ? 'active' : '' }}">Hồ sơ năng lực VISAFO</a>
                     @endcan
                     @can('product.manage')
                     <a href="{{ route('backend.document-master-types.index') }}" class="sub-link {{ request()->routeIs('backend.document-master-types.*') ? 'active' : '' }}">Từ điển giấy tờ pháp lý</a>

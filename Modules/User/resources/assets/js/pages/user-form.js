@@ -29,6 +29,7 @@ const ALL_PRESETS = Object.freeze([
     { role: 'qa_qc_manager',     label: 'QL Chất lượng/ATTP', icon: '🔬' },
     { role: 'purchasing_staff',  label: 'NV Cung ứng',        icon: '📦' },
     { role: 'sales_staff',       label: 'NV Kinh doanh',      icon: '💼' },
+    { role: 'farmer',            label: 'Nông hộ',            icon: '🌾' },
 ]);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -168,6 +169,7 @@ document.addEventListener('alpine:init', () => {
             get strength()       { return _strength(this.password); },
             get currentMatrix()  { return _buildMatrix(matrix, this.selectedRole); },
             get sidebarModules() { return SIDEBAR_MODULES[this.selectedRole] || []; },
+            get isFarmerRole()   { return this.selectedRole === 'farmer'; },
 
             // Validation helpers
             touch(field)  { this.touched[field] = true; },
@@ -256,6 +258,7 @@ document.addEventListener('alpine:init', () => {
             get strength()       { return _strength(this.password); },
             get currentMatrix()  { return _buildMatrix(matrix, this.selectedRole); },
             get sidebarModules() { return SIDEBAR_MODULES[this.selectedRole] || []; },
+            get isFarmerRole()   { return this.selectedRole === 'farmer'; },
 
             // Actions
             generatePassword() {

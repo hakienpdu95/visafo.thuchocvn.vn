@@ -12,6 +12,7 @@ use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
+use Modules\Product\Models\VendorFarmingStep;
 use Modules\Product\Policies\AgriFertilizerPolicy;
 use Modules\Product\Policies\AgriPesticidePolicy;
 use Modules\Product\Policies\AgriSeedPolicy;
@@ -21,6 +22,7 @@ use Modules\Product\Policies\FarmingBatchPolicy;
 use Modules\Product\Policies\FarmingSourcePolicy;
 use Modules\Product\Policies\PartnerProductPolicy;
 use Modules\Product\Policies\ProductPolicy;
+use Modules\Product\Policies\VendorFarmingStepPolicy;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class ProductServiceProvider extends ModuleServiceProvider
@@ -51,5 +53,6 @@ class ProductServiceProvider extends ModuleServiceProvider
         Gate::policy(AgriSeed::class, AgriSeedPolicy::class);
         Gate::policy(FarmingSource::class, FarmingSourcePolicy::class);
         Gate::policy(FarmingBatch::class, FarmingBatchPolicy::class);
+        Gate::policy(VendorFarmingStep::class, VendorFarmingStepPolicy::class);
     }
 }

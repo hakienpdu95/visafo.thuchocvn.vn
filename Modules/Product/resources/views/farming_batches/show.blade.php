@@ -18,7 +18,19 @@
         </h1>
         <p class="text-sm text-base-content/50 mt-0.5">{{ $farmingBatch->vendor?->name }} — {{ $farmingBatch->farmingSource?->name }}</p>
     </div>
-    <a href="{{ route('backend.farming-batches.index') }}" class="btn btn-ghost btn-sm">Danh sách</a>
+    <div class="flex items-center gap-2">
+        @can('compliance.manage')
+        @if($farmingBatch->status === 'active')
+        <a href="{{ route('farmer.batches.log.create', $farmingBatch) }}" class="btn btn-primary btn-sm gap-1.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Ghi Nhật Ký
+        </a>
+        @endif
+        @endcan
+        <a href="{{ route('backend.farming-batches.index') }}" class="btn btn-ghost btn-sm">Danh sách</a>
+    </div>
 </div>
 
 @if(session('success'))
@@ -45,7 +57,7 @@
         <p class="text-sm text-error mb-2">Chưa đủ thời gian cách ly — <strong>cấm thu hoạch</strong>. Các lần phun thuốc sau chưa hết hạn cách ly:</p>
         <ul class="text-sm text-error/90 list-disc list-inside mb-4 space-y-0.5">
             @foreach($pendingQuarantineLogs as $log)
-            <li>{{ $pesticideNames[$log->details['agri_pesticide_id'] ?? ''] ?? 'Thuốc BVTV' }} — phun {{ $log->activity_date->format('d/m/Y H:i') }}, an toàn sau {{ $log->safe_harvest_date?->format('d/m/Y') }}</li>
+            <li>{{ $log->agriPesticide?->trade_name ?? 'Thuốc BVTV' }} — phun {{ $log->activity_date->format('d/m/Y H:i') }}, an toàn sau {{ $log->safe_harvest_date?->format('d/m/Y') }}</li>
             @endforeach
         </ul>
         @endif
@@ -72,7 +84,7 @@
     <div class="space-y-6">
         <div class="card bg-base-100 shadow-sm border border-base-200">
             <div class="card-body">
-                <h2 class="text-base font-semibold mb-4">Thông tin chung</h2>
+                <h2 class="card-title text-base mb-5">Thông tin chung</h2>
                 <dl class="text-sm space-y-3">
                     <div><dt class="text-xs text-base-content/40">Mã lô (LOT_ID)</dt><dd class="font-mono font-medium">{{ $farmingBatch->batch_code }}</dd></div>
                     <div><dt class="text-xs text-base-content/40">Nông hộ</dt><dd class="font-medium">{{ $farmingBatch->vendor?->name ?? '—' }}</dd></div>
@@ -92,7 +104,7 @@
 
     <div class="card bg-base-100 shadow-sm border border-base-200">
         <div class="card-body">
-            <h2 class="text-base font-semibold mb-4">Nhật ký canh tác (Timeline)</h2>
+            <h2 class="card-title text-base mb-5">Nhật ký canh tác (Timeline)</h2>
 
             @if($farmingBatch->logs->isEmpty())
             <p class="text-sm text-base-content/50">Chưa có nhật ký nào được ghi nhận từ App Nông hộ.</p>
@@ -108,26 +120,44 @@
                         'fertilizer'  => ['bg-success', 'Bón phân'],
                         'pesticide'   => [$inQuarantine ? 'bg-error' : 'bg-warning', 'Phun thuốc BVTV'],
                         'harvest'     => ['bg-primary', 'Thu hoạch'],
+                        'other'       => ['bg-base-300', 'Khác'],
                         default       => ['bg-base-300', $log->activity_type],
                     };
+                    if ($log->vendorFarmingStep) {
+                        $dotColor = 'bg-info';
+                        $typeLabel = $log->vendorFarmingStep->step_name;
+                    }
                 @endphp
                 <li class="ml-5">
                     <span class="absolute -left-[9px] w-4 h-4 rounded-full {{ $dotColor }} border-2 border-base-100"></span>
                     <div class="p-3 rounded-lg border border-base-200 {{ $isPesticide && $inQuarantine ? 'bg-error/5 border-error/20' : ($isPesticide ? 'bg-warning/5 border-warning/20' : '') }}">
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-sm font-semibold">{{ $typeLabel }}</span>
-                            <span class="text-xs text-base-content/40">{{ $log->activity_date->format('d/m/Y H:i') }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-base-content/40">{{ $log->activity_date->format('d/m/Y H:i') }}</span>
+                                @can('compliance.manage')
+                                <a href="{{ route('farmer.logs.edit', $log) }}" class="btn btn-ghost btn-xs px-1.5">Sửa</a>
+                                <form method="POST" action="{{ route('farmer.logs.destroy', $log) }}"
+                                      onsubmit="return confirm('Xóa nhật ký này? Bản ghi sẽ được ẩn nhưng vẫn giữ vết trong DB.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-ghost btn-xs text-error px-1.5">Xóa</button>
+                                </form>
+                                @endcan
+                            </div>
                         </div>
 
                         @if($log->activity_type === 'fertilizer')
                         <p class="text-xs text-base-content/70 mt-1">
-                            {{ $fertilizerNames[$log->details['agri_fertilizer_id'] ?? ''] ?? 'Phân bón' }}
-                            @if(!empty($log->details['quantity'])) — {{ $log->details['quantity'] }} {{ $log->details['unit'] ?? '' }} @endif
+                            {{ $log->agriFertilizer?->name ?? 'Phân bón' }}
+                            @if($log->quantity) — {{ $log->quantity }} {{ $log->unit }} @endif
+                            @if($log->method_or_target) ({{ $log->method_or_target }}) @endif
                         </p>
                         @elseif($log->activity_type === 'pesticide')
                         <p class="text-xs text-base-content/70 mt-1">
-                            {{ $pesticideNames[$log->details['agri_pesticide_id'] ?? ''] ?? 'Thuốc BVTV' }}
-                            @if(!empty($log->details['quantity'])) — {{ $log->details['quantity'] }} {{ $log->details['unit'] ?? '' }} @endif
+                            {{ $log->agriPesticide?->trade_name ?? 'Thuốc BVTV' }}
+                            @if($log->quantity) — {{ $log->quantity }} {{ $log->unit }} @endif
+                            @if($log->method_or_target) — {{ $log->method_or_target }} @endif
                         </p>
                         @if($log->safe_harvest_date)
                         <p class="text-xs {{ $inQuarantine ? 'text-error' : 'text-success' }} mt-1 font-medium">
@@ -137,12 +167,14 @@
                         @endif
                         @elseif($log->activity_type === 'harvest')
                         <p class="text-xs text-base-content/70 mt-1">
-                            @if(!empty($log->details['quantity'])) Sản lượng: {{ $log->details['quantity'] }} {{ $log->details['unit'] ?? '' }} @endif
+                            @if($log->quantity) Sản lượng: {{ $log->quantity }} {{ $log->unit }} @endif
                         </p>
                         @endif
 
                         @if($log->image_path)
-                        <a href="{{ Illuminate\Support\Facades\Storage::url($log->image_path) }}" target="_blank" class="link link-primary text-xs mt-1 inline-block">Xem ảnh minh chứng</a>
+                        <img src="{{ Illuminate\Support\Facades\Storage::url($log->image_path) }}"
+                             onclick="document.getElementById('logImageLightboxImg').src=this.src; logImageLightbox.showModal();"
+                             class="mt-2 w-16 h-16 object-cover rounded-lg border border-base-200 cursor-pointer hover:opacity-80 transition-opacity">
                         @endif
 
                         @if($log->notes)
@@ -157,6 +189,13 @@
     </div>
 
 </div>
+
+<dialog id="logImageLightbox" class="modal">
+    <div class="modal-box max-w-3xl p-2 bg-transparent shadow-none">
+        <img id="logImageLightboxImg" src="" class="w-full h-auto rounded-lg">
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
 @endsection
 
 @push('scripts')

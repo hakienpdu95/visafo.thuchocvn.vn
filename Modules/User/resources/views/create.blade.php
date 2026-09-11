@@ -306,6 +306,21 @@
                         @error('system_role')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
+                    {{-- Vendor (chỉ áp dụng cho role Nông hộ) --}}
+                    <div class="form-control mt-4" x-show="isFarmerRole" x-transition>
+                        <label class="label py-0 pb-1.5">
+                            <span class="label-text font-medium">Nông hộ liên kết <span class="text-error">*</span></span>
+                            <span class="label-text-alt text-xs text-base-content/40">Web App Ghi Nhật Ký sẽ lọc theo Nông hộ này</span>
+                        </label>
+                        <select name="vendor_id" class="select select-bordered select-sm w-full @error('vendor_id') select-error @enderror">
+                            <option value="">— Chọn nông hộ —</option>
+                            @foreach($vendors as $vendor)
+                            <option value="{{ $vendor->id }}" {{ old('vendor_id') == $vendor->id ? 'selected' : '' }}>{{ $vendor->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('vendor_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                    </div>
+
                 </div>
             </div>
 

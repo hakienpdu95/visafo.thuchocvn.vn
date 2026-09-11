@@ -15,6 +15,7 @@ use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
+use Modules\Product\Models\VendorFarmingStep;
 use Modules\Vendor\Enums\VendorStatus;
 
 class Vendor extends TenantAwareModel
@@ -81,6 +82,11 @@ class Vendor extends TenantAwareModel
     public function farmingBatches(): HasMany
     {
         return $this->hasMany(FarmingBatch::class);
+    }
+
+    public function farmingSteps(): HasMany
+    {
+        return $this->hasMany(VendorFarmingStep::class);
     }
 
     public function documents(): MorphMany

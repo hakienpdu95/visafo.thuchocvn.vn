@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 use Modules\Product\Actions\Backend\ApproveFarmingBatchHarvestAction;
 use Modules\Product\Actions\Backend\StoreFarmingBatchAction;
 use Modules\Product\Data\Requests\StoreFarmingBatchData;
-use Modules\Product\Models\AgriFertilizer;
-use Modules\Product\Models\AgriPesticide;
 use Modules\Product\Models\AgriSeed;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingSource;
@@ -54,19 +52,16 @@ class FarmingBatchController extends Controller
 
     public function show(FarmingBatch $farmingBatch)
     {
-        $farmingBatch->load(['farmingSource', 'vendor', 'agriSeed', 'partnerProduct', 'logs', 'preHarvestCheckedBy']);
+        $farmingBatch->load([
+            'farmingSource', 'vendor', 'agriSeed', 'partnerProduct', 'preHarvestCheckedBy',
+            'logs.agriFertilizer', 'logs.agriPesticide', 'logs.vendorFarmingStep', 'logs.creator',
+        ]);
 
-        $pesticideIds = $farmingBatch->logs->pluck('details.agri_pesticide_id')->filter()->unique();
-        $fertilizerIds = $farmingBatch->logs->pluck('details.agri_fertilizer_id')->filter()->unique();
-
-        $pesticideNames = AgriPesticide::query()->whereIn('id', $pesticideIds)->pluck('trade_name', 'id');
-        $fertilizerNames = AgriFertilizer::query()->whereIn('id', $fertilizerIds)->pluck('name', 'id');
-
-        $pendingQuarantineLogs = $farmingBatch->pendingQuarantineLogs()->get();
+        $pendingQuarantineLogs = $farmingBatch->pendingQuarantineLogs()->with('agriPesticide')->get();
         $isReadyForHarvest = $pendingQuarantineLogs->isEmpty();
 
         return view('product::farming_batches.show', compact(
-            'farmingBatch', 'pesticideNames', 'fertilizerNames', 'pendingQuarantineLogs', 'isReadyForHarvest'
+            'farmingBatch', 'pendingQuarantineLogs', 'isReadyForHarvest'
         ));
     }
 

@@ -57,7 +57,7 @@ function initAllDatePickers(container = document) {
             disableMobile: true,
         };
         if (mode === 'datetime') {
-            flatpickr(el, { ...base, enableTime: true, altFormat: 'd/m/Y H:i', dateFormat: 'Y-m-d H:i:S' });
+            flatpickr(el, { ...base, enableTime: true, time_24hr: true, altFormat: 'd/m/Y H:i', dateFormat: 'Y-m-d H:i:S' });
         } else if (mode === 'range') {
             flatpickr(el, { ...base, mode: 'range' });
         } else {

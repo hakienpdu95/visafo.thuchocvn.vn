@@ -2,6 +2,7 @@
 
 namespace Modules\Auth\Http\Responses;
 
+use App\Enums\RoleEnum;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 
 class LoginResponse implements LoginResponseContract
@@ -12,7 +13,11 @@ class LoginResponse implements LoginResponseContract
             return response()->json(['two_factor' => false]);
         }
 
-        $redirect = redirect()->intended(route('backend.dashboard'));
+        $homeRoute = $request->user()?->hasRole(RoleEnum::FARMER->value)
+            ? route('farmer.dashboard')
+            : route('backend.dashboard');
+
+        $redirect = redirect()->intended($homeRoute);
 
         // Lưu preference "ghi nhớ đăng nhập" vào cookie riêng (1 năm).
         // Cookie này CHỈ nhớ ý định của user (để pre-check checkbox sau logout),

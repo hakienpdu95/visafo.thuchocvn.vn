@@ -5,6 +5,7 @@ namespace Modules\User\Data;
 use App\Enums\RoleEnum;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -24,6 +25,9 @@ class StoreUserData extends Data
         public readonly ?string $department,
 
         public readonly string $system_role,
+
+        #[Nullable, Exists('vendors', 'id')]
+        public readonly ?string $vendor_id,
 
         public readonly bool $is_active = true,
 

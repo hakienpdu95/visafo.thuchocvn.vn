@@ -13,3 +13,4 @@ import './pages/agri-seed-index.js';
 import './pages/agri-seed-form.js';
 import './pages/farming-source-index.js';
 import './pages/farming-batch-index.js';
+import './pages/farming-log-form.js';

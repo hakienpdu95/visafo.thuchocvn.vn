@@ -12,5 +12,7 @@ return [
 
         'employee_health_record_days'          => env('COMPLIANCE_EMPLOYEE_HEALTH_DAYS', 30),
         'employee_health_record_critical_days' => env('COMPLIANCE_EMPLOYEE_HEALTH_CRITICAL_DAYS', 15),
+
+        'internal_facility_default_days'       => env('COMPLIANCE_INTERNAL_FACILITY_DAYS', 60),
     ],
 ];

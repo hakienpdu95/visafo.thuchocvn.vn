@@ -670,13 +670,45 @@
         "farming_batch_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('farming_batches')->onDelete('cascade')///Vụ/lô ghi nhận hoạt động này",
         "activity_type///string///30///NOT_NULL///__///->index()///cultivation | water | fertilizer | pesticide | harvest",
         "activity_date///dateTime///__///NOT_NULL///__///->index()///Ngày giờ thực hiện hoạt động — cần chính xác đến giờ/phút cho phun thuốc (NK-NH-05) và thu hoạch (NK-NH-06)",
-        "details///json///__///_NULL///NULL///__///Chi tiết theo activity_type — fertilizer: {agri_fertilizer_id,quantity,unit}; pesticide: {agri_pesticide_id,quantity,unit}; harvest: {quantity,unit}",
+        "agri_fertilizer_id///unsignedBigInteger///__///_NULL///NULL///->constrained('agri_fertilizers')->onDelete('restrict')///Phân bón sử dụng — chỉ có ở log fertilizer",
+        "agri_pesticide_id///unsignedBigInteger///__///_NULL///NULL///->constrained('agri_pesticides')->onDelete('restrict')///Thuốc BVTV sử dụng — chỉ có ở log pesticide",
+        "vendor_farming_step_id///unsignedBigInteger///__///_NULL///NULL///->constrained('vendor_farming_steps')->onDelete('set null')///Vỏ mềm — bước canh tác tự định nghĩa (activity_type=cultivation|other), dùng để hiển thị đúng tên trên Timeline",
+        "quantity///decimal///8,2///_NULL///NULL///__///Số lượng phân bón/thuốc BVTV, hoặc sản lượng thu hoạch",
+        "unit///string///20///_NULL///NULL///__///Đơn vị tính (kg, ml, lít...)",
+        "method_or_target///string///255///_NULL///NULL///__///Cách bón (bón lót, bón thúc) hoặc đối tượng phòng trừ (rệp, sâu vẽ bùa)",
         "safe_harvest_date///date///__///_NULL///NULL///->index()///Ngày an toàn thu hoạch — chỉ có ở log pesticide, = activity_date + quarantine_days của thuốc đã chọn",
         "image_path///string///255///_NULL///NULL///__///Đường dẫn ảnh chụp minh chứng (vỏ thuốc BVTV, bao phân bón, hiện trường)",
         "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người ghi nhật ký",
         "notes///string///500///_NULL///NULL///__///Ghi chú",
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
-        "__index///index///__///__///__///farming_batch_id///Index cho FK farming_batch_id"
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm — QC/Admin xóa nhật ký nhưng vẫn giữ vết trong DB",
+        "__index///index///__///__///__///farming_batch_id///Index cho FK farming_batch_id",
+        "__index///index///__///__///__///agri_fertilizer_id///Index cho FK agri_fertilizer_id",
+        "__index///index///__///__///__///agri_pesticide_id///Index cho FK agri_pesticide_id",
+        "__index///index///__///__///__///vendor_farming_step_id///Index cho FK vendor_farming_step_id"
+    ],
+    [
+        "vendor_farming_steps///__///__///Vỏ mềm (Soft-shell) — bước canh tác tự định nghĩa theo từng Nông hộ/Mặt hàng, dùng cho các công đoạn không ảnh hưởng ATTP (Tỉa cành, Bọc trái, Phơi sấy...)",
+        "vendor_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('vendors')->onDelete('cascade')///Nông hộ sở hữu bộ bước canh tác này",
+        "partner_product_id///unsignedBigInteger///__///_NULL///NULL///->constrained('partner_products')->onDelete('cascade')///Chỉ hiện khi trồng đúng mặt hàng này — NULL nghĩa là áp dụng chung cho mọi mặt hàng của Nông hộ",
+        "step_name///string///100///NOT_NULL///__///__///Tên công đoạn do Nông hộ/QC tự đặt — VD: Bọc trái ổi",
+        "base_activity_type///string///20///NOT_NULL///'cultivation'///->index()///Phân loại gốc — chỉ được là cultivation hoặc other, không ảnh hưởng thuật toán ATTP (Readiness)",
+        "order_index///integer///__///NOT_NULL///0///__///Thứ tự hiển thị trên App Nông hộ",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm",
+        "__index///index///__///__///__///vendor_id///Index cho FK vendor_id",
+        "__index///index///__///__///__///partner_product_id///Index cho FK partner_product_id"
+    ],
+    [
+        "internal_facilities///__///__///Cơ sở nội bộ Visafo (Trụ sở, Vùng trồng, Kho...) — chủ thể gắn hồ sơ Năng lực nội bộ theo QT-TXNG-01 nhóm NL",
+        "name///string///150///NOT_NULL///__///__///Tên cơ sở — VD: Trụ sở chính, Vùng trồng Chùa Dâu, Kho Linh Đàm",
+        "type///string///30///NOT_NULL///'headquarter'///->index()///headquarter | farm | warehouse | processing_zone",
+        "address///string///500///_NULL///NULL///__///Địa chỉ cơ sở",
+        "status///string///20///NOT_NULL///'active'///->index()///active | inactive",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
     ]
 ]

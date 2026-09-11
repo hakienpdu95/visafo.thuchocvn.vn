@@ -13,6 +13,7 @@ use Modules\User\Actions\StoreUserAction;
 use Modules\User\Actions\UpdateUserAction;
 use Modules\User\Data\StoreUserData;
 use Modules\User\Data\UpdateUserData;
+use Modules\Vendor\Models\Vendor;
 
 class UserController extends Controller
 {
@@ -48,10 +49,11 @@ class UserController extends Controller
 
         $isAdmin = $request->user()->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
 
-        $roles  = $this->buildRolesFor($request->user());
-        $matrix = $this->permissionMatrix();
+        $roles   = $this->buildRolesFor($request->user());
+        $matrix  = $this->permissionMatrix();
+        $vendors = Vendor::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('user::create', compact('roles', 'matrix', 'isAdmin'));
+        return view('user::create', compact('roles', 'matrix', 'isAdmin', 'vendors'));
     }
 
     public function store(Request $request, StoreUserAction $action): RedirectResponse
@@ -74,10 +76,11 @@ class UserController extends Controller
         $isAdmin     = $request->user()->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
         $currentRole = $this->resolveUserRole($user);
 
-        $roles  = $this->buildRolesFor($request->user());
-        $matrix = $this->permissionMatrix();
+        $roles   = $this->buildRolesFor($request->user());
+        $matrix  = $this->permissionMatrix();
+        $vendors = Vendor::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('user::edit', compact('user', 'roles', 'matrix', 'isAdmin', 'currentRole'));
+        return view('user::edit', compact('user', 'roles', 'matrix', 'isAdmin', 'currentRole', 'vendors'));
     }
 
     public function update(Request $request, User $user, UpdateUserAction $action): RedirectResponse
