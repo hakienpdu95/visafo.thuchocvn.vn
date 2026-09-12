@@ -21,8 +21,10 @@ class LoginUserAction
      */
     public function handle(Request $request): ?Authenticatable
     {
+        $identifier = Str::lower($request->string('email'));
+
         /** @var User|null $user */
-        $user = User::where('email', Str::lower($request->string('email')))->first();
+        $user = User::where('email', $identifier)->orWhere('username', $identifier)->first();
 
         // Sai email hoặc sai mật khẩu → trả null để Fortify xử lý
         // (tăng rate limiter + dùng trans('auth.failed'))

@@ -34,16 +34,16 @@
             <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-3">
                 @csrf
 
-                {{-- Email --}}
+                {{-- Email hoặc Tên đăng nhập --}}
                 <label class="form-control w-full">
                     <div class="label pb-1">
-                        <span class="label-text font-medium">Email</span>
+                        <span class="label-text font-medium">Email hoặc Tên đăng nhập</span>
                     </div>
                     <input
-                        type="email"
+                        type="text"
                         name="email"
                         value="{{ old('email') }}"
-                        placeholder="you@example.com"
+                        placeholder="you@example.com hoặc tên đăng nhập"
                         class="input input-bordered w-full @error('email') input-error @enderror"
                         required
                         autofocus

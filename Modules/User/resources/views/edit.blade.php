@@ -12,6 +12,8 @@ $avatarUrl = 'https://api.dicebear.com/9.x/initials/svg?seed=' . urlencode($user
     'roles'         => $roles,
     'matrix'        => $matrix,
     'oldRole'       => old('system_role', $currentRole),
+    'oldVendorId'   => old('vendor_id', $user->vendor_id),
+    'oldEmployeeId' => old('employee_id', $user->employee_id),
     'hasErrors'     => $errors->any(),
 ]) }})">
 
@@ -19,7 +21,7 @@ $avatarUrl = 'https://api.dicebear.com/9.x/initials/svg?seed=' . urlencode($user
 <div class="flex items-center justify-between mb-6">
     <div>
         <h1 class="text-2xl font-bold text-base-content">{{ $user->name }}</h1>
-        <p class="text-sm text-base-content/50 mt-0.5">{{ $user->email }}</p>
+        <p class="text-sm text-base-content/50 mt-0.5">{{ $user->username ? '@' . $user->username : $user->email }}</p>
     </div>
     <a href="{{ route('backend.users.index') }}" class="btn btn-ghost btn-sm gap-1.5">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,7 +72,7 @@ $avatarUrl = 'https://api.dicebear.com/9.x/initials/svg?seed=' . urlencode($user
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="text-sm font-semibold truncate text-base-content">{{ $user->name }}</p>
-                            <p class="text-xs truncate mt-0.5 text-base-content/60">{{ $user->email }}</p>
+                            <p class="text-xs truncate mt-0.5 text-base-content/60">{{ $user->username ? '@' . $user->username : $user->email }}</p>
                         </div>
                         <div class="flex flex-col items-end gap-1 shrink-0">
                             <span x-show="selectedRoleLabel" x-text="selectedRoleLabel"
@@ -96,8 +98,8 @@ $avatarUrl = 'https://api.dicebear.com/9.x/initials/svg?seed=' . urlencode($user
                             @error('name')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
-                        {{-- Email --}}
-                        <div class="form-control">
+                        {{-- Email (ẩn khi đã liên kết Hồ sơ Nhân viên — dùng Username để đăng nhập) --}}
+                        <div class="form-control" x-show="!needsEmployeeLink" x-transition>
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Email <span class="text-error">*</span></span>
                             </label>
@@ -107,8 +109,19 @@ $avatarUrl = 'https://api.dicebear.com/9.x/initials/svg?seed=' . urlencode($user
                             @error('email')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
-                        {{-- Department --}}
-                        <div class="form-control">
+                        {{-- Username (chỉ hiện khi đã liên kết Hồ sơ Nhân viên) --}}
+                        <div class="form-control" x-show="needsEmployeeLink" x-transition>
+                            <label class="label py-0 pb-1.5">
+                                <span class="label-text font-medium">Tên đăng nhập <span class="text-error">*</span></span>
+                            </label>
+                            <input type="text" name="username" value="{{ old('username', $user->username) }}"
+                                   class="input input-bordered input-sm w-full @error('username') input-error @enderror"
+                                   placeholder="VD: nva, sale.a">
+                            @error('username')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        {{-- Department (ẩn khi đã liên kết Hồ sơ Nhân viên) --}}
+                        <div class="form-control" x-show="!needsEmployeeLink" x-transition>
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Phòng ban</span>
                                 <span class="label-text-alt text-xs text-base-content/40">Không bắt buộc</span>
@@ -284,6 +297,21 @@ $avatarUrl = 'https://api.dicebear.com/9.x/initials/svg?seed=' . urlencode($user
                             @endforeach
                         </select>
                         @error('vendor_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                    </div>
+
+                    {{-- Nhân viên liên kết (bắt buộc với mọi role nội bộ, trừ Admin & Nông hộ) --}}
+                    <div class="form-control mt-4" x-show="needsEmployeeLink" x-transition>
+                        <label class="label py-0 pb-1.5">
+                            <span class="label-text font-medium">Liên kết Hồ sơ Nhân viên <span class="text-error">*</span></span>
+                            <span class="label-text-alt text-xs text-base-content/40">Để đối chiếu phòng ban, giấy khám sức khỏe...</span>
+                        </label>
+                        <select id="ts-employee_id" name="employee_id" class="select select-bordered select-sm w-full @error('employee_id') select-error @enderror" data-ts-placeholder="— Chọn nhân viên —">
+                            <option value="">— Chọn nhân viên —</option>
+                            @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}" {{ old('employee_id', $user->employee_id) == $employee->id ? 'selected' : '' }}>{{ $employee->full_name }}</option>
+                            @endforeach
+                        </select>
+                        @error('employee_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
                 </div>

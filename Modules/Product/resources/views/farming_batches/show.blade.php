@@ -106,85 +106,68 @@
         <div class="card-body">
             <h2 class="card-title text-base mb-5">Nhật ký canh tác (Timeline)</h2>
 
-            @if($farmingBatch->logs->isEmpty())
-            <p class="text-sm text-base-content/50">Chưa có nhật ký nào được ghi nhận từ App Nông hộ.</p>
-            @else
-            <ol class="relative border-l-2 border-base-200 ml-2 space-y-6">
-                @foreach($farmingBatch->logs as $log)
-                @php
+            @php
+                $logRows = $farmingBatch->logs->map(function ($log) {
                     $isPesticide = $log->activity_type === 'pesticide';
                     $inQuarantine = $isPesticide && $log->safe_harvest_date && $log->safe_harvest_date->isFuture();
-                    [$dotColor, $typeLabel] = match($log->activity_type) {
-                        'cultivation' => ['bg-neutral', 'Canh tác'],
-                        'water'       => ['bg-info', 'Tưới nước'],
-                        'fertilizer'  => ['bg-success', 'Bón phân'],
-                        'pesticide'   => [$inQuarantine ? 'bg-error' : 'bg-warning', 'Phun thuốc BVTV'],
-                        'harvest'     => ['bg-primary', 'Thu hoạch'],
-                        'other'       => ['bg-base-300', 'Khác'],
-                        default       => ['bg-base-300', $log->activity_type],
+
+                    [$typeBadge, $typeLabel] = match($log->activity_type) {
+                        'cultivation' => ['badge-neutral', 'Canh tác'],
+                        'water'       => ['badge-info', 'Tưới nước'],
+                        'fertilizer'  => ['badge-success', 'Bón phân'],
+                        'pesticide'   => [$inQuarantine ? 'badge-error' : 'badge-warning', 'Phun thuốc BVTV'],
+                        'harvest'     => ['badge-primary', 'Thu hoạch'],
+                        'other'       => ['badge-ghost', 'Khác'],
+                        default       => ['badge-ghost', $log->activity_type],
                     };
                     if ($log->vendorFarmingStep) {
-                        $dotColor = 'bg-info';
+                        $typeBadge = 'badge-info';
                         $typeLabel = $log->vendorFarmingStep->step_name;
                     }
-                @endphp
-                <li class="ml-5">
-                    <span class="absolute -left-[9px] w-4 h-4 rounded-full {{ $dotColor }} border-2 border-base-100"></span>
-                    <div class="p-3 rounded-lg border border-base-200 {{ $isPesticide && $inQuarantine ? 'bg-error/5 border-error/20' : ($isPesticide ? 'bg-warning/5 border-warning/20' : '') }}">
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="text-sm font-semibold">{{ $typeLabel }}</span>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-base-content/40">{{ $log->activity_date->format('d/m/Y H:i') }}</span>
-                                @can('compliance.manage')
-                                <a href="{{ route('farmer.logs.edit', $log) }}" class="btn btn-ghost btn-xs px-1.5">Sửa</a>
-                                <form method="POST" action="{{ route('farmer.logs.destroy', $log) }}"
-                                      onsubmit="return confirm('Xóa nhật ký này? Bản ghi sẽ được ẩn nhưng vẫn giữ vết trong DB.');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error px-1.5">Xóa</button>
-                                </form>
-                                @endcan
-                            </div>
-                        </div>
 
-                        @if($log->activity_type === 'fertilizer')
-                        <p class="text-xs text-base-content/70 mt-1">
-                            {{ $log->agriFertilizer?->name ?? 'Phân bón' }}
-                            @if($log->quantity) — {{ $log->quantity }} {{ $log->unit }} @endif
-                            @if($log->method_or_target) ({{ $log->method_or_target }}) @endif
-                        </p>
-                        @elseif($log->activity_type === 'pesticide')
-                        <p class="text-xs text-base-content/70 mt-1">
-                            {{ $log->agriPesticide?->trade_name ?? 'Thuốc BVTV' }}
-                            @if($log->quantity) — {{ $log->quantity }} {{ $log->unit }} @endif
-                            @if($log->method_or_target) — {{ $log->method_or_target }} @endif
-                        </p>
-                        @if($log->safe_harvest_date)
-                        <p class="text-xs {{ $inQuarantine ? 'text-error' : 'text-success' }} mt-1 font-medium">
-                            Ngày an toàn thu hoạch: {{ $log->safe_harvest_date->format('d/m/Y') }}
-                            @if($inQuarantine) — còn cách ly @else — đã an toàn @endif
-                        </p>
-                        @endif
-                        @elseif($log->activity_type === 'harvest')
-                        <p class="text-xs text-base-content/70 mt-1">
-                            @if($log->quantity) Sản lượng: {{ $log->quantity }} {{ $log->unit }} @endif
-                        </p>
-                        @endif
+                    $detail = match($log->activity_type) {
+                        'fertilizer' => trim(
+                            ($log->agriFertilizer?->name ?? 'Phân bón')
+                            . ($log->quantity ? ' — ' . $log->quantity . ' ' . $log->unit : '')
+                            . ($log->method_or_target ? ' (' . $log->method_or_target . ')' : '')
+                        ),
+                        'pesticide' => trim(
+                            ($log->agriPesticide?->trade_name ?? 'Thuốc BVTV')
+                            . ($log->quantity ? ' — ' . $log->quantity . ' ' . $log->unit : '')
+                            . ($log->method_or_target ? ' — ' . $log->method_or_target : '')
+                        ),
+                        'harvest' => $log->quantity ? 'Sản lượng: ' . $log->quantity . ' ' . $log->unit : '',
+                        default => '',
+                    };
 
-                        @if($log->image_path)
-                        <img src="{{ Illuminate\Support\Facades\Storage::url($log->image_path) }}"
-                             onclick="document.getElementById('logImageLightboxImg').src=this.src; logImageLightbox.showModal();"
-                             class="mt-2 w-16 h-16 object-cover rounded-lg border border-base-200 cursor-pointer hover:opacity-80 transition-opacity">
-                        @endif
+                    $quarantineText = null;
+                    if ($isPesticide && $log->safe_harvest_date) {
+                        $quarantineText = 'Ngày an toàn thu hoạch: ' . $log->safe_harvest_date->format('d/m/Y')
+                            . ($inQuarantine ? ' — còn cách ly' : ' — đã an toàn');
+                    }
 
-                        @if($log->notes)
-                        <p class="text-xs text-base-content/50 mt-1">{{ $log->notes }}</p>
-                        @endif
-                    </div>
-                </li>
-                @endforeach
-            </ol>
-            @endif
+                    return [
+                        'id'               => $log->id,
+                        'activity_date'    => $log->activity_date->format('d/m/Y H:i'),
+                        'activity_date_ts' => $log->activity_date->timestamp,
+                        'type_label'       => $typeLabel,
+                        'type_badge'       => $typeBadge,
+                        'detail'           => $detail,
+                        'quarantine_text'  => $quarantineText,
+                        'in_quarantine'    => $inQuarantine,
+                        'image_url'        => $log->image_path ? \Illuminate\Support\Facades\Storage::url($log->image_path) : null,
+                        'notes'            => $log->notes,
+                    ];
+                })->values();
+            @endphp
+
+            <div class="tabulator-daisy">
+                <div id="farming-log-table"
+                     data-can-manage="{{ auth()->user()->can('compliance.manage') ? '1' : '0' }}"
+                     data-edit-url-template="{{ route('farmer.logs.edit', ['farming_log' => '__ID__']) }}"
+                     data-delete-url-template="{{ route('farmer.logs.destroy', ['farming_log' => '__ID__']) }}"
+                     data-rows="{{ json_encode($logRows, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
+            </div>
         </div>
     </div>
 
@@ -198,6 +181,14 @@
 </dialog>
 @endsection
 
+@push('styles')
+    <x-tabulator-theme />
+@endpush
+
 @push('scripts')
-    @vite(['resources/js/modules/toastify.js'], 'build/backend')
+    @vite([
+        'resources/js/modules/toastify.js',
+        'resources/js/modules/tabulator.js',
+        'Modules/Product/resources/assets/js/product.js',
+    ], 'build/backend')
 @endpush

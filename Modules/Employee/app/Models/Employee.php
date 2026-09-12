@@ -6,6 +6,7 @@ use App\Traits\HasTenantMedia;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -36,6 +37,11 @@ class Employee extends Model implements HasMedia
     {
         return $this->belongsToMany(Department::class, 'department_employee')
             ->using(DepartmentEmployee::class);
+    }
+
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class);
     }
 
     public function healthRecords(): HasMany

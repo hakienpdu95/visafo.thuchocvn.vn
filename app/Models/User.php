@@ -16,13 +16,14 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Modules\Auth\Models\SocialAccount;
+use Modules\Employee\Models\Employee;
 use Modules\Vendor\Models\Vendor;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable([
-    'name', 'email', 'password', 'vendor_id',
+    'name', 'email', 'username', 'password', 'vendor_id', 'employee_id',
     'department', 'is_active', 'last_active_at',
     'account_type', 'trust_level',
     'lifecycle_status', 'email_verified_at',
@@ -66,6 +67,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 
     // ── Identity helpers ─────────────────────────────────────────────

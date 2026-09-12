@@ -34,7 +34,8 @@ const ALL_PRESETS = Object.freeze([
     { role: 'farmer',            label: 'Nông hộ',            icon: '🌾' },
 ]);
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const EMAIL_RE    = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const USERNAME_RE = /^[a-zA-Z0-9._-]+$/;
 
 const PW_LEVELS = Object.freeze([
     { label: '',           barCls: 'progress-base-300', textCls: 'text-base-content/30', pct: 0   },
@@ -116,13 +117,29 @@ function _setupRoleTs(selector, roles, initial, onChange) {
     });
 }
 
-// Select nằm trong x-show ẩn mặc định (chỉ hiện khi role = farmer) — không dùng
-// ts-init, init thủ công khi role chuyển sang farmer (spec §22.6).
-function _initVendorTs() {
+// Các select nằm trong x-show ẩn mặc định (chỉ hiện tuỳ role đã chọn) — không
+// dùng ts-init, init thủ công khi role chuyển sang farmer / role nội bộ.
+function _initVendorTs(onChange) {
     const el = document.getElementById('ts-vendor_id');
     if (!el || el.tomselect) return;
-    createTs(el, { placeholder: '— Chọn nông hộ —' });
+    createTs(el, { placeholder: '— Chọn nông hộ —', onChange });
 }
+
+function _initEmployeeTs(onChange) {
+    const el = document.getElementById('ts-employee_id');
+    if (!el || el.tomselect) return;
+    createTs(el, { placeholder: '— Chọn nhân viên —', onChange });
+}
+
+// Xoá lựa chọn hiện tại của 1 TomSelect khi người dùng đổi role sang nhóm khác
+// (VD: từ farmer sang sales_staff) để tránh gửi kèm vendor_id/employee_id chéo.
+function _clearSelectValue(id) {
+    const el = document.getElementById(id);
+    if (el?.tomselect) el.tomselect.clear(true);
+}
+
+const ADMIN_ROLE  = 'system_admin';
+const FARMER_ROLE = 'farmer';
 
 // ── Alpine components ────────────────────────────────────────────────────────
 
@@ -138,6 +155,7 @@ document.addEventListener('alpine:init', () => {
             // Fields
             name:             sd.oldName  || '',
             email:            sd.oldEmail || '',
+            username:         sd.oldUsername || '',
             password:         '',
             pwConfirm:        '',
             showPw:           false,
@@ -145,14 +163,19 @@ document.addEventListener('alpine:init', () => {
             avatarUrl:        '',
             selectedRole:     sd.oldRole || '',
             selectedRoleLabel:'',
+            selectedVendorId:   sd.oldVendorId   || '',
+            selectedEmployeeId: sd.oldEmployeeId || '',
             rolePresets:      filteredPresets,
 
             // Validation tracking
             touched: {
                 name:            !!sd.hasErrors,
                 email:           !!sd.hasErrors,
+                username:        !!sd.hasErrors,
                 password:        !!sd.hasErrors,
                 system_role:     !!sd.hasErrors,
+                vendor_id:       !!sd.hasErrors,
+                employee_id:     !!sd.hasErrors,
             },
             attempted: !!sd.hasErrors,
 
@@ -161,25 +184,34 @@ document.addEventListener('alpine:init', () => {
                 return {
                     name: !this.name.trim()             ? 'Họ và tên là bắt buộc'
                         : this.name.trim().length < 2   ? 'Tên phải có ít nhất 2 ký tự' : null,
-                    email: !this.email.trim()           ? 'Email là bắt buộc'
-                        : !EMAIL_RE.test(this.email)    ? 'Địa chỉ email không hợp lệ' : null,
+                    // Email không bắt buộc — chỉ kiểm tra định dạng cơ bản khi có nhập.
+                    email: this.email.trim() && !EMAIL_RE.test(this.email) ? 'Địa chỉ email không hợp lệ' : null,
+                    // Username luôn bắt buộc — là định danh đăng nhập chính.
+                    username: !this.username.trim()             ? 'Tên đăng nhập là bắt buộc'
+                        : this.username.trim().length < 3       ? 'Tối thiểu 3 ký tự'
+                        : !USERNAME_RE.test(this.username)      ? 'Chỉ gồm chữ, số, dấu chấm, gạch ngang, gạch dưới' : null,
                     password: !this.password            ? 'Mật khẩu là bắt buộc'
                         : this.password.length < 8      ? 'Tối thiểu 8 ký tự'
                         : !/[A-Z]/.test(this.password)  ? 'Cần ít nhất 1 chữ HOA'
                         : !/[a-z]/.test(this.password)  ? 'Cần ít nhất 1 chữ thường'
                         : !/[0-9]/.test(this.password)  ? 'Cần ít nhất 1 chữ số' : null,
                     system_role:     !this.selectedRole ? 'Vui lòng chọn vai trò'  : null,
+                    vendor_id:   this.isFarmerRole      && !this.selectedVendorId   ? 'Vui lòng chọn Nông hộ liên kết' : null,
+                    employee_id: this.needsEmployeeLink && !this.selectedEmployeeId ? 'Vui lòng chọn Hồ sơ nhân viên liên kết' : null,
                 };
             },
             get isValid() {
                 const e = this.errors;
-                return !e.name && !e.email && !e.password && !e.system_role;
+                return !e.name && !e.email && !e.username && !e.password && !e.system_role && !e.vendor_id && !e.employee_id;
             },
             get pwChecks()       { return _pwChecks(this.password); },
             get strength()       { return _strength(this.password); },
             get currentMatrix()  { return _buildMatrix(matrix, this.selectedRole); },
             get sidebarModules() { return SIDEBAR_MODULES[this.selectedRole] || []; },
-            get isFarmerRole()   { return this.selectedRole === 'farmer'; },
+            get isFarmerRole()   { return this.selectedRole === FARMER_ROLE; },
+            get needsEmployeeLink() {
+                return !!this.selectedRole && this.selectedRole !== ADMIN_ROLE && this.selectedRole !== FARMER_ROLE;
+            },
 
             // Validation helpers
             touch(field)  { this.touched[field] = true; },
@@ -187,8 +219,9 @@ document.addEventListener('alpine:init', () => {
                 return (this.touched[field] || this.attempted) && !!this.errors[field];
             },
             showOk(field) {
-                const val = { name: this.name, email: this.email, password: this.password,
-                              system_role: this.selectedRole }[field] || '';
+                const val = { name: this.name, email: this.email, username: this.username, password: this.password,
+                              system_role: this.selectedRole, vendor_id: this.selectedVendorId,
+                              employee_id: this.selectedEmployeeId }[field] || '';
                 return this.touched[field] && !this.errors[field] && !!String(val).trim();
             },
             fieldCls(field) {
@@ -219,13 +252,47 @@ document.addEventListener('alpine:init', () => {
                 _syncPasswordInputs(pwd);
             },
 
-            selectPreset(role) {
-                this.selectedRole = role;
+            // Đồng bộ role đã chọn (từ nút preset hoặc TomSelect) + tự dọn dẹp
+            // lựa chọn Nông hộ/Nhân viên chéo khi chuyển nhóm role, rồi init
+            // TomSelect tương ứng (vendor cho farmer, employee cho role còn lại).
+            applyRole(role) {
+                const previousRole = this.selectedRole;
+                this.selectedRole = role || '';
                 this.touched.system_role = true;
                 const found = roles.find(r => r.value === role);
                 this.selectedRoleLabel = found?.label ?? '';
+
+                if (previousRole !== role) {
+                    if (role !== FARMER_ROLE && this.selectedVendorId) {
+                        _clearSelectValue('ts-vendor_id');
+                        this.selectedVendorId = '';
+                    }
+                    if ((role === ADMIN_ROLE || role === FARMER_ROLE) && this.selectedEmployeeId) {
+                        _clearSelectValue('ts-employee_id');
+                        this.selectedEmployeeId = '';
+                    }
+                }
+
+                this._initSecondaryTs(role);
+            },
+
+            _initSecondaryTs(role) {
+                if (role === FARMER_ROLE) {
+                    this.$nextTick(() => requestAnimationFrame(() => _initVendorTs(v => {
+                        this.selectedVendorId = v || '';
+                        this.touched.vendor_id = true;
+                    })));
+                } else if (role && role !== ADMIN_ROLE) {
+                    this.$nextTick(() => requestAnimationFrame(() => _initEmployeeTs(v => {
+                        this.selectedEmployeeId = v || '';
+                        this.touched.employee_id = true;
+                    })));
+                }
+            },
+
+            selectPreset(role) {
+                this.applyRole(role);
                 roleTsInst?.setValue(role, false);
-                if (role === 'farmer') this.$nextTick(() => requestAnimationFrame(_initVendorTs));
             },
 
             // Lifecycle
@@ -239,15 +306,9 @@ document.addEventListener('alpine:init', () => {
             },
 
             _setup() {
-                roleTsInst = _setupRoleTs('#role-select', roles, sd.oldRole, val => {
-                    this.selectedRole = val || '';
-                    this.touched.system_role = true;
-                    const found = roles.find(r => r.value === val);
-                    this.selectedRoleLabel = found?.label ?? '';
-                    if (val === 'farmer') this.$nextTick(() => requestAnimationFrame(_initVendorTs));
-                });
-                if (this.selectedRole === 'farmer') {
-                    requestAnimationFrame(_initVendorTs);
+                roleTsInst = _setupRoleTs('#role-select', roles, sd.oldRole, val => this.applyRole(val));
+                if (this.selectedRole) {
+                    this._initSecondaryTs(this.selectedRole);
                 }
             },
         };
@@ -266,6 +327,8 @@ document.addEventListener('alpine:init', () => {
             showPw:            false,
             selectedRole:      sd.oldRole || '',
             selectedRoleLabel: '',
+            selectedVendorId:   sd.oldVendorId   || '',
+            selectedEmployeeId: sd.oldEmployeeId || '',
             rolePresets:       filteredPresets,
 
             // Computed
@@ -273,7 +336,10 @@ document.addEventListener('alpine:init', () => {
             get strength()       { return _strength(this.password); },
             get currentMatrix()  { return _buildMatrix(matrix, this.selectedRole); },
             get sidebarModules() { return SIDEBAR_MODULES[this.selectedRole] || []; },
-            get isFarmerRole()   { return this.selectedRole === 'farmer'; },
+            get isFarmerRole()   { return this.selectedRole === FARMER_ROLE; },
+            get needsEmployeeLink() {
+                return !!this.selectedRole && this.selectedRole !== ADMIN_ROLE && this.selectedRole !== FARMER_ROLE;
+            },
 
             // Actions
             generatePassword() {
@@ -283,12 +349,37 @@ document.addEventListener('alpine:init', () => {
                 _syncPasswordInputs(pwd);
             },
 
-            selectPreset(role) {
-                this.selectedRole = role;
+            applyRole(role) {
+                const previousRole = this.selectedRole;
+                this.selectedRole = role || '';
                 const found = roles.find(r => r.value === role);
                 this.selectedRoleLabel = found?.label ?? '';
+
+                if (previousRole !== role) {
+                    if (role !== FARMER_ROLE && this.selectedVendorId) {
+                        _clearSelectValue('ts-vendor_id');
+                        this.selectedVendorId = '';
+                    }
+                    if ((role === ADMIN_ROLE || role === FARMER_ROLE) && this.selectedEmployeeId) {
+                        _clearSelectValue('ts-employee_id');
+                        this.selectedEmployeeId = '';
+                    }
+                }
+
+                this._initSecondaryTs(role);
+            },
+
+            _initSecondaryTs(role) {
+                if (role === FARMER_ROLE) {
+                    this.$nextTick(() => requestAnimationFrame(() => _initVendorTs(v => { this.selectedVendorId = v || ''; })));
+                } else if (role && role !== ADMIN_ROLE) {
+                    this.$nextTick(() => requestAnimationFrame(() => _initEmployeeTs(v => { this.selectedEmployeeId = v || ''; })));
+                }
+            },
+
+            selectPreset(role) {
+                this.applyRole(role);
                 roleTsInst?.setValue(role, false);
-                if (role === 'farmer') this.$nextTick(() => requestAnimationFrame(_initVendorTs));
             },
 
             // Lifecycle
@@ -301,14 +392,9 @@ document.addEventListener('alpine:init', () => {
             },
 
             _setup() {
-                roleTsInst = _setupRoleTs('#role-select', roles, sd.oldRole, val => {
-                    this.selectedRole = val || '';
-                    const found = roles.find(r => r.value === val);
-                    this.selectedRoleLabel = found?.label ?? '';
-                    if (val === 'farmer') this.$nextTick(() => requestAnimationFrame(_initVendorTs));
-                });
-                if (this.selectedRole === 'farmer') {
-                    requestAnimationFrame(_initVendorTs);
+                roleTsInst = _setupRoleTs('#role-select', roles, sd.oldRole, val => this.applyRole(val));
+                if (this.selectedRole) {
+                    this._initSecondaryTs(this.selectedRole);
                 }
             },
         };

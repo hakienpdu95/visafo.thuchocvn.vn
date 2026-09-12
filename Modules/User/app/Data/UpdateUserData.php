@@ -18,7 +18,10 @@ class UpdateUserData extends Data
         #[Required, StringType, Max(255)]
         public readonly string $name,
 
-        public readonly string $email,
+        public readonly ?string $email,
+
+        #[Nullable, StringType, Max(50)]
+        public readonly ?string $username,
 
         public readonly ?string $password,
 
@@ -30,6 +33,9 @@ class UpdateUserData extends Data
         #[Nullable, Exists('vendors', 'id')]
         public readonly ?string $vendor_id,
 
+        #[Nullable, Exists('employees', 'id')]
+        public readonly ?string $employee_id,
+
         public readonly bool $is_active = false,
     ) {}
 
@@ -38,28 +44,54 @@ class UpdateUserData extends Data
         $currentId    = request()->route('user')?->id;
         $allowedRoles = implode(',', array_column(RoleEnum::cases(), 'value'));
 
+        $isEmployeeLinked = fn () => ! in_array(request()->input('system_role'), [
+            RoleEnum::ADMIN->value, RoleEnum::FARMER->value,
+        ], true);
+
         return [
             'email'       => [
-                'required', 'email:rfc', 'max:255',
+                Rule::requiredIf(fn () => ! $isEmployeeLinked()),
+                'nullable', 'email:rfc', 'max:255',
                 Rule::unique('users', 'email')->ignore($currentId),
+            ],
+            'username'    => [
+                Rule::requiredIf($isEmployeeLinked),
+                'nullable', 'string', 'max:50', 'regex:/^[a-zA-Z0-9._-]+$/',
+                Rule::unique('users', 'username')->ignore($currentId),
             ],
             'password'    => [
                 'nullable', 'string', 'confirmed',
                 Password::min(8)->letters()->mixedCase()->numbers(),
             ],
             'system_role' => ['required', 'string', "in:$allowedRoles"],
+            'vendor_id'   => [
+                Rule::requiredIf(fn () => request()->input('system_role') === RoleEnum::FARMER->value),
+                'nullable', Rule::exists('vendors', 'id'),
+            ],
+            'employee_id' => [
+                Rule::requiredIf($isEmployeeLinked),
+                'nullable', Rule::exists('employees', 'id'),
+            ],
         ];
     }
 
     public static function messages(): array
     {
         return [
-            'email.unique'         => 'Email này đã được sử dụng bởi tài khoản khác.',
-            'password.mixed_case'  => 'Mật khẩu mới phải có cả chữ HOA và chữ thường.',
-            'password.letters'     => 'Mật khẩu mới phải chứa ít nhất một chữ cái.',
-            'password.numbers'     => 'Mật khẩu mới phải chứa ít nhất một chữ số.',
-            'password.confirmed'   => 'Xác nhận mật khẩu mới không khớp.',
-            'system_role.in'       => 'Vai trò không hợp lệ.',
+            'email.required'        => 'Email là bắt buộc cho vai trò này.',
+            'email.unique'          => 'Email này đã được sử dụng bởi tài khoản khác.',
+            'username.required'     => 'Tên đăng nhập là bắt buộc cho vai trò này.',
+            'username.regex'        => 'Tên đăng nhập chỉ gồm chữ, số, dấu chấm, gạch ngang, gạch dưới.',
+            'username.unique'       => 'Tên đăng nhập này đã được sử dụng bởi tài khoản khác.',
+            'password.mixed_case'   => 'Mật khẩu mới phải có cả chữ HOA và chữ thường.',
+            'password.letters'      => 'Mật khẩu mới phải chứa ít nhất một chữ cái.',
+            'password.numbers'      => 'Mật khẩu mới phải chứa ít nhất một chữ số.',
+            'password.confirmed'    => 'Xác nhận mật khẩu mới không khớp.',
+            'system_role.in'        => 'Vai trò không hợp lệ.',
+            'vendor_id.required'    => 'Vui lòng chọn Nông hộ liên kết cho vai trò này.',
+            'vendor_id.exists'      => 'Nông hộ được chọn không hợp lệ.',
+            'employee_id.required'  => 'Vui lòng chọn Hồ sơ nhân viên liên kết cho vai trò này.',
+            'employee_id.exists'    => 'Hồ sơ nhân viên được chọn không hợp lệ.',
         ];
     }
 }

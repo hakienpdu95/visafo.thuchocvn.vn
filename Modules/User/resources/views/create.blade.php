@@ -9,6 +9,9 @@
     'oldRole'       => old('system_role', ''),
     'oldName'       => old('name', ''),
     'oldEmail'      => old('email', ''),
+    'oldUsername'   => old('username', ''),
+    'oldVendorId'   => old('vendor_id', ''),
+    'oldEmployeeId' => old('employee_id', ''),
     'hasErrors'     => $errors->any(),
 ]) }})">
 
@@ -76,8 +79,8 @@
                                x-text="name || 'Họ và tên'"
                                :class="name ? 'text-base-content' : 'text-base-content/25'"></p>
                             <p class="text-xs truncate mt-0.5"
-                               x-text="email || 'email@congty.com'"
-                               :class="email ? 'text-base-content/60' : 'text-base-content/25'"></p>
+                               x-text="email || username || 'email hoặc tên đăng nhập'"
+                               :class="(email || username) ? 'text-base-content/60' : 'text-base-content/25'"></p>
                         </div>
                         <span x-show="selectedRoleLabel" x-text="selectedRoleLabel" x-transition
                               class="badge badge-primary badge-sm shrink-0"></span>
@@ -107,37 +110,47 @@
                             @error('name')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
-                        {{-- Email --}}
+                        {{-- Username (luôn hiển thị — định danh đăng nhập bắt buộc cho mọi vai trò) --}}
                         <div class="form-control">
                             <label class="label py-0 pb-1.5">
-                                <span class="label-text font-medium">Email <span class="text-error">*</span></span>
+                                <span class="label-text font-medium">Tên đăng nhập <span class="text-error">*</span></span>
+                                <span x-show="showOk('username')" x-transition
+                                      class="label-text-alt text-success text-xs flex items-center gap-0.5">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                    Hợp lệ
+                                </span>
+                            </label>
+                            <input type="text" name="username" id="input-username"
+                                   x-model="username"
+                                   @blur="touch('username')"
+                                   :class="fieldCls('username')"
+                                   class="input input-bordered input-sm w-full transition-colors"
+                                   placeholder="VD: nva, sale.a" autocomplete="off">
+                            <p x-show="showErr('username')" x-text="errors.username"
+                               class="mt-1 text-xs text-error" x-transition></p>
+                            @error('username')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        {{-- Email (luôn hiển thị — không bắt buộc, không yêu cầu định dạng email công ty) --}}
+                        <div class="form-control">
+                            <label class="label py-0 pb-1.5">
+                                <span class="label-text font-medium">Email</span>
                                 <span x-show="showOk('email')" x-transition
                                       class="label-text-alt text-success text-xs flex items-center gap-0.5">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                                     Hợp lệ
                                 </span>
+                                <span x-show="!showOk('email')" class="label-text-alt text-xs text-base-content/40">Không bắt buộc</span>
                             </label>
                             <input type="email" name="email"
                                    x-model="email"
                                    @blur="touch('email')"
                                    :class="fieldCls('email')"
                                    class="input input-bordered input-sm w-full transition-colors"
-                                   placeholder="ten@congty.com" autocomplete="off">
+                                   placeholder="ten@example.com" autocomplete="off">
                             <p x-show="showErr('email')" x-text="errors.email"
                                class="mt-1 text-xs text-error" x-transition></p>
                             @error('email')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
-                        </div>
-
-                        {{-- Department --}}
-                        <div class="form-control">
-                            <label class="label py-0 pb-1.5">
-                                <span class="label-text font-medium">Phòng ban</span>
-                                <span class="label-text-alt text-xs text-base-content/40">Không bắt buộc</span>
-                            </label>
-                            <input type="text" name="department" value="{{ old('department') }}"
-                                   class="input input-bordered input-sm w-full"
-                                   placeholder="VD: Kinh doanh, IT, HR...">
-                            @error('department')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
                     </div>
@@ -234,7 +247,7 @@
 
                         {{-- Options --}}
                         <div class="space-y-2 pt-2 border-t border-base-200">
-                            <label class="flex items-start gap-2.5 cursor-pointer group select-none">
+                            <label class="flex items-start gap-2.5 cursor-pointer group select-none" x-show="!needsEmployeeLink" x-transition>
                                 <input type="checkbox" name="send_welcome_email" value="1"
                                        x-model="sendWelcomeEmail"
                                        class="checkbox checkbox-sm checkbox-info mt-0.5 shrink-0">
@@ -318,7 +331,30 @@
                             <option value="{{ $vendor->id }}" {{ old('vendor_id') == $vendor->id ? 'selected' : '' }}>{{ $vendor->name }}</option>
                             @endforeach
                         </select>
+                        <p x-show="showErr('vendor_id')" x-text="errors.vendor_id" class="mt-1 text-xs text-error" x-transition></p>
                         @error('vendor_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                    </div>
+
+                    {{-- Nhân viên liên kết (bắt buộc với mọi role nội bộ, trừ Admin & Nông hộ) --}}
+                    <div class="form-control mt-4" x-show="needsEmployeeLink" x-transition>
+                        <label class="label py-0 pb-1.5">
+                            <span class="label-text font-medium">Liên kết Hồ sơ Nhân viên <span class="text-error">*</span></span>
+                            <span class="label-text-alt text-xs text-base-content/40">Để đối chiếu phòng ban, giấy khám sức khỏe...</span>
+                        </label>
+                        <select id="ts-employee_id" name="employee_id" class="select select-bordered select-sm w-full @error('employee_id') select-error @enderror" data-ts-placeholder="— Chọn nhân viên —">
+                            <option value="">— Chọn nhân viên —</option>
+                            @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}" {{ old('employee_id') == $employee->id ? 'selected' : '' }}>{{ $employee->full_name }}</option>
+                            @endforeach
+                        </select>
+                        <p x-show="showErr('employee_id')" x-text="errors.employee_id" class="mt-1 text-xs text-error" x-transition></p>
+                        @error('employee_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                        @if($employees->isEmpty())
+                        <p class="mt-1 text-xs text-warning">Không còn hồ sơ nhân viên nào chưa gắn tài khoản. Vào
+                            <a href="{{ route('backend.employees.create') }}" class="link link-primary" target="_blank">Danh sách nhân viên</a>
+                            để tạo hồ sơ mới trước.
+                        </p>
+                        @endif
                     </div>
 
                 </div>
@@ -396,7 +432,7 @@
         </div>
 
         {{-- Ready confirmation --}}
-        <div x-show="isValid && name && email && selectedRole" x-transition
+        <div x-show="isValid && name && (email || username) && selectedRole" x-transition
              class="text-xs text-base-content/50 flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>

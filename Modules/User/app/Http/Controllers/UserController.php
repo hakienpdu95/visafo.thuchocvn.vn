@@ -13,6 +13,7 @@ use Modules\User\Actions\StoreUserAction;
 use Modules\User\Actions\UpdateUserAction;
 use Modules\User\Data\StoreUserData;
 use Modules\User\Data\UpdateUserData;
+use Modules\Employee\Models\Employee;
 use Modules\Vendor\Models\Vendor;
 
 class UserController extends Controller
@@ -49,11 +50,12 @@ class UserController extends Controller
 
         $isAdmin = $request->user()->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
 
-        $roles   = $this->buildRolesFor($request->user());
-        $matrix  = $this->permissionMatrix();
-        $vendors = Vendor::query()->orderBy('name')->get(['id', 'name']);
+        $roles     = $this->buildRolesFor($request->user());
+        $matrix    = $this->permissionMatrix();
+        $vendors   = Vendor::query()->orderBy('name')->get(['id', 'name']);
+        $employees = Employee::query()->whereDoesntHave('user')->orderBy('full_name')->get(['id', 'full_name']);
 
-        return view('user::create', compact('roles', 'matrix', 'isAdmin', 'vendors'));
+        return view('user::create', compact('roles', 'matrix', 'isAdmin', 'vendors', 'employees'));
     }
 
     public function store(Request $request, StoreUserAction $action): RedirectResponse
@@ -76,11 +78,17 @@ class UserController extends Controller
         $isAdmin     = $request->user()->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
         $currentRole = $this->resolveUserRole($user);
 
-        $roles   = $this->buildRolesFor($request->user());
-        $matrix  = $this->permissionMatrix();
-        $vendors = Vendor::query()->orderBy('name')->get(['id', 'name']);
+        $roles     = $this->buildRolesFor($request->user());
+        $matrix    = $this->permissionMatrix();
+        $vendors   = Vendor::query()->orderBy('name')->get(['id', 'name']);
+        $employees = Employee::query()
+            ->where(function ($q) use ($user) {
+                $q->whereDoesntHave('user')->orWhere('id', $user->employee_id);
+            })
+            ->orderBy('full_name')
+            ->get(['id', 'full_name']);
 
-        return view('user::edit', compact('user', 'roles', 'matrix', 'isAdmin', 'currentRole', 'vendors'));
+        return view('user::edit', compact('user', 'roles', 'matrix', 'isAdmin', 'currentRole', 'vendors', 'employees'));
     }
 
     public function update(Request $request, User $user, UpdateUserAction $action): RedirectResponse
