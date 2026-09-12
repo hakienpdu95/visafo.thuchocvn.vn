@@ -3,8 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('farming_logs')) {
@@ -15,10 +19,11 @@ return new class extends Migration {
             $table->ulid('id')->primary();
             $table->unsignedInteger('order_column')->nullable()->index()->comment('Thứ tự sắp xếp — Spatie Sortable / ORDER BY');
             $table->foreignUlid('farming_batch_id')->constrained('farming_batches')->cascadeOnDelete()->comment('Vụ/lô ghi nhận hoạt động này');
-            $table->string('activity_type', 30)->index()->comment('cultivation | water | fertilizer | pesticide | harvest | other');
+            $table->string('activity_type', 30)->index()->comment('cultivation | water | fertilizer | pesticide | harvest');
             $table->dateTime('activity_date')->index()->comment('Ngày giờ thực hiện hoạt động — cần chính xác đến giờ/phút cho phun thuốc (NK-NH-05) và thu hoạch (NK-NH-06)');
             $table->foreignUlid('agri_fertilizer_id')->nullable()->constrained('agri_fertilizers')->restrictOnDelete()->comment('Phân bón sử dụng — chỉ có ở log fertilizer');
             $table->foreignUlid('agri_pesticide_id')->nullable()->constrained('agri_pesticides')->restrictOnDelete()->comment('Thuốc BVTV sử dụng — chỉ có ở log pesticide');
+            $table->foreignUlid('vendor_farming_step_id')->nullable()->constrained('vendor_farming_steps')->nullOnDelete()->comment('Vỏ mềm — bước canh tác tự định nghĩa (activity_type=cultivation|other), dùng để hiển thị đúng tên trên Timeline');
             $table->decimal('quantity', 8, 2)->nullable()->comment('Số lượng phân bón/thuốc BVTV, hoặc sản lượng thu hoạch');
             $table->string('unit', 20)->nullable()->comment('Đơn vị tính (kg, ml, lít...)');
             $table->string('method_or_target', 255)->nullable()->comment('Cách bón (bón lót, bón thúc) hoặc đối tượng phòng trừ (rệp, sâu vẽ bùa)');
@@ -27,7 +32,17 @@ return new class extends Migration {
             $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->comment('Người ghi nhật ký');
             $table->string('notes', 500)->nullable()->comment('Ghi chú');
             $table->timestamps();
+            $table->softDeletes();
+            
+
+            // Indexes
+            $table->index('farming_batch_id');
+            $table->index('agri_fertilizer_id');
+            $table->index('agri_pesticide_id');
+            $table->index('vendor_farming_step_id');
         });
+
+        
     }
 
     public function down(): void

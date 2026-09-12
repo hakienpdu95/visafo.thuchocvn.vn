@@ -3,8 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('vendor_farming_steps')) {
@@ -20,8 +24,15 @@ return new class extends Migration {
             $table->string('base_activity_type', 20)->default('cultivation')->index()->comment('Phân loại gốc — chỉ được là cultivation hoặc other, không ảnh hưởng thuật toán ATTP (Readiness)');
             $table->integer('order_index')->default(0)->comment('Thứ tự hiển thị trên App Nông hộ');
             $table->timestamps();
-            $table->softDeletes()->comment('Thời gian xóa mềm');
+            $table->softDeletes();
+            
+
+            // Indexes
+            $table->index('vendor_id');
+            $table->index('partner_product_id');
         });
+
+        
     }
 
     public function down(): void

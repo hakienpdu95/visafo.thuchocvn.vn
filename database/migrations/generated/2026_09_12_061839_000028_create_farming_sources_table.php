@@ -3,8 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('farming_sources')) {
@@ -26,7 +30,13 @@ return new class extends Migration {
             $table->string('notes', 500)->nullable()->comment('Ghi chú');
             $table->timestamps();
             $table->softDeletes();
+            
+
+            // Indexes
+            $table->index('vendor_id');
         });
+
+        
     }
 
     public function down(): void

@@ -3,8 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Schema::hasTable('internal_facilities')) {
@@ -19,8 +23,11 @@ return new class extends Migration {
             $table->string('address', 500)->nullable()->comment('Địa chỉ cơ sở');
             $table->string('status', 20)->default('active')->index()->comment('active | inactive');
             $table->timestamps();
-            $table->softDeletes()->comment('Thời gian xóa mềm');
+            $table->softDeletes();
+            
         });
+
+        
     }
 
     public function down(): void
