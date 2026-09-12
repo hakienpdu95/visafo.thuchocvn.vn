@@ -100,21 +100,39 @@ class ComplianceDocumentController extends Controller
     {
         $this->authorize('update', $internalFacility);
 
-        return $this->store($request, $internalFacility, $action, 'backend.internal-compliance.index', ['facility' => $internalFacility->id]);
+        $data = StoreComplianceDocumentData::validateAndCreate($request->all());
+        $action->handle($internalFacility, $data);
+
+        return $this->backToFacility($internalFacility, 'Đã thêm hồ sơ mới.');
     }
 
     public function updateForInternalFacility(Request $request, InternalFacility $internalFacility, ComplianceDocument $document, UpdateComplianceDocumentAction $action): RedirectResponse
     {
         $this->authorize('update', $internalFacility);
 
-        return $this->update($request, $document, $action, 'backend.internal-compliance.index', $internalFacility, ['facility' => $internalFacility->id]);
+        $data = StoreComplianceDocumentData::validateAndCreate($request->all());
+        $action->handle($document, $data);
+
+        return $this->backToFacility($internalFacility, 'Đã cập nhật hồ sơ.');
     }
 
     public function destroyForInternalFacility(InternalFacility $internalFacility, ComplianceDocument $document, DestroyComplianceDocumentAction $action): RedirectResponse
     {
         $this->authorize('update', $internalFacility);
 
-        return $this->destroy($document, $action, 'backend.internal-compliance.index', $internalFacility, ['facility' => $internalFacility->id]);
+        $action->handle($document);
+
+        return $this->backToFacility($internalFacility, 'Đã xóa hồ sơ.');
+    }
+
+    /**
+     * Trang internal-compliance không còn dropdown "Cơ sở" — dùng #facility-{id}
+     * để accordion tự mở đúng khối vừa thao tác sau khi redirect.
+     */
+    private function backToFacility(InternalFacility $internalFacility, string $message): RedirectResponse
+    {
+        return redirect(route('backend.internal-compliance.index') . '#facility-' . $internalFacility->id)
+            ->with('success', $message);
     }
 
     private function store(Request $request, Model $documentable, StoreComplianceDocumentAction $action, string $redirectRoute, array $redirectParams = []): RedirectResponse

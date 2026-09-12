@@ -27,16 +27,29 @@ function _confirmDeleteDocument(doc, urlTemplate, table) {
     }).catch(() => alert('Lỗi kết nối. Vui lòng thử lại.'));
 }
 
-export function initComplianceDocumentsTable(tableId, onEdit) {
+export function initComplianceDocumentsTable(tableId, onEdit, opts = {}) {
+    const { showGroup = false } = opts;
+
     const el = document.getElementById(tableId);
     if (!el || !window.initTabulator) return null;
 
-    const rows = JSON.parse(el.dataset.rows || '[]');
+    // Hết hạn / sắp hết hạn phải nổi lên đầu bảng mặc định — QC cần thấy ngay
+    // không phải tự sắp xếp lại. Field ẩn `_risk` chỉ phục vụ initialSort.
+    const rows = JSON.parse(el.dataset.rows || '[]').map((row) => ({
+        ...row,
+        _risk: row.is_expired ? 2 : (row.is_expiring_soon ? 1 : 0),
+    }));
     const canManage = el.dataset.canManage === '1';
     const deleteUrlTemplate = el.dataset.deleteUrlTemplate;
 
     const columns = [
+        { field: '_risk', visible: false, sorter: 'number' },
+        { field: 'expiration_date', visible: false, sorter: 'string' },
         { title: 'Loại giấy tờ', field: 'type_name', minWidth: 180, sorter: 'string' },
+        ...(showGroup ? [{
+            title: 'Nhóm', field: 'group_label', width: 150, headerSort: false,
+            formatter: (cell) => _emptyOr(cell.getValue(), '<span class="badge badge-ghost badge-xs">' + _escHtml(cell.getValue()) + '</span>'),
+        }] : []),
         {
             title: 'Số hiệu', field: 'document_number', width: 130,
             formatter: (cell) => _emptyOr(cell.getValue(), _escHtml(cell.getValue())),
@@ -93,6 +106,10 @@ export function initComplianceDocumentsTable(tableId, onEdit) {
         paginationSize:         10,
         paginationSizeSelector: [10, 25, 50],
         paginationCounter:      'rows',
+        initialSort: [
+            { column: '_risk', dir: 'desc' },
+            { column: 'expiration_date', dir: 'asc' },
+        ],
         placeholder: '<div class="py-10 text-center text-sm text-base-content/40">Chưa có hồ sơ nào được ghi nhận.</div>',
     });
 }

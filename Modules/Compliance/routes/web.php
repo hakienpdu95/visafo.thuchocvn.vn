@@ -14,6 +14,7 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::post('compliance-warnings/{warning}/resolve', [ComplianceWarningController::class, 'resolve'])->name('compliance-warnings.resolve');
 
     Route::get('internal-compliance', [InternalFacilityController::class, 'index'])->name('internal-compliance.index');
+    Route::get('internal-compliance/export', [InternalFacilityController::class, 'export'])->name('internal-compliance.export');
     Route::post('internal-facilities', [InternalFacilityController::class, 'store'])->name('internal-facilities.store');
     Route::put('internal-facilities/{internal_facility}', [InternalFacilityController::class, 'update'])->name('internal-facilities.update');
 
