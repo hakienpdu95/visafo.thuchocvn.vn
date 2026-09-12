@@ -35,7 +35,7 @@
 [x-cloak] { display: none !important; }
 
 /* ── Admin Layout ─────────────────────────────── */
-body { margin: 0; padding: 0; background: #f1f5f9; }
+body { margin: 0; padding: 0; background: #fff; }
 .admin-shell { display: flex; overflow: hidden; }
 
 /* ── Sidebar ──────────────────────────────────── */

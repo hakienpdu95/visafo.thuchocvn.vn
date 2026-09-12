@@ -14,7 +14,7 @@
 
     @stack('styles')
 </head>
-<body style="background:#f1f5f9;margin:0;">
+<body style="background:#fff;margin:0;">
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
