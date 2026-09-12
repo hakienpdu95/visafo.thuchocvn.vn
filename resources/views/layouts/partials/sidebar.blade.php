@@ -8,7 +8,6 @@
     </div>
 
     <nav class="nav-wrap">
-        <p class="section-title">Tổng quan</p>
         <div class="nav-group">
             <a href="{{ route('backend.dashboard') }}"
                class="nav-link {{ request()->routeIs('backend.dashboard') ? 'active' : '' }}">
@@ -33,7 +32,6 @@
             @endcan
         </div>
 
-        <p class="section-title" style="margin-top:16px;">Đối tác & Chuỗi cung ứng</p>
         <div class="nav-group">
             @canany(['vendor.view', 'contract.view', 'product.view', 'customer.view'])
             <details {{ request()->routeIs('backend.vendors.*', 'backend.contracts.*', 'backend.partner-products.*', 'backend.customers.*') ? 'open' : '' }}>
@@ -60,7 +58,6 @@
             @endcanany
         </div>
 
-        <p class="section-title" style="margin-top:16px;">Sản phẩm & Truy xuất</p>
         <div class="nav-group">
             @can('product.view')
             <details {{ request()->routeIs('backend.products.*', 'backend.categories.*') ? 'open' : '' }}>
@@ -77,7 +74,6 @@
             @endcan
         </div>
 
-        <p class="section-title" style="margin-top:16px;">Quản trị Tuân thủ</p>
         <div class="nav-group">
             @canany(['compliance.view', 'product.manage', 'traceability.view'])
             <details {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*', 'backend.internal-compliance.*') ? 'open' : '' }}>
@@ -111,7 +107,6 @@
         </div>
 
         @can('compliance.view')
-        <p class="section-title" style="margin-top:16px;">Nhật ký Sản xuất Nông hộ</p>
         <div class="nav-group">
             <details {{ request()->routeIs('backend.farming-sources.*', 'backend.farming-batches.*') ? 'open' : '' }}>
                 <summary class="nav-summary {{ request()->routeIs('backend.farming-sources.*', 'backend.farming-batches.*') ? 'active' : '' }}">
@@ -127,7 +122,6 @@
         </div>
         @endcan
 
-        <p class="section-title" style="margin-top:16px;">Quản trị Hệ thống & Nội bộ</p>
         <div class="nav-group">
 
             @can('employee.view')
