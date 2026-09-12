@@ -179,7 +179,7 @@ class UserController extends Controller
             'Traceability (Truy xuất nguồn gốc)' => [
                 'system_admin' => 'View', 'director' => 'View', 'qa_qc_manager' => 'View', 'sales_staff' => 'View',
             ],
-            'Employees (Nhân sự & Y tế)' => [
+            'Employees (Nhân sự)' => [
                 'system_admin' => 'Full', 'director' => 'View',
             ],
             'System (Tài khoản, Nhật ký)' => [
