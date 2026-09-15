@@ -112,5 +112,3 @@ Notification Thông báo in-app  + push — (thông báo trên chuông) tất c�
 # > Thêm org selector theo pattern _resolveOrganizations() vào form create/edit của  module X
 
 # > Áp dụng pattern org selector của career-pathway-admin create vào form [tên module].
-
-Đọc file spec/nghiencuu/bcos_todo_status.md để nắm trạng thái BCOS, bắt đầu làm Discovery Workspace
