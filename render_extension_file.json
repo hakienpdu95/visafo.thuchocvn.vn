@@ -10,6 +10,9 @@
         "lifecycle_status///string///20///_NULL///NULL///__///invited | pending | active | suspended | archived — vòng đời đăng nhập tài khoản",
         "trust_level///unsignedTinyInteger///__///NOT_NULL///0///__///0=unverified, 1=email, 3=cccd, 4=cccd_biometric",
         "national_id_hash///string///64///_NULL///NULL///->unique()///SHA-256(số_CCCD) — check uniqueness, không lưu số thật",
+        "username///string///__///_NULL///NULL///->unique()///Tên đăng nhập, dùng thay email cho tài khoản liên kết Nhân viên",
+        "vendor_id///ulid///__///_NULL///NULL///__///__",
+        "employee_id///ulid///__///_NULL///NULL///__///__",
         "__index///index///__///__///__///account_type|users_account_type_index///__",
         "__index///index///__///__///__///trust_level|users_trust_level_index///__"
     ],

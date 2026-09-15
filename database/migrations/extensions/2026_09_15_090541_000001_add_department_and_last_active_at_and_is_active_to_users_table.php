@@ -38,6 +38,15 @@ return new class extends Migration {
             if (!Schema::hasColumn('users', 'national_id_hash')) {
                 $table->string('national_id_hash', 64)->nullable()->unique()->after('trust_level')->comment('SHA-256(số_CCCD) — check uniqueness, không lưu số thật');
             }
+            if (!Schema::hasColumn('users', 'username')) {
+                $table->string('username')->nullable()->unique()->after('national_id_hash')->comment('Tên đăng nhập, dùng thay email cho tài khoản liên kết Nhân viên');
+            }
+            if (!Schema::hasColumn('users', 'vendor_id')) {
+                $table->ulid('vendor_id')->nullable()->after('username');
+            }
+            if (!Schema::hasColumn('users', 'employee_id')) {
+                $table->ulid('employee_id')->nullable()->after('vendor_id');
+            }
             if (!Schema::hasIndex('users', 'users_account_type_index')) {
                 $table->index('account_type', 'users_account_type_index');
             }
@@ -50,7 +59,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $cols = array_filter(['department', 'last_active_at', 'is_active', 'branch_id', 'department_id', 'account_type', 'lifecycle_status', 'trust_level', 'national_id_hash'], fn($c) => Schema::hasColumn('users', $c));
+            $cols = array_filter(['department', 'last_active_at', 'is_active', 'branch_id', 'department_id', 'account_type', 'lifecycle_status', 'trust_level', 'national_id_hash', 'username', 'vendor_id', 'employee_id'], fn($c) => Schema::hasColumn('users', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }
