@@ -4,6 +4,7 @@ namespace Modules\Contract\Actions\Backend;
 
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\Contract\Data\Requests\UpdateContractData;
+use Modules\Contract\Enums\ContractPartyType;
 use Modules\Contract\Models\Contract;
 
 class UpdateContractAction
@@ -13,7 +14,9 @@ class UpdateContractAction
     public function handle(Contract $contract, UpdateContractData $data): Contract
     {
         $contract->update([
-            'vendor_id'              => $data->vendor_id,
+            'type'                   => $data->type->value,
+            'vendor_id'              => $data->type === ContractPartyType::Input ? $data->vendor_id : null,
+            'customer_id'            => $data->type === ContractPartyType::Output ? $data->customer_id : null,
             'contract_type_id'       => $data->contract_type_id,
             'name'                   => $data->name,
             'total_value'            => $data->total_value,

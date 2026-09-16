@@ -4,6 +4,7 @@ namespace Modules\Contract\Actions\Backend;
 
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\Contract\Data\Requests\StoreContractData;
+use Modules\Contract\Enums\ContractPartyType;
 use Modules\Contract\Models\Contract;
 
 class StoreContractAction
@@ -13,7 +14,9 @@ class StoreContractAction
     public function handle(StoreContractData $data): Contract
     {
         return Contract::create([
-            'vendor_id'              => $data->vendor_id,
+            'type'                   => $data->type->value,
+            'vendor_id'              => $data->type === ContractPartyType::Input ? $data->vendor_id : null,
+            'customer_id'            => $data->type === ContractPartyType::Output ? $data->customer_id : null,
             'contract_type_id'       => $data->contract_type_id,
             'name'                   => $data->name,
             'total_value'            => $data->total_value,

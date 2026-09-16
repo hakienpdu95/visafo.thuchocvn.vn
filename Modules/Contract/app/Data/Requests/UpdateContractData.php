@@ -3,6 +3,7 @@
 namespace Modules\Contract\Data\Requests;
 
 use Illuminate\Validation\Rule;
+use Modules\Contract\Enums\ContractPartyType;
 use Modules\Contract\Enums\ContractStatus;
 use Spatie\LaravelData\Attributes\Validation\AfterOrEqual;
 use Spatie\LaravelData\Attributes\Validation\Date;
@@ -17,8 +18,11 @@ use Spatie\LaravelData\Data;
 class UpdateContractData extends Data
 {
     public function __construct(
-        #[Required]
-        public readonly string $vendor_id,
+        public readonly ContractPartyType $type,
+
+        public readonly ?string $vendor_id,
+
+        public readonly ?string $customer_id,
 
         #[Required]
         public readonly string $contract_type_id,
@@ -46,7 +50,20 @@ class UpdateContractData extends Data
     public static function rules(): array
     {
         return [
-            'vendor_id'              => ['required', Rule::exists('vendors', 'id')],
+            'type' => ['required', Rule::enum(ContractPartyType::class)],
+
+            'vendor_id' => [
+                'nullable',
+                Rule::requiredIf(fn () => request('type') === ContractPartyType::Input->value),
+                Rule::exists('vendors', 'id'),
+            ],
+
+            'customer_id' => [
+                'nullable',
+                Rule::requiredIf(fn () => request('type') === ContractPartyType::Output->value),
+                Rule::exists('customers', 'id'),
+            ],
+
             'contract_type_id'       => ['required', Rule::exists('contract_types', 'id')],
             'renewal_period_months'  => ['nullable', 'integer', 'min:1', 'max:120', 'required_if:is_auto_renew,1'],
             'status'                 => ['required', Rule::enum(ContractStatus::class)],

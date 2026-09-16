@@ -1,3 +1,5 @@
+import { createTs } from '@shared/tom-select-factory.js';
+
 function esc(v) {
     if (v == null) return '';
     return String(v)
@@ -115,7 +117,8 @@ document.addEventListener('alpine:init', () => {
 
         const COLUMNS = buildColumns(canDelete);
 
-        let tableInst = null;
+        let tableInst     = null;
+        let tsFoodContact = null;
 
         return {
             filters: { search: '', foodContact: '' },
@@ -145,7 +148,17 @@ document.addEventListener('alpine:init', () => {
             init() {
                 this.loadState();
                 try { this.hiddenCols = JSON.parse(localStorage.getItem(LS_COLS) || '[]'); } catch (_) {}
-                this.$nextTick(() => this._setup());
+                this.$nextTick(() => { this._setup(); this._initTomSelects(); });
+            },
+
+            _initTomSelects() {
+                const foodContactEl = document.getElementById('ts-food-contact');
+                if (!foodContactEl) return;
+
+                tsFoodContact = createTs(foodContactEl, {
+                    placeholder: 'Tất cả',
+                    onChange() { foodContactEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
             },
 
             _setup() {
@@ -219,13 +232,14 @@ document.addEventListener('alpine:init', () => {
 
             removeChip(key) {
                 if (key === 'search') this.filters.search = '';
-                if (key === 'foodContact') this.filters.foodContact = '';
+                if (key === 'foodContact') { this.filters.foodContact = ''; tsFoodContact?.setValue('', true); }
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
                 this.filters = { search: '', foodContact: '' };
+                tsFoodContact?.setValue('', true);
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

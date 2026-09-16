@@ -16,6 +16,7 @@ use Modules\Contract\Models\Contract;
 use Modules\Contract\Models\ContractType;
 use Modules\Contract\Queries\GetContractHandler;
 use Modules\Contract\Queries\GetContractQuery;
+use Modules\Customer\Models\Customer;
 use Modules\Vendor\Models\Vendor;
 
 class ContractController extends Controller
@@ -31,15 +32,22 @@ class ContractController extends Controller
             ->map(fn ($s) => ['value' => $s->value, 'text' => $s->label()])
             ->all();
 
-        return view('contract::index', compact('statuses'));
+        $contractTypes = ContractType::query()
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn ($t) => ['value' => $t->id, 'text' => $t->name])
+            ->all();
+
+        return view('contract::index', compact('statuses', 'contractTypes'));
     }
 
     public function create()
     {
         $vendors       = Vendor::query()->orderBy('name')->get(['id', 'name']);
+        $customers     = Customer::query()->orderBy('name')->get(['id', 'name']);
         $contractTypes = ContractType::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('contract::create', compact('vendors', 'contractTypes'));
+        return view('contract::create', compact('vendors', 'customers', 'contractTypes'));
     }
 
     public function store(Request $request, StoreContractAction $action): RedirectResponse
@@ -61,9 +69,10 @@ class ContractController extends Controller
     public function edit(Contract $contract)
     {
         $vendors       = Vendor::query()->orderBy('name')->get(['id', 'name']);
+        $customers     = Customer::query()->orderBy('name')->get(['id', 'name']);
         $contractTypes = ContractType::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('contract::edit', compact('contract', 'vendors', 'contractTypes'));
+        return view('contract::edit', compact('contract', 'vendors', 'customers', 'contractTypes'));
     }
 
     public function update(Request $request, Contract $contract, UpdateContractAction $action): RedirectResponse

@@ -1,3 +1,5 @@
+import { createTs } from '@shared/tom-select-factory.js';
+
 function esc(v) {
     if (v == null) return '';
     return String(v)
@@ -145,7 +147,10 @@ document.addEventListener('alpine:init', () => {
 
         const COLUMNS = buildColumns(canDelete);
 
-        let tableInst = null;
+        let tableInst       = null;
+        let tsCustomerGroup = null;
+        let tsMealModel     = null;
+        let tsStatus        = null;
 
         return {
             filters: { search: '', customerGroup: '', mealModel: '', status: '' },
@@ -183,7 +188,29 @@ document.addEventListener('alpine:init', () => {
             init() {
                 this.loadState();
                 try { this.hiddenCols = JSON.parse(localStorage.getItem(LS_COLS) || '[]'); } catch (_) {}
-                this.$nextTick(() => this._setup());
+                this.$nextTick(() => { this._setup(); this._initTomSelects(); });
+            },
+
+            _initTomSelects() {
+                const groupEl  = document.getElementById('ts-customer-group');
+                const mealEl   = document.getElementById('ts-meal-model');
+                const statusEl = document.getElementById('ts-status');
+                if (!groupEl || !mealEl || !statusEl) return;
+
+                tsCustomerGroup = createTs(groupEl, {
+                    placeholder: 'Tất cả nhóm khách hàng',
+                    onChange() { groupEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
+
+                tsMealModel = createTs(mealEl, {
+                    placeholder: 'Tất cả mô hình bữa ăn',
+                    onChange() { mealEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
+
+                tsStatus = createTs(statusEl, {
+                    placeholder: 'Tất cả trạng thái',
+                    onChange() { statusEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
             },
 
             _setup() {
@@ -262,16 +289,19 @@ document.addEventListener('alpine:init', () => {
             clearSearch()    { this.filters.search = ''; this.saveState(); this.refresh(); },
 
             removeChip(key) {
-                if (key === 'search') this.filters.search = '';
-                if (key === 'customerGroup') this.filters.customerGroup = '';
-                if (key === 'mealModel') this.filters.mealModel = '';
-                if (key === 'status') this.filters.status = '';
+                if (key === 'search')        this.filters.search = '';
+                if (key === 'customerGroup') { this.filters.customerGroup = ''; tsCustomerGroup?.setValue('', true); }
+                if (key === 'mealModel')     { this.filters.mealModel = ''; tsMealModel?.setValue('', true); }
+                if (key === 'status')        { this.filters.status = ''; tsStatus?.setValue('', true); }
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
                 this.filters = { search: '', customerGroup: '', mealModel: '', status: '' };
+                tsCustomerGroup?.setValue('', true);
+                tsMealModel?.setValue('', true);
+                tsStatus?.setValue('', true);
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

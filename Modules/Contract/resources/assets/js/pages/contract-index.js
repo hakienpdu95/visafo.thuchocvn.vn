@@ -1,3 +1,5 @@
+import { createTs } from '@shared/tom-select-factory.js';
+
 function esc(v) {
     if (v == null) return '';
     return String(v)
@@ -141,26 +143,33 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.data('contractListPage', (serverData = {}) => {
         const {
-            apiUrl    = '',
-            statuses  = [],
-            canDelete = false,
+            apiUrl        = '',
+            statuses      = [],
+            contractTypes = [],
+            canDelete     = false,
         } = serverData;
 
         const COLUMNS = buildColumns(canDelete);
 
-        let tableInst = null;
+        let tableInst      = null;
+        let tsStatus       = null;
+        let tsContractType = null;
 
         return {
-            filters: { search: '', status: '' },
+            filters: { search: '', status: '', contractType: '' },
 
             get hasFilters() {
                 const f = this.filters;
-                return !!(f.search || f.status);
+                return !!(f.search || f.status || f.contractType);
             },
 
             get activeChips() {
                 const chips = [], f = this.filters;
                 if (f.search) chips.push({ key: 'search', label: 'Tìm: ' + f.search });
+                if (f.contractType) {
+                    const ct = contractTypes.find(t => t.value === f.contractType);
+                    chips.push({ key: 'contractType', label: ct ? ct.text : f.contractType });
+                }
                 if (f.status) {
                     const st = statuses.find(s => s.value === f.status);
                     chips.push({ key: 'status', label: st ? st.text : f.status });
@@ -170,7 +179,23 @@ document.addEventListener('alpine:init', () => {
 
             init() {
                 this.loadState();
-                this.$nextTick(() => this._setup());
+                this.$nextTick(() => { this._setup(); this._initTomSelects(); });
+            },
+
+            _initTomSelects() {
+                const statusEl       = document.getElementById('ts-status');
+                const contractTypeEl = document.getElementById('ts-contract-type');
+                if (!statusEl || !contractTypeEl) return;
+
+                tsStatus = createTs(statusEl, {
+                    placeholder: 'Tất cả trạng thái',
+                    onChange() { statusEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
+
+                tsContractType = createTs(contractTypeEl, {
+                    placeholder: 'Tất cả loại hợp đồng',
+                    onChange() { contractTypeEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
             },
 
             _setup() {
@@ -181,8 +206,9 @@ document.addEventListener('alpine:init', () => {
                     ajaxConfig: { headers: { 'X-Requested-With': 'XMLHttpRequest' } },
                     ajaxParams() {
                         const p = {}, f = self.filters;
-                        if (f.search) p.search = f.search;
-                        if (f.status) p.status = f.status;
+                        if (f.search)       p.search           = f.search;
+                        if (f.status)       p.status           = f.status;
+                        if (f.contractType) p.contract_type_id = f.contractType;
                         return p;
                     },
                     ajaxResponse: (_u, _p, res) => res,
@@ -225,14 +251,16 @@ document.addEventListener('alpine:init', () => {
 
             loadState() {
                 const p = new URLSearchParams(location.search);
-                if (p.has('q'))  this.filters.search = p.get('q');
-                if (p.has('st')) this.filters.status = p.get('st');
+                if (p.has('q'))  this.filters.search       = p.get('q');
+                if (p.has('st')) this.filters.status       = p.get('st');
+                if (p.has('ct')) this.filters.contractType = p.get('ct');
             },
 
             saveState() {
                 const p = new URLSearchParams(), f = this.filters;
-                if (f.search) p.set('q', f.search);
-                if (f.status) p.set('st', f.status);
+                if (f.search)       p.set('q', f.search);
+                if (f.status)       p.set('st', f.status);
+                if (f.contractType) p.set('ct', f.contractType);
                 const qs = p.toString();
                 history.replaceState(null, '', qs ? '?' + qs : location.pathname);
             },
@@ -242,14 +270,17 @@ document.addEventListener('alpine:init', () => {
             clearSearch()    { this.filters.search = ''; this.saveState(); this.refresh(); },
 
             removeChip(key) {
-                if (key === 'search') this.filters.search = '';
-                if (key === 'status') this.filters.status = '';
+                if (key === 'search')       this.filters.search = '';
+                if (key === 'status')       { this.filters.status = ''; tsStatus?.setValue('', true); }
+                if (key === 'contractType') { this.filters.contractType = ''; tsContractType?.setValue('', true); }
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
-                this.filters = { search: '', status: '' };
+                this.filters = { search: '', status: '', contractType: '' };
+                tsStatus?.setValue('', true);
+                tsContractType?.setValue('', true);
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

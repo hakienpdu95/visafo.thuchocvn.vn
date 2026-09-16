@@ -588,18 +588,18 @@
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật"
     ],
     [
-      "agri_pesticides///__///__///Bảng danh mục thuốc BVTV",
-      "category///string///100///NOT_NULL///__///->index()///Nhóm thuốc (VD: Thuốc trừ sâu, Thuốc trừ bệnh, Thuốc trừ cỏ)",
-      "active_ingredients///string///500///NOT_NULL///__///__///Thành phần hoạt chất (COMMON NAME)",
-      "trade_name///string///255///NOT_NULL///__///->index()///Tên thương phẩm (TRADE NAME)",
-      "target_pest///string///500///_NULL///NULL///__///Đối tượng phòng trừ (PEST/CROP)",
-      "applicant///string///255///_NULL///NULL///__///Tổ chức đăng ký (APPLICANT)",
-      "quarantine_days///unsignedInteger///__///_NULL///NULL///__///Thời gian cách ly (ngày) - Data cực quan trọng để chặn thu hoạch",
-      "is_banned///boolean///__///NOT_NULL///false///__///Cờ đánh dấu thuốc đã bị NN cấm lưu hành",
-      "status///string///20///NOT_NULL///'active'///->index()///active | inactive",
-      "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
-      "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
-      "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+        "agri_pesticides///__///__///Bảng danh mục thuốc BVTV",
+        "category///string///100///NOT_NULL///__///->index()///Nhóm thuốc (VD: Thuốc trừ sâu, Thuốc trừ bệnh, Thuốc trừ cỏ)",
+        "active_ingredients///string///500///NOT_NULL///__///__///Thành phần hoạt chất (COMMON NAME)",
+        "trade_name///string///255///NOT_NULL///__///->index()///Tên thương phẩm (TRADE NAME)",
+        "target_pest///string///500///_NULL///NULL///__///Đối tượng phòng trừ (PEST/CROP)",
+        "applicant///string///255///_NULL///NULL///__///Tổ chức đăng ký (APPLICANT)",
+        "quarantine_days///unsignedInteger///__///_NULL///NULL///__///Thời gian cách ly (ngày) - Data cực quan trọng để chặn thu hoạch",
+        "is_banned///boolean///__///NOT_NULL///false///__///Cờ đánh dấu thuốc đã bị NN cấm lưu hành",
+        "status///string///20///NOT_NULL///'active'///->index()///active | inactive",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
     ],
     [
         "agri_fertilizers///__///__///Bảng danh mục phân bón",

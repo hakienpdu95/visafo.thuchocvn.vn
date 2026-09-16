@@ -1,3 +1,5 @@
+import { createTs } from '@shared/tom-select-factory.js';
+
 function esc(v) {
     if (v == null) return '';
     return String(v)
@@ -135,6 +137,7 @@ document.addEventListener('alpine:init', () => {
         const COLUMNS = buildColumns(canDelete);
 
         let tableInst = null;
+        let tsStatus  = null;
 
         return {
             filters: { search: '', status: '' },
@@ -156,7 +159,17 @@ document.addEventListener('alpine:init', () => {
 
             init() {
                 this.loadState();
-                this.$nextTick(() => this._setup());
+                this.$nextTick(() => { this._setup(); this._initTomSelects(); });
+            },
+
+            _initTomSelects() {
+                const statusEl = document.getElementById('ts-status');
+                if (!statusEl) return;
+
+                tsStatus = createTs(statusEl, {
+                    placeholder: 'Tất cả trạng thái',
+                    onChange() { statusEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
             },
 
             _setup() {
@@ -229,13 +242,14 @@ document.addEventListener('alpine:init', () => {
 
             removeChip(key) {
                 if (key === 'search') this.filters.search = '';
-                if (key === 'status') this.filters.status = '';
+                if (key === 'status') { this.filters.status = ''; tsStatus?.setValue('', true); }
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
                 this.filters = { search: '', status: '' };
+                tsStatus?.setValue('', true);
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

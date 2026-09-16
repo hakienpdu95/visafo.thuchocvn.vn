@@ -31,7 +31,7 @@
 @endif
 
 <form method="POST" action="{{ route('backend.contracts.store') }}" novalidate data-contract-form
-      x-data="{ autoRenew: {{ old('is_auto_renew') ? 'true' : 'false' }} }">
+      x-data="{ autoRenew: {{ old('is_auto_renew') ? 'true' : 'false' }}, contractType: '{{ old('type', 'input') }}' }">
     @csrf
 
     <div class="grid grid-cols-1 xl:grid-cols-[1fr_268px] gap-6 items-start">
@@ -51,13 +51,25 @@
 
                     <div class="space-y-4">
 
-                        {{-- Nhà cung cấp — trường đối tác đầu tiên trên form --}}
                         <div class="form-control">
+                            <label class="label py-0 pb-1.5">
+                                <span class="label-text font-medium">Loại giao dịch <span class="text-error">*</span></span>
+                            </label>
+                            <div class="join w-full">
+                                <input type="radio" name="type" value="input" x-model="contractType"
+                                       class="join-item btn btn-sm flex-1" aria-label="Đầu vào (Nhà cung cấp)">
+                                <input type="radio" name="type" value="output" x-model="contractType"
+                                       class="join-item btn btn-sm flex-1" aria-label="Đầu ra (Khách hàng)">
+                            </div>
+                            @error('type')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div x-show="contractType === 'input'" x-cloak class="form-control">
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Nhà cung cấp <span class="text-error">*</span></span>
                             </label>
                             <select id="ts-vendor_id" name="vendor_id"
-                                    class="select select-bordered select-sm w-full ts-init @error('vendor_id') select-error @enderror"
+                                    class="select select-bordered select-sm w-full @if(old('type', 'input') === 'input') ts-init @endif @error('vendor_id') select-error @enderror"
                                     data-ts-placeholder="— Chọn nhà cung cấp —"
                                     data-req="Vui lòng chọn nhà cung cấp">
                                 <option value="">— Chọn nhà cung cấp —</option>
@@ -66,6 +78,22 @@
                                 @endforeach
                             </select>
                             @error('vendor_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div x-show="contractType === 'output'" x-cloak class="form-control">
+                            <label class="label py-0 pb-1.5">
+                                <span class="label-text font-medium">Khách hàng <span class="text-error">*</span></span>
+                            </label>
+                            <select id="ts-customer_id" name="customer_id"
+                                    class="select select-bordered select-sm w-full @if(old('type', 'input') === 'output') ts-init @endif @error('customer_id') select-error @enderror"
+                                    data-ts-placeholder="— Chọn khách hàng —"
+                                    data-req="Vui lòng chọn khách hàng">
+                                <option value="">— Chọn khách hàng —</option>
+                                @foreach($customers as $customer)
+                                <option value="{{ $customer->id }}" @selected(old('customer_id') === $customer->id)>{{ $customer->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('customer_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

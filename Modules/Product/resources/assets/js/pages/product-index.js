@@ -1,3 +1,5 @@
+import { createTs } from '@shared/tom-select-factory.js';
+
 function esc(v) {
     if (v == null) return '';
     return String(v)
@@ -140,7 +142,9 @@ document.addEventListener('alpine:init', () => {
 
         const COLUMNS = buildColumns(canDelete);
 
-        let tableInst = null;
+        let tableInst  = null;
+        let tsCategory = null;
+        let tsStatus   = null;
 
         return {
             filters: { search: '', category_id: '', status: '' },
@@ -174,7 +178,23 @@ document.addEventListener('alpine:init', () => {
             init() {
                 this.loadState();
                 try { this.hiddenCols = JSON.parse(localStorage.getItem(LS_COLS) || '[]'); } catch (_) {}
-                this.$nextTick(() => this._setup());
+                this.$nextTick(() => { this._setup(); this._initTomSelects(); });
+            },
+
+            _initTomSelects() {
+                const categoryEl = document.getElementById('ts-category');
+                const statusEl   = document.getElementById('ts-status');
+                if (!categoryEl || !statusEl) return;
+
+                tsCategory = createTs(categoryEl, {
+                    placeholder: 'Tất cả ngành hàng',
+                    onChange() { categoryEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
+
+                tsStatus = createTs(statusEl, {
+                    placeholder: 'Tất cả trạng thái',
+                    onChange() { statusEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
             },
 
             _setup() {
@@ -251,14 +271,16 @@ document.addEventListener('alpine:init', () => {
 
             removeChip(key) {
                 if (key === 'search')      this.filters.search = '';
-                if (key === 'category_id') this.filters.category_id = '';
-                if (key === 'status')      this.filters.status = '';
+                if (key === 'category_id') { this.filters.category_id = ''; tsCategory?.setValue('', true); }
+                if (key === 'status')      { this.filters.status = ''; tsStatus?.setValue('', true); }
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
                 this.filters = { search: '', category_id: '', status: '' };
+                tsCategory?.setValue('', true);
+                tsStatus?.setValue('', true);
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

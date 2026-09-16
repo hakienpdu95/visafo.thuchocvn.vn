@@ -11,8 +11,9 @@ class ListContractsQuery implements QueryInterface
         public readonly int     $perPage   = 25,
         public readonly string  $sortField = 'created_at',
         public readonly string  $sortDir   = 'desc',
-        public readonly ?string $search    = null,
-        public readonly ?string $status    = null,
-        public readonly ?string $vendorId  = null,
+        public readonly ?string $search         = null,
+        public readonly ?string $status         = null,
+        public readonly ?string $vendorId       = null,
+        public readonly ?string $contractTypeId = null,
     ) {}
 }

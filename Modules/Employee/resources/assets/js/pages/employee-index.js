@@ -1,3 +1,5 @@
+import { createTs } from '@shared/tom-select-factory.js';
+
 function esc(v) {
     if (v == null) return '';
     return String(v)
@@ -137,7 +139,8 @@ document.addEventListener('alpine:init', () => {
 
         const COLUMNS = buildColumns(canDelete);
 
-        let tableInst = null;
+        let tableInst    = null;
+        let tsDepartment = null;
 
         return {
             filters: { search: '', department_id: '' },
@@ -159,7 +162,17 @@ document.addEventListener('alpine:init', () => {
 
             init() {
                 this.loadState();
-                this.$nextTick(() => this._setup());
+                this.$nextTick(() => { this._setup(); this._initTomSelects(); });
+            },
+
+            _initTomSelects() {
+                const departmentEl = document.getElementById('ts-department');
+                if (!departmentEl) return;
+
+                tsDepartment = createTs(departmentEl, {
+                    placeholder: 'Tất cả phòng ban',
+                    onChange() { departmentEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
             },
 
             _setup() {
@@ -232,13 +245,14 @@ document.addEventListener('alpine:init', () => {
 
             removeChip(key) {
                 if (key === 'search') this.filters.search = '';
-                if (key === 'department_id') this.filters.department_id = '';
+                if (key === 'department_id') { this.filters.department_id = ''; tsDepartment?.setValue('', true); }
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
                 this.filters = { search: '', department_id: '' };
+                tsDepartment?.setValue('', true);
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

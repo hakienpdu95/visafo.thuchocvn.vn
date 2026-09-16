@@ -17,11 +17,12 @@ class ContractApiController extends Controller
         $this->authorize('viewAny', Contract::class);
 
         $validated = $request->validate([
-            'page'      => ['nullable', 'integer', 'min:1'],
-            'size'      => ['nullable', 'integer', 'min:5', 'max:100'],
-            'search'    => ['nullable', 'string', 'max:200'],
-            'status'    => ['nullable', 'string'],
-            'vendor_id' => ['nullable', 'string'],
+            'page'             => ['nullable', 'integer', 'min:1'],
+            'size'             => ['nullable', 'integer', 'min:5', 'max:100'],
+            'search'           => ['nullable', 'string', 'max:200'],
+            'status'           => ['nullable', 'string'],
+            'vendor_id'        => ['nullable', 'string'],
+            'contract_type_id' => ['nullable', 'string'],
         ]);
 
         $sortRaw   = $request->input('sort.0');
@@ -29,13 +30,14 @@ class ContractApiController extends Controller
         $sortDir   = is_array($sortRaw) && ($sortRaw['dir'] ?? '') === 'asc' ? 'asc' : 'desc';
 
         $query = new ListContractsQuery(
-            page:      max(1, (int) ($validated['page'] ?? 1)),
-            perPage:   min(100, max(5, (int) ($validated['size'] ?? 25))),
-            sortField: $sortField,
-            sortDir:   $sortDir,
-            search:    $validated['search'] ?? null,
-            status:    $validated['status'] ?? null,
-            vendorId:  $validated['vendor_id'] ?? null,
+            page:           max(1, (int) ($validated['page'] ?? 1)),
+            perPage:        min(100, max(5, (int) ($validated['size'] ?? 25))),
+            sortField:      $sortField,
+            sortDir:        $sortDir,
+            search:         $validated['search'] ?? null,
+            status:         $validated['status'] ?? null,
+            vendorId:       $validated['vendor_id'] ?? null,
+            contractTypeId: $validated['contract_type_id'] ?? null,
         );
 
         $paginator = $handler->handle($query);

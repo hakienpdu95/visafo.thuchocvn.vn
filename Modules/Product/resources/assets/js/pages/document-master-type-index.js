@@ -1,3 +1,5 @@
+import { createTs } from '@shared/tom-select-factory.js';
+
 function esc(v) {
     if (v == null) return '';
     return String(v)
@@ -132,7 +134,8 @@ document.addEventListener('alpine:init', () => {
 
         const COLUMNS = buildColumns(canDelete);
 
-        let tableInst = null;
+        let tableInst       = null;
+        let tsDocumentGroup = null;
 
         return {
             filters: { search: '', document_group: '' },
@@ -154,7 +157,17 @@ document.addEventListener('alpine:init', () => {
 
             init() {
                 this.loadState();
-                this.$nextTick(() => this._setup());
+                this.$nextTick(() => { this._setup(); this._initTomSelects(); });
+            },
+
+            _initTomSelects() {
+                const groupEl = document.getElementById('ts-document-group');
+                if (!groupEl) return;
+
+                tsDocumentGroup = createTs(groupEl, {
+                    placeholder: 'Tất cả nhóm giấy tờ',
+                    onChange() { groupEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
             },
 
             _setup() {
@@ -234,13 +247,14 @@ document.addEventListener('alpine:init', () => {
 
             removeChip(key) {
                 if (key === 'search') this.filters.search = '';
-                if (key === 'document_group') this.filters.document_group = '';
+                if (key === 'document_group') { this.filters.document_group = ''; tsDocumentGroup?.setValue('', true); }
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
                 this.filters = { search: '', document_group: '' };
+                tsDocumentGroup?.setValue('', true);
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

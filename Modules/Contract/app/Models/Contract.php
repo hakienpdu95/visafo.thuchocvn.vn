@@ -5,7 +5,9 @@ namespace Modules\Contract\Models;
 use App\Foundation\Models\TenantAwareModel;
 use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Contract\Enums\ContractPartyType;
 use Modules\Contract\Enums\ContractStatus;
+use Modules\Customer\Models\Customer;
 use Modules\Vendor\Models\Vendor;
 
 class Contract extends TenantAwareModel
@@ -23,7 +25,9 @@ class Contract extends TenantAwareModel
     }
 
     protected $fillable = [
+        'type',
         'vendor_id',
+        'customer_id',
         'contract_type_id',
         'contract_number',
         'name',
@@ -38,6 +42,7 @@ class Contract extends TenantAwareModel
     protected function casts(): array
     {
         return [
+            'type'                   => ContractPartyType::class,
             'total_value'            => 'decimal:2',
             'start_date'             => 'date',
             'end_date'               => 'date',
@@ -50,6 +55,11 @@ class Contract extends TenantAwareModel
     public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function contractType(): BelongsTo
