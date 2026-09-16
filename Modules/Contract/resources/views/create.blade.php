@@ -55,11 +55,17 @@
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Loại giao dịch <span class="text-error">*</span></span>
                             </label>
-                            <div class="join w-full">
-                                <input type="radio" name="type" value="input" x-model="contractType"
-                                       class="join-item btn btn-sm flex-1" aria-label="Đầu vào (Nhà cung cấp)">
-                                <input type="radio" name="type" value="output" x-model="contractType"
-                                       class="join-item btn btn-sm flex-1" aria-label="Đầu ra (Khách hàng)">
+                            <div class="flex flex-wrap gap-6">
+                                <label class="label cursor-pointer justify-start gap-2 py-0">
+                                    <input type="radio" name="type" value="input" x-model="contractType"
+                                           class="radio radio-sm radio-primary">
+                                    <span class="label-text font-medium">Đầu vào (Nhà cung cấp)</span>
+                                </label>
+                                <label class="label cursor-pointer justify-start gap-2 py-0">
+                                    <input type="radio" name="type" value="output" x-model="contractType"
+                                           class="radio radio-sm radio-primary">
+                                    <span class="label-text font-medium">Đầu ra (Khách hàng)</span>
+                                </label>
                             </div>
                             @error('type')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>

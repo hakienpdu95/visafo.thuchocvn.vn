@@ -5,6 +5,8 @@ namespace Modules\Contract\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Modules\Contract\Enums\ContractPartyType;
 use Modules\Contract\Http\Resources\ContractListResource;
 use Modules\Contract\Models\Contract;
 use Modules\Contract\Queries\ListContractsHandler;
@@ -22,6 +24,8 @@ class ContractApiController extends Controller
             'search'           => ['nullable', 'string', 'max:200'],
             'status'           => ['nullable', 'string'],
             'vendor_id'        => ['nullable', 'string'],
+            'customer_id'      => ['nullable', 'string'],
+            'type'             => ['nullable', Rule::enum(ContractPartyType::class)],
             'contract_type_id' => ['nullable', 'string'],
         ]);
 
@@ -37,6 +41,8 @@ class ContractApiController extends Controller
             search:         $validated['search'] ?? null,
             status:         $validated['status'] ?? null,
             vendorId:       $validated['vendor_id'] ?? null,
+            customerId:     $validated['customer_id'] ?? null,
+            type:           $validated['type'] ?? null,
             contractTypeId: $validated['contract_type_id'] ?? null,
         );
 

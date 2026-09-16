@@ -14,6 +14,8 @@ class ListContractsQuery implements QueryInterface
         public readonly ?string $search         = null,
         public readonly ?string $status         = null,
         public readonly ?string $vendorId       = null,
+        public readonly ?string $customerId     = null,
+        public readonly ?string $type           = null,
         public readonly ?string $contractTypeId = null,
     ) {}
 }

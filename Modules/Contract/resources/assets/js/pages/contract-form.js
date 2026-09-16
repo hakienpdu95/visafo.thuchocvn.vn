@@ -5,6 +5,14 @@ const FORM_SEL = '[data-contract-form]';
 function _clearField(el) {
     if (el.tomselect) el.tomselect.clear(true);
     else el.value = '';
+    el.classList.remove('select-error');
+    el.closest('.form-control')?.querySelector('.form-val-msg')?.remove();
+}
+
+function _toggleRequired(el, isRequired, message) {
+    el.required = isRequired;
+    if (isRequired) el.dataset.req = message;
+    else delete el.dataset.req;
 }
 
 function _ensureTs(el) {
@@ -24,8 +32,8 @@ function _setupContractPartyToggle(form) {
         const checked = form.querySelector('[name="type"]:checked');
         const isInput = !checked || checked.value === 'input';
 
-        vendorEl.required   = isInput;
-        customerEl.required = !isInput;
+        _toggleRequired(vendorEl, isInput, 'Vui lòng chọn nhà cung cấp');
+        _toggleRequired(customerEl, !isInput, 'Vui lòng chọn khách hàng');
 
         if (isInput) {
             _clearField(customerEl);

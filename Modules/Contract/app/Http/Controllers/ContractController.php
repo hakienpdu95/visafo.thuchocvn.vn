@@ -11,6 +11,7 @@ use Modules\Contract\Actions\Backend\StoreContractAction;
 use Modules\Contract\Actions\Backend\UpdateContractAction;
 use Modules\Contract\Data\Requests\StoreContractData;
 use Modules\Contract\Data\Requests\UpdateContractData;
+use Modules\Contract\Enums\ContractPartyType;
 use Modules\Contract\Enums\ContractStatus;
 use Modules\Contract\Models\Contract;
 use Modules\Contract\Models\ContractType;
@@ -38,7 +39,14 @@ class ContractController extends Controller
             ->map(fn ($t) => ['value' => $t->id, 'text' => $t->name])
             ->all();
 
-        return view('contract::index', compact('statuses', 'contractTypes'));
+        $partyTypes = collect(ContractPartyType::cases())
+            ->map(fn ($t) => ['value' => $t->value, 'text' => $t->label()])
+            ->all();
+
+        $vendors   = Vendor::query()->orderBy('name')->get(['id', 'name']);
+        $customers = Customer::query()->orderBy('name')->get(['id', 'name']);
+
+        return view('contract::index', compact('statuses', 'contractTypes', 'partyTypes', 'vendors', 'customers'));
     }
 
     public function create()

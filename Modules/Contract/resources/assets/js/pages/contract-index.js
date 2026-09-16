@@ -146,6 +146,9 @@ document.addEventListener('alpine:init', () => {
             apiUrl        = '',
             statuses      = [],
             contractTypes = [],
+            partyTypes    = [],
+            vendors       = [],
+            customers     = [],
             canDelete     = false,
         } = serverData;
 
@@ -154,18 +157,33 @@ document.addEventListener('alpine:init', () => {
         let tableInst      = null;
         let tsStatus       = null;
         let tsContractType = null;
+        let tsType         = null;
+        let tsVendor       = null;
+        let tsCustomer     = null;
 
         return {
-            filters: { search: '', status: '', contractType: '' },
+            filters: { search: '', status: '', contractType: '', type: '', vendorId: '', customerId: '' },
 
             get hasFilters() {
                 const f = this.filters;
-                return !!(f.search || f.status || f.contractType);
+                return !!(f.search || f.status || f.contractType || f.type || f.vendorId || f.customerId);
             },
 
             get activeChips() {
                 const chips = [], f = this.filters;
                 if (f.search) chips.push({ key: 'search', label: 'Tìm: ' + f.search });
+                if (f.type) {
+                    const pt = partyTypes.find(t => t.value === f.type);
+                    chips.push({ key: 'type', label: pt ? pt.text : f.type });
+                }
+                if (f.vendorId) {
+                    const v = vendors.find(x => x.id === f.vendorId);
+                    chips.push({ key: 'vendorId', label: v ? v.name : f.vendorId });
+                }
+                if (f.customerId) {
+                    const c = customers.find(x => x.id === f.customerId);
+                    chips.push({ key: 'customerId', label: c ? c.name : f.customerId });
+                }
                 if (f.contractType) {
                     const ct = contractTypes.find(t => t.value === f.contractType);
                     chips.push({ key: 'contractType', label: ct ? ct.text : f.contractType });
@@ -185,7 +203,10 @@ document.addEventListener('alpine:init', () => {
             _initTomSelects() {
                 const statusEl       = document.getElementById('ts-status');
                 const contractTypeEl = document.getElementById('ts-contract-type');
-                if (!statusEl || !contractTypeEl) return;
+                const typeEl         = document.getElementById('ts-type');
+                const vendorEl       = document.getElementById('ts-filter-vendor');
+                const customerEl     = document.getElementById('ts-filter-customer');
+                if (!statusEl || !contractTypeEl || !typeEl || !vendorEl || !customerEl) return;
 
                 tsStatus = createTs(statusEl, {
                     placeholder: 'Tất cả trạng thái',
@@ -196,6 +217,49 @@ document.addEventListener('alpine:init', () => {
                     placeholder: 'Tất cả loại hợp đồng',
                     onChange() { contractTypeEl.dispatchEvent(new Event('change', { bubbles: true })); },
                 });
+
+                tsType = createTs(typeEl, {
+                    placeholder: 'Tất cả loại giao dịch',
+                    onChange() { typeEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
+
+                if (this.filters.type === 'input')  this._ensurePartnerTs('vendor');
+                if (this.filters.type === 'output') this._ensurePartnerTs('customer');
+            },
+
+            _ensurePartnerTs(kind) {
+                if (kind === 'vendor' && !tsVendor) {
+                    const el = document.getElementById('ts-filter-vendor');
+                    tsVendor = createTs(el, {
+                        placeholder: 'Tất cả nhà cung cấp',
+                        onChange() { el.dispatchEvent(new Event('change', { bubbles: true })); },
+                    });
+                }
+                if (kind === 'customer' && !tsCustomer) {
+                    const el = document.getElementById('ts-filter-customer');
+                    tsCustomer = createTs(el, {
+                        placeholder: 'Tất cả khách hàng',
+                        onChange() { el.dispatchEvent(new Event('change', { bubbles: true })); },
+                    });
+                }
+            },
+
+            onTypeChange() {
+                if (this.filters.type === 'input') {
+                    this.filters.customerId = '';
+                    tsCustomer?.setValue('', true);
+                    requestAnimationFrame(() => this._ensurePartnerTs('vendor'));
+                } else if (this.filters.type === 'output') {
+                    this.filters.vendorId = '';
+                    tsVendor?.setValue('', true);
+                    requestAnimationFrame(() => this._ensurePartnerTs('customer'));
+                } else {
+                    this.filters.vendorId   = '';
+                    this.filters.customerId = '';
+                    tsVendor?.setValue('', true);
+                    tsCustomer?.setValue('', true);
+                }
+                this.onFilterChange();
             },
 
             _setup() {
@@ -209,6 +273,9 @@ document.addEventListener('alpine:init', () => {
                         if (f.search)       p.search           = f.search;
                         if (f.status)       p.status           = f.status;
                         if (f.contractType) p.contract_type_id = f.contractType;
+                        if (f.type)         p.type             = f.type;
+                        if (f.vendorId)     p.vendor_id        = f.vendorId;
+                        if (f.customerId)   p.customer_id      = f.customerId;
                         return p;
                     },
                     ajaxResponse: (_u, _p, res) => res,
@@ -254,6 +321,9 @@ document.addEventListener('alpine:init', () => {
                 if (p.has('q'))  this.filters.search       = p.get('q');
                 if (p.has('st')) this.filters.status       = p.get('st');
                 if (p.has('ct')) this.filters.contractType = p.get('ct');
+                if (p.has('ty')) this.filters.type         = p.get('ty');
+                if (p.has('vd')) this.filters.vendorId     = p.get('vd');
+                if (p.has('cu')) this.filters.customerId   = p.get('cu');
             },
 
             saveState() {
@@ -261,6 +331,9 @@ document.addEventListener('alpine:init', () => {
                 if (f.search)       p.set('q', f.search);
                 if (f.status)       p.set('st', f.status);
                 if (f.contractType) p.set('ct', f.contractType);
+                if (f.type)         p.set('ty', f.type);
+                if (f.vendorId)     p.set('vd', f.vendorId);
+                if (f.customerId)   p.set('cu', f.customerId);
                 const qs = p.toString();
                 history.replaceState(null, '', qs ? '?' + qs : location.pathname);
             },
@@ -273,14 +346,27 @@ document.addEventListener('alpine:init', () => {
                 if (key === 'search')       this.filters.search = '';
                 if (key === 'status')       { this.filters.status = ''; tsStatus?.setValue('', true); }
                 if (key === 'contractType') { this.filters.contractType = ''; tsContractType?.setValue('', true); }
+                if (key === 'vendorId')     { this.filters.vendorId = ''; tsVendor?.setValue('', true); }
+                if (key === 'customerId')   { this.filters.customerId = ''; tsCustomer?.setValue('', true); }
+                if (key === 'type') {
+                    this.filters.type       = '';
+                    this.filters.vendorId   = '';
+                    this.filters.customerId = '';
+                    tsType?.setValue('', true);
+                    tsVendor?.setValue('', true);
+                    tsCustomer?.setValue('', true);
+                }
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
-                this.filters = { search: '', status: '', contractType: '' };
+                this.filters = { search: '', status: '', contractType: '', type: '', vendorId: '', customerId: '' };
                 tsStatus?.setValue('', true);
                 tsContractType?.setValue('', true);
+                tsType?.setValue('', true);
+                tsVendor?.setValue('', true);
+                tsCustomer?.setValue('', true);
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },

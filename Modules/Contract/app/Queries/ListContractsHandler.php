@@ -38,6 +38,14 @@ class ListContractsHandler implements QueryHandlerInterface
             $q->where('vendor_id', $query->vendorId);
         }
 
+        if ($query->customerId !== null && $query->customerId !== '') {
+            $q->where('customer_id', $query->customerId);
+        }
+
+        if ($query->type !== null && $query->type !== '') {
+            $q->where('type', $query->type);
+        }
+
         if ($query->contractTypeId !== null && $query->contractTypeId !== '') {
             $q->where('contract_type_id', $query->contractTypeId);
         }

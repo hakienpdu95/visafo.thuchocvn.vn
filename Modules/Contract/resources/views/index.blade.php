@@ -6,6 +6,9 @@
     'apiUrl'        => route('backend.api.contracts'),
     'statuses'      => $statuses,
     'contractTypes' => $contractTypes,
+    'partyTypes'    => $partyTypes,
+    'vendors'       => $vendors,
+    'customers'     => $customers,
     'canDelete'     => auth()->user()->can('delete', new \Modules\Contract\Models\Contract),
 ]) }})">
 
@@ -35,7 +38,7 @@
     <div class="section-page">
         <div class="card bg-base-100 mb-4">
             <div class="card-body py-3 px-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
 
                     <div class="form-control sm:col-span-2">
                         <label class="label mb-2">
@@ -58,6 +61,48 @@
                                 </svg>
                             </button>
                         </div>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label py-0.5">
+                            <span class="label-text text-xs font-medium">Loại giao dịch</span>
+                        </label>
+                        <select id="ts-type" x-model="filters.type" @change="onTypeChange()"
+                                data-ts-placeholder="Tất cả loại giao dịch"
+                                class="select select-sm select-bordered w-full">
+                            <option value="">Tất cả</option>
+                            @foreach($partyTypes as $partyType)
+                            <option value="{{ $partyType['value'] }}">{{ $partyType['text'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-control" x-show="filters.type === 'input'" x-cloak>
+                        <label class="label py-0.5">
+                            <span class="label-text text-xs font-medium">Nhà cung cấp</span>
+                        </label>
+                        <select id="ts-filter-vendor" x-model="filters.vendorId" @change="onFilterChange()"
+                                data-ts-placeholder="Tất cả nhà cung cấp"
+                                class="select select-sm select-bordered w-full">
+                            <option value="">Tất cả</option>
+                            @foreach($vendors as $vendor)
+                            <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-control" x-show="filters.type === 'output'" x-cloak>
+                        <label class="label py-0.5">
+                            <span class="label-text text-xs font-medium">Khách hàng</span>
+                        </label>
+                        <select id="ts-filter-customer" x-model="filters.customerId" @change="onFilterChange()"
+                                data-ts-placeholder="Tất cả khách hàng"
+                                class="select select-sm select-bordered w-full">
+                            <option value="">Tất cả</option>
+                            @foreach($customers as $customer)
+                            <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="form-control">
