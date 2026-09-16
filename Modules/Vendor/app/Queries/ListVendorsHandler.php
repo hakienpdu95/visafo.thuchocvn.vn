@@ -34,6 +34,18 @@ class ListVendorsHandler implements QueryHandlerInterface
             $q->where('status', $query->status);
         }
 
+        if ($query->provinceCode !== null && $query->provinceCode !== '') {
+            $q->where('province_code', $query->provinceCode);
+        }
+
+        if ($query->wardCode !== null && $query->wardCode !== '') {
+            $q->where('ward_code', $query->wardCode);
+        }
+
+        if ($query->phoneNumber !== null && $query->phoneNumber !== '') {
+            $q->where('phone_number', 'like', '%' . $query->phoneNumber . '%');
+        }
+
         $q->orderBy($sortField, $sortDir);
         if ($sortField !== 'id') {
             $q->orderBy('id', $sortDir);

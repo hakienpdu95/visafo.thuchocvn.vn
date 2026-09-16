@@ -3,6 +3,7 @@
 namespace Modules\Vendor\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Province;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,7 +31,14 @@ class VendorController extends Controller
             ->map(fn ($s) => ['value' => $s->value, 'text' => $s->label()])
             ->all();
 
-        return view('vendor::index', compact('statuses'));
+        $provinces = Province::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['province_code', 'name'])
+            ->map(fn ($p) => ['value' => $p->province_code, 'text' => $p->name])
+            ->all();
+
+        return view('vendor::index', compact('statuses', 'provinces'));
     }
 
     public function create()

@@ -17,10 +17,13 @@ class VendorApiController extends Controller
         $this->authorize('viewAny', Vendor::class);
 
         $validated = $request->validate([
-            'page'   => ['nullable', 'integer', 'min:1'],
-            'size'   => ['nullable', 'integer', 'min:5', 'max:100'],
-            'search' => ['nullable', 'string', 'max:200'],
-            'status' => ['nullable', 'string'],
+            'page'          => ['nullable', 'integer', 'min:1'],
+            'size'          => ['nullable', 'integer', 'min:5', 'max:100'],
+            'search'        => ['nullable', 'string', 'max:200'],
+            'status'        => ['nullable', 'string'],
+            'province_code' => ['nullable', 'string', 'max:20'],
+            'ward_code'     => ['nullable', 'string', 'max:20'],
+            'phone_number'  => ['nullable', 'string', 'max:20'],
         ]);
 
         $sortRaw   = $request->input('sort.0');
@@ -28,12 +31,15 @@ class VendorApiController extends Controller
         $sortDir   = is_array($sortRaw) && ($sortRaw['dir'] ?? '') === 'asc' ? 'asc' : 'desc';
 
         $query = new ListVendorsQuery(
-            page:      max(1, (int) ($validated['page'] ?? 1)),
-            perPage:   min(100, max(5, (int) ($validated['size'] ?? 25))),
-            sortField: $sortField,
-            sortDir:   $sortDir,
-            search:    $validated['search'] ?? null,
-            status:    $validated['status'] ?? null,
+            page:          max(1, (int) ($validated['page'] ?? 1)),
+            perPage:       min(100, max(5, (int) ($validated['size'] ?? 25))),
+            sortField:     $sortField,
+            sortDir:       $sortDir,
+            search:        $validated['search'] ?? null,
+            status:        $validated['status'] ?? null,
+            provinceCode:  $validated['province_code'] ?? null,
+            wardCode:      $validated['ward_code'] ?? null,
+            phoneNumber:   $validated['phone_number'] ?? null,
         );
 
         $paginator = $handler->handle($query);

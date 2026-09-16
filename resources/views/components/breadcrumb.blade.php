@@ -5,7 +5,7 @@
 
 {{-- Only render when there is more than just the home crumb --}}
 @if(count($crumbs) > 1)
-<nav aria-label="breadcrumb" class="breadcrumbs text-sm px-6 pt-4 pb-0">
+<nav aria-label="breadcrumb" class="breadcrumbs text-sm p-0 pt-4 pb-0">
     <ul>
         @foreach($crumbs as $crumb)
             @if($crumb['active'])

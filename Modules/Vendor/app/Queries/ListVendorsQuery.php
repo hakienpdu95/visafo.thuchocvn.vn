@@ -11,7 +11,10 @@ class ListVendorsQuery implements QueryInterface
         public readonly int     $perPage   = 25,
         public readonly string  $sortField = 'created_at',
         public readonly string  $sortDir   = 'desc',
-        public readonly ?string $search    = null,
-        public readonly ?string $status    = null,
+        public readonly ?string $search       = null,
+        public readonly ?string $status       = null,
+        public readonly ?string $provinceCode = null,
+        public readonly ?string $wardCode     = null,
+        public readonly ?string $phoneNumber  = null,
     ) {}
 }

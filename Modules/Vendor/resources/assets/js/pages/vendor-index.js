@@ -1,3 +1,5 @@
+import { createTs } from '@shared/tom-select-factory.js';
+
 function esc(v) {
     if (v == null) return '';
     return String(v)
@@ -154,17 +156,22 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.data('vendorListPage', (serverData = {}) => {
         const {
-            apiUrl    = '',
-            statuses  = [],
-            canDelete = false,
+            apiUrl      = '',
+            wardsApiUrl = '/api/provinces',
+            statuses    = [],
+            provinces   = [],
+            canDelete   = false,
         } = serverData;
 
         const COLUMNS = buildColumns(canDelete);
 
-        let tableInst = null;
+        let tableInst   = null;
+        let tsStatus    = null;
+        let tsProvince  = null;
+        let tsWard      = null;
 
         return {
-            filters: { search: '', status: '' },
+            filters: { search: '', status: '', province: '', ward: '', phone: '' },
             hiddenCols: [],
 
             get toggleableCols() {
@@ -175,12 +182,21 @@ document.addEventListener('alpine:init', () => {
 
             get hasFilters() {
                 const f = this.filters;
-                return !!(f.search || f.status);
+                return !!(f.search || f.status || f.province || f.ward || f.phone);
             },
 
             get activeChips() {
                 const chips = [], f = this.filters;
                 if (f.search) chips.push({ key: 'search', label: 'Tìm: ' + f.search });
+                if (f.province) {
+                    const pv = provinces.find(p => p.value === f.province);
+                    chips.push({ key: 'province', label: pv ? pv.text : f.province });
+                }
+                if (f.ward) {
+                    const wd = tsWard?.options?.[f.ward];
+                    chips.push({ key: 'ward', label: wd ? wd.text : f.ward });
+                }
+                if (f.phone) chips.push({ key: 'phone', label: 'SĐT: ' + f.phone });
                 if (f.status) {
                     const st = statuses.find(s => s.value === f.status);
                     chips.push({ key: 'status', label: st ? st.text : f.status });
@@ -191,7 +207,74 @@ document.addEventListener('alpine:init', () => {
             init() {
                 this.loadState();
                 try { this.hiddenCols = JSON.parse(localStorage.getItem(LS_COLS) || '[]'); } catch (_) {}
-                this.$nextTick(() => this._setup());
+                this.$nextTick(() => { this._setup(); this._initTomSelects(); });
+            },
+
+            _initTomSelects() {
+                const statusEl   = document.getElementById('ts-status');
+                const provinceEl = document.getElementById('ts-province');
+                const wardEl     = document.getElementById('ts-ward');
+                if (!statusEl || !provinceEl || !wardEl) return;
+
+                tsStatus = createTs(statusEl, {
+                    placeholder: 'Tất cả trạng thái',
+                    onChange() { statusEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
+
+                tsWard = createTs(wardEl, {
+                    placeholder: 'Chọn tỉnh / thành phố trước',
+                    maxOptions: null,
+                    onChange() { wardEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
+                tsWard.disable();
+
+                tsProvince = createTs(provinceEl, {
+                    placeholder: 'Tất cả tỉnh / thành phố',
+                    maxOptions: null,
+                    onChange() { provinceEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
+
+                if (this.filters.province) this.loadWardOptions(this.filters.province, this.filters.ward);
+            },
+
+            async loadWardOptions(provinceCode, preselectWard = '') {
+                if (!tsWard) return;
+
+                tsWard.clear(true);
+                tsWard.clearOptions();
+                tsWard.addOption({ value: '', text: 'Tất cả' });
+                tsWard.disable();
+
+                if (!provinceCode) return;
+
+                tsWard.settings.placeholder = 'Đang tải...';
+                tsWard.control_input.placeholder = 'Đang tải...';
+
+                try {
+                    const res = await fetch(wardsApiUrl + '/' + provinceCode + '/wards', {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    const wards = res.ok ? await res.json() : [];
+                    wards.forEach(w => tsWard.addOption({ value: w.ward_code, text: w.name }));
+
+                    tsWard.settings.placeholder = 'Tất cả phường / xã';
+                    tsWard.control_input.placeholder = 'Tất cả phường / xã';
+                    tsWard.enable();
+
+                    if (preselectWard && wards.some(w => w.ward_code === preselectWard)) {
+                        tsWard.setValue(preselectWard, true);
+                        this.filters.ward = preselectWard;
+                    }
+                } catch (e) {
+                    console.error('[vendor] load wards failed', e);
+                    tsWard.settings.placeholder = 'Lỗi tải dữ liệu';
+                    tsWard.control_input.placeholder = 'Lỗi tải dữ liệu';
+                    tsWard.enable();
+                }
+            },
+
+            onProvinceChange() {
+                this.loadWardOptions(this.filters.province).then(() => this.onFilterChange());
             },
 
             _setup() {
@@ -202,8 +285,11 @@ document.addEventListener('alpine:init', () => {
                     ajaxConfig: { headers: { 'X-Requested-With': 'XMLHttpRequest' } },
                     ajaxParams() {
                         const p = {}, f = self.filters;
-                        if (f.search) p.search = f.search;
-                        if (f.status) p.status = f.status;
+                        if (f.search)   p.search        = f.search;
+                        if (f.status)   p.status        = f.status;
+                        if (f.province) p.province_code = f.province;
+                        if (f.ward)     p.ward_code     = f.ward;
+                        if (f.phone)    p.phone_number  = f.phone;
                         return p;
                     },
                     ajaxResponse: (_u, _p, res) => res,
@@ -247,14 +333,20 @@ document.addEventListener('alpine:init', () => {
 
             loadState() {
                 const p = new URLSearchParams(location.search);
-                if (p.has('q'))  this.filters.search = p.get('q');
-                if (p.has('st')) this.filters.status = p.get('st');
+                if (p.has('q'))    this.filters.search   = p.get('q');
+                if (p.has('st'))   this.filters.status   = p.get('st');
+                if (p.has('prov')) this.filters.province = p.get('prov');
+                if (p.has('ward')) this.filters.ward     = p.get('ward');
+                if (p.has('ph'))   this.filters.phone    = p.get('ph');
             },
 
             saveState() {
                 const p = new URLSearchParams(), f = this.filters;
-                if (f.search) p.set('q', f.search);
-                if (f.status) p.set('st', f.status);
+                if (f.search)   p.set('q', f.search);
+                if (f.status)   p.set('st', f.status);
+                if (f.province) p.set('prov', f.province);
+                if (f.ward)     p.set('ward', f.ward);
+                if (f.phone)    p.set('ph', f.phone);
                 const qs = p.toString();
                 history.replaceState(null, '', qs ? '?' + qs : location.pathname);
             },
@@ -265,13 +357,23 @@ document.addEventListener('alpine:init', () => {
 
             removeChip(key) {
                 if (key === 'search') this.filters.search = '';
-                if (key === 'status') this.filters.status = '';
+                if (key === 'phone')  this.filters.phone = '';
+                if (key === 'status') { this.filters.status = ''; tsStatus?.setValue('', true); }
+                if (key === 'ward')   { this.filters.ward = ''; tsWard?.setValue('', true); }
+                if (key === 'province') {
+                    this.filters.province = '';
+                    tsProvince?.setValue('', true);
+                    this.loadWardOptions('');
+                }
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
-                this.filters = { search: '', status: '' };
+                this.filters = { search: '', status: '', province: '', ward: '', phone: '' };
+                tsStatus?.setValue('', true);
+                tsProvince?.setValue('', true);
+                this.loadWardOptions('');
                 history.replaceState(null, '', location.pathname);
                 this.refresh();
             },
