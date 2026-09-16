@@ -15,6 +15,7 @@ class StoreVendorAction
         return Vendor::create([
             'name'                  => $data->name,
             'tax_code'              => $data->tax_code,
+            'source_group'          => $data->source_group?->value,
             'address'               => $data->address,
             'province_code'         => $data->province_code,
             'ward_code'             => $data->ward_code,

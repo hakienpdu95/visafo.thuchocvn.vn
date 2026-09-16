@@ -5,6 +5,7 @@ namespace Modules\Product\Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 use Modules\Product\Enums\DocumentGroupType;
+use Modules\Product\Enums\InternalTabGroup;
 use Modules\Product\Models\DocumentMasterType;
 
 class DocumentMasterTypeSeeder extends Seeder
@@ -32,11 +33,79 @@ class DocumentMasterTypeSeeder extends Seeder
     private function definitions(): array
     {
         return [
-            // Nhóm 1: Hồ sơ pháp lý cơ sở — nội bộ Bếp ăn/Nhà hàng
+            // Tab "Pháp lý & năng lực" (NL-PL) — nội bộ Visafo, theo Phụ lục 1 QT-TXNG-01
+            [
+                'code'                     => 'internal_business_registration',
+                'name'                     => 'Đăng ký doanh nghiệp',
+                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'internal_tab_group'       => InternalTabGroup::Legal->value,
+                'applicable_to'            => ['internal'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => false,
+                'has_issue_place'          => true,
+                'is_transactional'         => false,
+                'default_validity_months'  => null,
+            ],
+            [
+                'code'                     => 'internal_capability_profile',
+                'name'                     => 'Hồ sơ năng lực VISAFO',
+                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'internal_tab_group'       => InternalTabGroup::Legal->value,
+                'applicable_to'            => ['internal'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => false,
+                'has_issue_place'          => false,
+                'is_transactional'         => false,
+                'default_validity_months'  => null,
+            ],
+            [
+                'code'                     => 'internal_reference_contract',
+                'name'                     => 'Hợp đồng tương tự',
+                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'internal_tab_group'       => InternalTabGroup::Legal->value,
+                'applicable_to'            => ['internal'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => false,
+                'has_issue_place'          => false,
+                'is_transactional'         => false,
+                'default_validity_months'  => null,
+            ],
+            [
+                'code'                     => 'internal_records_authorization',
+                'name'                     => 'Giấy ủy quyền phụ trách hồ sơ',
+                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'internal_tab_group'       => InternalTabGroup::Legal->value,
+                'applicable_to'            => ['internal'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => false,
+                'has_issue_place'          => false,
+                'is_transactional'         => false,
+                'default_validity_months'  => null,
+            ],
+            [
+                'code'                     => 'facility_commitment',
+                'name'                     => 'Bản cam kết bảo đảm an toàn thực phẩm',
+                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'internal_tab_group'       => InternalTabGroup::Legal->value,
+                'applicable_to'            => ['internal'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => false,
+                'has_issue_place'          => false,
+                'is_transactional'         => false,
+                'default_validity_months'  => null,
+            ],
+
+            // Tab "ATTP & vận hành" (NL-ATTP & NL-KV) — nội bộ Visafo, theo Phụ lục 1 QT-TXNG-01
             [
                 'code'                     => 'facility_attp',
                 'name'                     => 'Giấy chứng nhận cơ sở đủ điều kiện ATTP',
                 'document_group'           => DocumentGroupType::AttpQuality->value,
+                'internal_tab_group'       => InternalTabGroup::Operation->value,
                 'applicable_to'            => ['internal'],
                 'is_required_issue_date'   => true,
                 'is_required_expiry_date'  => true,
@@ -45,12 +114,11 @@ class DocumentMasterTypeSeeder extends Seeder
                 'is_transactional'         => false,
                 'default_validity_months'  => 36,
             ],
-
-            // Nhóm ATTP & Chất lượng (NL-ATTP) — nội bộ Visafo, theo Phụ lục 1 QT-TXNG-01
             [
                 'code'                     => 'internal_haccp',
                 'name'                     => 'Chứng nhận HACCP',
                 'document_group'           => DocumentGroupType::AttpQuality->value,
+                'internal_tab_group'       => InternalTabGroup::Operation->value,
                 'applicable_to'            => ['internal'],
                 'is_required_issue_date'   => true,
                 'is_required_expiry_date'  => true,
@@ -63,6 +131,7 @@ class DocumentMasterTypeSeeder extends Seeder
                 'code'                     => 'internal_soil_test',
                 'name'                     => 'Báo cáo phân tích mẫu đất',
                 'document_group'           => DocumentGroupType::AttpQuality->value,
+                'internal_tab_group'       => InternalTabGroup::Operation->value,
                 'applicable_to'            => ['internal'],
                 'is_required_issue_date'   => true,
                 'is_required_expiry_date'  => true,
@@ -75,6 +144,7 @@ class DocumentMasterTypeSeeder extends Seeder
                 'code'                     => 'internal_water_test',
                 'name'                     => 'Báo cáo phân tích mẫu nước',
                 'document_group'           => DocumentGroupType::AttpQuality->value,
+                'internal_tab_group'       => InternalTabGroup::Operation->value,
                 'applicable_to'            => ['internal'],
                 'is_required_issue_date'   => true,
                 'is_required_expiry_date'  => true,
@@ -84,11 +154,12 @@ class DocumentMasterTypeSeeder extends Seeder
                 'default_validity_months'  => 12,
             ],
             [
-                'code'                     => 'facility_commitment',
-                'name'                     => 'Bản cam kết bảo đảm an toàn thực phẩm',
-                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'code'                     => 'internal_flow_diagram',
+                'name'                     => 'Sơ đồ quy trình một chiều',
+                'document_group'           => DocumentGroupType::AttpQuality->value,
+                'internal_tab_group'       => InternalTabGroup::Operation->value,
                 'applicable_to'            => ['internal'],
-                'is_required_issue_date'   => true,
+                'is_required_issue_date'   => false,
                 'is_required_expiry_date'  => false,
                 'has_expiration_date'      => false,
                 'has_issue_place'          => false,
@@ -96,23 +167,25 @@ class DocumentMasterTypeSeeder extends Seeder
                 'default_validity_months'  => null,
             ],
 
-            // Nhóm 2: Hồ sơ nhân viên — nội bộ Bếp ăn/Nhà hàng
+            // Tab "Nhân sự" (NL-NS) — nội bộ Visafo, theo Phụ lục 1 QT-TXNG-01
             [
-                'code'                     => 'personnel_health',
-                'name'                     => 'Giấy khám sức khỏe',
+                'code'                     => 'internal_staff_list',
+                'name'                     => 'Danh sách nhân sự trực tiếp',
                 'document_group'           => DocumentGroupType::Personnel->value,
+                'internal_tab_group'       => InternalTabGroup::Hr->value,
                 'applicable_to'            => ['internal'],
-                'is_required_issue_date'   => true,
-                'is_required_expiry_date'  => true,
-                'has_expiration_date'      => true,
-                'has_issue_place'          => true,
+                'is_required_issue_date'   => false,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => false,
+                'has_issue_place'          => false,
                 'is_transactional'         => false,
-                'default_validity_months'  => 12,
+                'default_validity_months'  => null,
             ],
             [
                 'code'                     => 'personnel_training',
                 'name'                     => 'Giấy xác nhận kiến thức về an toàn thực phẩm',
                 'document_group'           => DocumentGroupType::Personnel->value,
+                'internal_tab_group'       => InternalTabGroup::Hr->value,
                 'applicable_to'            => ['internal'],
                 'is_required_issue_date'   => true,
                 'is_required_expiry_date'  => true,
@@ -124,6 +197,34 @@ class DocumentMasterTypeSeeder extends Seeder
             [
                 'code'                     => 'personnel_periodic_health',
                 'name'                     => 'Khám sức khỏe định kỳ',
+                'document_group'           => DocumentGroupType::Personnel->value,
+                'internal_tab_group'       => InternalTabGroup::Hr->value,
+                'applicable_to'            => ['internal'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'has_expiration_date'      => true,
+                'has_issue_place'          => true,
+                'is_transactional'         => false,
+                'default_validity_months'  => 12,
+            ],
+            [
+                'code'                     => 'internal_quality_assignment',
+                'name'                     => 'Phân công phụ trách chất lượng',
+                'document_group'           => DocumentGroupType::Personnel->value,
+                'internal_tab_group'       => InternalTabGroup::Hr->value,
+                'applicable_to'            => ['internal'],
+                'is_required_issue_date'   => false,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => false,
+                'has_issue_place'          => false,
+                'is_transactional'         => false,
+                'default_validity_months'  => null,
+            ],
+
+            // Nhóm nhân viên (không thuộc tab riêng — giữ nguyên như dữ liệu gốc)
+            [
+                'code'                     => 'personnel_health',
+                'name'                     => 'Giấy khám sức khỏe',
                 'document_group'           => DocumentGroupType::Personnel->value,
                 'applicable_to'            => ['internal'],
                 'is_required_issue_date'   => true,
@@ -261,6 +362,7 @@ class DocumentMasterTypeSeeder extends Seeder
                 'code'                     => 'log_3_steps',
                 'name'                     => 'Sổ Kiểm thực 3 bước (QĐ 1246/QĐ-BYT)',
                 'document_group'           => DocumentGroupType::MonitoringLogs->value,
+                'internal_tab_group'       => InternalTabGroup::Operation->value,
                 'applicable_to'            => ['internal'],
                 'is_required_issue_date'   => false,
                 'is_required_expiry_date'  => false,
@@ -273,6 +375,7 @@ class DocumentMasterTypeSeeder extends Seeder
                 'code'                     => 'log_sample',
                 'name'                     => 'Sổ lưu mẫu thức ăn',
                 'document_group'           => DocumentGroupType::MonitoringLogs->value,
+                'internal_tab_group'       => InternalTabGroup::Operation->value,
                 'applicable_to'            => ['internal'],
                 'is_required_issue_date'   => false,
                 'is_required_expiry_date'  => false,
@@ -285,6 +388,7 @@ class DocumentMasterTypeSeeder extends Seeder
                 'code'                     => 'log_chemical',
                 'name'                     => 'Sổ theo dõi hóa chất, vật tư y tế',
                 'document_group'           => DocumentGroupType::MonitoringLogs->value,
+                'internal_tab_group'       => InternalTabGroup::Operation->value,
                 'applicable_to'            => ['internal'],
                 'is_required_issue_date'   => false,
                 'is_required_expiry_date'  => false,

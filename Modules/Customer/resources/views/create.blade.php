@@ -121,6 +121,32 @@
 
                         </div>
 
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                            <div class="form-control">
+                                <label class="label py-0 pb-1.5">
+                                    <span class="label-text font-medium">Quy mô dự kiến</span>
+                                    <span class="label-text-alt text-xs text-base-content/40">Tuỳ chọn</span>
+                                </label>
+                                <input type="number" name="expected_scale" value="{{ old('expected_scale') }}" min="1"
+                                       class="input input-bordered input-sm w-full @error('expected_scale') input-error @enderror"
+                                       placeholder="Số suất/ngày">
+                                @error('expected_scale')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label py-0 pb-1.5">
+                                    <span class="label-text font-medium">Hạn nộp dự kiến</span>
+                                    <span class="label-text-alt text-xs text-base-content/40">Tuỳ chọn</span>
+                                </label>
+                                <input type="text" id="fp-expected_deadline" name="expected_deadline" value="{{ old('expected_deadline') }}"
+                                       class="input input-bordered input-sm w-full fp-init @error('expected_deadline') input-error @enderror"
+                                       data-fp-mode="datetime" placeholder="dd/mm/yyyy hh:mm" autocomplete="off">
+                                @error('expected_deadline')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                            </div>
+
+                        </div>
+
                         <div class="form-control">
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Nhân viên phụ trách</span>
@@ -311,6 +337,7 @@
 
 @push('scripts')
     @vite([
+        'resources/js/modules/flatpickr.js',
         'resources/js/modules/tom-select.js',
         'Modules/Customer/resources/assets/js/customer.js',
     ], 'build/backend')

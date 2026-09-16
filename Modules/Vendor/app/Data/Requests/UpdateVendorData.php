@@ -3,6 +3,7 @@
 namespace Modules\Vendor\Data\Requests;
 
 use Illuminate\Validation\Rule;
+use Modules\Vendor\Enums\VendorSourceGroup;
 use Modules\Vendor\Enums\VendorStatus;
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Exists;
@@ -63,6 +64,8 @@ class UpdateVendorData extends Data
         public readonly ?string $contact_person_email,
 
         public readonly VendorStatus $status,
+
+        public readonly ?VendorSourceGroup $source_group = null,
     ) {}
 
     public static function rules(): array

@@ -100,6 +100,21 @@
 
                         </div>
 
+                        <div class="form-control sm:max-w-[calc(50%-0.5rem)]">
+                            <label class="label py-0 pb-1.5">
+                                <span class="label-text font-medium">Nhóm nguồn</span>
+                            </label>
+                            <select id="ts-source_group" name="source_group"
+                                    class="select select-bordered select-sm w-full ts-init @error('source_group') select-error @enderror"
+                                    data-ts-placeholder="— Chọn nhóm nguồn —">
+                                <option value="">— Chọn nhóm nguồn —</option>
+                                @foreach(\Modules\Vendor\Enums\VendorSourceGroup::cases() as $group)
+                                <option value="{{ $group->value }}" @selected(old('source_group', $vendor->source_group?->value) === $group->value)>{{ $group->label() }}</option>
+                                @endforeach
+                            </select>
+                            @error('source_group')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                        </div>
+
                         <x-address-picker
                             :province-value="old('province_code', $vendor->province_code)"
                             :ward-value="old('ward_code', $vendor->ward_code)"

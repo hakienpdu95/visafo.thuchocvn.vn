@@ -2,6 +2,7 @@
 
 namespace Modules\Vendor\Data\Requests;
 
+use Modules\Vendor\Enums\VendorSourceGroup;
 use Modules\Vendor\Enums\VendorStatus;
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Exists;
@@ -66,6 +67,8 @@ class StoreVendorData extends Data
         public readonly ?string $contact_person_email,
 
         public readonly VendorStatus $status = VendorStatus::Active,
+
+        public readonly ?VendorSourceGroup $source_group = null,
     ) {}
 
     public static function messages(): array
@@ -108,6 +111,8 @@ class StoreVendorData extends Data
 
             'status.required' => 'Vui lòng chọn trạng thái.',
             'status.enum'     => 'Trạng thái không hợp lệ.',
+
+            'source_group.enum' => 'Nhóm nguồn không hợp lệ.',
         ];
     }
 }

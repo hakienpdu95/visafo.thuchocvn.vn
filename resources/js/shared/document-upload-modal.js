@@ -34,6 +34,7 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         const ts = createTs(el, {
             dropdownParent: '#' + modalId,
             placeholder:    '— Chọn loại giấy tờ —',
+            onChange() { el.dispatchEvent(new Event('change', { bubbles: true })); },
         });
         if (!ts) return;
 
@@ -109,6 +110,35 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         document.activeElement?.blur();
         _initDocumentTypeSelect(modal);
         _initDateFields(modal);
+    }
+
+    function _applyTabGroupFilter(modal, tabGroup) {
+        if (!tabGroup) return;
+
+        const form = modal.querySelector('form[x-data]');
+        const select = modal.querySelector(selectSel);
+        if (!form || !select || !window.Alpine) return;
+
+        const data = window.Alpine.$data(form);
+        const types = (data?.types ?? []).filter((t) => t.internal_tab_group === tabGroup);
+
+        const ts = select.tomselect;
+        if (ts) {
+            const current = ts.getValue();
+            ts.clear(true);
+            ts.clearOptions();
+            types.forEach((t) => ts.addOption({ value: t.id, text: t.name }));
+            ts.refreshOptions(false);
+            if (types.some((t) => t.id === current)) ts.setValue(current, true);
+        } else {
+            select.innerHTML = '';
+            types.forEach((t) => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.name;
+                select.appendChild(opt);
+            });
+        }
     }
 
     function _setModalMode(modal, doc) {
@@ -187,7 +217,7 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         expirationEl._suppressRecalc = false;
     }
 
-    function openCreate(preselectId = '') {
+    function openCreate(preselectId = '', tabGroup = '') {
         const modal = document.getElementById(modalId);
         if (!modal) return;
         _setModalMode(modal, null);
@@ -195,6 +225,7 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         document.activeElement?.blur();
         requestAnimationFrame(() => {
             _initModalWidgets(modal);
+            _applyTabGroupFilter(modal, tabGroup);
             _resetDocumentForm(modal, preselectId);
         });
     }
@@ -207,6 +238,7 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         document.activeElement?.blur();
         requestAnimationFrame(() => {
             _initModalWidgets(modal);
+            _applyTabGroupFilter(modal, doc.internal_tab_group);
             _fillDocumentForm(modal, doc);
         });
     }

@@ -4,18 +4,15 @@
 @php
     use Modules\Compliance\Models\InternalFacility;
 
-    $groupLabels = [
-        'legal_facility' => 'Pháp lý (NL-PL)',
-        'attp_quality'   => 'ATTP (NL-ATTP)',
-    ];
-
-    $buildDocRows = function (InternalFacility $facility) use ($groupLabels) {
+    $buildDocRows = function (InternalFacility $facility) {
         return $facility->documents->map(fn ($d) => [
             'id'                      => $d->id,
             'facility_id'             => $facility->id,
+            'facility_name'           => $facility->name,
             'document_master_type_id' => $d->document_master_type_id,
+            'internal_tab_group'      => $d->documentType->internal_tab_group?->value,
+            'group_label'             => $d->documentType->internal_tab_group?->label() ?? '—',
             'type_name'               => $d->documentType->name,
-            'group_label'             => $groupLabels[$d->documentType->document_group->value] ?? $d->documentType->document_group->label(),
             'document_number'         => $d->document_number,
             'issued_by'               => $d->issued_by,
             'issue_date'              => $d->issue_date?->format('Y-m-d'),
@@ -24,197 +21,381 @@
             'expiration_date_display' => $d->expiration_date?->format('d/m/Y'),
             'is_expired'              => $d->isExpired(),
             'is_expiring_soon'        => $d->isExpiringWithinDays(30),
+            'status_value'            => $d->status->value,
             'status_label'            => $d->status->label(),
             'status_badge'            => $d->status->badgeClass(),
             'file_url'                => $d->getFirstMediaUrl('attachments_private'),
             'update_url'              => route('backend.internal-facilities.documents.update', [$facility, $d->id]),
+            'delete_url'              => route('backend.internal-facilities.documents.destroy', [$facility, $d->id]),
         ])->values();
     };
 
-    $modalIsEdit = (bool) old('_document_id');
+    $allDocRows = $buildDocRows($headquarter);
+
+    $rankRisk = fn ($row) => $row['is_expired'] ? 2 : ($row['is_expiring_soon'] ? 1 : 0);
+
+    $docsByGroup = [
+        'legal'     => $allDocRows->where('internal_tab_group', 'legal')->sortByDesc($rankRisk)->values(),
+        'operation' => $allDocRows->where('internal_tab_group', 'operation')->sortByDesc($rankRisk)->values(),
+        'hr'        => $allDocRows->where('internal_tab_group', 'hr')->sortByDesc($rankRisk)->values(),
+    ];
+
+    $hrAggregateTypeNames = ['Giấy xác nhận kiến thức về an toàn thực phẩm', 'Khám sức khỏe định kỳ'];
+
+    $requiredTypeIds = $documentTypesByGroup['legal']
+        ->concat($documentTypesByGroup['operation'])
+        ->concat($documentTypesByGroup['hr'])
+        ->reject(fn ($t) => in_array($t->name, $hrAggregateTypeNames, true))
+        ->pluck('id');
+
+    $validTypeIds = $allDocRows->where('status_value', 'active')->where('is_expired', false)
+        ->pluck('document_master_type_id')->unique();
+
+    $completionTotal = $requiredTypeIds->count() + count($hrAggregateTypeNames);
+    $completionDone  = $requiredTypeIds->intersect($validTypeIds)->count()
+        + ($employeeStats['attp_valid_pct'] === 100 ? 1 : 0)
+        + ($employeeStats['health_valid_pct'] === 100 ? 1 : 0);
+    $completionPercent = $completionTotal > 0 ? (int) round($completionDone / $completionTotal * 100) : 0;
+
+    $modalIsEdit     = (bool) old('_document_id');
     $modalFacilityId = old('_target_facility_id', $headquarter->id);
+
+    $allDocumentTypes = $documentTypesByGroup['legal']
+        ->concat($documentTypesByGroup['operation'])
+        ->concat($documentTypesByGroup['hr'])
+        ->map(fn ($t) => [
+            'id'                      => $t->id,
+            'name'                    => $t->name,
+            'internal_tab_group'      => $t->internal_tab_group->value,
+            'group_label'             => $t->internal_tab_group->label(),
+            'has_expiration_date'     => (bool) $t->has_expiration_date,
+            'has_issue_place'         => (bool) $t->has_issue_place,
+            'default_validity_months' => $t->default_validity_months,
+        ]);
 @endphp
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
-    <div>
-        <h1 class="text-2xl font-bold text-base-content">Hồ sơ năng lực VISAFO</h1>
-        <p class="text-sm text-base-content/50 mt-0.5">Hồ sơ pháp lý & chứng nhận nội bộ — QT-TXNG-01 nhóm NL</p>
-    </div>
-    <div class="flex items-center gap-2">
-        @can('create', \Modules\Compliance\Models\InternalFacility::class)
-        <button type="button" class="btn btn-ghost btn-sm gap-1.5" onclick="openFacilityModal()">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Thêm cơ sở
-        </button>
-        @endcan
-        <a href="{{ route('backend.internal-compliance.export') }}" class="btn btn-primary btn-sm gap-1.5">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3"/></svg>
-            Xuất Hồ sơ (ZIP)
-        </a>
-    </div>
-</div>
+<div x-data="{ tab: 'legal' }">
 
-@if(session('success'))
-<div class="alert alert-success py-2.5 px-4 mb-5 text-sm">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-<div class="alert alert-error py-2.5 px-4 mb-5 text-sm">{{ session('error') }}</div>
-@endif
-
-<div class="space-y-6" x-data="{ openFacility: {{ Js::from((string) old('_target_facility_id', '')) }} }"
-     x-init="if (!openFacility) openFacility = (window.location.hash || '').replace('#facility-', '')">
-
-    {{-- ── Khối 1 · Hồ sơ Cấp Công ty (Global) ──────────────────────────────── --}}
-    <div>
-        <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-2">Khối 1 · Hồ sơ cấp Công ty</p>
-
-        <div class="card bg-base-100 shadow-sm border border-base-200">
-            <div class="card-body">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 class="card-title text-base mb-0.5">{{ $headquarter->name }}</h2>
-                        @if($headquarter->address)
-                        <p class="text-xs text-base-content/40">{{ $headquarter->address }}</p>
-                        @endif
-                    </div>
-                    <div class="flex items-center gap-2">
-                        @can('update', $headquarter)
-                        @if($canManageDocuments)
-                        <button type="button" class="btn btn-primary btn-sm" onclick="openAddDocumentModal('{{ $headquarter->id }}')">Tải lên hồ sơ mới</button>
-                        @endif
-                        <button type="button" class="btn btn-ghost btn-sm"
-                                onclick="openFacilityModal({{ json_encode(['id' => $headquarter->id, 'name' => $headquarter->name, 'type' => $headquarter->type, 'address' => $headquarter->address, 'status' => $headquarter->status], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }})">Sửa</button>
-                        @endcan
-                    </div>
+    <div class="rounded-2xl overflow-hidden mb-4" style="background-color:#0F4C3A">
+        <div class="p-6 flex flex-wrap items-center justify-between gap-4 text-white">
+            <div class="flex items-center gap-4 min-w-0">
+                <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shrink-0">
+                    <span class="text-lg font-bold" style="color:#0F4C3A">VF</span>
                 </div>
-
-                <div class="tabulator-daisy">
-                    <div id="hq-doc-table"
-                         data-can-manage="{{ $canManageDocuments ? '1' : '0' }}"
-                         data-delete-url-template="{{ route('backend.internal-facilities.documents.destroy', [$headquarter, '__ID__']) }}"
-                         data-rows="{{ json_encode($buildDocRows($headquarter), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
+                <div class="min-w-0">
+                    <p class="text-lg font-bold leading-tight truncate">Công ty CP Thực phẩm VISAFO</p>
+                    <p class="text-sm text-white/70 mt-0.5">MST: 0312345678 · Doanh nghiệp nhỏ</p>
                 </div>
+            </div>
+
+            <div class="text-right shrink-0">
+                <p class="text-3xl font-extrabold leading-none">{{ $completionPercent }}%</p>
+                <p class="text-xs text-white/70 mt-1">Hoàn thiện hồ sơ</p>
             </div>
         </div>
     </div>
 
-    {{-- ── Khối 2 · Hồ sơ Cấp Cơ sở (Local) ──────────────────────────────────── --}}
-    <div>
-        <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-2">Khối 2 · Hồ sơ cấp Cơ sở</p>
+    <div class="flex flex-wrap items-center justify-end gap-3 mb-6">
+        <div class="flex items-center gap-2">
+            <a href="{{ route('backend.internal-compliance.export') }}" class="btn btn-ghost btn-sm gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3"/></svg>
+                Xuất Hồ sơ (ZIP)
+            </a>
+            @if($canManageDocuments)
+            <button type="button" x-show="tab !== 'history'" x-cloak class="btn btn-sm text-white border-0 gap-1.5" style="background-color:#0F4C3A"
+                    @click="window.openAddDocumentModal('{{ $headquarter->id }}', tab)">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Tải hồ sơ lên
+            </button>
+            @endif
+        </div>
+    </div>
 
-        @if($localFacilities->isEmpty())
-        <div class="card bg-base-100 border border-dashed border-base-300">
-            <div class="card-body py-10 text-center text-base-content/40">
-                <p class="text-sm">Chưa có cơ sở nào (Kho, Vùng trồng, Khu sơ chế...) được khai báo.</p>
-                @can('create', \Modules\Compliance\Models\InternalFacility::class)
-                <button type="button" class="btn btn-primary btn-sm mt-3 mx-auto" onclick="openFacilityModal()">+ Thêm cơ sở</button>
-                @endcan
+    @if(session('success'))
+    <div class="alert alert-success py-2.5 px-4 mb-5 text-sm rounded-xl">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+    <div class="alert alert-error py-2.5 px-4 mb-5 text-sm rounded-xl">{{ session('error') }}</div>
+    @endif
+
+    <div class="flex flex-wrap gap-6 border-b border-gray-200 mb-5">
+        <button type="button" @click="tab = 'legal'"
+                class="pb-3 text-sm font-medium border-b-2 -mb-px transition-colors"
+                :class="tab === 'legal' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
+            Pháp lý & năng lực
+        </button>
+        <button type="button" @click="tab = 'operation'"
+                class="pb-3 text-sm font-medium border-b-2 -mb-px transition-colors"
+                :class="tab === 'operation' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
+            ATTP & vận hành
+        </button>
+        <button type="button" @click="tab = 'hr'"
+                class="pb-3 text-sm font-medium border-b-2 -mb-px transition-colors"
+                :class="tab === 'hr' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
+            Nhân sự
+        </button>
+        <button type="button" @click="tab = 'history'"
+                class="pb-3 text-sm font-medium border-b-2 -mb-px transition-colors"
+                :class="tab === 'history' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
+            Lịch sử
+        </button>
+    </div>
+
+    @php
+        $documentCard = function (array $doc) use ($canManageDocuments) {
+            $statusText  = $doc['is_expired'] ? 'Hết hạn' : ($doc['is_expiring_soon'] ? 'Sắp hết hạn' : 'Hợp lệ');
+            $statusClass = $doc['is_expired']
+                ? 'bg-red-50 text-red-600 border-red-100'
+                : ($doc['is_expiring_soon'] ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-green-50 text-green-700 border-green-100');
+
+            return compact('statusText', 'statusClass');
+        };
+    @endphp
+
+    <div x-show="tab === 'legal'" x-cloak>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @forelse($docsByGroup['legal'] as $doc)
+                @php $meta = $documentCard($doc); @endphp
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-11 h-11 rounded-lg bg-green-50 text-green-700 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-sm text-gray-800 truncate">{{ $doc['type_name'] }}</p>
+                            <p class="text-xs text-gray-400 truncate">
+                                {{ $doc['document_number'] ?: 'Chưa có số hiệu' }}
+                                @if($doc['issue_date_display']) · Cấp {{ $doc['issue_date_display'] }} @endif
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="badge badge-sm border {{ $meta['statusClass'] }}">{{ $meta['statusText'] }}</span>
+
+                        @if($canManageDocuments)
+                        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                            <button type="button" @click="open = !open" class="btn btn-ghost btn-xs btn-circle">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                            </button>
+                            <ul x-show="open" x-transition x-cloak @click="open = false"
+                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-28 z-20 p-1">
+                                <li><button type="button" onclick="window.openEditDocumentModal({{ Js::from($doc) }})">Sửa</button></li>
+                                <li><button type="button" class="text-error" onclick="window.internalComplianceDeleteConfirm('{{ $doc['delete_url'] }}', {{ Js::from($doc['type_name']) }})">Xóa</button></li>
+                            </ul>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="md:col-span-2 rounded-xl border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
+                    Chưa có hồ sơ nào trong nhóm Pháp lý & năng lực.
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    <div x-show="tab === 'operation'" x-cloak>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @forelse($docsByGroup['operation'] as $doc)
+                @php $meta = $documentCard($doc); @endphp
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-11 h-11 rounded-lg bg-green-50 text-green-700 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-sm text-gray-800 truncate">{{ $doc['type_name'] }}</p>
+                            <p class="text-xs text-gray-400 truncate">
+                                {{ $doc['document_number'] ?: 'Chưa có số hiệu' }}
+                                @if($doc['issue_date_display']) · Cấp {{ $doc['issue_date_display'] }} @endif
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="badge badge-sm border {{ $meta['statusClass'] }}">{{ $meta['statusText'] }}</span>
+
+                        @if($canManageDocuments)
+                        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                            <button type="button" @click="open = !open" class="btn btn-ghost btn-xs btn-circle">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                            </button>
+                            <ul x-show="open" x-transition x-cloak @click="open = false"
+                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-28 z-20 p-1">
+                                <li><button type="button" onclick="window.openEditDocumentModal({{ Js::from($doc) }})">Sửa</button></li>
+                                <li><button type="button" class="text-error" onclick="window.internalComplianceDeleteConfirm('{{ $doc['delete_url'] }}', {{ Js::from($doc['type_name']) }})">Xóa</button></li>
+                            </ul>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="md:col-span-2 rounded-xl border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
+                    Chưa có hồ sơ nào trong nhóm ATTP & vận hành.
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    <div x-show="tab === 'hr'" x-cloak>
+        <div class="flex items-center justify-between mb-4">
+            <p class="text-sm text-gray-400">Đồng bộ tự động từ module Nhân sự</p>
+            @can('employee.view')
+            <a href="{{ route('backend.employees.index') }}" class="btn btn-ghost btn-xs">Đi tới Module Nhân sự →</a>
+            @endcan
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <p class="text-xs text-gray-400">Tổng số nhân sự</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1">{{ number_format($employeeStats['total']) }}</p>
             </div>
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <p class="text-xs text-gray-400">Tỷ lệ có giấy khám SK còn hạn</p>
+                <p class="text-2xl font-bold mt-1 {{ $employeeStats['health_valid_pct'] < 80 ? 'text-red-600' : 'text-green-700' }}">{{ $employeeStats['health_valid_pct'] }}%</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ $employeeStats['health_valid'] }}/{{ $employeeStats['total'] }} nhân sự</p>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <p class="text-xs text-gray-400">Tỷ lệ chứng nhận ATTP còn hạn</p>
+                <p class="text-2xl font-bold mt-1 {{ $employeeStats['attp_valid_pct'] < 80 ? 'text-red-600' : 'text-green-700' }}">{{ $employeeStats['attp_valid_pct'] }}%</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ $employeeStats['attp_valid'] }}/{{ $employeeStats['total'] }} nhân sự</p>
+            </div>
+        </div>
+
+        <p class="text-xs font-medium text-gray-500 mb-2">Nhân sự thiếu / sắp hết hạn giấy tờ y tế/ATTP — cần bổ sung</p>
+        @if(count($employeeStats['at_risk']))
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto mb-6">
+            <table class="table table-sm">
+                <thead>
+                    <tr class="text-xs text-gray-400">
+                        <th>Nhân viên</th>
+                        <th>Vị trí</th>
+                        <th>Khám sức khỏe</th>
+                        <th>Chứng nhận ATTP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($employeeStats['at_risk'] as $emp)
+                    <tr>
+                        <td><a href="{{ $emp['edit_url'] }}" class="font-semibold text-sm text-gray-800 hover:text-green-700">{{ $emp['full_name'] }}</a></td>
+                        <td class="text-sm text-gray-500">{{ $emp['job_title'] ?: '—' }}</td>
+                        <td><span class="badge badge-sm {{ $emp['health_status_badge'] }}">{{ $emp['health_status_label'] }}</span></td>
+                        <td><span class="badge badge-sm {{ $emp['attp_status_badge'] }}">{{ $emp['attp_status_label'] }}</span></td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
         @else
-        <div class="space-y-2">
-            @foreach($localFacilities as $facility)
-            @php $fid = $facility->id; @endphp
-            <div class="card bg-base-100 shadow-sm border border-base-200">
-                <button type="button"
-                        class="w-full flex items-center justify-between gap-3 p-4 text-left"
-                        @click="openFacility = (openFacility === '{{ $fid }}') ? '' : '{{ $fid }}'; if (openFacility === '{{ $fid }}') window.onFacilityAccordionOpen?.('facility-doc-table-{{ $fid }}')">
-                    <div class="min-w-0">
-                        <p class="font-semibold text-sm truncate">{{ $facility->name }}</p>
-                        <p class="text-xs text-base-content/40 truncate">
-                            {{ $facility->typeLabel() }}@if($facility->address) — {{ $facility->address }} @endif
-                            @if($facility->status === 'inactive') <span class="badge badge-ghost badge-xs ml-1">Ngừng hoạt động</span> @endif
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="badge badge-neutral badge-xs">{{ $facility->documents->count() }} hồ sơ</span>
-                        <svg class="w-4 h-4 text-base-content/40 transition-transform" :class="openFacility === '{{ $fid }}' ? 'rotate-180' : ''"
-                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </div>
-                </button>
-
-                <div x-show="openFacility === '{{ $fid }}'" x-transition x-cloak>
-                    <div class="card-body pt-0 border-t border-base-200">
-                        <div class="flex items-center justify-end gap-2 mb-3 mt-4">
-                            @can('update', $facility)
-                            @if($canManageDocuments)
-                            <button type="button" class="btn btn-primary btn-sm" onclick="openAddDocumentModal('{{ $fid }}')">Tải lên hồ sơ mới</button>
-                            @endif
-                            <button type="button" class="btn btn-ghost btn-sm"
-                                    onclick="openFacilityModal({{ json_encode(['id' => $facility->id, 'name' => $facility->name, 'type' => $facility->type, 'address' => $facility->address, 'status' => $facility->status], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }})">Sửa cơ sở</button>
-                            @endcan
-                        </div>
-
-                        <div class="tabulator-daisy">
-                            <div id="facility-doc-table-{{ $fid }}"
-                                 data-can-manage="{{ $canManageDocuments ? '1' : '0' }}"
-                                 data-delete-url-template="{{ route('backend.internal-facilities.documents.destroy', [$facility, '__ID__']) }}"
-                                 data-rows="{{ json_encode($buildDocRows($facility), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endforeach
+        <div class="rounded-xl bg-green-50 border border-green-100 text-green-700 text-sm py-3 px-4 mb-6">
+            Toàn bộ nhân sự đều có đủ giấy tờ còn hiệu lực.
         </div>
         @endif
+
+        @php
+            $hrAggregateMap = [
+                'Giấy xác nhận kiến thức về an toàn thực phẩm' => [
+                    'valid' => $employeeStats['attp_valid'],
+                    'total' => $employeeStats['total'],
+                ],
+                'Khám sức khỏe định kỳ' => [
+                    'valid' => $employeeStats['health_valid'],
+                    'total' => $employeeStats['total'],
+                ],
+            ];
+        @endphp
+
+        <p class="text-xs font-medium text-gray-500 mb-2">Hồ sơ nhân sự</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @forelse($docsByGroup['hr'] as $doc)
+                @php $aggregate = $hrAggregateMap[$doc['type_name']] ?? null; @endphp
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-11 h-11 rounded-lg bg-green-50 text-green-700 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-sm text-gray-800 truncate">{{ $doc['type_name'] }}</p>
+                            @if($aggregate)
+                            <p class="text-xs text-gray-400 truncate">
+                                {{ $aggregate['valid'] }}/{{ $aggregate['total'] }} nhân sự
+                                @if($aggregate['valid'] < $aggregate['total']) · Thiếu {{ $aggregate['total'] - $aggregate['valid'] }} nhân sự @endif
+                            </p>
+                            @else
+                            <p class="text-xs text-gray-400 truncate">
+                                {{ $doc['document_number'] ?: 'Chưa có số hiệu' }}
+                                @if($doc['issue_date_display']) · Cấp {{ $doc['issue_date_display'] }} @endif
+                            </p>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        @if($aggregate)
+                        <span class="badge badge-sm border {{ $aggregate['valid'] === $aggregate['total'] && $aggregate['total'] > 0 ? 'bg-green-50 text-green-700 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100' }}">
+                            {{ $aggregate['valid'] === $aggregate['total'] && $aggregate['total'] > 0 ? 'Hợp lệ' : 'Cần bổ sung' }}
+                        </span>
+                        @else
+                        @php $meta = $documentCard($doc); @endphp
+                        <span class="badge badge-sm border {{ $meta['statusClass'] }}">{{ $meta['statusText'] }}</span>
+                        @endif
+
+                        @if($canManageDocuments && !$aggregate)
+                        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                            <button type="button" @click="open = !open" class="btn btn-ghost btn-xs btn-circle">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                            </button>
+                            <ul x-show="open" x-transition x-cloak @click="open = false"
+                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-28 z-20 p-1">
+                                <li><button type="button" onclick="window.openEditDocumentModal({{ Js::from($doc) }})">Sửa</button></li>
+                                <li><button type="button" class="text-error" onclick="window.internalComplianceDeleteConfirm('{{ $doc['delete_url'] }}', {{ Js::from($doc['type_name']) }})">Xóa</button></li>
+                            </ul>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="md:col-span-2 rounded-xl border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
+                    Chưa có hồ sơ nào trong nhóm Nhân sự.
+                </div>
+            @endforelse
+        </div>
     </div>
 
-    {{-- ── Khối 3 · Năng lực Nhân sự (Auto-Sync từ module Nhân sự) ──────────── --}}
-    <div>
-        <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-2">Khối 3 · Năng lực Nhân sự (tự động đồng bộ)</p>
+    <div x-show="tab === 'history'" x-cloak class="rounded-xl border border-dashed border-gray-200 py-14 text-center text-sm text-gray-400">
+        Chưa có dữ liệu lịch sử thay đổi hồ sơ.
+    </div>
 
-        <div class="card bg-base-100 shadow-sm border border-base-200">
-            <div class="card-body">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="card-title text-base mb-0">Tổng quan nhân sự</h2>
-                    @can('employee.view')
-                    <a href="{{ route('backend.employees.index') }}" class="btn btn-ghost btn-xs">Xem module Nhân sự →</a>
-                    @endcan
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-                    <div class="stat bg-base-200/50 rounded-xl py-3 px-4">
-                        <div class="stat-title text-xs">Tổng số nhân sự</div>
-                        <div class="stat-value text-2xl">{{ number_format($employeeStats['total']) }}</div>
-                        <div class="stat-desc">đang được theo dõi hồ sơ</div>
-                    </div>
-                    <div class="stat bg-base-200/50 rounded-xl py-3 px-4">
-                        <div class="stat-title text-xs">Giấy khám SK còn hạn</div>
-                        <div class="stat-value text-2xl {{ $employeeStats['health_valid_pct'] < 80 ? 'text-error' : 'text-success' }}">{{ $employeeStats['health_valid_pct'] }}%</div>
-                        <div class="stat-desc">{{ $employeeStats['health_valid'] }}/{{ $employeeStats['total'] }} nhân sự</div>
-                    </div>
-                    <div class="stat bg-base-200/50 rounded-xl py-3 px-4">
-                        <div class="stat-title text-xs">Chứng nhận ATTP còn hạn</div>
-                        <div class="stat-value text-2xl {{ $employeeStats['attp_valid_pct'] < 80 ? 'text-error' : 'text-success' }}">{{ $employeeStats['attp_valid_pct'] }}%</div>
-                        <div class="stat-desc">{{ $employeeStats['attp_valid'] }}/{{ $employeeStats['total'] }} nhân sự</div>
-                    </div>
-                </div>
-
-                @if(count($employeeStats['at_risk']))
-                <p class="text-xs font-medium text-base-content/50 mb-2">Nhân sự thiếu / sắp hết hạn giấy tờ — cần bổ sung</p>
-                <div class="tabulator-daisy">
-                    <div id="employee-risk-table" data-rows="{{ json_encode($employeeStats['at_risk'], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
-                </div>
-                @else
-                <div class="alert alert-success py-2.5 px-4 text-sm">Toàn bộ nhân sự đều có đủ giấy tờ còn hiệu lực.</div>
-                @endif
+    <div class="mt-6 rounded-xl bg-green-50 border border-green-100 p-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-green-100 text-green-700 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+                <p class="font-semibold text-sm text-green-800">Hồ sơ DN đã đủ dữ liệu nền</p>
+                <p class="text-xs text-green-700/70">Có thể dùng hồ sơ này để bắt đầu làm việc với Nhà cung cấp đầu vào.</p>
             </div>
         </div>
+        <a href="{{ route('backend.vendors.index') }}" class="btn btn-sm text-white border-0 gap-1.5" style="background-color:#0F4C3A">
+            Sang NCC đầu vào
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
     </div>
 
 </div>
 
-{{-- ── Modal: Tải lên / Sửa hồ sơ năng lực (dùng chung cho Khối 1 & 2) ──────── --}}
+{{-- ── Modal: Tải lên / Sửa hồ sơ năng lực ─────────────────────────────── --}}
 @if($canManageDocuments)
 <dialog id="addDocumentModal" class="modal" @if($errors->any()) data-autoopen="1" @endif>
-    <div class="modal-box max-w-lg">
-        <h3 class="font-bold text-lg mb-4" id="documentModalTitle">{{ $modalIsEdit ? 'Sửa hồ sơ' : 'Tải lên hồ sơ năng lực mới' }}</h3>
+    <div class="modal-box max-w-lg rounded-2xl p-6 relative">
+        <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onclick="addDocumentModal.close()">✕</button>
+
+        <h3 class="font-bold text-lg mb-5" id="documentModalTitle">{{ $modalIsEdit ? 'Sửa hồ sơ' : 'Tải hồ sơ lên' }}</h3>
 
         @if($errors->any())
-        <div class="alert alert-error py-2 px-3 mb-3 text-xs">
+        <div class="alert alert-error py-2 px-3 mb-4 text-xs rounded-lg">
             <ul class="list-disc list-inside space-y-0.5">
                 @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
             </ul>
@@ -225,69 +406,70 @@
               action="{{ $modalIsEdit
                   ? route('backend.internal-facilities.documents.update', [$modalFacilityId, old('_document_id')])
                   : route('backend.internal-facilities.documents.store', $modalFacilityId) }}"
-              enctype="multipart/form-data" class="space-y-3"
+              enctype="multipart/form-data" class="space-y-4"
               data-store-url-template="{{ route('backend.internal-facilities.documents.store', ['internal_facility' => '__FID__']) }}"
               data-update-url-template-raw="{{ route('backend.internal-facilities.documents.update', ['internal_facility' => '__FID__', 'document' => '__ID__']) }}"
-              x-data="documentUploadForm({{ Js::from(
-                  $documentTypesByGroup['legal_facility']->concat($documentTypesByGroup['attp_quality'])
-                      ->map(fn ($t) => ['id' => $t->id, 'has_expiration_date' => (bool) $t->has_expiration_date, 'has_issue_place' => (bool) $t->has_issue_place, 'default_validity_months' => $t->default_validity_months])
-              ) }}, {{ Js::from((string) old('document_master_type_id', '')) }})">
+              x-data="documentUploadForm({{ Js::from($allDocumentTypes) }}, {{ Js::from((string) old('document_master_type_id', '')) }})">
             @csrf
             <input type="hidden" name="_method" value="{{ $modalIsEdit ? 'PUT' : '' }}">
             <input type="hidden" name="_document_id" value="{{ old('_document_id') }}">
             <input type="hidden" name="_target_facility_id" value="{{ $modalFacilityId }}">
 
-            <div class="form-control">
-                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Loại giấy tờ</span></label>
-                <select id="ts-document_master_type_id" name="document_master_type_id" class="select select-bordered select-sm w-full" data-ts-placeholder="— Chọn loại giấy tờ —" @change="selectedId = $event.target.value">
-                    <optgroup label="{{ $groupLabels['legal_facility'] }}">
-                        @foreach($documentTypesByGroup['legal_facility'] as $type)
-                        <option value="{{ $type->id }}" @selected(old('document_master_type_id') === $type->id)>{{ $type->name }}</option>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="form-control">
+                    <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Nhóm hồ sơ</span></label>
+                    <input type="text" readonly tabindex="-1" :value="selected.group_label ?? ''"
+                           class="input input-bordered w-full rounded-xl bg-gray-50 text-gray-500">
+                </div>
+
+                <div class="form-control">
+                    <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Tên tài liệu <span class="text-error">*</span></span></label>
+                    <select id="ts-document_master_type_id" name="document_master_type_id"
+                            class="select select-bordered w-full rounded-xl" data-ts-placeholder="— Chọn loại giấy tờ —"
+                            @change="selectedId = $event.target.value">
+                        @foreach($allDocumentTypes as $type)
+                        <option value="{{ $type['id'] }}" @selected(old('document_master_type_id') === $type['id'])>{{ $type['name'] }}</option>
                         @endforeach
-                    </optgroup>
-                    <optgroup label="{{ $groupLabels['attp_quality'] }}">
-                        @foreach($documentTypesByGroup['attp_quality'] as $type)
-                        <option value="{{ $type->id }}" @selected(old('document_master_type_id') === $type->id)>{{ $type->name }}</option>
-                        @endforeach
-                    </optgroup>
-                </select>
+                    </select>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
                 <div class="form-control" :class="selected.has_issue_place ? '' : 'col-span-2'">
-                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Số hiệu</span></label>
-                    <input type="text" name="document_number" value="{{ old('document_number') }}" class="input input-bordered input-sm w-full">
+                    <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Số hiệu</span></label>
+                    <input type="text" name="document_number" value="{{ old('document_number') }}" class="input input-bordered w-full rounded-xl">
                 </div>
                 <div class="form-control" x-show="selected.has_issue_place">
-                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Nơi cấp</span></label>
-                    <input type="text" name="issued_by" value="{{ old('issued_by') }}" class="input input-bordered input-sm w-full">
+                    <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Nơi cấp</span></label>
+                    <input type="text" name="issued_by" value="{{ old('issued_by') }}" class="input input-bordered w-full rounded-xl">
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
                 <div class="form-control" :class="selected.has_expiration_date ? '' : 'col-span-2'">
-                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày cấp</span></label>
+                    <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Ngày cấp</span></label>
                     <input type="text" id="fp-issue_date" name="issue_date" value="{{ old('issue_date') }}"
-                           class="input input-bordered input-sm w-full" placeholder="dd/mm/yyyy" autocomplete="off">
+                           class="input input-bordered w-full rounded-xl" placeholder="dd/mm/yyyy" autocomplete="off">
                 </div>
                 <div class="form-control" x-show="selected.has_expiration_date">
-                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày hết hạn</span></label>
+                    <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Ngày hết hạn</span></label>
                     <input type="text" id="fp-expiration_date" name="expiration_date" value="{{ old('expiration_date') }}"
-                           class="input input-bordered input-sm w-full" placeholder="dd/mm/yyyy" autocomplete="off">
+                           class="input input-bordered w-full rounded-xl" placeholder="dd/mm/yyyy" autocomplete="off">
                 </div>
             </div>
 
             <div class="form-control">
-                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">File PDF/Scan</span></label>
-                <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered file-input-sm w-full">
+                <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">File PDF/Scan</span></label>
+                <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered w-full rounded-xl">
                 <p class="mt-1 text-xs text-base-content/50" id="documentCurrentFileInfo" hidden>
                     File hiện tại: <a href="#" target="_blank" class="link link-primary" id="documentCurrentFileLink">Xem file</a> — chọn file mới để thay thế
                 </p>
             </div>
 
-            <div class="modal-action mt-2">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="addDocumentModal.close()">Hủy</button>
-                <button type="submit" class="btn btn-primary btn-sm" id="documentModalSubmit">{{ $modalIsEdit ? 'Lưu thay đổi' : 'Lưu hồ sơ' }}</button>
+            <div class="modal-action mt-2 pt-4 border-t border-gray-100">
+                <button type="button" class="btn btn-ghost border border-gray-300 rounded-xl" onclick="addDocumentModal.close()">Hủy</button>
+                <button type="submit" class="btn text-white border-0 rounded-xl" style="background-color:#0F4C3A" id="documentModalSubmit">{{ $modalIsEdit ? 'Lưu thay đổi' : 'Lưu hồ sơ' }}</button>
             </div>
         </form>
     </div>
@@ -295,88 +477,26 @@
 </dialog>
 @endif
 
-{{-- ── Modal: Thêm/Sửa cơ sở nội bộ ─────────────────────────────────────── --}}
-@can('create', \Modules\Compliance\Models\InternalFacility::class)
-<dialog id="facilityModal" class="modal">
-    <div class="modal-box max-w-md">
-        <h3 class="font-bold text-lg mb-1" id="facilityModalTitle">Thêm cơ sở nội bộ</h3>
-
-        <form method="POST" id="facilityForm" action="{{ route('backend.internal-facilities.store') }}" class="space-y-3">
-            @csrf
-            <input type="hidden" name="_method" id="facilityMethod" value="">
-
-            <div class="form-control">
-                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Tên cơ sở <span class="text-error">*</span></span></label>
-                <input type="text" id="facilityName" name="name" class="input input-bordered input-sm w-full" placeholder="VD: Kho trung tâm, Vùng trồng A..." required>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div class="form-control">
-                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Loại cơ sở <span class="text-error">*</span></span></label>
-                    <select id="facilityType" name="type" class="select select-bordered select-sm w-full">
-                        <option value="headquarter" hidden>Trụ sở chính</option>
-                        <option value="farm">Vùng trồng</option>
-                        <option value="warehouse">Kho</option>
-                        <option value="processing_zone">Khu sơ chế/chế biến</option>
-                    </select>
-                </div>
-                <div class="form-control">
-                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Trạng thái <span class="text-error">*</span></span></label>
-                    <select id="facilityStatus" name="status" class="select select-bordered select-sm w-full">
-                        <option value="active">Hoạt động</option>
-                        <option value="inactive">Ngừng hoạt động</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-control">
-                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Địa chỉ</span></label>
-                <textarea id="facilityAddress" name="address" rows="2" class="textarea textarea-bordered textarea-sm w-full"></textarea>
-            </div>
-
-            <div class="modal-action mt-2">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="facilityModal.close()">Hủy</button>
-                <button type="submit" class="btn btn-primary btn-sm">Lưu</button>
-            </div>
-        </form>
+{{-- ── Modal: Xác nhận xóa hồ sơ ────────────────────────────────────────── --}}
+@if($canManageDocuments)
+<dialog id="deleteModal" class="modal">
+    <div class="modal-box max-w-sm rounded-2xl">
+        <h3 class="font-bold text-lg text-error">Xác nhận xóa</h3>
+        <p class="py-3 text-sm text-base-content/70">
+            Bạn có chắc muốn xóa hồ sơ <strong id="deleteItemName" class="text-base-content"></strong>?
+        </p>
+        <div class="modal-action mt-4">
+            <button id="confirmDeleteBtn" class="btn btn-error btn-sm rounded-xl">Xóa</button>
+            <button class="btn btn-ghost btn-sm rounded-xl" onclick="deleteModal.close()">Hủy</button>
+        </div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
 </dialog>
-
-<script>
-function openFacilityModal(facility) {
-    const form = document.getElementById('facilityForm');
-    const typeSelect = document.getElementById('facilityType');
-    const hqOption = typeSelect.querySelector('option[value="headquarter"]');
-    const updateUrlTemplate = @json(route('backend.internal-facilities.update', ['internal_facility' => '__ID__']));
-    const storeUrl = @json(route('backend.internal-facilities.store'));
-
-    if (facility && facility.id) {
-        form.action = updateUrlTemplate.replace('__ID__', facility.id);
-        document.getElementById('facilityMethod').value = 'PUT';
-        document.getElementById('facilityModalTitle').textContent = 'Sửa cơ sở nội bộ';
-        document.getElementById('facilityName').value = facility.name ?? '';
-        hqOption.hidden = facility.type !== 'headquarter';
-        document.getElementById('facilityType').value = facility.type ?? 'farm';
-        document.getElementById('facilityStatus').value = facility.status ?? 'active';
-        document.getElementById('facilityAddress').value = facility.address ?? '';
-    } else {
-        form.reset();
-        form.action = storeUrl;
-        hqOption.hidden = true;
-        document.getElementById('facilityMethod').value = '';
-        document.getElementById('facilityModalTitle').textContent = 'Thêm cơ sở nội bộ';
-    }
-
-    facilityModal.showModal();
-}
-</script>
-@endcan
+@endif
 
 @endsection
 
 @push('styles')
-    <x-tabulator-theme />
     @vite(['Modules/Compliance/resources/assets/sass/compliance.scss'], 'build/backend')
 @endpush
 
@@ -384,7 +504,6 @@ function openFacilityModal(facility) {
     @vite([
         'resources/js/modules/flatpickr.js',
         'resources/js/modules/tom-select.js',
-        'resources/js/modules/tabulator.js',
         'Modules/Compliance/resources/assets/js/compliance.js',
     ], 'build/backend')
 @endpush

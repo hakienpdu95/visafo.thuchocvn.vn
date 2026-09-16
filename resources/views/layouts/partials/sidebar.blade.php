@@ -15,8 +15,50 @@
                 <span class="nav-label">Dashboard</span>
             </a>
 
+            @can('compliance.view')
+            <a href="{{ route('backend.internal-compliance.index') }}"
+               class="nav-link {{ request()->routeIs('backend.internal-compliance.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/>
+                </svg>
+                <span class="nav-label">Hồ sơ doanh nghiệp</span>
+            </a>
+            @endcan
+
+            @can('vendor.view')
+            <a href="{{ route('backend.vendors.index') }}"
+               class="nav-link {{ request()->routeIs('backend.vendors.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h18v4H3V3zm2 4h14v14H5V7zm3 4h8m-8 4h5"/></svg>
+                <span class="nav-label">Quản lý Nhà cung cấp</span>
+            </a>
+            @endcan
+
+            @can('product.view')
+            <a href="{{ route('backend.partner-products.index') }}"
+               class="nav-link {{ request()->routeIs('backend.partner-products.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+                <span class="nav-label">Hàng hóa Nhà cung cấp</span>
+            </a>
+            @endcan
+
+            @can('customer.view')
+            <a href="{{ route('backend.customers.index') }}"
+               class="nav-link {{ request()->routeIs('backend.customers.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="nav-label">Quản lý Khách hàng</span>
+            </a>
+            @endcan
+
+            @can('contract.view')
+            <a href="{{ route('backend.contracts.index') }}"
+               class="nav-link {{ request()->routeIs('backend.contracts.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m3-6h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5"/></svg>
+                <span class="nav-label">Quản lý Hợp đồng</span>
+            </a>
+            @endcan
+
             <a href="{{ route('backend.notifications.index') }}"
-               class="nav-link {{ request()->routeIs('backend.notifications.*') ? 'active' : '' }}">
+               class="nav-link {{ request()->routeIs('backend.notifications.*') ? 'active' : '' }}" style="display:none;">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                 </svg>
@@ -30,32 +72,6 @@
                 <span class="nav-label">Cảnh báo pháp lý & hạn dùng</span>
             </a>
             @endcan
-        </div>
-
-        <div class="nav-group">
-            @canany(['vendor.view', 'contract.view', 'product.view', 'customer.view'])
-            <details {{ request()->routeIs('backend.vendors.*', 'backend.contracts.*', 'backend.partner-products.*', 'backend.customers.*') ? 'open' : '' }}>
-                <summary class="nav-summary {{ request()->routeIs('backend.vendors.*', 'backend.contracts.*', 'backend.partner-products.*', 'backend.customers.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h18v4H3V3zm2 4h14v14H5V7zm3 4h8m-8 4h5"/></svg>
-                    <span class="nav-label">Đối tác & Chuỗi cung ứng</span>
-                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
-                </summary>
-                <div class="sub-menu">
-                    @can('vendor.view')
-                    <a href="{{ route('backend.vendors.index') }}" class="sub-link {{ request()->routeIs('backend.vendors.*') ? 'active' : '' }}">Quản lý Nhà cung cấp</a>
-                    @endcan
-                    @can('product.view')
-                    <a href="{{ route('backend.partner-products.index') }}" class="sub-link {{ request()->routeIs('backend.partner-products.*') ? 'active' : '' }}">Hàng hóa Nhà cung cấp</a>
-                    @endcan
-                    @can('contract.view')
-                    <a href="{{ route('backend.contracts.index') }}" class="sub-link {{ request()->routeIs('backend.contracts.*') ? 'active' : '' }}">Quản lý Hợp đồng</a>
-                    @endcan
-                    @can('customer.view')
-                    <a href="{{ route('backend.customers.index') }}" class="sub-link {{ request()->routeIs('backend.customers.*') ? 'active' : '' }}">Quản lý Khách hàng</a>
-                    @endcan
-                </div>
-            </details>
-            @endcanany
         </div>
 
         <div class="nav-group">
@@ -76,8 +92,8 @@
 
         <div class="nav-group">
             @canany(['compliance.view', 'product.manage', 'traceability.view'])
-            <details {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*', 'backend.internal-compliance.*') ? 'open' : '' }}>
-                <summary class="nav-summary {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*', 'backend.internal-compliance.*') ? 'active' : '' }}">
+            <details {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*') ? 'open' : '' }}>
+                <summary class="nav-summary {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*') ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
                     <span class="nav-label">Quản trị Tuân thủ</span>
                     <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
@@ -85,7 +101,6 @@
                 <div class="sub-menu">
                     @can('compliance.view')
                     <a href="{{ route('backend.document-repository.index') }}" class="sub-link {{ request()->routeIs('backend.document-repository.*') ? 'active' : '' }}">Kho tài liệu & Minh chứng</a>
-                    <a href="{{ route('backend.internal-compliance.index') }}" class="sub-link {{ request()->routeIs('backend.internal-compliance.*') ? 'active' : '' }}">Hồ sơ năng lực VISAFO</a>
                     @endcan
                     @can('product.manage')
                     <a href="{{ route('backend.document-master-types.index') }}" class="sub-link {{ request()->routeIs('backend.document-master-types.*') ? 'active' : '' }}">Từ điển giấy tờ pháp lý</a>

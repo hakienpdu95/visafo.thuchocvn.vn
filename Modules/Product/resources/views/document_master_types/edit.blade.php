@@ -65,6 +65,23 @@
                     </div>
                 </div>
 
+                <div class="form-control mt-4 sm:max-w-[calc(50%-0.5rem)]">
+                    <label class="label py-0 pb-1.5">
+                        <span class="label-text font-medium">Tab hiển thị nội bộ</span>
+                        <span class="label-text-alt text-xs text-base-content/40">Chỉ áp dụng khi thuộc phạm vi "internal"</span>
+                    </label>
+                    <select id="ts-internal_tab_group" name="internal_tab_group"
+                            data-ts-placeholder="— Không áp dụng —"
+                            class="select select-bordered select-sm w-full ts-init @error('internal_tab_group') select-error @enderror">
+                        <option value="">— Không áp dụng —</option>
+                        @foreach($internalTabGroups as $tabGroup)
+                        <option value="{{ $tabGroup->value }}" @selected(old('internal_tab_group', $documentMasterType->internal_tab_group?->value) === $tabGroup->value)>{{ $tabGroup->label() }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-base-content/40">Quyết định loại giấy tờ này xuất hiện ở tab nào trong trang Hồ sơ năng lực VISAFO.</p>
+                    @error('internal_tab_group')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                </div>
+
                 <div class="form-control mt-4">
                     <label class="label py-0 pb-1.5">
                         <span class="label-text font-medium">Tên loại giấy tờ <span class="text-error">*</span></span>

@@ -26,6 +26,8 @@ class StoreCustomerAction
             'representative_title'  => $data->representative_title,
             'representative_phone'  => $data->representative_phone,
             'representative_email'  => $data->representative_email,
+            'expected_scale'        => $data->expected_scale,
+            'expected_deadline'     => $data->expected_deadline,
             'pic_id'                => $data->pic_id,
             'status'                => $data->status->value,
         ]);

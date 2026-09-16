@@ -53,6 +53,7 @@
                 <div class="card-body">
                     <h2 class="text-base font-semibold mb-3">Thông tin pháp nhân</h2>
                     <dl class="text-sm space-y-2">
+                        <div><dt class="text-base-content/50 text-xs">Nhóm nguồn</dt><dd>{{ $vendor->source_group?->label() ?? '—' }}</dd></div>
                         <div><dt class="text-base-content/50 text-xs">Địa chỉ</dt>
                             <dd>
                                 {{ $vendor->address ?? '—' }}

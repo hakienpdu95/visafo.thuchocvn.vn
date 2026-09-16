@@ -214,6 +214,8 @@
                 <dl class="text-sm space-y-2">
                     <div><dt class="text-base-content/50 text-xs">Nhóm khách hàng</dt><dd>{{ $customer->customer_group->label() }}</dd></div>
                     <div><dt class="text-base-content/50 text-xs">Mô hình tổ chức bữa ăn</dt><dd>{{ $customer->meal_model->label() }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Quy mô dự kiến</dt><dd>{{ $customer->expected_scale ? number_format($customer->expected_scale) . ' suất/ngày' : '—' }}</dd></div>
+                    <div><dt class="text-base-content/50 text-xs">Hạn nộp dự kiến</dt><dd>{{ $customer->expected_deadline?->format('d/m/Y H:i') ?? '—' }}</dd></div>
                     <div><dt class="text-base-content/50 text-xs">Mã số thuế</dt><dd>{{ $customer->tax_code ?? '—' }}</dd></div>
                     <div><dt class="text-base-content/50 text-xs">Địa chỉ</dt>
                         <dd>

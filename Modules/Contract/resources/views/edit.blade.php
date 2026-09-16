@@ -54,21 +54,24 @@
 
                         <div class="form-control">
                             <label class="label py-0 pb-1.5">
-                                <span class="label-text font-medium">Loại giao dịch <span class="text-error">*</span></span>
+                                <span class="label-text font-medium">Loại giao dịch</span>
+                                <span class="label-text-alt text-xs text-base-content/40">Không thể thay đổi sau khi tạo</span>
                             </label>
                             <div class="flex flex-wrap gap-6">
-                                <label class="label cursor-pointer justify-start gap-2 py-0">
-                                    <input type="radio" name="type" value="input" x-model="contractType"
+                                <label class="label justify-start gap-2 py-0 cursor-not-allowed opacity-60">
+                                    <input type="radio" value="input" disabled
+                                           @checked($contract->type->value === 'input')
                                            class="radio radio-sm radio-primary">
                                     <span class="label-text font-medium">Đầu vào (Nhà cung cấp)</span>
                                 </label>
-                                <label class="label cursor-pointer justify-start gap-2 py-0">
-                                    <input type="radio" name="type" value="output" x-model="contractType"
+                                <label class="label justify-start gap-2 py-0 cursor-not-allowed opacity-60">
+                                    <input type="radio" value="output" disabled
+                                           @checked($contract->type->value === 'output')
                                            class="radio radio-sm radio-primary">
                                     <span class="label-text font-medium">Đầu ra (Khách hàng)</span>
                                 </label>
                             </div>
-                            @error('type')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                            <input type="hidden" name="type" value="{{ $contract->type->value }}">
                         </div>
 
                         <div x-show="contractType === 'input'" x-cloak class="form-control">

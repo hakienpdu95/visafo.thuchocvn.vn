@@ -51,7 +51,9 @@
         "contact_person_email///string///100///_NULL///NULL///__///Email đầu mối liên hệ",
         "province_code///char///2///_NULL///NULL///->references('province_code')->constrained('provinces')->nullOnDelete()///Tỉnh/thành phố trụ sở — FK tới provinces.province_code",
         "ward_code///char///5///_NULL///NULL///->references('ward_code')->constrained('wards')->nullOnDelete()///Phường/xã trụ sở — FK tới wards.ward_code",
-        "__index///index///__///__///__///province_code,ward_code|idx_vendors_address///__"
+        "__index///index///__///__///__///province_code,ward_code|idx_vendors_address///__",
+        "source_group///string///10///_NULL///NULL///__///n1 = Tự sản xuất | n2 = Thu gom | n3 = Chợ đầu mối / siêu thị",
+        "__index///index///__///__///__///source_group|idx_vendors_source_group///__"
     ],
     [
         "products///add///__///",
@@ -64,8 +66,22 @@
     [
         "contracts///add///__///",
         "type///string///20///NOT_NULL///'input'///__///__",
-        "customer_id///foreignUlid///__///_NULL///NULL///__///__",
-        "ulid///ulid///__///_NULL///NULL///__///__",
-        "__index///index///__///__///__///type|idx_contracts_type///__"
+        "customer_id///unsignedBigInteger///__///_NULL///NULL///->constrained('customers')->onDelete('restrict')///__",
+        "__index///index///__///__///__///type|idx_contracts_type///__",
+        "ulid///ulid///__///_NULL///NULL///__///__"
+    ],
+    [
+        "contracts///change///__///",
+        "vendor_id///ulid///__///_NULL///NULL///__///__"
+    ],
+    [
+        "customers///add///__///",
+        "expected_scale///unsignedInteger///__///_NULL///NULL///__///Quy mô dự kiến — số suất ăn/ngày",
+        "expected_deadline///dateTime///__///_NULL///NULL///__///Hạn nộp hồ sơ/báo giá dự kiến"
+    ],
+    [
+        "document_master_types///add///__///",
+        "internal_tab_group///string///20///_NULL///NULL///__///legal | operation | hr — chỉ dùng khi applicable_to chứa internal, quyết định tab hiển thị ở trang Hồ sơ năng lực VISAFO",
+        "__index///index///__///__///__///internal_tab_group|idx_document_master_types_internal_tab_group///__"
     ]
 ]

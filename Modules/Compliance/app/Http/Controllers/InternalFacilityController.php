@@ -16,18 +16,12 @@ use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\InternalFacility;
 use Modules\Employee\Enums\RecordStatus;
 use Modules\Employee\Models\Employee;
-use Modules\Product\Enums\DocumentGroupType;
+use Modules\Product\Enums\InternalTabGroup;
 use Modules\Product\Models\DocumentMasterType;
 use ZipArchive;
 
 class InternalFacilityController extends Controller
 {
-    /** Nhóm hồ sơ hiển thị cho cấp Công ty (Khối 1) và cấp Cơ sở (Khối 2) — Nhân sự chuyển sang Khối 3 auto-sync. */
-    private const DOCUMENT_GROUPS = [
-        DocumentGroupType::LegalFacility->value,
-        DocumentGroupType::AttpQuality->value,
-    ];
-
     public function index(Request $request)
     {
         $this->authorize('viewAny', InternalFacility::class);
@@ -49,14 +43,15 @@ class InternalFacilityController extends Controller
 
         $documentTypes = DocumentMasterType::query()
             ->applicableTo('internal')
-            ->whereIn('document_group', self::DOCUMENT_GROUPS)
-            ->orderBy('document_group')
+            ->whereNotNull('internal_tab_group')
+            ->orderBy('internal_tab_group')
             ->orderBy('name')
             ->get();
 
         $documentTypesByGroup = [
-            DocumentGroupType::LegalFacility->value => $documentTypes->where('document_group', DocumentGroupType::LegalFacility)->values(),
-            DocumentGroupType::AttpQuality->value   => $documentTypes->where('document_group', DocumentGroupType::AttpQuality)->values(),
+            InternalTabGroup::Legal->value     => $documentTypes->where('internal_tab_group', InternalTabGroup::Legal)->values(),
+            InternalTabGroup::Operation->value => $documentTypes->where('internal_tab_group', InternalTabGroup::Operation)->values(),
+            InternalTabGroup::Hr->value        => $documentTypes->where('internal_tab_group', InternalTabGroup::Hr)->values(),
         ];
 
         $employees = Employee::query()

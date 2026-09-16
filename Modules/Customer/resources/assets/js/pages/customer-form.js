@@ -7,5 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!form) return;
 
     initFormValidation(FORM_SEL);
+    window.initAllDatePickers?.(form);
     initAllTomSelects(form);
 });

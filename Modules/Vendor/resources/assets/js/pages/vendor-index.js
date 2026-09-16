@@ -156,22 +156,24 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.data('vendorListPage', (serverData = {}) => {
         const {
-            apiUrl      = '',
-            wardsApiUrl = '/api/provinces',
-            statuses    = [],
-            provinces   = [],
-            canDelete   = false,
+            apiUrl       = '',
+            wardsApiUrl  = '/api/provinces',
+            statuses     = [],
+            provinces    = [],
+            sourceGroups = [],
+            canDelete    = false,
         } = serverData;
 
         const COLUMNS = buildColumns(canDelete);
 
-        let tableInst   = null;
-        let tsStatus    = null;
-        let tsProvince  = null;
-        let tsWard      = null;
+        let tableInst     = null;
+        let tsStatus      = null;
+        let tsProvince    = null;
+        let tsWard        = null;
+        let tsSourceGroup = null;
 
         return {
-            filters: { search: '', status: '', province: '', ward: '', phone: '' },
+            filters: { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '' },
             hiddenCols: [],
 
             get toggleableCols() {
@@ -182,7 +184,7 @@ document.addEventListener('alpine:init', () => {
 
             get hasFilters() {
                 const f = this.filters;
-                return !!(f.search || f.status || f.province || f.ward || f.phone);
+                return !!(f.search || f.status || f.province || f.ward || f.phone || f.sourceGroup);
             },
 
             get activeChips() {
@@ -201,6 +203,10 @@ document.addEventListener('alpine:init', () => {
                     const st = statuses.find(s => s.value === f.status);
                     chips.push({ key: 'status', label: st ? st.text : f.status });
                 }
+                if (f.sourceGroup) {
+                    const sg = sourceGroups.find(g => g.value === f.sourceGroup);
+                    chips.push({ key: 'sourceGroup', label: sg ? sg.text : f.sourceGroup });
+                }
                 return chips;
             },
 
@@ -211,14 +217,20 @@ document.addEventListener('alpine:init', () => {
             },
 
             _initTomSelects() {
-                const statusEl   = document.getElementById('ts-status');
-                const provinceEl = document.getElementById('ts-province');
-                const wardEl     = document.getElementById('ts-ward');
-                if (!statusEl || !provinceEl || !wardEl) return;
+                const statusEl      = document.getElementById('ts-status');
+                const provinceEl    = document.getElementById('ts-province');
+                const wardEl        = document.getElementById('ts-ward');
+                const sourceGroupEl = document.getElementById('ts-source-group');
+                if (!statusEl || !provinceEl || !wardEl || !sourceGroupEl) return;
 
                 tsStatus = createTs(statusEl, {
                     placeholder: 'Tất cả trạng thái',
                     onChange() { statusEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                });
+
+                tsSourceGroup = createTs(sourceGroupEl, {
+                    placeholder: 'Tất cả nhóm nguồn',
+                    onChange() { sourceGroupEl.dispatchEvent(new Event('change', { bubbles: true })); },
                 });
 
                 tsWard = createTs(wardEl, {
@@ -285,11 +297,12 @@ document.addEventListener('alpine:init', () => {
                     ajaxConfig: { headers: { 'X-Requested-With': 'XMLHttpRequest' } },
                     ajaxParams() {
                         const p = {}, f = self.filters;
-                        if (f.search)   p.search        = f.search;
-                        if (f.status)   p.status        = f.status;
-                        if (f.province) p.province_code = f.province;
-                        if (f.ward)     p.ward_code     = f.ward;
-                        if (f.phone)    p.phone_number  = f.phone;
+                        if (f.search)      p.search        = f.search;
+                        if (f.status)      p.status        = f.status;
+                        if (f.province)    p.province_code = f.province;
+                        if (f.ward)        p.ward_code     = f.ward;
+                        if (f.phone)       p.phone_number  = f.phone;
+                        if (f.sourceGroup) p.source_group  = f.sourceGroup;
                         return p;
                     },
                     ajaxResponse: (_u, _p, res) => res,
@@ -333,20 +346,22 @@ document.addEventListener('alpine:init', () => {
 
             loadState() {
                 const p = new URLSearchParams(location.search);
-                if (p.has('q'))    this.filters.search   = p.get('q');
-                if (p.has('st'))   this.filters.status   = p.get('st');
-                if (p.has('prov')) this.filters.province = p.get('prov');
-                if (p.has('ward')) this.filters.ward     = p.get('ward');
-                if (p.has('ph'))   this.filters.phone    = p.get('ph');
+                if (p.has('q'))    this.filters.search      = p.get('q');
+                if (p.has('st'))   this.filters.status      = p.get('st');
+                if (p.has('prov')) this.filters.province    = p.get('prov');
+                if (p.has('ward')) this.filters.ward        = p.get('ward');
+                if (p.has('ph'))   this.filters.phone       = p.get('ph');
+                if (p.has('sg'))   this.filters.sourceGroup = p.get('sg');
             },
 
             saveState() {
                 const p = new URLSearchParams(), f = this.filters;
-                if (f.search)   p.set('q', f.search);
-                if (f.status)   p.set('st', f.status);
-                if (f.province) p.set('prov', f.province);
-                if (f.ward)     p.set('ward', f.ward);
-                if (f.phone)    p.set('ph', f.phone);
+                if (f.search)      p.set('q', f.search);
+                if (f.status)      p.set('st', f.status);
+                if (f.province)    p.set('prov', f.province);
+                if (f.ward)        p.set('ward', f.ward);
+                if (f.phone)       p.set('ph', f.phone);
+                if (f.sourceGroup) p.set('sg', f.sourceGroup);
                 const qs = p.toString();
                 history.replaceState(null, '', qs ? '?' + qs : location.pathname);
             },
@@ -356,10 +371,11 @@ document.addEventListener('alpine:init', () => {
             clearSearch()    { this.filters.search = ''; this.saveState(); this.refresh(); },
 
             removeChip(key) {
-                if (key === 'search') this.filters.search = '';
-                if (key === 'phone')  this.filters.phone = '';
-                if (key === 'status') { this.filters.status = ''; tsStatus?.setValue('', true); }
-                if (key === 'ward')   { this.filters.ward = ''; tsWard?.setValue('', true); }
+                if (key === 'search')      this.filters.search = '';
+                if (key === 'phone')       this.filters.phone = '';
+                if (key === 'status')      { this.filters.status = ''; tsStatus?.setValue('', true); }
+                if (key === 'ward')        { this.filters.ward = ''; tsWard?.setValue('', true); }
+                if (key === 'sourceGroup') { this.filters.sourceGroup = ''; tsSourceGroup?.setValue('', true); }
                 if (key === 'province') {
                     this.filters.province = '';
                     tsProvince?.setValue('', true);
@@ -370,9 +386,10 @@ document.addEventListener('alpine:init', () => {
             },
 
             reset() {
-                this.filters = { search: '', status: '', province: '', ward: '', phone: '' };
+                this.filters = { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '' };
                 tsStatus?.setValue('', true);
                 tsProvince?.setValue('', true);
+                tsSourceGroup?.setValue('', true);
                 this.loadWardOptions('');
                 history.replaceState(null, '', location.pathname);
                 this.refresh();

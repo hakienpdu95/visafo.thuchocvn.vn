@@ -28,9 +28,15 @@ function _setupContractPartyToggle(form) {
     const customerEl = form.querySelector('#ts-customer_id');
     if (!typeInputs.length || !vendorEl || !customerEl) return;
 
-    function apply() {
+    function currentType() {
         const checked = form.querySelector('[name="type"]:checked');
-        const isInput = !checked || checked.value === 'input';
+        if (checked) return checked.value;
+        const hidden = form.querySelector('input[type="hidden"][name="type"]');
+        return hidden ? hidden.value : 'input';
+    }
+
+    function apply() {
+        const isInput = currentType() !== 'output';
 
         _toggleRequired(vendorEl, isInput, 'Vui lòng chọn nhà cung cấp');
         _toggleRequired(customerEl, !isInput, 'Vui lòng chọn khách hàng');

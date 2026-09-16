@@ -6,9 +6,11 @@ use Illuminate\Validation\Rule;
 use Modules\Customer\Enums\CustomerGroup;
 use Modules\Customer\Enums\CustomerStatus;
 use Modules\Customer\Enums\MealModel;
+use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -58,6 +60,12 @@ class UpdateCustomerData extends Data
 
         #[Nullable, Email, Max(100)]
         public readonly ?string $representative_email,
+
+        #[Nullable, Min(1)]
+        public readonly ?int $expected_scale,
+
+        #[Nullable, Date]
+        public readonly ?string $expected_deadline,
 
         #[Nullable, Exists('employees', 'id')]
         public readonly ?string $pic_id,

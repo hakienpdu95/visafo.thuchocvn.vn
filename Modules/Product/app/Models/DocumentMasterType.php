@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Product\Enums\DocumentGroupType;
+use Modules\Product\Enums\InternalTabGroup;
 
 class DocumentMasterType extends Model
 {
@@ -33,6 +34,7 @@ class DocumentMasterType extends Model
         'code',
         'name',
         'document_group',
+        'internal_tab_group',
         'applicable_to',
         'is_required_issue_date',
         'is_required_expiry_date',
@@ -46,6 +48,7 @@ class DocumentMasterType extends Model
     {
         return [
             'document_group'          => DocumentGroupType::class,
+            'internal_tab_group'      => InternalTabGroup::class,
             'applicable_to'           => 'array',
             'is_required_issue_date'  => 'boolean',
             'is_required_expiry_date' => 'boolean',

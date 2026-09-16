@@ -43,6 +43,12 @@ return new class extends Migration {
             if (!Schema::hasIndex('vendors', 'idx_vendors_address')) {
                 $table->index(['province_code', 'ward_code'], 'idx_vendors_address');
             }
+            if (!Schema::hasColumn('vendors', 'source_group')) {
+                $table->string('source_group', 10)->nullable()->after('ward_code')->comment('n1 = Tự sản xuất | n2 = Thu gom | n3 = Chợ đầu mối / siêu thị');
+            }
+            if (!Schema::hasIndex('vendors', 'idx_vendors_source_group')) {
+                $table->index('source_group', 'idx_vendors_source_group');
+            }
         });
     }
 
@@ -51,7 +57,7 @@ return new class extends Migration {
         Schema::table('vendors', function (Blueprint $table) {
             if (Schema::hasColumn('vendors', 'province_code')) $table->dropForeign(['province_code']);
             if (Schema::hasColumn('vendors', 'ward_code')) $table->dropForeign(['ward_code']);
-            $cols = array_filter(['representative_title', 'representative_phone', 'representative_email', 'contact_person_name', 'contact_person_title', 'contact_person_phone', 'contact_person_email', 'province_code', 'ward_code'], fn($c) => Schema::hasColumn('vendors', $c));
+            $cols = array_filter(['representative_title', 'representative_phone', 'representative_email', 'contact_person_name', 'contact_person_title', 'contact_person_phone', 'contact_person_email', 'province_code', 'ward_code', 'source_group'], fn($c) => Schema::hasColumn('vendors', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

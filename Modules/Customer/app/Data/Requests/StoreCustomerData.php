@@ -6,9 +6,11 @@ use Illuminate\Validation\Rule;
 use Modules\Customer\Enums\CustomerGroup;
 use Modules\Customer\Enums\CustomerStatus;
 use Modules\Customer\Enums\MealModel;
+use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\Size;
@@ -54,6 +56,12 @@ class StoreCustomerData extends Data
 
         #[Nullable, Email, Max(100)]
         public readonly ?string $representative_email,
+
+        #[Nullable, Min(1)]
+        public readonly ?int $expected_scale,
+
+        #[Nullable, Date]
+        public readonly ?string $expected_deadline,
 
         #[Nullable, Exists('employees', 'id')]
         public readonly ?string $pic_id,
@@ -104,6 +112,10 @@ class StoreCustomerData extends Data
             'representative_phone.max'    => 'Số điện thoại người đại diện không được vượt quá 20 ký tự.',
             'representative_email.email'  => 'Email người đại diện không đúng định dạng.',
             'representative_email.max'    => 'Email người đại diện không được vượt quá 100 ký tự.',
+
+            'expected_scale.min' => 'Quy mô dự kiến phải lớn hơn 0.',
+
+            'expected_deadline.date' => 'Hạn nộp dự kiến không đúng định dạng.',
 
             'pic_id.exists' => 'Nhân viên phụ trách không hợp lệ.',
 

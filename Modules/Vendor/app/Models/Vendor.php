@@ -16,6 +16,7 @@ use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\VendorFarmingStep;
+use Modules\Vendor\Enums\VendorSourceGroup;
 use Modules\Vendor\Enums\VendorStatus;
 
 class Vendor extends TenantAwareModel
@@ -36,6 +37,7 @@ class Vendor extends TenantAwareModel
         'vendor_code',
         'name',
         'tax_code',
+        'source_group',
         'address',
         'province_code',
         'ward_code',
@@ -55,7 +57,8 @@ class Vendor extends TenantAwareModel
     protected function casts(): array
     {
         return [
-            'status' => VendorStatus::class,
+            'status'       => VendorStatus::class,
+            'source_group' => VendorSourceGroup::class,
         ];
     }
 

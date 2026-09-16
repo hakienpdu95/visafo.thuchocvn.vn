@@ -3,11 +3,12 @@
 
 @section('content')
 <div x-data="vendorListPage({{ Js::from([
-    'apiUrl'      => route('backend.api.vendors'),
-    'wardsApiUrl' => url('/api/provinces'),
-    'statuses'    => $statuses,
-    'provinces'   => $provinces,
-    'canDelete'   => auth()->user()->can('delete', new \Modules\Vendor\Models\Vendor),
+    'apiUrl'       => route('backend.api.vendors'),
+    'wardsApiUrl'  => url('/api/provinces'),
+    'statuses'     => $statuses,
+    'provinces'    => $provinces,
+    'sourceGroups' => $sourceGroups,
+    'canDelete'    => auth()->user()->can('delete', new \Modules\Vendor\Models\Vendor),
 ]) }})">
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -56,7 +57,7 @@
     <div class="section-page">
         <div class="card bg-base-100 mb-4">
             <div class="card-body py-3 px-3">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3 items-end">
 
                     <div class="form-control lg:col-span-2">
                         <label class="label mb-2">
@@ -127,6 +128,20 @@
                             <option value="">Tất cả</option>
                             @foreach($statuses as $status)
                             <option value="{{ $status['value'] }}">{{ $status['text'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label py-0.5">
+                            <span class="label-text text-xs font-medium">Nhóm nguồn</span>
+                        </label>
+                        <select id="ts-source-group" x-model="filters.sourceGroup" @change="onFilterChange()"
+                                data-ts-placeholder="Tất cả nhóm nguồn"
+                                class="select select-sm select-bordered w-full">
+                            <option value="">Tất cả</option>
+                            @foreach($sourceGroups as $group)
+                            <option value="{{ $group['value'] }}">{{ $group['text'] }}</option>
                             @endforeach
                         </select>
                     </div>

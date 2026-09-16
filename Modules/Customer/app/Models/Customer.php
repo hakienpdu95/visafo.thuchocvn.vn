@@ -34,6 +34,8 @@ class Customer extends TenantAwareModel
         'name',
         'customer_group',
         'meal_model',
+        'expected_scale',
+        'expected_deadline',
         'tax_code',
         'address',
         'province_code',
@@ -51,9 +53,11 @@ class Customer extends TenantAwareModel
     protected function casts(): array
     {
         return [
-            'customer_group' => CustomerGroup::class,
-            'meal_model'     => MealModel::class,
-            'status'         => CustomerStatus::class,
+            'customer_group'    => CustomerGroup::class,
+            'meal_model'        => MealModel::class,
+            'expected_scale'    => 'integer',
+            'expected_deadline' => 'datetime',
+            'status'            => CustomerStatus::class,
         ];
     }
 

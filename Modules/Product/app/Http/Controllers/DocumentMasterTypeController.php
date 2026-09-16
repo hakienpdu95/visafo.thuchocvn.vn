@@ -11,6 +11,7 @@ use Modules\Product\Actions\Backend\UpdateDocumentMasterTypeAction;
 use Modules\Product\Data\Requests\StoreDocumentMasterTypeData;
 use Modules\Product\Data\Requests\UpdateDocumentMasterTypeData;
 use Modules\Product\Enums\DocumentGroupType;
+use Modules\Product\Enums\InternalTabGroup;
 use Modules\Product\Models\DocumentMasterType;
 
 class DocumentMasterTypeController extends Controller
@@ -31,9 +32,10 @@ class DocumentMasterTypeController extends Controller
 
     public function create()
     {
-        $documentGroups = DocumentGroupType::cases();
+        $documentGroups    = DocumentGroupType::cases();
+        $internalTabGroups = InternalTabGroup::cases();
 
-        return view('product::document_master_types.create', compact('documentGroups'));
+        return view('product::document_master_types.create', compact('documentGroups', 'internalTabGroups'));
     }
 
     public function store(Request $request, StoreDocumentMasterTypeAction $action): RedirectResponse
@@ -51,9 +53,10 @@ class DocumentMasterTypeController extends Controller
 
     public function edit(DocumentMasterType $documentMasterType)
     {
-        $documentGroups = DocumentGroupType::cases();
+        $documentGroups     = DocumentGroupType::cases();
+        $internalTabGroups  = InternalTabGroup::cases();
 
-        return view('product::document_master_types.edit', compact('documentMasterType', 'documentGroups'));
+        return view('product::document_master_types.edit', compact('documentMasterType', 'documentGroups', 'internalTabGroups'));
     }
 
     public function update(Request $request, DocumentMasterType $documentMasterType, UpdateDocumentMasterTypeAction $action): RedirectResponse
