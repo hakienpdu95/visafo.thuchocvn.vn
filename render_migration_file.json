@@ -190,7 +190,7 @@
     [
         "compliance_documents///__///__///Kho hồ sơ pháp lý đa hình — gắn cho Vendor, Product hoặc PartnerProduct (thay thế vendor_certificates/product_compliances/partner_product_compliances)",
         "document_master_type_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('document_master_types')->onDelete('restrict')///__",
-        "documentable_type///string///50///NOT_NULL///__///->index()///Morph alias — vendor | product | partner_product",
+        "documentable_type///string///50///_NULL///NULL///->index()///Morph alias — vendor | product | partner_product",
         "documentable_id///ulid///__///NOT_NULL///__///->index()///__",
         "document_number///string///150///_NULL///NULL///__///Số tiếp nhận / số chứng nhận",
         "classification_grade///string///10///_NULL///NULL///__///A | B | C | D — chỉ có ý nghĩa khi documentable_type=product",
@@ -710,5 +710,31 @@
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
         "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "sales_packages///__///__///",
+        "ulid///ulid///__///NOT_NULL///__///__///__",
+        "customer_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('customers')->onDelete('restrict')///Khách hàng/cơ hội chào hàng",
+        "name///string///255///NOT_NULL///__///__///Tên gói, VD: Gói chào suất ăn bán trú 2026",
+        "version///unsignedInteger///__///NOT_NULL///1///__///Phiên bản gói — mỗi lần chốt lại tăng thêm 1",
+        "readiness_score///unsignedTinyInteger///__///NOT_NULL///0///__///Điểm sẵn sàng chốt tại thời điểm tạo gói (snapshot)",
+        "status///string///20///NOT_NULL///'draft'///->index()///draft | finalized | sent",
+        "notes///string///1000///_NULL///NULL///__///__",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///__",
+        "__index///index///__///__///__///customer_id,version///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "sales_package_items///__///__///",
+        "ulid///ulid///__///_NULL///NULL///__///__",
+        "sales_package_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('sales_packages')->onDelete('cascade')///__",
+        "compliance_document_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('compliance_documents')->onDelete('restrict')///Hard-link tài liệu tại thời điểm chốt gói — không đổi theo dữ liệu sống",
+        "document_group///string///30///_NULL///NULL///__///Snapshot document_master_types.document_group để phân thư mục khi export",
+        "is_valid///boolean///__///NOT_NULL///true///__///Tài liệu còn hiệu lực (active, chưa hết hạn) tại thời điểm đưa vào gói",
+        "__index///unique///__///__///__///sales_package_id,compliance_document_id|uq_sales_package_item///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật"
     ]
 ]

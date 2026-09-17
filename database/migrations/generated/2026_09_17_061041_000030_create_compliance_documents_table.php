@@ -19,7 +19,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->unsignedInteger('order_column')->nullable()->index()->comment('Thứ tự sắp xếp — Spatie Sortable / ORDER BY');
             $table->foreignUlid('document_master_type_id')->constrained('document_master_types')->restrictOnDelete();
-            $table->string('documentable_type', 50)->index()->comment('Morph alias — vendor | product | partner_product');
+            $table->string('documentable_type', 50)->nullable()->index()->comment('Morph alias — vendor | product | partner_product');
             $table->ulid('documentable_id')->index();
             $table->string('document_number', 150)->nullable()->comment('Số tiếp nhận / số chứng nhận');
             $table->string('classification_grade', 10)->nullable()->comment('A | B | C | D — chỉ có ý nghĩa khi documentable_type=product');

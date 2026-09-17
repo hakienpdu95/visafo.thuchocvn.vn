@@ -83,5 +83,22 @@
         "document_master_types///add///__///",
         "internal_tab_group///string///20///_NULL///NULL///__///legal | operation | hr — chỉ dùng khi applicable_to chứa internal, quyết định tab hiển thị ở trang Hồ sơ năng lực VISAFO",
         "__index///index///__///__///__///internal_tab_group|idx_document_master_types_internal_tab_group///__"
+    ],
+    [
+        "compliance_documents///add///__///",
+        "ulid///ulid///__///_NULL///NULL///__///__",
+        "custom_name///string///255///_NULL///NULL///__///Tên tự do — chỉ dùng khi documentable null (tài liệu nội bộ dùng chung)",
+        "custom_category///string///30///_NULL///NULL///__///policy | template | training | other — chỉ dùng khi documentable null"
+    ],
+    [
+        "sales_packages///add///__///",
+        "expected_deadline///dateTime///__///_NULL///NULL///__///Hạn nộp hồ sơ/báo giá dự kiến — auto-fill từ Customer.expected_deadline, Sale có thể sửa lại"
+    ],
+    [
+        "sales_package_items///add///__///",
+        "ulid///ulid///__///_NULL///NULL///__///__",
+        "document_group///string///30///_NULL///NULL///__///__",
+        "is_custom///boolean///__///NOT_NULL///false///__///true = tài liệu tải lên ngoài hệ thống, không gắn với compliance_documents",
+        "custom_name///string///255///_NULL///NULL///__///__"
     ]
 ]
