@@ -35,6 +35,15 @@
                 </ul>
             </div>
 
+            @if($canUploadShared)
+            <button type="button" class="btn btn-primary btn-sm gap-1.5" onclick="sharedUploadModal.showModal()">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Tải tài liệu nội bộ
+            </button>
+            @endif
+
         </div>
     </div>
 
@@ -136,8 +145,77 @@
 </div>
 
 <p class="text-xs text-base-content/40 mt-3">
-    Để thêm hồ sơ mới, vào trang chi tiết Nhà cung cấp / Sản phẩm / Hàng hóa NCC tương ứng.
+    Để thêm hồ sơ Nhà cung cấp / Sản phẩm / Hàng hóa NCC / Cơ sở nội bộ, vào trang chi tiết tương ứng. Tài liệu nội bộ dùng chung có thể tải lên trực tiếp tại đây.
 </p>
+
+@if($canUploadShared)
+<dialog id="sharedUploadModal" class="modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg">Tải tài liệu nội bộ dùng chung</h3>
+        <p class="text-sm text-base-content/50 mb-4">Áp dụng cho tài liệu không gắn với Nhà cung cấp / Cơ sở / Sản phẩm cụ thể — VD: Quy chế, biểu mẫu, quyết định...</p>
+
+        <form method="POST" action="{{ route('backend.document-repository.upload') }}" enctype="multipart/form-data" novalidate data-shared-upload-form>
+            @csrf
+
+            <div class="form-control">
+                <label class="label py-0 pb-1.5">
+                    <span class="label-text font-medium">Tên tài liệu <span class="text-error">*</span></span>
+                </label>
+                <input type="text" name="custom_name" value="{{ old('custom_name') }}"
+                       data-req="Vui lòng nhập tên tài liệu"
+                       class="input input-bordered input-sm w-full @error('custom_name') input-error @enderror"
+                       placeholder="VD: Quy chế chi tiêu nội bộ 2026">
+                @error('custom_name')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="form-control mt-3">
+                <label class="label py-0 pb-1.5">
+                    <span class="label-text font-medium">Nhóm/Phân loại <span class="text-error">*</span></span>
+                </label>
+                <select name="custom_category"
+                        data-req="Vui lòng chọn nhóm/phân loại"
+                        class="select select-bordered select-sm w-full @error('custom_category') select-error @enderror">
+                    <option value="">— Chọn nhóm —</option>
+                    @foreach($sharedCategories as $cat)
+                    <option value="{{ $cat['value'] }}" {{ old('custom_category') === $cat['value'] ? 'selected' : '' }}>{{ $cat['text'] }}</option>
+                    @endforeach
+                </select>
+                @error('custom_category')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="form-control mt-3">
+                <label class="label py-0 pb-1.5">
+                    <span class="label-text font-medium">File đính kèm <span class="text-error">*</span></span>
+                    <span class="label-text-alt text-xs text-base-content/40">PDF, DOCX, XLSX, JPG</span>
+                </label>
+                <input type="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                       class="file-input file-input-bordered file-input-sm w-full @error('file') input-error @enderror">
+                @error('file')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="form-control mt-3">
+                <label class="label py-0 pb-1.5">
+                    <span class="label-text font-medium">Ghi chú</span>
+                    <span class="label-text-alt text-xs text-base-content/40">Tuỳ chọn</span>
+                </label>
+                <textarea name="notes" rows="3"
+                          class="textarea textarea-bordered textarea-sm w-full"
+                          placeholder="Ghi chú...">{{ old('notes') }}</textarea>
+            </div>
+
+            <div class="modal-action mt-4">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="sharedUploadModal.close()">Hủy</button>
+                <button type="submit" class="btn btn-primary btn-sm">Tải lên</button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+@if($errors->has('custom_name') || $errors->has('custom_category') || $errors->has('file'))
+<script>document.addEventListener('DOMContentLoaded', () => sharedUploadModal?.showModal());</script>
+@endif
+@endif
 
 @endsection
 

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\MediaJoditUploadController;
 use App\Http\Controllers\Api\MediaUploadController;
-use App\Http\Controllers\Backend\Api\DashboardChartController;
 use App\Http\Controllers\Backend\DashboardController;
 use App\Http\Controllers\Backend\NotificationCenterController;
 use App\Http\Controllers\Backend\NotificationPreferenceController;
@@ -44,13 +43,6 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // ── Dashboard chart API ───────────────────────────────────────────────
-    // task-throughput/lead-funnel/workflow-health đã bị gỡ cùng module Task/Lead/
-    // WorkflowAutomation (cleanup/remove-non-competency-modules).
-    Route::prefix('api/dashboard/charts')->name('dashboard.charts.')->group(function () {
-        Route::get('headcount', [DashboardChartController::class, 'headcount'])->name('headcount');
-    });
-
     // ── Placeholder routes (modules chưa triển khai) ──────────────────
     // products.index/products.create: đã triển khai thật ở Modules/Product/routes/web.php
     // customers.*: đã triển khai thật ở Modules/Customer/routes/web.php
@@ -68,6 +60,9 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::get('/documents', [ComplianceDocumentController::class, 'index'])
         ->middleware('permission:compliance.view')
         ->name('document-repository.index');
+    Route::post('/document-repository/upload', [ComplianceDocumentController::class, 'uploadShared'])
+        ->middleware('permission:compliance.manage')
+        ->name('document-repository.upload');
 
     // ── Kiểm tra Readiness ──────────────────────────────────────────────
     Route::get('/readiness', [ReadinessController::class, 'index'])

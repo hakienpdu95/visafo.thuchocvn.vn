@@ -4,21 +4,17 @@ namespace Modules\Compliance\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
-use Modules\Compliance\Enums\ReadinessStatus;
 use Modules\Compliance\Models\ComplianceDocument;
+use Modules\Compliance\Services\ReadinessScoringService;
 
 class ReadinessController extends Controller
 {
-    public function index(): View
+    public function index(ReadinessScoringService $scoringService): View
     {
         $this->authorize('viewAny', ComplianceDocument::class);
 
-        $statuses = collect(ReadinessStatus::cases())
-            ->map(fn ($s) => ['value' => $s->value, 'text' => $s->label()])
-            ->all();
-
         return view('compliance::readiness.index', [
-            'statuses' => $statuses,
+            'score' => $scoringService->score(),
         ]);
     }
 }

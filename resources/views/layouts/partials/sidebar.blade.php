@@ -57,6 +57,22 @@
             </a>
             @endcan
 
+            @can('compliance.view')
+            <a href="{{ route('backend.readiness-check.index') }}"
+               class="nav-link {{ request()->routeIs('backend.readiness-check.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="nav-label">Readiness</span>
+            </a>
+            @endcan
+
+            @can('customer.view')
+            <a href="{{ route('backend.sales-packages.index') }}"
+               class="nav-link {{ request()->routeIs('backend.sales-packages.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+                <span class="nav-label">Gói chào hàng</span>
+            </a>
+            @endcan
+
             <a href="{{ route('backend.notifications.index') }}"
                class="nav-link {{ request()->routeIs('backend.notifications.*') ? 'active' : '' }}" style="display:none;">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,78 +80,7 @@
                 </svg>
                 <span class="nav-label">Thông báo</span>
             </a>
-
-            @can('compliance.view')
-            <a href="{{ route('backend.compliance-warnings.index') }}"
-               class="nav-link {{ request()->routeIs('backend.compliance-warnings.*') ? 'active' : '' }}">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                <span class="nav-label">Cảnh báo pháp lý & hạn dùng</span>
-            </a>
-            @endcan
         </div>
-
-        <div class="nav-group">
-            @can('product.view')
-            <details {{ request()->routeIs('backend.products.*', 'backend.categories.*') ? 'open' : '' }}>
-                <summary class="nav-summary {{ request()->routeIs('backend.products.*', 'backend.categories.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
-                    <span class="nav-label">Sản phẩm & Truy xuất</span>
-                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
-                </summary>
-                <div class="sub-menu">
-                    <a href="{{ route('backend.products.index') }}" class="sub-link {{ request()->routeIs('backend.products.*') ? 'active' : '' }}">Danh mục Sản phẩm</a>
-                    <a href="{{ route('backend.categories.index') }}" class="sub-link {{ request()->routeIs('backend.categories.*') ? 'active' : '' }}">Danh mục Nhóm hàng</a>
-                </div>
-            </details>
-            @endcan
-        </div>
-
-        <div class="nav-group">
-            @canany(['compliance.view', 'product.manage', 'traceability.view'])
-            <details {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*') ? 'open' : '' }}>
-                <summary class="nav-summary {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.readiness-check.*', 'backend.traceability.*', 'backend.master-data.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
-                    <span class="nav-label">Quản trị Tuân thủ</span>
-                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
-                </summary>
-                <div class="sub-menu">
-                    @can('compliance.view')
-                    <a href="{{ route('backend.document-repository.index') }}" class="sub-link {{ request()->routeIs('backend.document-repository.*') ? 'active' : '' }}">Kho tài liệu & Minh chứng</a>
-                    @endcan
-                    @can('product.manage')
-                    <a href="{{ route('backend.document-master-types.index') }}" class="sub-link {{ request()->routeIs('backend.document-master-types.*') ? 'active' : '' }}">Từ điển giấy tờ pháp lý</a>
-                    @endcan
-                    @can('compliance.view')
-                    <a href="{{ route('backend.master-data.pesticides.index') }}" class="sub-link {{ request()->routeIs('backend.master-data.pesticides.*') ? 'active' : '' }}">Từ điển Nông nghiệp — Thuốc BVTV</a>
-                    <a href="{{ route('backend.master-data.fertilizers.index') }}" class="sub-link {{ request()->routeIs('backend.master-data.fertilizers.*') ? 'active' : '' }}">Từ điển Nông nghiệp — Phân bón</a>
-                    <a href="{{ route('backend.master-data.seeds.index') }}" class="sub-link {{ request()->routeIs('backend.master-data.seeds.*') ? 'active' : '' }}">Từ điển Nông nghiệp — Giống cây trồng</a>
-                    @endcan
-                    @can('traceability.view')
-                    <a href="{{ route('backend.traceability.index') }}" class="sub-link {{ request()->routeIs('backend.traceability.*') ? 'active' : '' }}">Báo cáo Truy vết liên thông</a>
-                    @endcan
-                    @can('compliance.view')
-                    <a href="{{ route('backend.readiness-check.index') }}" class="sub-link {{ request()->routeIs('backend.readiness-check.*') ? 'active' : '' }}">Kiểm tra Readiness</a>
-                    @endcan
-                </div>
-            </details>
-            @endcanany
-        </div>
-
-        @can('compliance.view')
-        <div class="nav-group">
-            <details {{ request()->routeIs('backend.farming-sources.*', 'backend.farming-batches.*') ? 'open' : '' }}>
-                <summary class="nav-summary {{ request()->routeIs('backend.farming-sources.*', 'backend.farming-batches.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3c-4 3-6 6-6 10a6 6 0 0012 0c0-4-2-7-6-10z"/></svg>
-                    <span class="nav-label">Nhật ký Sản xuất Nông hộ</span>
-                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
-                </summary>
-                <div class="sub-menu">
-                    <a href="{{ route('backend.farming-sources.index') }}" class="sub-link {{ request()->routeIs('backend.farming-sources.*') ? 'active' : '' }}">Quản lý Vùng trồng</a>
-                    <a href="{{ route('backend.farming-batches.index') }}" class="sub-link {{ request()->routeIs('backend.farming-batches.*') ? 'active' : '' }}">Quản lý Vụ / Lô sản xuất</a>
-                </div>
-            </details>
-        </div>
-        @endcan
 
         <div class="nav-group">
 
@@ -143,7 +88,7 @@
             <details {{ request()->routeIs('backend.departments.*', 'backend.employees.*') ? 'open' : '' }}>
                 <summary class="nav-summary {{ request()->routeIs('backend.departments.*', 'backend.employees.*') ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <span class="nav-label">Nhân sự</span>
+                    <span class="nav-label">Quản lý Nhân viên</span>
                     <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
                 </summary>
                 <div class="sub-menu">
@@ -186,6 +131,66 @@
             @endcan
 
         </div>
+        
+        <div class="nav-group">
+            @can('product.view')
+            <details {{ request()->routeIs('backend.products.*', 'backend.categories.*') ? 'open' : '' }}>
+                <summary class="nav-summary {{ request()->routeIs('backend.products.*', 'backend.categories.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+                    <span class="nav-label">Sản phẩm & Truy xuất</span>
+                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
+                </summary>
+                <div class="sub-menu">
+                    <a href="{{ route('backend.products.index') }}" class="sub-link {{ request()->routeIs('backend.products.*') ? 'active' : '' }}">Danh mục Sản phẩm</a>
+                    <a href="{{ route('backend.categories.index') }}" class="sub-link {{ request()->routeIs('backend.categories.*') ? 'active' : '' }}">Danh mục Nhóm hàng</a>
+                </div>
+            </details>
+            @endcan
+        </div>
+
+        <div class="nav-group">
+            @canany(['compliance.view', 'product.manage', 'traceability.view'])
+            <details {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.traceability.*', 'backend.master-data.*') ? 'open' : '' }}>
+                <summary class="nav-summary {{ request()->routeIs('backend.document-repository.*', 'backend.document-master-types.*', 'backend.traceability.*', 'backend.master-data.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                    <span class="nav-label">Quản trị Tuân thủ</span>
+                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
+                </summary>
+                <div class="sub-menu">
+                    @can('compliance.view')
+                    <a href="{{ route('backend.document-repository.index') }}" class="sub-link {{ request()->routeIs('backend.document-repository.*') ? 'active' : '' }}">Kho tài liệu & Minh chứng</a>
+                    @endcan
+                    @can('product.manage')
+                    <a href="{{ route('backend.document-master-types.index') }}" class="sub-link {{ request()->routeIs('backend.document-master-types.*') ? 'active' : '' }}">Từ điển giấy tờ pháp lý</a>
+                    @endcan
+                    @can('compliance.view')
+                    <a href="{{ route('backend.master-data.pesticides.index') }}" class="sub-link {{ request()->routeIs('backend.master-data.pesticides.*') ? 'active' : '' }}">Từ điển Nông nghiệp — Thuốc BVTV</a>
+                    <a href="{{ route('backend.master-data.fertilizers.index') }}" class="sub-link {{ request()->routeIs('backend.master-data.fertilizers.*') ? 'active' : '' }}">Từ điển Nông nghiệp — Phân bón</a>
+                    <a href="{{ route('backend.master-data.seeds.index') }}" class="sub-link {{ request()->routeIs('backend.master-data.seeds.*') ? 'active' : '' }}">Từ điển Nông nghiệp — Giống cây trồng</a>
+                    @endcan
+                    @can('traceability.view')
+                    <a href="{{ route('backend.traceability.index') }}" class="sub-link {{ request()->routeIs('backend.traceability.*') ? 'active' : '' }}">Báo cáo Truy vết liên thông</a>
+                    @endcan
+                </div>
+            </details>
+            @endcanany
+        </div>
+
+        @can('compliance.view')
+        <div class="nav-group">
+            <details {{ request()->routeIs('backend.farming-sources.*', 'backend.farming-batches.*') ? 'open' : '' }}>
+                <summary class="nav-summary {{ request()->routeIs('backend.farming-sources.*', 'backend.farming-batches.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3c-4 3-6 6-6 10a6 6 0 0012 0c0-4-2-7-6-10z"/></svg>
+                    <span class="nav-label">Nhật ký Sản xuất Nông hộ</span>
+                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
+                </summary>
+                <div class="sub-menu">
+                    <a href="{{ route('backend.farming-sources.index') }}" class="sub-link {{ request()->routeIs('backend.farming-sources.*') ? 'active' : '' }}">Quản lý Vùng trồng</a>
+                    <a href="{{ route('backend.farming-batches.index') }}" class="sub-link {{ request()->routeIs('backend.farming-batches.*') ? 'active' : '' }}">Quản lý Vụ / Lô sản xuất</a>
+                </div>
+            </details>
+        </div>
+        @endcan
 
     </nav>
 </aside>

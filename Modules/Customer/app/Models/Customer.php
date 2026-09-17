@@ -14,6 +14,7 @@ use Modules\Customer\Enums\CustomerStatus;
 use Modules\Customer\Enums\MealModel;
 use Modules\Employee\Models\Employee;
 use Modules\Product\Models\Product;
+use Modules\SalesPackage\Models\SalesPackage;
 
 class Customer extends TenantAwareModel
 {
@@ -92,5 +93,10 @@ class Customer extends TenantAwareModel
             ->using(CustomerProduct::class)
             ->withPivot('status')
             ->withTimestamps();
+    }
+
+    public function salesPackages(): HasMany
+    {
+        return $this->hasMany(SalesPackage::class);
     }
 }

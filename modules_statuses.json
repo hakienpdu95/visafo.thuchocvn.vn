@@ -7,5 +7,6 @@
     "Compliance": true,
     "Employee": true,
     "Contract": true,
-    "Customer": true
+    "Customer": true,
+    "SalesPackage": true
 }

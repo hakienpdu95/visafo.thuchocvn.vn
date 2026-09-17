@@ -75,6 +75,7 @@ const JS_OUTPUT = {
   'compliance':           'assets/modules/compliance.[hash].js',
   'employee':             'assets/modules/employee.[hash].js',
   'contract':             'assets/modules/contract.[hash].js',
+  'salespackage':         'assets/modules/salespackage.[hash].js',
 };
 
 /** CSS asset name → output path.
@@ -100,6 +101,7 @@ const CSS_OUTPUT = {
   'compliance.css':           'assets/modules/compliance.[hash].css',
   'contract.css':             'assets/modules/contract.[hash].css',
   'employee.css':             'assets/modules/employee.[hash].css',
+  'salespackage.css':         'assets/modules/salespackage.[hash].css',
 };
 
 // ─── Module input entries ─────────────────────────────────────────────
@@ -132,6 +134,9 @@ const MODULE_ENTRIES = [
   // Contract
   'Modules/Contract/resources/assets/sass/contract.scss',
   'Modules/Contract/resources/assets/js/contract.js',
+  // SalesPackage
+  'Modules/SalesPackage/resources/assets/sass/salespackage.scss',
+  'Modules/SalesPackage/resources/assets/js/salespackage.js',
 ];
 
 // ─────────────────────────────────────────────────────────────────────

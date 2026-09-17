@@ -8,9 +8,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class ComplianceDocumentListResource extends JsonResource
 {
     private const DOCUMENTABLE_LABELS = [
-        'vendor'          => 'Nhà cung cấp',
-        'product'         => 'Sản phẩm Visafo',
-        'partner_product' => 'Hàng hóa NCC',
+        'vendor'             => 'Nhà cung cấp',
+        'product'            => 'Sản phẩm Visafo',
+        'partner_product'    => 'Hàng hóa NCC',
+        'internal_facility'  => 'Cơ sở nội bộ',
     ];
 
     private const DOCUMENTABLE_ROUTES = [
@@ -27,15 +28,19 @@ class ComplianceDocumentListResource extends JsonResource
         return [
             'id' => $this->id,
 
-            'document_type_name' => $this->documentType?->name,
+            'document_type_name' => $this->documentType?->name ?? $this->custom_name,
             'document_number'    => $this->document_number,
 
             'documentable_type'  => $type,
-            'documentable_label' => self::DOCUMENTABLE_LABELS[$type] ?? $type,
-            'documentable_name'  => $this->documentable?->name,
-            'documentable_url'   => ($this->documentable && isset(self::DOCUMENTABLE_ROUTES[$type]))
-                ? route(self::DOCUMENTABLE_ROUTES[$type], $this->documentable)
-                : null,
+            'documentable_label' => $type === null ? 'Nội bộ dùng chung' : (self::DOCUMENTABLE_LABELS[$type] ?? $type),
+            'documentable_name'  => $type === null ? ($this->custom_category?->label() ?? '—') : $this->documentable?->name,
+            'documentable_url'   => match (true) {
+                $type === 'internal_facility' && $this->documentable_id !== null
+                    => route('backend.internal-compliance.index') . '#facility-' . $this->documentable_id,
+                $this->documentable && isset(self::DOCUMENTABLE_ROUTES[$type])
+                    => route(self::DOCUMENTABLE_ROUTES[$type], $this->documentable),
+                default => null,
+            },
 
             'issue_date'      => $this->issue_date?->format('d/m/Y'),
             'expiration_date' => $this->expiration_date?->format('d/m/Y'),

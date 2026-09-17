@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
+use Modules\Compliance\Enums\SharedDocumentCategory;
 use Modules\Product\Models\DocumentMasterType;
 use Spatie\MediaLibrary\HasMedia;
 
@@ -30,6 +31,8 @@ class ComplianceDocument extends Model implements HasMedia
         'issued_by',
         'status',
         'notes',
+        'custom_name',
+        'custom_category',
     ];
 
     protected function casts(): array
@@ -38,7 +41,13 @@ class ComplianceDocument extends Model implements HasMedia
             'issue_date'       => 'date',
             'expiration_date'  => 'date',
             'status'           => ComplianceDocumentStatus::class,
+            'custom_category'  => SharedDocumentCategory::class,
         ];
+    }
+
+    public function isShared(): bool
+    {
+        return $this->documentable_type === null;
     }
 
     public function documentable(): MorphTo

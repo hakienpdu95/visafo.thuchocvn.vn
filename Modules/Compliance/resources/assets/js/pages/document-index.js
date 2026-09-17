@@ -220,3 +220,7 @@ document.addEventListener('alpine:init', () => {
         };
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.initFormValidation?.('[data-shared-upload-form]');
+});

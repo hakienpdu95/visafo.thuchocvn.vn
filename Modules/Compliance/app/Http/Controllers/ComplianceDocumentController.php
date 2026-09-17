@@ -10,7 +10,10 @@ use Illuminate\View\View;
 use Modules\Compliance\Actions\Backend\DestroyComplianceDocumentAction;
 use Modules\Compliance\Actions\Backend\StoreComplianceDocumentAction;
 use Modules\Compliance\Actions\Backend\UpdateComplianceDocumentAction;
+use Modules\Compliance\Actions\Backend\UploadSharedComplianceDocumentAction;
 use Modules\Compliance\Data\Requests\StoreComplianceDocumentData;
+use Modules\Compliance\Data\Requests\StoreSharedComplianceDocumentData;
+use Modules\Compliance\Enums\SharedDocumentCategory;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Compliance\Models\InternalFacility;
 use Modules\Product\Models\PartnerProduct;
@@ -24,6 +27,7 @@ class ComplianceDocumentController extends Controller
         'product'            => 'Sản phẩm Visafo',
         'partner_product'    => 'Hàng hóa NCC',
         'internal_facility'  => 'Cơ sở nội bộ',
+        'shared'             => 'Nội bộ dùng chung',
     ];
 
     public function index(Request $request): View
@@ -35,9 +39,26 @@ class ComplianceDocumentController extends Controller
             ->values()
             ->all();
 
+        $sharedCategories = collect(SharedDocumentCategory::cases())
+            ->map(fn ($c) => ['value' => $c->value, 'text' => $c->label()])
+            ->all();
+
         return view('compliance::documents.index', [
             'documentableTypes' => $documentableTypes,
+            'sharedCategories'  => $sharedCategories,
+            'canUploadShared'   => auth()->user()->can('create', ComplianceDocument::class),
         ]);
+    }
+
+    public function uploadShared(Request $request, UploadSharedComplianceDocumentAction $action): RedirectResponse
+    {
+        $this->authorize('create', ComplianceDocument::class);
+
+        $data = StoreSharedComplianceDocumentData::validateAndCreate($request->all());
+        $action->handle($data);
+
+        return redirect()->route('backend.document-repository.index')
+            ->with('success', 'Đã tải lên tài liệu nội bộ dùng chung.');
     }
 
     public function storeForVendor(Request $request, Vendor $vendor, StoreComplianceDocumentAction $action): RedirectResponse

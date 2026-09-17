@@ -22,10 +22,14 @@ class ListDocumentsHandler implements QueryHandlerInterface
         $q = ComplianceDocument::query()->with(['documentType', 'documentable']);
 
         if ($query->search !== null && $query->search !== '') {
-            $q->where('document_number', 'like', '%' . $query->search . '%');
+            $term = '%' . $query->search . '%';
+            $q->where(fn ($sub) => $sub->where('document_number', 'like', $term)
+                ->orWhere('custom_name', 'like', $term));
         }
 
-        if ($query->documentableType !== null && $query->documentableType !== '') {
+        if ($query->documentableType === 'shared') {
+            $q->whereNull('documentable_type');
+        } elseif ($query->documentableType !== null && $query->documentableType !== '') {
             $q->where('documentable_type', $query->documentableType);
         }
 
