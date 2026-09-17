@@ -2,10 +2,12 @@
 
 namespace Modules\SalesPackage\Models;
 
+use App\Services\Media\MediaUrlService;
 use App\Traits\HasTenantMedia;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Product\Enums\DocumentGroupType;
 use Spatie\MediaLibrary\HasMedia;
@@ -53,12 +55,27 @@ class SalesPackageItem extends Model implements HasMedia
         return $this->document_group?->label() ?? 'Tài liệu bổ sung ngoài hệ thống';
     }
 
-    public function fileUrl(): ?string
+    /**
+     * Toàn bộ file đính kèm của hạng mục này — tài liệu bổ sung có thể có 1-n file
+     * (collection 'custom_document'), tài liệu hệ thống lấy từ ComplianceDocument
+     * (collection 'attachments_private', cũng đã hỗ trợ 1-n file).
+     *
+     * @return array<int, array{id: string, name: string, size: int, is_image: bool, url: string}>
+     */
+    public function attachedFiles(): array
     {
-        $url = $this->is_custom
-            ? $this->getFirstMediaUrl('custom_document')
-            : $this->document?->getFirstMediaUrl('attachments_private');
+        $media = $this->is_custom
+            ? $this->getMedia('custom_document')
+            : ($this->document?->getMedia('attachments_private') ?? new Collection());
 
-        return $url ?: null;
+        $urlService = app(MediaUrlService::class);
+
+        return $media->map(fn ($m) => [
+            'id'       => $m->id,
+            'name'     => $m->file_name,
+            'size'     => $m->size,
+            'is_image' => str_starts_with($m->mime_type, 'image/'),
+            'url'      => $urlService->url($m),
+        ])->values()->all();
     }
 }

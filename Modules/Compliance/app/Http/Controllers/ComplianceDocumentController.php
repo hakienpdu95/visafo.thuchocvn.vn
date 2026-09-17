@@ -3,11 +3,14 @@
 namespace Modules\Compliance\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Media;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Modules\Compliance\Actions\Backend\DestroyComplianceDocumentAction;
+use Modules\Compliance\Actions\Backend\DestroyComplianceDocumentMediaAction;
 use Modules\Compliance\Actions\Backend\StoreComplianceDocumentAction;
 use Modules\Compliance\Actions\Backend\UpdateComplianceDocumentAction;
 use Modules\Compliance\Actions\Backend\UploadSharedComplianceDocumentAction;
@@ -144,6 +147,15 @@ class ComplianceDocumentController extends Controller
         $action->handle($document);
 
         return $this->backToFacility($internalFacility, 'Đã xóa hồ sơ.');
+    }
+
+    public function destroyMediaForInternalFacility(InternalFacility $internalFacility, ComplianceDocument $document, Media $media, DestroyComplianceDocumentMediaAction $action): JsonResponse
+    {
+        $this->authorize('update', $internalFacility);
+
+        $action->handle($document, $media);
+
+        return response()->json(['ok' => true]);
     }
 
     /**

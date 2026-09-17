@@ -5,8 +5,61 @@ export function registerDocumentUploadFormAlpine() {
         window.Alpine.data('documentUploadForm', (types, initialId) => ({
             types,
             selectedId: initialId,
+            files: [],
+            existingMedia: [],
+            removingMediaId: null,
             get selected() {
                 return this.types.find((t) => t.id === this.selectedId) ?? { has_expiration_date: true, has_issue_place: true };
+            },
+            onFilesChange(event) {
+                this.files = Array.from(event.target.files ?? []);
+            },
+            removeFile(index) {
+                this.files.splice(index, 1);
+
+                // FileList is immutable — rebuild it via DataTransfer so the
+                // <input> only submits the files still left in `files`.
+                const dt = new DataTransfer();
+                this.files.forEach((file) => dt.items.add(file));
+                this.$refs.filesInput.files = dt.files;
+            },
+            isImageFile(file) {
+                return file.type.startsWith('image/');
+            },
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            },
+            async removeExistingMedia(media) {
+                if (this.removingMediaId || !confirm(`Xóa file "${media.name}"?`)) return;
+
+                this.removingMediaId = media.id;
+                const csrf = document.querySelector('meta[name=csrf-token]')?.content ?? '';
+
+                try {
+                    const res = await fetch(media.delete_url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN':     csrf,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept':           'application/json',
+                            'Content-Type':     'application/x-www-form-urlencoded',
+                        },
+                        body: '_method=DELETE',
+                    });
+
+                    if (res.ok) {
+                        this.existingMedia = this.existingMedia.filter((m) => m.id !== media.id);
+                    } else {
+                        const data = await res.json().catch(() => ({}));
+                        alert(data.message || 'Xóa file thất bại. Vui lòng thử lại.');
+                    }
+                } catch (e) {
+                    alert('Lỗi kết nối. Vui lòng thử lại.');
+                } finally {
+                    this.removingMediaId = null;
+                }
             },
         }));
     });
@@ -187,9 +240,16 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         expirationEl._flatpickr?.clear();
         expirationEl._expirationLocked = false;
 
-        const fileEl = modal.querySelector('input[type="file"][name="file"]');
+        const fileEl = modal.querySelector('input[type="file"][name="files[]"], input[type="file"][name="file"]');
         if (fileEl) fileEl.value = '';
         _setCurrentFileInfo(modal, null);
+
+        const form = modal.querySelector('form[x-data]');
+        if (form && window.Alpine) {
+            const data = window.Alpine.$data(form);
+            data.files = [];
+            data.existingMedia = [];
+        }
 
         const select = modal.querySelector(selectSel);
         if (preselectId && select?.tomselect) select.tomselect.setValue(preselectId, false);
@@ -208,6 +268,15 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         modal.querySelector('[name="document_number"]').value = doc.document_number ?? '';
         modal.querySelector('[name="issued_by"]').value = doc.issued_by ?? '';
         _setCurrentFileInfo(modal, doc.file_url);
+
+        const fileEl = modal.querySelector('input[type="file"][name="files[]"], input[type="file"][name="file"]');
+        if (fileEl) fileEl.value = '';
+        const form = modal.querySelector('form[x-data]');
+        if (form && window.Alpine) {
+            const data = window.Alpine.$data(form);
+            data.files = [];
+            data.existingMedia = doc.media ?? [];
+        }
 
         const select = modal.querySelector(selectSel);
         if (select?.tomselect) select.tomselect.setValue(doc.document_master_type_id, false);

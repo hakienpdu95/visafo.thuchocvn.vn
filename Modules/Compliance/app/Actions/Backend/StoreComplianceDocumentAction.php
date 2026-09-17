@@ -32,7 +32,11 @@ class StoreComplianceDocumentAction
             'status'                  => $this->resolveStatus($data->expiration_date)->value,
         ]);
 
-        if ($data->file !== null) {
+        if (! empty($data->files)) {
+            foreach ($data->files as $file) {
+                $this->uploadService->upload($file, $document, 'attachments_private');
+            }
+        } elseif ($data->file !== null) {
             $this->uploadService->upload($data->file, $document, 'attachments_private');
         }
 

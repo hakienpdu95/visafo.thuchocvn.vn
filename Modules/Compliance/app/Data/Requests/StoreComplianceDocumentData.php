@@ -4,6 +4,7 @@ namespace Modules\Compliance\Data\Requests;
 
 use Illuminate\Http\UploadedFile;
 use Spatie\LaravelData\Attributes\Validation\AfterOrEqual;
+use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\File;
@@ -43,7 +44,22 @@ class StoreComplianceDocumentData extends Data
 
         #[Nullable, File, Mimes(['pdf', 'jpg', 'jpeg', 'png']), Max(10240)]
         public readonly ?UploadedFile $pif_file,
+
+        /**
+         * Multi-upload — dùng khi form gửi lên name="files[]" (VD: modal internal-compliance).
+         * `file` (single) vẫn được giữ song song cho các form legacy chưa đổi sang multi-upload.
+         */
+        #[Nullable, ArrayType]
+        public readonly ?array $files = null,
     ) {}
+
+    public static function rules(): array
+    {
+        return [
+            'files'   => ['nullable', 'array', 'min:1'],
+            'files.*' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+        ];
+    }
 
     public static function messages(): array
     {
@@ -68,6 +84,12 @@ class StoreComplianceDocumentData extends Data
             'file.file'  => 'Tệp tải lên không hợp lệ.',
             'file.mimes' => 'Chỉ chấp nhận file PDF, JPG hoặc PNG.',
             'file.max'   => 'Dung lượng file không được vượt quá 10MB.',
+
+            'files.array'   => 'Danh sách file không hợp lệ.',
+            'files.min'     => 'Vui lòng chọn ít nhất 1 file.',
+            'files.*.file'  => 'Một trong các tệp tải lên không hợp lệ.',
+            'files.*.mimes' => 'Chỉ chấp nhận file PDF, JPG hoặc PNG.',
+            'files.*.max'   => 'Dung lượng mỗi file không được vượt quá 10MB.',
         ];
     }
 }

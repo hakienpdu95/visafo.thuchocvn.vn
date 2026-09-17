@@ -73,7 +73,7 @@ class SalesPackageController extends Controller
         $existingCustomDocuments = $package->items()
             ->where('is_custom', true)
             ->get()
-            ->map(fn ($item) => ['name' => $item->custom_name, 'fileUrl' => $item->fileUrl()])
+            ->map(fn ($item) => ['name' => $item->custom_name, 'files' => $item->attachedFiles()])
             ->all();
 
         return view('salespackage::edit', [

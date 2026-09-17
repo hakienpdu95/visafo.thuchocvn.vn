@@ -29,6 +29,17 @@ window.openEditDocumentModal = function (doc) {
     documentModal.openEdit(doc);
 };
 
+window.openViewFilesModal = function (doc) {
+    const modal = document.getElementById('viewFilesModal');
+    const content = document.getElementById('viewFilesModalContent');
+    if (!modal || !content || !window.Alpine) return;
+
+    const data = window.Alpine.$data(content);
+    data.docName = doc.type_name;
+    data.media = doc.media ?? [];
+    modal.showModal();
+};
+
 let pendingDeleteUrl = null;
 
 window.internalComplianceDeleteConfirm = function (url, name) {

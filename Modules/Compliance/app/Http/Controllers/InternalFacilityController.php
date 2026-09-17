@@ -113,19 +113,19 @@ class InternalFacilityController extends Controller
             $folder = Str::slug($facility->name) ?: $facility->type;
 
             foreach ($facility->documents as $document) {
-                $media = $document->getFirstMedia('attachments_private');
-                if (! $media) {
-                    continue;
-                }
+                $mediaItems = $document->getMedia('attachments_private');
 
-                $contents = Storage::disk($media->disk)->get($media->getPathRelativeToRoot());
-                if ($contents === null) {
-                    continue;
-                }
+                foreach ($mediaItems as $index => $media) {
+                    $contents = Storage::disk($media->disk)->get($media->getPathRelativeToRoot());
+                    if ($contents === null) {
+                        continue;
+                    }
 
-                $entryName = $folder . '/' . Str::slug($document->documentType->name) . '-' . $document->id . '.' . $media->extension;
-                $zip->addFromString($entryName, $contents);
-                $fileCount++;
+                    $suffix = $mediaItems->count() > 1 ? '-' . ($index + 1) : '';
+                    $entryName = $folder . '/' . Str::slug($document->documentType->name) . '-' . $document->id . $suffix . '.' . $media->extension;
+                    $zip->addFromString($entryName, $contents);
+                    $fileCount++;
+                }
             }
         }
         $zip->close();

@@ -96,9 +96,17 @@
     ],
     [
         "sales_package_items///add///__///",
-        "ulid///ulid///__///_NULL///NULL///__///__",
         "document_group///string///30///_NULL///NULL///__///__",
         "is_custom///boolean///__///NOT_NULL///false///__///true = tài liệu tải lên ngoài hệ thống, không gắn với compliance_documents",
         "custom_name///string///255///_NULL///NULL///__///__"
+    ],
+    [
+        "sales_packages///drop///__///Xoá ulid và order_column dư thừa — id đã là ULID (HasUlids), model không dùng 2 cột này, gây lỗi 1364 khi insert",
+        "ulid///ulid///__///NOT_NULL///__///__///__",
+        "order_column///unsignedInteger///__///_NULL///NULL///__///__"
+    ],
+    [
+        "sales_package_items///drop///__///Xoá order_column dư thừa — id đã là ULID (HasUlids), model không dùng cột này",
+        "order_column///unsignedInteger///__///_NULL///NULL///__///__"
     ]
 ]

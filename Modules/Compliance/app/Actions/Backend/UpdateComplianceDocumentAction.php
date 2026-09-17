@@ -30,8 +30,14 @@ class UpdateComplianceDocumentAction
             'status'                  => $this->resolveStatus($data->expiration_date)->value,
         ]);
 
-        if ($data->file !== null) {
-            $this->uploadService->bulkDelete($document, 'attachments_private');
+        // Tải thêm tệp mới — gộp chung với các tệp hiện có. Xóa tệp cụ thể được xử lý
+        // riêng qua DestroyComplianceDocumentMediaAction (nút "Xóa" trên từng file),
+        // tuyệt đối không dùng clearMediaCollection() ở đây.
+        if (! empty($data->files)) {
+            foreach ($data->files as $file) {
+                $this->uploadService->upload($file, $document, 'attachments_private');
+            }
+        } elseif ($data->file !== null) {
             $this->uploadService->upload($data->file, $document, 'attachments_private');
         }
 

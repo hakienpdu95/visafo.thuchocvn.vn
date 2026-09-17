@@ -35,7 +35,7 @@ document.addEventListener('alpine:init', () => {
         customerName: '',
 
         customDocuments: [],
-        customDocDraft: { name: '' },
+        customDocDraft: { name: '', files: [] },
 
         init() {
             const errs = serverData.errors ?? [];
@@ -70,36 +70,49 @@ document.addEventListener('alpine:init', () => {
         get previewItems() {
             const checked = this.items
                 .filter((i) => this.selectedIds.includes(i.compliance_document_id))
-                .map((i) => ({ label: i.label, is_expiring_soon: i.is_expiring_soon }));
+                .map((i) => ({ label: i.label, is_expiring_soon: i.is_expiring_soon, media_count: i.media_count ?? 0 }));
 
-            const custom = this.customDocuments.map((d) => ({ label: d.name, is_expiring_soon: false }));
+            const custom = this.customDocuments.map((d) => ({ label: d.name, is_expiring_soon: false, media_count: d.files.length }));
 
             return [...checked, ...custom];
         },
 
         openCustomDocModal() {
-            this.customDocDraft = { name: '' };
+            this.customDocDraft = { name: '', files: [] };
             if (this.$refs.customDocFileInput) this.$refs.customDocFileInput.value = '';
             this.$refs.customDocModal.showModal();
         },
 
-        addCustomDocument() {
-            const fileInput = this.$refs.customDocFileInput;
-            const file = fileInput?.files?.[0];
+        onCustomDocFilesChange(event) {
+            this.customDocDraft.files = Array.from(event.target.files ?? []);
+        },
 
-            if (!this.customDocDraft.name.trim() || !file) {
-                window.Toast?.warning('Vui lòng nhập tên và chọn file.', { duration: 4000 });
+        removeCustomDocDraftFile(index) {
+            this.customDocDraft.files.splice(index, 1);
+
+            // FileList is immutable — rebuild it via DataTransfer so the
+            // <input> only submits the files still left in the draft.
+            const dt = new DataTransfer();
+            this.customDocDraft.files.forEach((file) => dt.items.add(file));
+            this.$refs.customDocFileInput.files = dt.files;
+        },
+
+        addCustomDocument() {
+            const files = this.customDocDraft.files;
+
+            if (!this.customDocDraft.name.trim() || files.length === 0) {
+                window.Toast?.warning('Vui lòng nhập tên và chọn ít nhất 1 file.', { duration: 4000 });
                 return;
             }
 
             const id = (window.crypto?.randomUUID?.() ?? String(Date.now() + Math.random()));
-            this.customDocuments.push({ id, name: this.customDocDraft.name.trim(), fileName: file.name });
+            this.customDocuments.push({ id, name: this.customDocDraft.name.trim(), files: files.slice() });
 
             this.$nextTick(() => {
                 const input = document.querySelector('[data-custom-doc-id="' + id + '"]');
                 if (input) {
                     const dt = new DataTransfer();
-                    dt.items.add(file);
+                    files.forEach((file) => dt.items.add(file));
                     input.files = dt.files;
                 }
             });

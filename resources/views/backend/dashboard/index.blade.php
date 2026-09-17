@@ -25,28 +25,11 @@
     </a>
 </div>
 
-{{-- ── Greeting ──────────────────────────────────────────────────────────── --}}
-<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-    <div>
-        <h1 class="text-2xl font-bold text-base-content leading-tight">
-            {{ $greeting }}, {{ $authUser->name }}
-            <span class="wave-emoji">👋</span>
-        </h1>
-        <p class="text-sm text-base-content/50 mt-0.5 capitalize">{{ $today_str }}</p>
-    </div>
-    <div class="flex items-center gap-2">
-        <span class="badge {{ \App\Enums\RoleEnum::tryFrom($roleName)?->badgeClass() ?? 'badge-ghost' }} badge-sm px-3 py-2">
-            {{ $roleLabel }}
-        </span>
-        <span class="text-xs text-base-content/40">{{ $authUser->email }}</span>
-    </div>
-</div>
-
 {{-- ── 4 Thẻ tổng quan ──────────────────────────────────────────────────── --}}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
 
     {{-- Card 1: Điểm sẵn sàng --}}
-    <a href="{{ route('backend.readiness-check.index') }}" class="rounded-2xl bg-green-800 text-white p-6 flex flex-col hover:opacity-95 transition-opacity">
+    <a href="{{ route('backend.readiness-check.index') }}" class="rounded-md bg-green-800 text-white p-6 flex flex-col hover:opacity-95 transition-opacity">
         <div class="flex items-center justify-between mb-4">
             <span class="text-sm font-medium text-white/80">Điểm sẵn sàng</span>
             <svg class="w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -229,16 +212,3 @@
 </div>
 
 @endsection
-
-@push('styles')
-<style>
-    .wave-emoji { display: inline-block; animation: wave 1.5s ease-in-out 1; }
-    @keyframes wave {
-        0%,100% { transform: rotate(0deg); }
-        20%      { transform: rotate(20deg); }
-        40%      { transform: rotate(-10deg); }
-        60%      { transform: rotate(15deg); }
-        80%      { transform: rotate(-5deg); }
-    }
-</style>
-@endpush

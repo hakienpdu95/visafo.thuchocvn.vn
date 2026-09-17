@@ -116,7 +116,7 @@
                                                 <div class="min-w-0">
                                                     <span class="text-sm font-semibold block" x-text="item.label"></span>
                                                     <span class="text-xs text-base-content/50 flex items-center gap-1 mt-0.5">
-                                                        <span x-text="item.compliance_document_id ? '1 tệp đính kèm' : 'Chưa có tệp đính kèm'"></span>
+                                                        <span x-text="item.media_count > 0 ? item.media_count + ' tệp đính kèm' : 'Chưa có tệp đính kèm'"></span>
                                                         <span>·</span>
                                                         <span x-text="item.required ? 'Bắt buộc' : 'Tùy chọn'"></span>
                                                     </span>
@@ -149,19 +149,27 @@
                             <div class="space-y-2 mb-3">
                                 <p class="text-xs text-base-content/40">Đã có trong gói — sửa/xóa tại trang chi tiết gói:</p>
                                 @foreach($existingCustomDocuments as $doc)
-                                <div class="flex items-center justify-between gap-2 bg-base-200/30 rounded-lg px-3 py-2">
-                                    <p class="text-sm font-medium truncate">{{ $doc['name'] }}</p>
-                                    <div class="flex items-center gap-2 shrink-0">
-                                        @if($doc['fileUrl'])
-                                        <a href="{{ $doc['fileUrl'] }}" target="_blank" rel="noopener" class="btn btn-ghost btn-xs gap-1 text-info">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                            Xem tệp
-                                        </a>
-                                        @else
-                                        <span class="text-xs text-base-content/30">Chưa có tệp</span>
-                                        @endif
-                                        <span class="badge badge-ghost badge-xs">Đã lưu</span>
+                                <div class="bg-base-200/30 rounded-lg px-3 py-2">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <p class="text-sm font-medium truncate">{{ $doc['name'] }}</p>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <span class="text-xs text-base-content/40">{{ count($doc['files']) }} tệp</span>
+                                            <span class="badge badge-ghost badge-xs">Đã lưu</span>
+                                        </div>
                                     </div>
+                                    @if(count($doc['files']) > 0)
+                                    <div class="flex flex-wrap gap-1.5 mt-1.5">
+                                        @foreach($doc['files'] as $file)
+                                        <a href="{{ $file['url'] }}" target="_blank" rel="noopener"
+                                           class="inline-flex items-center gap-1 text-xs text-info bg-info/10 rounded px-2 py-1 truncate max-w-[180px]" title="{{ $file['name'] }}">
+                                            <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                            <span class="truncate">{{ $file['name'] }}</span>
+                                        </a>
+                                        @endforeach
+                                    </div>
+                                    @else
+                                    <p class="text-xs text-base-content/30 mt-1">Chưa có tệp</p>
+                                    @endif
                                 </div>
                                 @endforeach
                             </div>
@@ -176,11 +184,11 @@
                                     <div class="flex items-center justify-between gap-2 bg-base-200/50 rounded-lg px-3 py-2">
                                         <div class="min-w-0">
                                             <p class="text-sm font-medium truncate" x-text="doc.name"></p>
-                                            <p class="text-xs text-base-content/40 truncate" x-text="doc.fileName"></p>
+                                            <p class="text-xs text-base-content/40 truncate" x-text="doc.files.length + ' tệp: ' + doc.files.map(f => f.name).join(', ')"></p>
                                         </div>
                                         <button type="button" class="btn btn-ghost btn-xs text-error shrink-0" @click="removeCustomDocument(index)">Xóa</button>
                                         <input type="hidden" :name="'custom_documents[' + index + '][name]'" :value="doc.name">
-                                        <input type="file" class="hidden" :data-custom-doc-id="doc.id" :name="'custom_documents[' + index + '][file]'">
+                                        <input type="file" multiple class="hidden" :data-custom-doc-id="doc.id" :name="'custom_documents[' + index + '][files][]'">
                                     </div>
                                 </template>
                             </div>
@@ -323,9 +331,19 @@
                 <label class="label py-0 pb-1.5">
                     <span class="label-text font-medium">File đính kèm <span class="text-error">*</span></span>
                 </label>
-                <input type="file" x-ref="customDocFileInput"
+                <input type="file" x-ref="customDocFileInput" multiple
                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                       class="file-input file-input-bordered file-input-sm w-full">
+                       class="file-input file-input-bordered file-input-sm w-full"
+                       @change="onCustomDocFilesChange($event)">
+
+                <ul class="mt-2 space-y-1" x-show="customDocDraft.files.length > 0" x-cloak>
+                    <template x-for="(file, index) in customDocDraft.files" :key="index">
+                        <li class="flex items-center justify-between gap-2 rounded-lg border border-base-200 bg-base-200/40 px-2.5 py-1.5">
+                            <span class="truncate text-xs" x-text="file.name"></span>
+                            <button type="button" class="btn btn-ghost btn-xs btn-circle shrink-0" @click="removeCustomDocDraftFile(index)" title="Bỏ chọn file này">✕</button>
+                        </li>
+                    </template>
+                </ul>
             </div>
 
             <div class="modal-action mt-4">
@@ -346,7 +364,10 @@
                     <div class="flex items-center justify-between gap-3 py-2 border-b border-base-200 last:border-0">
                         <div class="flex items-center gap-3 min-w-0">
                             <span class="text-xs font-mono text-base-content/40 w-6 shrink-0" x-text="String(idx + 1).padStart(2, '0')"></span>
-                            <span class="text-sm font-medium truncate" x-text="item.label"></span>
+                            <div class="min-w-0">
+                                <span class="text-sm font-medium truncate block" x-text="item.label"></span>
+                                <span class="text-xs text-base-content/40" x-text="item.media_count > 0 ? item.media_count + ' tệp đính kèm' : 'Chưa có tệp đính kèm'"></span>
+                            </div>
                         </div>
                         <span class="badge badge-sm badge-soft shrink-0"
                               :class="item.is_expiring_soon ? 'badge-warning' : 'badge-success'"

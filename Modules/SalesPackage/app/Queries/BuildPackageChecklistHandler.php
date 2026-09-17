@@ -22,6 +22,7 @@ class BuildPackageChecklistHandler implements QueryHandlerInterface
         $customer->loadMissing([
             'products.partnerProducts.vendor',
             'products.partnerProducts.documents.documentType',
+            'products.partnerProducts.documents.media',
         ]);
 
         $results = $this->ruleEngine->evaluate($customer);
@@ -39,11 +40,13 @@ class BuildPackageChecklistHandler implements QueryHandlerInterface
 
         $items = collect($results)->map(function (ComplianceRequirementResult $r) use ($groupByCode) {
             $document = $r->matchedCompliance;
-            $document?->loadMissing('documentType');
+            $document?->loadMissing(['documentType', 'media']);
 
             $fallbackType = $groupByCode->get($r->requirement->documentTypeCodes[0] ?? null);
             $documentGroupEnum = $document?->documentType?->document_group
                 ?? $fallbackType?->document_group;
+
+            $mediaCount = $document ? $document->getMedia('attachments_private')->count() : 0;
 
             return [
                 'label'                  => $r->requirement->label,
@@ -53,6 +56,7 @@ class BuildPackageChecklistHandler implements QueryHandlerInterface
                 'document_group_label'   => $documentGroupEnum?->label() ?? 'Khác',
                 'compliance_document_id' => $document?->id,
                 'is_expiring_soon'       => $document?->isExpiringWithinDays(30) ?? false,
+                'media_count'            => $mediaCount,
                 'note'                   => match (true) {
                     $document === null                     => 'Chưa có hồ sơ',
                     $document->expiration_date !== null     => 'Hiệu lực đến ' . $document->expiration_date->format('d/m/Y'),

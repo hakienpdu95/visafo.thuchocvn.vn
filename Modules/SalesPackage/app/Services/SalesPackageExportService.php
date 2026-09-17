@@ -22,22 +22,22 @@ class SalesPackageExportService
         $zip->addFromString('Muc_Luc_Goi_Thau.pdf', $coverPdf);
 
         foreach ($package->items as $item) {
-            $media = $item->is_custom
-                ? $item->getFirstMedia('custom_document')
-                : $item->document?->getFirstMedia('attachments_private');
+            $mediaItems = $item->is_custom
+                ? $item->getMedia('custom_document')
+                : ($item->document?->getMedia('attachments_private') ?? collect());
 
-            if (! $media) {
-                continue;
+            $folder = Str::slug($item->groupLabel());
+
+            foreach ($mediaItems as $index => $media) {
+                $contents = Storage::disk($media->disk)->get($media->getPathRelativeToRoot());
+                if ($contents === null) {
+                    continue;
+                }
+
+                $suffix    = $mediaItems->count() > 1 ? '-' . ($index + 1) : '';
+                $entryName = $folder . '/' . Str::slug($item->displayName()) . '-' . $item->id . $suffix . '.' . $media->extension;
+                $zip->addFromString($entryName, $contents);
             }
-
-            $contents = Storage::disk($media->disk)->get($media->getPathRelativeToRoot());
-            if ($contents === null) {
-                continue;
-            }
-
-            $folder     = Str::slug($item->groupLabel());
-            $entryName  = $folder . '/' . Str::slug($item->displayName()) . '-' . $item->id . '.' . $media->extension;
-            $zip->addFromString($entryName, $contents);
         }
 
         $zip->close();

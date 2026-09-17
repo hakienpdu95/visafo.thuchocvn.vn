@@ -17,6 +17,8 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
         ->name('internal-facilities.documents.update');
     Route::delete('internal-facilities/{internal_facility}/documents/{document}', [ComplianceDocumentController::class, 'destroyForInternalFacility'])
         ->name('internal-facilities.documents.destroy');
+    Route::delete('internal-facilities/{internal_facility}/documents/{document}/media/{media}', [ComplianceDocumentController::class, 'destroyMediaForInternalFacility'])
+        ->name('internal-facilities.documents.media.destroy');
 });
 
 Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(function () {

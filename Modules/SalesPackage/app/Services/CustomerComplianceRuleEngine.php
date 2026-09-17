@@ -28,12 +28,12 @@ class CustomerComplianceRuleEngine
 
         $products = $customer->relationLoaded('products')
             ? $customer->products
-            : $customer->products()->with(['partnerProducts.vendor', 'partnerProducts.documents.documentType'])->get();
+            : $customer->products()->with(['partnerProducts.vendor', 'partnerProducts.documents.documentType', 'partnerProducts.documents.media'])->get();
 
         foreach ($products as $product) {
             $partnerProducts = $product->relationLoaded('partnerProducts')
                 ? $product->partnerProducts
-                : $product->partnerProducts()->with(['vendor', 'documents.documentType'])->get();
+                : $product->partnerProducts()->with(['vendor', 'documents.documentType', 'documents.media'])->get();
 
             foreach ($partnerProducts as $partnerProduct) {
                 foreach ($this->productRuleEngine->evaluate($partnerProduct) as $result) {
@@ -69,7 +69,7 @@ class CustomerComplianceRuleEngine
 
         $facility = InternalFacility::query()
             ->where('type', 'headquarter')
-            ->with(['documents.documentType'])
+            ->with(['documents.documentType', 'documents.media'])
             ->first();
 
         $documents = $facility?->documents ?? collect();

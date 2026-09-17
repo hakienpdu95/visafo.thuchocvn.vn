@@ -2,32 +2,47 @@
 @section('title', 'Hồ sơ năng lực VISAFO')
 
 @php
+    use App\Services\Media\MediaUrlService;
     use Modules\Compliance\Models\InternalFacility;
 
-    $buildDocRows = function (InternalFacility $facility) {
-        return $facility->documents->map(fn ($d) => [
-            'id'                      => $d->id,
-            'facility_id'             => $facility->id,
-            'facility_name'           => $facility->name,
-            'document_master_type_id' => $d->document_master_type_id,
-            'internal_tab_group'      => $d->documentType->internal_tab_group?->value,
-            'group_label'             => $d->documentType->internal_tab_group?->label() ?? '—',
-            'type_name'               => $d->documentType->name,
-            'document_number'         => $d->document_number,
-            'issued_by'               => $d->issued_by,
-            'issue_date'              => $d->issue_date?->format('Y-m-d'),
-            'issue_date_display'      => $d->issue_date?->format('d/m/Y'),
-            'expiration_date'         => $d->expiration_date?->format('Y-m-d'),
-            'expiration_date_display' => $d->expiration_date?->format('d/m/Y'),
-            'is_expired'              => $d->isExpired(),
-            'is_expiring_soon'        => $d->isExpiringWithinDays(30),
-            'status_value'            => $d->status->value,
-            'status_label'            => $d->status->label(),
-            'status_badge'            => $d->status->badgeClass(),
-            'file_url'                => $d->getFirstMediaUrl('attachments_private'),
-            'update_url'              => route('backend.internal-facilities.documents.update', [$facility, $d->id]),
-            'delete_url'              => route('backend.internal-facilities.documents.destroy', [$facility, $d->id]),
-        ])->values();
+    $mediaUrlService = app(MediaUrlService::class);
+
+    $buildDocRows = function (InternalFacility $facility) use ($mediaUrlService) {
+        return $facility->documents->map(function ($d) use ($facility, $mediaUrlService) {
+            $media = $d->getMedia('attachments_private')->map(fn ($m) => [
+                'id'          => $m->id,
+                'name'        => $m->file_name,
+                'size'        => $m->size,
+                'is_image'    => str_starts_with($m->mime_type, 'image/'),
+                'url'         => $mediaUrlService->url($m),
+                'delete_url'  => route('backend.internal-facilities.documents.media.destroy', [$facility, $d->id, $m->id]),
+            ])->values();
+
+            return [
+                'id'                      => $d->id,
+                'facility_id'             => $facility->id,
+                'facility_name'           => $facility->name,
+                'document_master_type_id' => $d->document_master_type_id,
+                'internal_tab_group'      => $d->documentType->internal_tab_group?->value,
+                'group_label'             => $d->documentType->internal_tab_group?->label() ?? '—',
+                'type_name'               => $d->documentType->name,
+                'document_number'         => $d->document_number,
+                'issued_by'               => $d->issued_by,
+                'issue_date'              => $d->issue_date?->format('Y-m-d'),
+                'issue_date_display'      => $d->issue_date?->format('d/m/Y'),
+                'expiration_date'         => $d->expiration_date?->format('Y-m-d'),
+                'expiration_date_display' => $d->expiration_date?->format('d/m/Y'),
+                'is_expired'              => $d->isExpired(),
+                'is_expiring_soon'        => $d->isExpiringWithinDays(30),
+                'status_value'            => $d->status->value,
+                'status_label'            => $d->status->label(),
+                'status_badge'            => $d->status->badgeClass(),
+                'media'                   => $media,
+                'media_count'             => $media->count(),
+                'update_url'              => route('backend.internal-facilities.documents.update', [$facility, $d->id]),
+                'delete_url'              => route('backend.internal-facilities.documents.destroy', [$facility, $d->id]),
+            ];
+        })->values();
     };
 
     $allDocRows = $buildDocRows($headquarter);
@@ -77,7 +92,7 @@
 @section('content')
 <div x-data="{ tab: 'legal' }">
 
-    <div class="rounded-2xl overflow-hidden mb-4" style="background-color:#0F4C3A">
+    <div class="rounded-md overflow-hidden mb-4" style="background-color:#0F4C3A">
         <div class="p-6 flex flex-wrap items-center justify-between gap-4 text-white">
             <div class="flex items-center gap-4 min-w-0">
                 <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shrink-0">
@@ -113,10 +128,10 @@
     </div>
 
     @if(session('success'))
-    <div class="alert alert-success py-2.5 px-4 mb-5 text-sm rounded-xl">{{ session('success') }}</div>
+    <div class="alert alert-success py-2.5 px-4 mb-5 text-sm rounded-sm">{{ session('success') }}</div>
     @endif
     @if(session('error'))
-    <div class="alert alert-error py-2.5 px-4 mb-5 text-sm rounded-xl">{{ session('error') }}</div>
+    <div class="alert alert-error py-2.5 px-4 mb-5 text-sm rounded-sm">{{ session('error') }}</div>
     @endif
 
     <div class="flex flex-wrap gap-6 border-b border-gray-200 mb-5">
@@ -157,7 +172,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @forelse($docsByGroup['legal'] as $doc)
                 @php $meta = $documentCard($doc); @endphp
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
+                <div class="bg-white rounded-sm shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="w-11 h-11 rounded-lg bg-green-50 text-green-700 flex items-center justify-center shrink-0">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -168,6 +183,12 @@
                                 {{ $doc['document_number'] ?: 'Chưa có số hiệu' }}
                                 @if($doc['issue_date_display']) · Cấp {{ $doc['issue_date_display'] }} @endif
                             </p>
+                            @if($doc['media_count'] > 0)
+                            <p class="mt-0.5 inline-flex items-center gap-1 text-[11px] text-gray-400">
+                                <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                {{ $doc['media_count'] }} tệp đính kèm
+                            </p>
+                            @endif
                         </div>
                     </div>
 
@@ -180,7 +201,8 @@
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
                             </button>
                             <ul x-show="open" x-transition x-cloak @click="open = false"
-                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-28 z-20 p-1">
+                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-36 z-20 p-1">
+                                <li><button type="button" onclick="window.openViewFilesModal({{ Js::from($doc) }})">Xem danh sách tệp</button></li>
                                 <li><button type="button" onclick="window.openEditDocumentModal({{ Js::from($doc) }})">Sửa</button></li>
                                 <li><button type="button" class="text-error" onclick="window.internalComplianceDeleteConfirm('{{ $doc['delete_url'] }}', {{ Js::from($doc['type_name']) }})">Xóa</button></li>
                             </ul>
@@ -189,7 +211,7 @@
                     </div>
                 </div>
             @empty
-                <div class="md:col-span-2 rounded-xl border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
+                <div class="md:col-span-2 rounded-sm border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
                     Chưa có hồ sơ nào trong nhóm Pháp lý & năng lực.
                 </div>
             @endforelse
@@ -200,7 +222,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @forelse($docsByGroup['operation'] as $doc)
                 @php $meta = $documentCard($doc); @endphp
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
+                <div class="bg-white rounded-sm shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="w-11 h-11 rounded-lg bg-green-50 text-green-700 flex items-center justify-center shrink-0">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -211,6 +233,12 @@
                                 {{ $doc['document_number'] ?: 'Chưa có số hiệu' }}
                                 @if($doc['issue_date_display']) · Cấp {{ $doc['issue_date_display'] }} @endif
                             </p>
+                            @if($doc['media_count'] > 0)
+                            <p class="mt-0.5 inline-flex items-center gap-1 text-[11px] text-gray-400">
+                                <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                {{ $doc['media_count'] }} tệp đính kèm
+                            </p>
+                            @endif
                         </div>
                     </div>
 
@@ -223,7 +251,8 @@
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
                             </button>
                             <ul x-show="open" x-transition x-cloak @click="open = false"
-                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-28 z-20 p-1">
+                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-36 z-20 p-1">
+                                <li><button type="button" onclick="window.openViewFilesModal({{ Js::from($doc) }})">Xem danh sách tệp</button></li>
                                 <li><button type="button" onclick="window.openEditDocumentModal({{ Js::from($doc) }})">Sửa</button></li>
                                 <li><button type="button" class="text-error" onclick="window.internalComplianceDeleteConfirm('{{ $doc['delete_url'] }}', {{ Js::from($doc['type_name']) }})">Xóa</button></li>
                             </ul>
@@ -232,7 +261,7 @@
                     </div>
                 </div>
             @empty
-                <div class="md:col-span-2 rounded-xl border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
+                <div class="md:col-span-2 rounded-sm border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
                     Chưa có hồ sơ nào trong nhóm ATTP & vận hành.
                 </div>
             @endforelse
@@ -248,16 +277,16 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+            <div class="bg-white rounded-sm border border-gray-100 shadow-sm p-4">
                 <p class="text-xs text-gray-400">Tổng số nhân sự</p>
                 <p class="text-2xl font-bold text-gray-800 mt-1">{{ number_format($employeeStats['total']) }}</p>
             </div>
-            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+            <div class="bg-white rounded-sm border border-gray-100 shadow-sm p-4">
                 <p class="text-xs text-gray-400">Tỷ lệ có giấy khám SK còn hạn</p>
                 <p class="text-2xl font-bold mt-1 {{ $employeeStats['health_valid_pct'] < 80 ? 'text-red-600' : 'text-green-700' }}">{{ $employeeStats['health_valid_pct'] }}%</p>
                 <p class="text-xs text-gray-400 mt-0.5">{{ $employeeStats['health_valid'] }}/{{ $employeeStats['total'] }} nhân sự</p>
             </div>
-            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+            <div class="bg-white rounded-sm border border-gray-100 shadow-sm p-4">
                 <p class="text-xs text-gray-400">Tỷ lệ chứng nhận ATTP còn hạn</p>
                 <p class="text-2xl font-bold mt-1 {{ $employeeStats['attp_valid_pct'] < 80 ? 'text-red-600' : 'text-green-700' }}">{{ $employeeStats['attp_valid_pct'] }}%</p>
                 <p class="text-xs text-gray-400 mt-0.5">{{ $employeeStats['attp_valid'] }}/{{ $employeeStats['total'] }} nhân sự</p>
@@ -266,7 +295,7 @@
 
         <p class="text-xs font-medium text-gray-500 mb-2">Nhân sự thiếu / sắp hết hạn giấy tờ y tế/ATTP — cần bổ sung</p>
         @if(count($employeeStats['at_risk']))
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto mb-6">
+        <div class="bg-white rounded-sm border border-gray-100 shadow-sm overflow-x-auto mb-6">
             <table class="table table-sm">
                 <thead>
                     <tr class="text-xs text-gray-400">
@@ -289,7 +318,7 @@
             </table>
         </div>
         @else
-        <div class="rounded-xl bg-green-50 border border-green-100 text-green-700 text-sm py-3 px-4 mb-6">
+        <div class="rounded-sm bg-green-50 border border-green-100 text-green-700 text-sm py-3 px-4 mb-6">
             Toàn bộ nhân sự đều có đủ giấy tờ còn hiệu lực.
         </div>
         @endif
@@ -311,7 +340,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @forelse($docsByGroup['hr'] as $doc)
                 @php $aggregate = $hrAggregateMap[$doc['type_name']] ?? null; @endphp
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
+                <div class="bg-white rounded-sm shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="w-11 h-11 rounded-lg bg-green-50 text-green-700 flex items-center justify-center shrink-0">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -328,6 +357,12 @@
                                 {{ $doc['document_number'] ?: 'Chưa có số hiệu' }}
                                 @if($doc['issue_date_display']) · Cấp {{ $doc['issue_date_display'] }} @endif
                             </p>
+                            @if($doc['media_count'] > 0)
+                            <p class="mt-0.5 inline-flex items-center gap-1 text-[11px] text-gray-400">
+                                <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                {{ $doc['media_count'] }} tệp đính kèm
+                            </p>
+                            @endif
                             @endif
                         </div>
                     </div>
@@ -348,7 +383,8 @@
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
                             </button>
                             <ul x-show="open" x-transition x-cloak @click="open = false"
-                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-28 z-20 p-1">
+                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-36 z-20 p-1">
+                                <li><button type="button" onclick="window.openViewFilesModal({{ Js::from($doc) }})">Xem danh sách tệp</button></li>
                                 <li><button type="button" onclick="window.openEditDocumentModal({{ Js::from($doc) }})">Sửa</button></li>
                                 <li><button type="button" class="text-error" onclick="window.internalComplianceDeleteConfirm('{{ $doc['delete_url'] }}', {{ Js::from($doc['type_name']) }})">Xóa</button></li>
                             </ul>
@@ -357,18 +393,18 @@
                     </div>
                 </div>
             @empty
-                <div class="md:col-span-2 rounded-xl border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
+                <div class="md:col-span-2 rounded-sm border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
                     Chưa có hồ sơ nào trong nhóm Nhân sự.
                 </div>
             @endforelse
         </div>
     </div>
 
-    <div x-show="tab === 'history'" x-cloak class="rounded-xl border border-dashed border-gray-200 py-14 text-center text-sm text-gray-400">
+    <div x-show="tab === 'history'" x-cloak class="rounded-sm border border-dashed border-gray-200 py-14 text-center text-sm text-gray-400">
         Chưa có dữ liệu lịch sử thay đổi hồ sơ.
     </div>
 
-    <div class="mt-6 rounded-xl bg-green-50 border border-green-100 p-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="mt-6 rounded-sm bg-green-50 border border-green-100 p-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-full bg-green-100 text-green-700 flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -389,7 +425,7 @@
 {{-- ── Modal: Tải lên / Sửa hồ sơ năng lực ─────────────────────────────── --}}
 @if($canManageDocuments)
 <dialog id="addDocumentModal" class="modal" @if($errors->any()) data-autoopen="1" @endif>
-    <div class="modal-box max-w-lg rounded-2xl p-6 relative">
+    <div class="modal-box max-w-5xl rounded-md p-3 relative">
         <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onclick="addDocumentModal.close()">✕</button>
 
         <h3 class="font-bold text-lg mb-5" id="documentModalTitle">{{ $modalIsEdit ? 'Sửa hồ sơ' : 'Tải hồ sơ lên' }}</h3>
@@ -420,13 +456,13 @@
                 <div class="form-control">
                     <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Nhóm hồ sơ</span></label>
                     <input type="text" readonly tabindex="-1" :value="selected.group_label ?? ''"
-                           class="input input-bordered w-full rounded-xl bg-gray-50 text-gray-500">
+                           class="input input-bordered w-full rounded-sm bg-gray-50 text-gray-500">
                 </div>
 
                 <div class="form-control">
                     <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Tên tài liệu <span class="text-error">*</span></span></label>
                     <select id="ts-document_master_type_id" name="document_master_type_id"
-                            class="select select-bordered w-full rounded-xl" data-ts-placeholder="— Chọn loại giấy tờ —"
+                            class="select select-bordered w-full rounded-sm" data-ts-placeholder="— Chọn loại giấy tờ —"
                             @change="selectedId = $event.target.value">
                         @foreach($allDocumentTypes as $type)
                         <option value="{{ $type['id'] }}" @selected(old('document_master_type_id') === $type['id'])>{{ $type['name'] }}</option>
@@ -438,11 +474,11 @@
             <div class="grid grid-cols-2 gap-3">
                 <div class="form-control" :class="selected.has_issue_place ? '' : 'col-span-2'">
                     <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Số hiệu</span></label>
-                    <input type="text" name="document_number" value="{{ old('document_number') }}" class="input input-bordered w-full rounded-xl">
+                    <input type="text" name="document_number" value="{{ old('document_number') }}" class="input input-bordered w-full rounded-sm">
                 </div>
                 <div class="form-control" x-show="selected.has_issue_place">
                     <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Nơi cấp</span></label>
-                    <input type="text" name="issued_by" value="{{ old('issued_by') }}" class="input input-bordered w-full rounded-xl">
+                    <input type="text" name="issued_by" value="{{ old('issued_by') }}" class="input input-bordered w-full rounded-sm">
                 </div>
             </div>
 
@@ -450,26 +486,60 @@
                 <div class="form-control" :class="selected.has_expiration_date ? '' : 'col-span-2'">
                     <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Ngày cấp</span></label>
                     <input type="text" id="fp-issue_date" name="issue_date" value="{{ old('issue_date') }}"
-                           class="input input-bordered w-full rounded-xl" placeholder="dd/mm/yyyy" autocomplete="off">
+                           class="input input-bordered w-full rounded-sm" placeholder="dd/mm/yyyy" autocomplete="off">
                 </div>
                 <div class="form-control" x-show="selected.has_expiration_date">
                     <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Ngày hết hạn</span></label>
                     <input type="text" id="fp-expiration_date" name="expiration_date" value="{{ old('expiration_date') }}"
-                           class="input input-bordered w-full rounded-xl" placeholder="dd/mm/yyyy" autocomplete="off">
+                           class="input input-bordered w-full rounded-sm" placeholder="dd/mm/yyyy" autocomplete="off">
                 </div>
             </div>
 
+            <div class="form-control" x-show="existingMedia.length > 0" x-cloak>
+                <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Các tệp đính kèm hiện tại</span></label>
+                <template x-for="media in existingMedia" :key="media.id">
+                    <div class="flex items-center justify-between p-3 mb-2 bg-gray-50 border border-gray-200 rounded-lg">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <svg x-show="media.is_image" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <svg x-show="!media.is_image" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <span class="truncate text-sm text-gray-700" x-text="media.name"></span>
+                            <span class="shrink-0 text-xs text-gray-400" x-text="formatFileSize(media.size)"></span>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <a :href="media.url" target="_blank" class="btn btn-ghost btn-xs">Xem</a>
+                            <button type="button" class="btn btn-ghost btn-xs text-error" :disabled="removingMediaId === media.id"
+                                    @click="removeExistingMedia(media)" title="Xóa file này">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
             <div class="form-control">
-                <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">File PDF/Scan</span></label>
-                <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered w-full rounded-xl">
-                <p class="mt-1 text-xs text-base-content/50" id="documentCurrentFileInfo" hidden>
-                    File hiện tại: <a href="#" target="_blank" class="link link-primary" id="documentCurrentFileLink">Xem file</a> — chọn file mới để thay thế
-                </p>
+                <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Tải thêm tệp mới (Sẽ được gộp chung với các tệp hiện tại)</span></label>
+                <input type="file" name="files[]" x-ref="filesInput" multiple
+                       accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered w-full rounded-sm"
+                       @change="onFilesChange($event)">
+
+                <ul class="mt-2 space-y-1" x-show="files.length > 0" x-cloak>
+                    <template x-for="(file, index) in files" :key="index">
+                        <li class="flex items-center justify-between gap-2 rounded-sm border border-gray-200 bg-gray-50 px-2.5 py-1.5">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <svg x-show="isImageFile(file)" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <svg x-show="!isImageFile(file)" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <span class="truncate text-xs text-gray-700" x-text="file.name"></span>
+                                <span class="shrink-0 text-xs text-base-content/40" x-text="formatFileSize(file.size)"></span>
+                            </div>
+                            <button type="button" class="btn btn-ghost btn-xs btn-circle shrink-0" @click="removeFile(index)" title="Bỏ chọn file này">✕</button>
+                        </li>
+                    </template>
+                </ul>
             </div>
 
             <div class="modal-action mt-2 pt-4 border-t border-gray-100">
-                <button type="button" class="btn btn-ghost border border-gray-300 rounded-xl" onclick="addDocumentModal.close()">Hủy</button>
-                <button type="submit" class="btn text-white border-0 rounded-xl" style="background-color:#0F4C3A" id="documentModalSubmit">{{ $modalIsEdit ? 'Lưu thay đổi' : 'Lưu hồ sơ' }}</button>
+                <button type="button" class="btn btn-ghost border border-gray-300 rounded-sm" onclick="addDocumentModal.close()">Hủy</button>
+                <button type="submit" class="btn text-white border-0 rounded-sm" style="background-color:#0F4C3A" id="documentModalSubmit">{{ $modalIsEdit ? 'Lưu thay đổi' : 'Lưu hồ sơ' }}</button>
             </div>
         </form>
     </div>
@@ -486,8 +556,35 @@
             Bạn có chắc muốn xóa hồ sơ <strong id="deleteItemName" class="text-base-content"></strong>?
         </p>
         <div class="modal-action mt-4">
-            <button id="confirmDeleteBtn" class="btn btn-error btn-sm rounded-xl">Xóa</button>
-            <button class="btn btn-ghost btn-sm rounded-xl" onclick="deleteModal.close()">Hủy</button>
+            <button id="confirmDeleteBtn" class="btn btn-error btn-sm rounded-sm">Xóa</button>
+            <button class="btn btn-ghost btn-sm rounded-sm" onclick="deleteModal.close()">Hủy</button>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+@endif
+
+{{-- ── Modal: Xem danh sách tệp (read-only) ─────────────────────────────── --}}
+@if($canManageDocuments)
+<dialog id="viewFilesModal" class="modal">
+    <div class="modal-box max-w-md rounded-md p-4 relative" id="viewFilesModalContent" x-data="{ docName: '', media: [] }">
+        <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onclick="viewFilesModal.close()">✕</button>
+
+        <h3 class="font-bold text-base mb-1" x-text="docName"></h3>
+        <p class="text-xs text-gray-400 mb-4" x-text="media.length + ' tệp đính kèm'"></p>
+
+        <div class="space-y-2 max-h-96 overflow-y-auto">
+            <template x-for="m in media" :key="m.id">
+                <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <svg x-show="m.is_image" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <svg x-show="!m.is_image" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <span class="truncate text-sm text-gray-700" x-text="m.name"></span>
+                    </div>
+                    <a :href="m.url" target="_blank" class="btn btn-ghost btn-xs shrink-0">Mở file</a>
+                </div>
+            </template>
+            <p class="text-sm text-gray-400 text-center py-6" x-show="media.length === 0">Chưa có tệp đính kèm nào.</p>
         </div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>

@@ -82,6 +82,8 @@ php artisan import:provinces-wards
 
 php artisan module:make Auth
 
+sudo systemctl restart php8.3-fpm
+
 To start Reverb in dev:
 php artisan reverb:start
 Then rebuild assets: npm run build or npm run dev.

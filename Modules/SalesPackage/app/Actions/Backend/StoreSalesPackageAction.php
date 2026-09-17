@@ -53,9 +53,9 @@ class StoreSalesPackageAction
             }
 
             foreach ($data->custom_documents as $custom) {
-                $file = $custom['file'] ?? null;
-                $name = $custom['name'] ?? null;
-                if (! $file || ! $name) {
+                $files = $custom['files'] ?? [];
+                $name  = $custom['name'] ?? null;
+                if (empty($files) || ! $name) {
                     continue;
                 }
 
@@ -67,7 +67,9 @@ class StoreSalesPackageAction
                     'custom_name'            => $name,
                 ]);
 
-                $item->addMedia($file)->toMediaCollection('custom_document');
+                foreach ($files as $file) {
+                    $item->addMedia($file)->toMediaCollection('custom_document');
+                }
             }
 
             return $package;

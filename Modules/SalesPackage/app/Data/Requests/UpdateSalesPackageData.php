@@ -28,7 +28,7 @@ class UpdateSalesPackageData extends Data
         /** @var string[] */
         public readonly array $document_ids = [],
 
-        /** @var array<int, array{name: string, file: \Illuminate\Http\UploadedFile}> */
+        /** @var array<int, array{name: string, files: array<int, \Illuminate\Http\UploadedFile>}> */
         public readonly array $custom_documents = [],
     ) {}
 
@@ -40,9 +40,10 @@ class UpdateSalesPackageData extends Data
             'document_ids'   => ['nullable', 'array'],
             'document_ids.*' => ['string', 'exists:compliance_documents,id'],
 
-            'custom_documents'        => ['nullable', 'array'],
-            'custom_documents.*.name' => ['required_with:custom_documents', 'string', 'max:255'],
-            'custom_documents.*.file' => ['required_with:custom_documents', 'file', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', 'max:10240'],
+            'custom_documents'           => ['nullable', 'array'],
+            'custom_documents.*.name'    => ['required_with:custom_documents', 'string', 'max:255'],
+            'custom_documents.*.files'   => ['required_with:custom_documents', 'array', 'min:1'],
+            'custom_documents.*.files.*' => ['file', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', 'max:10240'],
         ];
     }
 
@@ -58,10 +59,10 @@ class UpdateSalesPackageData extends Data
 
             'document_ids.*.exists' => 'Có tài liệu không hợp lệ trong danh sách đã chọn.',
 
-            'custom_documents.*.name.required_with' => 'Vui lòng nhập tên cho tài liệu bổ sung.',
-            'custom_documents.*.file.required_with' => 'Vui lòng chọn file cho tài liệu bổ sung.',
-            'custom_documents.*.file.mimes'          => 'File phải là định dạng PDF, DOC, DOCX, XLS, XLSX, JPG hoặc PNG.',
-            'custom_documents.*.file.max'            => 'File không được vượt quá 10MB.',
+            'custom_documents.*.name.required_with'  => 'Vui lòng nhập tên cho tài liệu bổ sung.',
+            'custom_documents.*.files.required_with' => 'Vui lòng chọn ít nhất 1 file cho tài liệu bổ sung.',
+            'custom_documents.*.files.*.mimes'       => 'File phải là định dạng PDF, DOC, DOCX, XLS, XLSX, JPG hoặc PNG.',
+            'custom_documents.*.files.*.max'         => 'Mỗi file không được vượt quá 10MB.',
         ];
     }
 }
