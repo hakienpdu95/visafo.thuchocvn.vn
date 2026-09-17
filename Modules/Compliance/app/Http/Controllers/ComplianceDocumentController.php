@@ -4,6 +4,7 @@ namespace Modules\Compliance\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
+use App\Services\Media\MediaUrlService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -13,9 +14,11 @@ use Modules\Compliance\Actions\Backend\DestroyComplianceDocumentAction;
 use Modules\Compliance\Actions\Backend\DestroyComplianceDocumentMediaAction;
 use Modules\Compliance\Actions\Backend\StoreComplianceDocumentAction;
 use Modules\Compliance\Actions\Backend\UpdateComplianceDocumentAction;
+use Modules\Compliance\Actions\Backend\UpdateSharedComplianceDocumentAction;
 use Modules\Compliance\Actions\Backend\UploadSharedComplianceDocumentAction;
 use Modules\Compliance\Data\Requests\StoreComplianceDocumentData;
 use Modules\Compliance\Data\Requests\StoreSharedComplianceDocumentData;
+use Modules\Compliance\Data\Requests\UpdateSharedComplianceDocumentData;
 use Modules\Compliance\Enums\SharedDocumentCategory;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Compliance\Models\InternalFacility;
@@ -62,6 +65,60 @@ class ComplianceDocumentController extends Controller
 
         return redirect()->route('backend.document-repository.index')
             ->with('success', 'Đã tải lên tài liệu nội bộ dùng chung.');
+    }
+
+    public function editShared(ComplianceDocument $document, MediaUrlService $urlService): JsonResponse
+    {
+        $this->authorize('update', $document);
+        abort_unless($document->documentable_type === null, 404);
+
+        return response()->json([
+            'id'              => $document->id,
+            'custom_name'     => $document->custom_name,
+            'custom_category' => $document->custom_category?->value,
+            'notes'           => $document->notes,
+            'media'           => $document->getMedia('attachments_private')->map(fn ($m) => [
+                'id'         => $m->id,
+                'name'       => $m->file_name,
+                'size'       => $m->size,
+                'is_image'   => str_starts_with($m->mime_type, 'image/'),
+                'url'        => $urlService->url($m),
+                'delete_url' => route('backend.document-repository.media.destroy', [$document, $m]),
+            ])->values(),
+        ]);
+    }
+
+    public function destroyMediaShared(ComplianceDocument $document, Media $media, DestroyComplianceDocumentMediaAction $action): JsonResponse
+    {
+        $this->authorize('update', $document);
+        abort_unless($document->documentable_type === null, 404);
+
+        $action->handle($document, $media);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function updateShared(Request $request, ComplianceDocument $document, UpdateSharedComplianceDocumentAction $action): RedirectResponse
+    {
+        $this->authorize('update', $document);
+        abort_unless($document->documentable_type === null, 404);
+
+        $data = UpdateSharedComplianceDocumentData::validateAndCreate($request->all());
+        $action->handle($document, $data);
+
+        return redirect()->route('backend.document-repository.index')
+            ->with('success', 'Đã cập nhật tài liệu nội bộ dùng chung.');
+    }
+
+    public function destroyShared(ComplianceDocument $document, DestroyComplianceDocumentAction $action): RedirectResponse
+    {
+        $this->authorize('delete', $document);
+        abort_unless($document->documentable_type === null, 404);
+
+        $action->handle($document);
+
+        return redirect()->route('backend.document-repository.index')
+            ->with('success', 'Đã xóa tài liệu nội bộ dùng chung.');
     }
 
     public function storeForVendor(Request $request, Vendor $vendor, StoreComplianceDocumentAction $action): RedirectResponse

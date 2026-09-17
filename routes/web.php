@@ -63,6 +63,18 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::post('/document-repository/upload', [ComplianceDocumentController::class, 'uploadShared'])
         ->middleware('permission:compliance.manage')
         ->name('document-repository.upload');
+    Route::get('/document-repository/{document}/edit', [ComplianceDocumentController::class, 'editShared'])
+        ->middleware('permission:compliance.manage')
+        ->name('document-repository.edit');
+    Route::put('/document-repository/{document}', [ComplianceDocumentController::class, 'updateShared'])
+        ->middleware('permission:compliance.manage')
+        ->name('document-repository.update');
+    Route::delete('/document-repository/{document}', [ComplianceDocumentController::class, 'destroyShared'])
+        ->middleware('permission:compliance.manage')
+        ->name('document-repository.destroy');
+    Route::delete('/document-repository/{document}/media/{media}', [ComplianceDocumentController::class, 'destroyMediaShared'])
+        ->middleware('permission:compliance.manage')
+        ->name('document-repository.media.destroy');
 
     // ── Kiểm tra Readiness ──────────────────────────────────────────────
     Route::get('/readiness', [ReadinessController::class, 'index'])

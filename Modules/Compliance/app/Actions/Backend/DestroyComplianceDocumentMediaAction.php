@@ -17,8 +17,11 @@ class DestroyComplianceDocumentMediaAction
 
     public function handle(ComplianceDocument $document, Media $media): void
     {
+        // ComplianceDocument has a morph map alias ('compliance_document') registered in
+        // ComplianceServiceProvider — Media::model_type stores that alias, not the FQCN.
+        // getMorphClass() resolves to whichever form is actually in effect.
         abort_unless(
-            $media->model_type === ComplianceDocument::class && $media->model_id === $document->id,
+            $media->model_type === $document->getMorphClass() && $media->model_id === $document->id,
             404
         );
 

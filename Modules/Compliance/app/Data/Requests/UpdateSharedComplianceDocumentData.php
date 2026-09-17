@@ -10,7 +10,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
 
-class StoreSharedComplianceDocumentData extends Data
+class UpdateSharedComplianceDocumentData extends Data
 {
     public function __construct(
         #[Required, StringType, Max(255)]
@@ -21,7 +21,7 @@ class StoreSharedComplianceDocumentData extends Data
         #[Nullable, StringType, Max(500)]
         public readonly ?string $notes,
 
-        /** @var array<int, \Illuminate\Http\UploadedFile> */
+        /** @var array<int, \Illuminate\Http\UploadedFile> — tệp mới, luôn gộp thêm chứ không thay thế */
         public readonly array $files = [],
     ) {}
 
@@ -30,7 +30,7 @@ class StoreSharedComplianceDocumentData extends Data
         return [
             'custom_category' => ['required', Rule::enum(SharedDocumentCategory::class)],
 
-            'files'   => ['required', 'array', 'min:1'],
+            'files'   => ['nullable', 'array'],
             'files.*' => ['required', 'file', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', 'max:10240'],
         ];
     }
@@ -46,12 +46,9 @@ class StoreSharedComplianceDocumentData extends Data
 
             'notes.max' => 'Ghi chú không được vượt quá 500 ký tự.',
 
-            'files.required' => 'Vui lòng chọn ít nhất 1 file đính kèm.',
-            'files.array'    => 'Danh sách file không hợp lệ.',
-            'files.min'      => 'Vui lòng chọn ít nhất 1 file đính kèm.',
-            'files.*.file'   => 'Tệp tải lên không hợp lệ.',
-            'files.*.mimes'  => 'Chỉ chấp nhận file PDF, DOCX, XLSX hoặc JPG.',
-            'files.*.max'    => 'Dung lượng mỗi file không được vượt quá 10MB.',
+            'files.*.file'  => 'Tệp tải lên không hợp lệ.',
+            'files.*.mimes' => 'Chỉ chấp nhận file PDF, DOCX, XLSX hoặc JPG.',
+            'files.*.max'   => 'Dung lượng mỗi file không được vượt quá 10MB.',
         ];
     }
 }

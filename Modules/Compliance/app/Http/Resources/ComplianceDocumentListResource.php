@@ -2,6 +2,7 @@
 
 namespace Modules\Compliance\Http\Resources;
 
+use App\Services\Media\MediaUrlService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,12 +25,33 @@ class ComplianceDocumentListResource extends JsonResource
     {
         $status = $this->status;
         $type   = $this->documentable_type;
+        $isShared = $type === null;
+
+        $media = $this->getMedia('attachments_private');
+        $urlService = app(MediaUrlService::class);
 
         return [
             'id' => $this->id,
 
             'document_type_name' => $this->documentType?->name ?? $this->custom_name,
             'document_number'    => $this->document_number,
+
+            'is_shared'             => $isShared,
+            'custom_name'           => $this->custom_name,
+            'custom_category_value' => $this->custom_category?->value,
+            'notes'                 => $this->notes,
+            'edit_url'              => $isShared ? route('backend.document-repository.edit', $this->resource) : null,
+            'update_url'            => $isShared ? route('backend.document-repository.update', $this->resource) : null,
+            'delete_url'            => $isShared ? route('backend.document-repository.destroy', $this->resource) : null,
+
+            'media_count' => $media->count(),
+            'media'       => $media->map(fn ($m) => [
+                'id'       => $m->id,
+                'name'     => $m->file_name,
+                'size'     => $m->size,
+                'is_image' => str_starts_with($m->mime_type, 'image/'),
+                'url'      => $urlService->url($m),
+            ])->values(),
 
             'documentable_type'  => $type,
             'documentable_label' => $type === null ? 'Nội bộ dùng chung' : (self::DOCUMENTABLE_LABELS[$type] ?? $type),
