@@ -25,6 +25,7 @@
         "minishlink/web-push": "^10.1",
         "nwidart/laravel-modules": "^13.0",
         "openai-php/laravel": "^0.19.1",
+        "phpoffice/phpspreadsheet": "^5.10",
         "predis/predis": "^3.4",
         "rap2hpoutre/fast-excel": "^5.7",
         "resend/resend-laravel": "^1.4",

@@ -114,3 +114,23 @@ Notification Thông báo in-app  + push — (thông báo trên chuông) tất c�
 # > Thêm org selector theo pattern _resolveOrganizations() vào form create/edit của  module X
 
 # > Áp dụng pattern org selector của career-pathway-admin create vào form [tên module].
+
+# Fix ảnh bug 404 dù tải lên thành công và có ảnh: 
+sudo nano /etc/nginx/sites-available/visafo.thuchocvn.vn => Sửa try_files $uri =404; thành try_files $uri $uri/ /index.php?$query_string;
+sudo nginx -t
+sudo systemctl reload nginx
+
+# Prompt bạn có thể dùng sau này:
+
+  Đồng bộ migration JSON cho module GoodsReceipt và chạy migration:generate --fresh an toàn
+
+  Module GoodsReceipt (Modules/GoodsReceipt/database/migrations/) vừa thêm 3 bảng mới bằng Schema::create thuần: goods_receipts, goods_receipt_items, product_batches. Hãy:
+
+  1. Chạy php artisan migration:sync --dry-run, xác nhận chỉ thấy đúng 3 bảng trên ở mục "TABLES MỚI → render_migration_file.json". Nếu dry-run còn hiện thêm mục "CỘT ... ĐỔI ĐỊNH NGHĨA" không liên quan
+     tới GoodsReceipt (ví dụ cột ulid của compliance_documents/contracts), báo cho tôi biết trước — đó là drift có sẵn từ trước, không phải do module này, cần tôi xác nhận có muốn áp dụng cùng lúc không.
+  2. Nếu dry-run sạch (hoặc đã được xác nhận), chạy php artisan migration:sync (bỏ --dry-run) để ghi thật vào render_migration_file.json và render_extension_file.json.
+  3. Chạy lại php artisan migration:sync --dry-run lần nữa để xác nhận in ra "Nothing new to add."
+  4. Diff render_migration_file.json để tôi review đúng 3 entry goods_receipts, goods_receipt_items, product_batches khớp cột/FK/index như migration gốc (đặc biệt kiểm tra
+     foreignUlid(...)->constrained(...)->nullOnDelete()/restrictOnDelete()/cascadeOnDelete() có được ghi đúng vào cột mod không, vì đây là kiểu cột đặc biệt so với foreignId).
+  5. Cảnh báo trước khi chạy migration:generate --fresh: lệnh này drop toàn bộ DB rồi tạo lại thuần từ JSON. Chỉ chạy ở local/staging, backup DB hiện tại trước nếu có dữ liệu cần giữ, và dùng kèm --seed
+     nếu cần seed lại role/permission + demo data sau khi fresh.

@@ -67,6 +67,9 @@ class RolePermissionSeeder extends Seeder
                 P::VENDOR_VIEW->value,
                 P::VENDOR_MANAGE->value,
 
+                P::GOODS_RECEIPT_VIEW->value,
+                P::GOODS_RECEIPT_MANAGE->value,
+
                 P::CUSTOMER_VIEW->value,
                 P::CUSTOMER_MANAGE->value,
 
@@ -91,6 +94,7 @@ class RolePermissionSeeder extends Seeder
             RoleEnum::DIRECTOR->value => [
                 P::PRODUCT_VIEW->value,
                 P::VENDOR_VIEW->value,
+                P::GOODS_RECEIPT_VIEW->value,
                 P::CUSTOMER_VIEW->value,
                 P::CONTRACT_VIEW->value,
                 P::COMPLIANCE_VIEW->value,
@@ -113,6 +117,8 @@ class RolePermissionSeeder extends Seeder
 
                 P::VENDOR_VIEW->value,
                 P::CUSTOMER_VIEW->value,
+
+                P::GOODS_RECEIPT_VIEW->value,
             ],
 
             // ─────────────────────────────────────────────────────────
@@ -126,6 +132,9 @@ class RolePermissionSeeder extends Seeder
                 P::CONTRACT_MANAGE->value,
 
                 P::PRODUCT_VIEW->value,
+
+                P::GOODS_RECEIPT_VIEW->value,
+                P::GOODS_RECEIPT_MANAGE->value,
             ],
 
             // ─────────────────────────────────────────────────────────

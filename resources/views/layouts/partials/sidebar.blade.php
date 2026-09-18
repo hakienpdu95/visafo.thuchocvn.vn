@@ -73,6 +73,14 @@
             </a>
             @endcan
 
+            @can('goods_receipt.view')
+            <a href="{{ route('backend.goods-receipts.index') }}"
+               class="nav-link {{ request()->routeIs('backend.goods-receipts.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M4 6l1.5 12.75A2 2 0 007.49 21h9.02a2 2 0 001.99-2.25L20 6M4 6l1.2-3.6A1 1 0 016.15 2h11.7a1 1 0 01.95.4L20 6M9 10.5h6"/></svg>
+                <span class="nav-label">Quản lý Mua hàng</span>
+            </a>
+            @endcan
+
             <a href="{{ route('backend.notifications.index') }}"
                class="nav-link {{ request()->routeIs('backend.notifications.*') ? 'active' : '' }}" style="display:none;">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">

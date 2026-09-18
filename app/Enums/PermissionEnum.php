@@ -21,6 +21,10 @@ enum PermissionEnum: string
     case VENDOR_VIEW   = 'vendor.view';
     case VENDOR_MANAGE = 'vendor.manage';
 
+    // ══ GOODS RECEIPT (Nhập hàng & Quản lý Lô) ══
+    case GOODS_RECEIPT_VIEW   = 'goods_receipt.view';
+    case GOODS_RECEIPT_MANAGE = 'goods_receipt.manage';
+
     // ══ CUSTOMER (Khách hàng B2B F&B) ══
     case CUSTOMER_VIEW   = 'customer.view';
     case CUSTOMER_MANAGE = 'customer.manage';

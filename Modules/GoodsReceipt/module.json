@@ -1,0 +1,11 @@
+{
+    "name": "GoodsReceipt",
+    "alias": "goodsreceipt",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\GoodsReceipt\\Providers\\GoodsReceiptServiceProvider"
+    ],
+    "files": []
+}

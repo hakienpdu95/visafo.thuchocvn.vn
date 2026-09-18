@@ -8,5 +8,6 @@
     "Employee": true,
     "Contract": true,
     "Customer": true,
-    "SalesPackage": true
+    "SalesPackage": true,
+    "GoodsReceipt": true
 }
