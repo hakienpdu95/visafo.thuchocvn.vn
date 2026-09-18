@@ -11,11 +11,8 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('sales_package_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('sales_package_items', 'ulid')) {
-                $table->ulid('ulid')->nullable();
-            }
             if (!Schema::hasColumn('sales_package_items', 'document_group')) {
-                $table->string('document_group', 30)->nullable()->after('ulid');
+                $table->string('document_group', 30)->nullable();
             }
             if (!Schema::hasColumn('sales_package_items', 'is_custom')) {
                 $table->boolean('is_custom')->default(false)->after('document_group')->comment('true = tài liệu tải lên ngoài hệ thống, không gắn với compliance_documents');
@@ -29,7 +26,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('sales_package_items', function (Blueprint $table) {
-            $cols = array_filter(['ulid', 'document_group', 'is_custom', 'custom_name'], fn($c) => Schema::hasColumn('sales_package_items', $c));
+            $cols = array_filter(['document_group', 'is_custom', 'custom_name'], fn($c) => Schema::hasColumn('sales_package_items', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }
