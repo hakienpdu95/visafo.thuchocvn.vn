@@ -82,7 +82,7 @@ php artisan import:provinces-wards
 
 php artisan module:make Auth
 
-sudo systemctl restart php8.3-fpm
+sudo systemctl restart php8.5-fpm
 
 To start Reverb in dev:
 php artisan reverb:start
