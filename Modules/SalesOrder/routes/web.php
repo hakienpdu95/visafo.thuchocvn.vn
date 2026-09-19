@@ -4,7 +4,14 @@ use Illuminate\Support\Facades\Route;
 use Modules\SalesOrder\Http\Controllers\Api\SalesOrderApiController;
 use Modules\SalesOrder\Http\Controllers\PrintLabelController;
 use Modules\SalesOrder\Http\Controllers\SalesOrderController;
+use Modules\SalesOrder\Http\Controllers\TraceController;
 use Modules\SalesOrder\Http\Controllers\SalesOrderImportController;
+
+// Truy xuất nguồn gốc CÔNG KHAI — không cần đăng nhập (khách quét QR trên tem). Chỉ nhận mã ngẫu nhiên, có giới hạn tần suất.
+Route::get('trace/{trace_code}', [TraceController::class, 'show'])
+    ->where('trace_code', '[A-Za-z0-9]{8,32}')
+    ->middleware('throttle:60,1')
+    ->name('trace.show');
 
 Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(function () {
     Route::get('sales-orders/import', [SalesOrderImportController::class, 'create'])->name('sales-orders.import');

@@ -6,6 +6,7 @@ use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class PrintLog extends TenantAwareModel
 {
@@ -15,6 +16,16 @@ class PrintLog extends TenantAwareModel
      */
     protected static function booted(): void
     {
+        static::creating(function (PrintLog $log): void {
+            // Mã truy xuất ngẫu nhiên (không tuần tự) dùng trong QR công khai.
+            if (empty($log->trace_code)) {
+                do {
+                    $code = Str::lower(Str::random(10));
+                } while (static::withTrashed()->where('trace_code', $code)->exists());
+
+                $log->trace_code = $code;
+            }
+        });
         static::updating(fn () => false);
         static::deleting(fn () => false);
     }
@@ -22,6 +33,7 @@ class PrintLog extends TenantAwareModel
     protected $fillable = [
         'order_item_id',
         'label_template_id',
+        'trace_code',
         'weight_per_label',
         'label_count',
         'mfg_date',

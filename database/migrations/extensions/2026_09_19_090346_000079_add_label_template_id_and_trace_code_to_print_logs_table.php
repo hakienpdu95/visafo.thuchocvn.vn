@@ -14,6 +14,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('print_logs', 'label_template_id')) {
                 $table->foreignUlid('label_template_id')->nullable()->constrained('label_templates')->nullOnDelete()->comment('Mẫu tem đã chọn khi in — NULL = theo mẫu gán cho sản phẩm, hoặc mẫu mặc định');
             }
+            if (!Schema::hasColumn('print_logs', 'trace_code')) {
+                $table->string('trace_code', 16)->nullable()->unique()->after('label_template_id')->comment('Mã truy xuất công khai (ngẫu nhiên) dùng trong QR — không lộ ID tuần tự');
+            }
         });
     }
 
@@ -21,7 +24,7 @@ return new class extends Migration {
     {
         Schema::table('print_logs', function (Blueprint $table) {
             if (Schema::hasColumn('print_logs', 'label_template_id')) $table->dropForeign(['label_template_id']);
-            $cols = array_filter(['label_template_id'], fn($c) => Schema::hasColumn('print_logs', $c));
+            $cols = array_filter(['label_template_id', 'trace_code'], fn($c) => Schema::hasColumn('print_logs', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

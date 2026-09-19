@@ -149,12 +149,10 @@ class PrintLabelController extends Controller
 
         abort_if($logs->isEmpty(), 404);
 
-        $qrSvg = QrSvg::make(route('backend.sales-orders.show', $salesOrder));
-
-        $items = $logs->map(function (PrintLog $log) use ($resolver, $qrSvg) {
+        $items = $logs->map(function (PrintLog $log) use ($resolver) {
             $viewPath = $resolver->forLog($log);
 
-            return $this->entry(view()->exists($viewPath) ? $viewPath : LabelViewResolver::DEFAULT_VIEW, $log, $qrSvg);
+            return $this->entry(view()->exists($viewPath) ? $viewPath : LabelViewResolver::DEFAULT_VIEW, $log);
         })->all();
 
         return view('labels.master_print', ['items' => $items, 'autoPrint' => true]);
@@ -194,13 +192,13 @@ class PrintLabelController extends Controller
         abort_unless(view()->exists($viewPath), 404, 'Không tìm thấy file giao diện tem in: ' . $viewPath);
 
         return view('labels.master_print', [
-            'items'     => [$this->entry($viewPath, $printLog, QrSvg::make(route('backend.sales-orders.show', $order)))],
+            'items'     => [$this->entry($viewPath, $printLog)],
             'autoPrint' => true,
         ]);
     }
 
     /** Một "mục in" cho labels.master_print: mẫu tem + dữ liệu + số tem. */
-    private function entry(string $viewPath, PrintLog $log, string $qrSvg): object
+    private function entry(string $viewPath, PrintLog $log): object
     {
         return (object) [
             'viewPath'   => $viewPath,
@@ -209,7 +207,8 @@ class PrintLabelController extends Controller
             'order'      => $log->orderItem->salesOrder,
             'attributes' => $log->attributes,
             'copies'     => $log->label_count,
-            'qrSvg'      => $qrSvg,
+            // QR trỏ tới trang truy xuất CÔNG KHAI theo mã ngẫu nhiên của từng lần in.
+            'qrSvg'      => QrSvg::make(route('trace.show', $log->trace_code)),
         ];
     }
 }

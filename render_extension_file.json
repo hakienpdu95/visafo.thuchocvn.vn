@@ -117,6 +117,7 @@
     ],
     [
         "print_logs///add///__///",
-        "label_template_id///unsignedBigInteger///__///_NULL///NULL///->constrained('label_templates')->onDelete('set null')///Mẫu tem đã chọn khi in — NULL = theo mẫu gán cho sản phẩm, hoặc mẫu mặc định"
+        "label_template_id///unsignedBigInteger///__///_NULL///NULL///->constrained('label_templates')->onDelete('set null')///Mẫu tem đã chọn khi in — NULL = theo mẫu gán cho sản phẩm, hoặc mẫu mặc định",
+        "trace_code///string///16///_NULL///NULL///->unique()///Mã truy xuất công khai (ngẫu nhiên) dùng trong QR — không lộ ID tuần tự"
     ]
 ]
