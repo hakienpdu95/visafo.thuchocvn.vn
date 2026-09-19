@@ -79,6 +79,8 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             supplierName: $supplier,
             batchCode: $batch?->batch_code,
             timeline: $timeline,
+            status: $log->status,
+            statusReason: $log->status_reason,
         );
     }
 

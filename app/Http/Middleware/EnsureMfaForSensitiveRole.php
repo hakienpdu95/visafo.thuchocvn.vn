@@ -22,8 +22,8 @@ class EnsureMfaForSensitiveRole
      */
     private const SENSITIVE_ROLES = ['system_admin', 'ceo'];
 
-    /** Loại trừ profile/2FA-setup/logout — tránh redirect loop vô hạn. */
-    private const EXEMPT_ROUTE_PATTERNS = ['auth.profile', 'two-factor.*', 'logout', 'user-profile-information.*', 'user-password.*'];
+    /** Loại trừ profile/2FA-setup/logout — tránh redirect loop vô hạn; trace.show là trang truy xuất CÔNG KHAI (không có dữ liệu nhạy cảm), người đã đăng nhập quét QR cũng phải xem được. */
+    private const EXEMPT_ROUTE_PATTERNS = ['trace.show', 'auth.profile', 'two-factor.*', 'logout', 'user-profile-information.*', 'user-password.*'];
 
     public function handle(Request $request, Closure $next): Response
     {

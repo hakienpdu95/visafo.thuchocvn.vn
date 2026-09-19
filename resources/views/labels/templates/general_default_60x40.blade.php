@@ -22,6 +22,7 @@
     .tpl-general .supplier { font-size: 6pt; margin-top: .4mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .tpl-general .qr { width: 15mm; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+    .tpl-general .trace-code { text-align: center; font-family: 'Courier New', monospace; font-size: 5pt; font-weight: 700; line-height: 1; margin-top: .5mm; }
     .tpl-general .qr svg { width: 15mm; height: 15mm; display: block; }
 
     @media screen { .tpl-general .label { box-shadow: 0 1px 4px rgba(0,0,0,.25); } }
@@ -48,7 +49,10 @@
             @endif
         </div>
         @isset($qrSvg)
-        <div class="qr">{!! $qrSvg !!}</div>
+        <div class="qr">
+            {!! $qrSvg !!}
+            @if(!empty($log->trace_code))<div class="trace-code">{{ strtoupper($log->trace_code) }}</div>@endif
+        </div>
         @endisset
     </div>
 </div>

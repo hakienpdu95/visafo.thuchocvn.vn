@@ -118,6 +118,11 @@
     [
         "print_logs///add///__///",
         "label_template_id///unsignedBigInteger///__///_NULL///NULL///->constrained('label_templates')->onDelete('set null')///Mẫu tem đã chọn khi in — NULL = theo mẫu gán cho sản phẩm, hoặc mẫu mặc định",
-        "trace_code///string///16///_NULL///NULL///->unique()///Mã truy xuất công khai (ngẫu nhiên) dùng trong QR — không lộ ID tuần tự"
+        "trace_code///string///16///_NULL///NULL///->unique()///Mã truy xuất công khai (ngẫu nhiên) dùng trong QR — không lộ ID tuần tự",
+        "print_session_id///string///26///_NULL///NULL///->index()///Mã gom nhóm các tem của cùng một lần in",
+        "status///string///20///NOT_NULL///'active'///->index()///active | recalled | error — QC đánh dấu tem thu hồi/lỗi",
+        "status_reason///string///255///_NULL///NULL///__///Lý do thu hồi/lỗi (hiển thị trên trang truy xuất công khai)",
+        "status_changed_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người đổi trạng thái gần nhất",
+        "status_changed_at///timestamp///__///_NULL///NULL///__///Thời điểm đổi trạng thái gần nhất"
     ]
 ]

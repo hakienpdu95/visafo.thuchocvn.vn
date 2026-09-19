@@ -3,6 +3,7 @@
 namespace Modules\SalesOrder\Actions\Backend;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\PrintLogAttribute;
@@ -18,7 +19,7 @@ class BulkPrintSalesOrderLabelsAction
      * In tem cho mọi dòng còn thiếu (yêu cầu > đã in) mà sản phẩm có shelf_life_days.
      * Dòng chưa cấu hình HSD bị bỏ qua — nhân viên kho phải in tay để khai báo HSD.
      *
-     * @return array{logs: PrintLog[], total: int, printed: int, manual: int, items: array<int, array{id: string, printed_qty: string, printed_qty_raw: float}>}
+     * @return array{session_id: string, logs: PrintLog[], total: int, printed: int, manual: int, items: array<int, array{id: string, printed_qty: string, printed_qty_raw: float}>}
      */
     public function __construct(private readonly BatchAttributeResolver $resolver) {}
 
@@ -35,6 +36,7 @@ class BulkPrintSalesOrderLabelsAction
                 ->lockForUpdate()
                 ->get();
 
+            $sessionId = Str::lower((string) Str::ulid());
             $today = now()->startOfDay();
             $logs = [];
             $updated = [];
@@ -57,10 +59,10 @@ class BulkPrintSalesOrderLabelsAction
                 }
 
                 $logs[] = PrintLog::create([
+                    'print_session_id' => $sessionId,
                     'order_item_id'    => $item->id,
                     'label_template_id' => $item->product?->label_template_id,
                     'weight_per_label' => $remaining,
-                    'label_count'      => 1,
                     'mfg_date'         => $today->toDateString(),
                     'exp_date'         => $exp->toDateString(),
                     'supplier_name'    => null,
@@ -86,6 +88,7 @@ class BulkPrintSalesOrderLabelsAction
             }
 
             return [
+                'session_id' => $sessionId,
                 'logs'    => $logs,
                 'total'   => $total,
                 'printed' => count($logs),

@@ -1,0 +1,11 @@
+{
+    "name": "TraceLog",
+    "alias": "tracelog",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\TraceLog\\Providers\\TraceLogServiceProvider"
+    ],
+    "files": []
+}

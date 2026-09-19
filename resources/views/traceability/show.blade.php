@@ -16,20 +16,57 @@
 <div class="max-w-md mx-auto bg-gray-50 min-h-screen shadow-sm pb-8">
 
     {{-- Header --}}
-    <header class="bg-gradient-to-b from-green-700 to-green-600 px-5 pt-5 pb-14 text-white">
+    <header class="bg-gradient-to-b {{ $trace->status->isActive() ? 'from-green-700 to-green-600' : 'from-red-700 to-red-600' }} px-5 pt-5 pb-14 text-white">
         <div class="flex items-center justify-between">
             <span class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 shadow-sm">
                 <img src="{{ asset('images/visafo-logo.svg') }}" alt="VISAFO" class="h-6 w-auto">
             </span>
+            @if($trace->status->isActive())
             <span class="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 Đã xác thực
             </span>
+            @else
+            <span class="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-semibold text-red-600">Không còn hiệu lực</span>
+            @endif
         </div>
         <h1 class="mt-5 text-lg font-semibold tracking-wide uppercase">Truy xuất nguồn gốc</h1>
         <p class="text-sm text-green-100">Thông tin sản phẩm theo Thông tư 02/2024/TT-BKHCN</p>
     </header>
 
+    @unless($trace->status->isActive())
+    {{-- Tem bị thu hồi / đánh dấu lỗi: hiện cảnh báo đỏ thay cho thông tin bình thường --}}
+    <main class="-mt-10 space-y-4 px-4">
+        <section class="overflow-hidden rounded-2xl border-2 border-red-500 bg-white shadow-md">
+            <div class="bg-red-600 px-4 py-3 text-white">
+                <p class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    Cảnh báo
+                </p>
+            </div>
+            <div class="space-y-3 p-5 text-center">
+                <h2 class="text-2xl font-bold leading-snug text-red-600">
+                    @if($trace->status === \Modules\SalesOrder\Enums\PrintLogStatus::Recalled)
+                        Sản phẩm này đã bị thu hồi
+                    @else
+                        Sản phẩm này đang được kiểm tra do phát hiện lỗi
+                    @endif
+                </h2>
+                <p class="text-sm text-gray-700">Vui lòng <strong>không sử dụng</strong> và liên hệ đơn vị bán hàng để được hỗ trợ.</p>
+                @if($trace->statusReason)
+                <p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"><span class="font-semibold">Lý do:</span> {{ $trace->statusReason }}</p>
+                @endif
+                <dl class="divide-y divide-gray-100 border-t border-gray-100 pt-2 text-left text-sm">
+                    <div class="flex justify-between gap-4 py-2"><dt class="text-gray-500">Sản phẩm</dt><dd class="text-right font-semibold">{{ $trace->productName }}</dd></div>
+                    <div class="flex justify-between gap-4 py-2"><dt class="text-gray-500">Mã TXNG</dt><dd class="break-all text-right font-mono font-semibold text-red-600">{{ strtoupper($trace->traceCode) }}</dd></div>
+                </dl>
+                @if($trace->company['hotline'] !== '')
+                <a href="tel:{{ preg_replace('/\s+/', '', $trace->company['hotline']) }}" class="inline-block rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white">Gọi hotline: {{ $trace->company['hotline'] }}</a>
+                @endif
+            </div>
+        </section>
+    </main>
+    @else
     <main class="-mt-10 space-y-4 px-4">
 
         {{-- Block 1: Sản phẩm --}}
@@ -150,6 +187,7 @@
             Mã TXNG chỉ có giá trị cho đúng lần đóng gói in trên tem.
         </p>
     </main>
+    @endunless
 </div>
 </body>
 </html>

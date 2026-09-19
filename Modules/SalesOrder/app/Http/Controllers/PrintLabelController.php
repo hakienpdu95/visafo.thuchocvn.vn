@@ -13,8 +13,8 @@ use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\SalesOrder;
 use Modules\SalesOrder\Models\SalesOrderItem;
 use Modules\SalesOrder\Support\BatchAttributeResolver;
+use Modules\SalesOrder\Support\LabelPrintEntryFactory;
 use Modules\SalesOrder\Support\LabelViewResolver;
-use Modules\SalesOrder\Support\QrSvg;
 
 class PrintLabelController extends Controller
 {
@@ -62,11 +62,13 @@ class PrintLabelController extends Controller
             'extra_attributes.*.value.max'     => 'Nội dung thông tin không được vượt quá 1000 ký tự.',
         ]);
 
-        $log = $action->handle($item, $data, $request->user()?->id);
+        $result = $action->handle($item, $data, $request->user()?->id);
 
         return response()->json([
-            'log_id'      => $log->id,
-            'print_url'   => route('print.render', $log),
+            'session_id'  => $result['session_id'],
+            'label_count' => $result['logs']->count(),
+            // Trang in cả phiên: mỗi tem một bản ghi + một trace_code/QR riêng.
+            'print_url'   => route('print.render_session', $result['session_id']),
             'printed_qty' => number_format((float) $item->fresh()->printed_qty, 3),
             'printed_qty_raw' => (float) $item->fresh()->printed_qty,
         ]);
@@ -87,18 +89,26 @@ class PrintLabelController extends Controller
         $this->authorize('view', $order);
         $canPrint = Gate::allows('print', $order);
 
-        $logs = $item->printLogs()->with('printedBy:id,name')->latest()->get()->map(fn (PrintLog $log) => [
-            'id'               => $log->id,
-            'weight_per_label' => number_format((float) $log->weight_per_label, 3),
-            'label_count'      => $log->label_count,
-            'total_weight'     => number_format((float) $log->weight_per_label * $log->label_count, 3),
-            'mfg_date'         => $log->mfg_date?->format('d/m/Y'),
-            'exp_date'         => $log->exp_date?->format('d/m/Y'),
-            'printed_at'       => $log->created_at?->format('d/m/Y H:i'),
-            'printed_by'       => $log->printedBy?->name,
-            // In lại: chỉ mở lại tem cũ, không ghi log mới, không cộng dồn printed_qty.
-            'reprint_url'      => $canPrint ? route('print.render', $log) : null,
-        ]);
+        // Mỗi tem là một bản ghi → gom theo print_session_id để hiển thị mỗi lần in một dòng.
+        $logs = $item->printLogs()->with('printedBy:id,name')->latest()->latest('id')->get()
+            ->groupBy(fn (PrintLog $log) => $log->print_session_id ?? $log->id)
+            ->map(function ($group, $sessionId) use ($canPrint) {
+                /** @var PrintLog $first */
+                $first = $group->first();
+
+                return [
+                    'id'               => $sessionId,
+                    'weight_per_label' => number_format((float) $first->weight_per_label, 3),
+                    'label_count'      => $group->count(),
+                    'total_weight'     => number_format((float) $group->sum('weight_per_label'), 3),
+                    'mfg_date'         => $first->mfg_date?->format('d/m/Y'),
+                    'exp_date'         => $first->exp_date?->format('d/m/Y'),
+                    'printed_at'       => $first->created_at?->format('d/m/Y H:i'),
+                    'printed_by'       => $first->printedBy?->name,
+                    // In lại cả phiên: chỉ mở lại các tem cũ (cùng trace_code), không ghi log mới, không cộng dồn printed_qty.
+                    'reprint_url'      => $canPrint ? route('print.render_session', $sessionId) : null,
+                ];
+            })->values();
 
         return response()->json(['data' => $logs]);
     }
@@ -121,70 +131,47 @@ class PrintLabelController extends Controller
             'manual'  => $result['manual'],
             'message' => $message,
             'items'   => $result['items'],
-            'url'     => $result['logs'] === []
-                ? null
-                : route('backend.sales-orders.labels', [
-                    'sales_order' => $salesOrder,
-                    'logs'        => implode(',', array_map(fn (PrintLog $l) => $l->id, $result['logs'])),
-                ]),
+            'url'     => $result['logs'] === [] ? null : route('print.render_session', $result['session_id']),
         ]);
     }
 
     /**
-     * Trang in ghép nhiều tem (bulk print) — chỉ đọc log đã tạo, không ghi gì thêm.
-     * Mỗi mặt hàng dùng đúng mẫu tem của nó; mẫu trỏ tới view không tồn tại thì dùng mẫu mặc định để không hỏng cả lượt in.
+     * Render cả phiên in: mọi PrintLog cùng print_session_id (mỗi tem một bản ghi + trace_code/QR riêng).
+     * Mỗi tem dùng đúng mẫu của nó; mẫu trỏ tới view không tồn tại thì dùng mẫu mặc định để không hỏng cả lượt in.
+     * Chỉ đọc — không ghi log, không cộng dồn printed_qty.
      */
-    public function labels(Request $request, SalesOrder $salesOrder, LabelViewResolver $resolver)
+    public function renderSession(string $sessionId, LabelViewResolver $resolver)
     {
-        $this->authorize('print', $salesOrder);
-
-        $ids = array_filter(explode(',', (string) $request->query('logs', '')));
-
         $logs = PrintLog::query()
-            ->whereIn('id', $ids)
-            ->whereHas('item', fn ($q) => $q->where('order_id', $salesOrder->id))
+            ->where('print_session_id', $sessionId)
             ->with(['attributes', 'labelTemplate', 'orderItem.product.labelTemplate', 'orderItem.salesOrder'])
             ->orderBy('created_at')->orderBy('id')
             ->get();
 
         abort_if($logs->isEmpty(), 404);
 
+        // Một phiên chỉ thuộc một đơn hàng, nhưng vẫn kiểm quyền theo từng đơn để chắc chắn.
+        $logs->map(fn (PrintLog $log) => $log->orderItem->salesOrder)->unique('id')
+            ->each(fn ($order) => $this->authorize('print', $order));
+
         $items = $logs->map(function (PrintLog $log) use ($resolver) {
             $viewPath = $resolver->forLog($log);
 
-            return $this->entry(view()->exists($viewPath) ? $viewPath : LabelViewResolver::DEFAULT_VIEW, $log);
+            return LabelPrintEntryFactory::make(view()->exists($viewPath) ? $viewPath : LabelViewResolver::DEFAULT_VIEW, $log);
         })->all();
 
         return view('labels.master_print', ['items' => $items, 'autoPrint' => true]);
     }
 
     /**
-     * In lại: chỉ đọc đúng bản ghi PrintLog cùng các print_log_attributes đã lưu rồi render ra tem.
-     * Không nhận form cấu hình, không ghi log mới, không cộng dồn printed_qty, không sửa/xóa thông tin bổ sung.
-     */
-    public function reprint(PrintLog $printLog, LabelViewResolver $resolver)
-    {
-        return $this->render($printLog, $resolver);
-    }
-
-    public function label(PrintLog $printLog, LabelViewResolver $resolver)
-    {
-        return $this->render($printLog, $resolver);
-    }
-
-    /**
-     * Render tem động: dùng view_path của mẫu tem gán cho sản phẩm (hoặc mẫu mặc định).
+     * Render một tem đơn lẻ (route name: print.render) — dùng view_path của mẫu tem gán cho sản phẩm.
      * Chỉ đọc — không ghi log, không cộng dồn printed_qty.
      */
     public function render(PrintLog $printLog, LabelViewResolver $resolver)
     {
         $printLog->load(['attributes', 'labelTemplate', 'orderItem.product.labelTemplate', 'orderItem.salesOrder']);
 
-        $item    = $printLog->orderItem;
-        $order   = $item->salesOrder;
-        $product = $item->product;
-
-        $this->authorize('print', $order);
+        $this->authorize('print', $printLog->orderItem->salesOrder);
 
         $viewPath = $resolver->forLog($printLog);
 
@@ -192,23 +179,8 @@ class PrintLabelController extends Controller
         abort_unless(view()->exists($viewPath), 404, 'Không tìm thấy file giao diện tem in: ' . $viewPath);
 
         return view('labels.master_print', [
-            'items'     => [$this->entry($viewPath, $printLog)],
+            'items'     => [LabelPrintEntryFactory::make($viewPath, $printLog)],
             'autoPrint' => true,
         ]);
-    }
-
-    /** Một "mục in" cho labels.master_print: mẫu tem + dữ liệu + số tem. */
-    private function entry(string $viewPath, PrintLog $log): object
-    {
-        return (object) [
-            'viewPath'   => $viewPath,
-            'item'       => $log->orderItem,
-            'log'        => $log,
-            'order'      => $log->orderItem->salesOrder,
-            'attributes' => $log->attributes,
-            'copies'     => $log->label_count,
-            // QR trỏ tới trang truy xuất CÔNG KHAI theo mã ngẫu nhiên của từng lần in.
-            'qrSvg'      => QrSvg::make(route('trace.show', $log->trace_code)),
-        ];
     }
 }

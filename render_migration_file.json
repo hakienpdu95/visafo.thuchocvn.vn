@@ -811,7 +811,6 @@
         "print_logs///__///__///",
         "order_item_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('sales_order_items')->onDelete('cascade')///Dòng đơn xuất hàng đã in tem",
         "weight_per_label///decimal///10,3///NOT_NULL///__///__///Khối lượng (kg) trên mỗi tem",
-        "label_count///unsignedSmallInteger///__///NOT_NULL///__///__///Số tem đã in trong lần này",
         "mfg_date///date///__///_NULL///NULL///__///NSX in trên tem",
         "exp_date///date///__///NOT_NULL///__///__///HSD in trên tem",
         "supplier_name///string///255///_NULL///NULL///__///Nguồn cung in trên tem",

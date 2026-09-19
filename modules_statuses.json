@@ -11,5 +11,6 @@
     "SalesPackage": true,
     "GoodsReceipt": true,
     "SalesOrder": true,
-    "LabelTemplate": true
+    "LabelTemplate": true,
+    "TraceLog": true
 }

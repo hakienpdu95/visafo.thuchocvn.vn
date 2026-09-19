@@ -7,12 +7,16 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Modules\SalesOrder\Enums\PrintLogStatus;
 
 class PrintLog extends TenantAwareModel
 {
+    /** Chỉ các cột này được phép đổi sau khi in (QC thu hồi / đánh dấu lỗi). */
+    private const MUTABLE_COLUMNS = ['status', 'status_reason', 'status_changed_by', 'status_changed_at', 'updated_at'];
+
     /**
-     * Log in tem là bản ghi lịch sử bất biến: chỉ được tạo mới, không được sửa hay xóa
-     * (in lại chỉ đọc lại đúng dữ liệu đã lưu).
+     * Log in tem là bản ghi lịch sử bất biến: chỉ được tạo mới, không được xóa, và chỉ được đổi
+     * trạng thái (status*) — mọi dữ liệu đã in (khối lượng, NSX/HSD, mã truy xuất...) không được sửa.
      */
     protected static function booted(): void
     {
@@ -26,7 +30,7 @@ class PrintLog extends TenantAwareModel
                 $log->trace_code = $code;
             }
         });
-        static::updating(fn () => false);
+        static::updating(fn (PrintLog $log) => array_diff(array_keys($log->getDirty()), self::MUTABLE_COLUMNS) === []);
         static::deleting(fn () => false);
     }
 
@@ -34,8 +38,12 @@ class PrintLog extends TenantAwareModel
         'order_item_id',
         'label_template_id',
         'trace_code',
+        'print_session_id',
+        'status',
+        'status_reason',
+        'status_changed_by',
+        'status_changed_at',
         'weight_per_label',
-        'label_count',
         'mfg_date',
         'exp_date',
         'supplier_name',
@@ -45,8 +53,9 @@ class PrintLog extends TenantAwareModel
     protected function casts(): array
     {
         return [
+            'status'           => PrintLogStatus::class,
+            'status_changed_at' => 'datetime',
             'weight_per_label' => 'decimal:3',
-            'label_count'      => 'integer',
             'mfg_date'         => 'date',
             'exp_date'         => 'date',
         ];
@@ -79,6 +88,11 @@ class PrintLog extends TenantAwareModel
     public function extraAttributes(): HasMany
     {
         return $this->hasMany(PrintLogAttribute::class, 'print_log_id')->orderBy('created_at')->orderBy('id');
+    }
+
+    public function statusChangedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'status_changed_by');
     }
 
     public function printedBy(): BelongsTo

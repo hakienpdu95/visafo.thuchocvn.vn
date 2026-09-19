@@ -79,6 +79,7 @@ const JS_OUTPUT = {
   'goodsreceipt':         'assets/modules/goodsreceipt.[hash].js',
   'salesorder':           'assets/modules/salesorder.[hash].js',
   'labeltemplate':        'assets/modules/labeltemplate.[hash].js',
+  'tracelog':             'assets/modules/tracelog.[hash].js',
 };
 
 /** CSS asset name → output path.
@@ -108,6 +109,7 @@ const CSS_OUTPUT = {
   'goodsreceipt.css':         'assets/modules/goodsreceipt.[hash].css',
   'salesorder.css':           'assets/modules/salesorder.[hash].css',
   'labeltemplate.css':        'assets/modules/labeltemplate.[hash].css',
+  'tracelog.css':             'assets/modules/tracelog.[hash].css',
 };
 
 // ─── Module input entries ─────────────────────────────────────────────
@@ -152,6 +154,9 @@ const MODULE_ENTRIES = [
   // LabelTemplate
   'Modules/LabelTemplate/resources/assets/sass/labeltemplate.scss',
   'Modules/LabelTemplate/resources/assets/js/labeltemplate.js',
+  // TraceLog
+  'Modules/TraceLog/resources/assets/sass/tracelog.scss',
+  'Modules/TraceLog/resources/assets/js/tracelog.js',
 ];
 
 // ─────────────────────────────────────────────────────────────────────

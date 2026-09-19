@@ -84,6 +84,7 @@ return [
         'import'                => 'Import phiếu MISA',
         'print-logs'            => 'Lịch sử in tem',
         'label-templates'       => 'Quản lý Mẫu tem',
+        'trace-logs'            => 'Quản lý Tem / Nhật ký TXNG',
         'preview'               => 'Xem trước',
 
         // ── Nhân sự ──────────────────────────────────────────────────────────

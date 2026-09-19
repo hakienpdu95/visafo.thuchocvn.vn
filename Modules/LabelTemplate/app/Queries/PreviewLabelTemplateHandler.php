@@ -35,6 +35,7 @@ class PreviewLabelTemplateHandler implements QueryHandlerInterface
             'mfg_date'         => today(),
             'exp_date'         => today()->addDays(7),
             'supplier_name'    => 'Nhà cung cấp Test',
+            'trace_code'       => 'a1b2c3d4e5',
         ];
 
         $attributes = collect([
@@ -64,7 +65,6 @@ class PreviewLabelTemplateHandler implements QueryHandlerInterface
                 'log'        => $log,
                 'order'      => null,
                 'attributes' => $attributes,
-                'copies'     => 1,
                 'qrSvg'      => $qrSvg,
             ];
 

@@ -3,6 +3,7 @@
 namespace Modules\SalesOrder\Support;
 
 use Illuminate\Support\Carbon;
+use Modules\SalesOrder\Enums\PrintLogStatus;
 
 /**
  * Dữ liệu trang truy xuất công khai — chỉ chứa thông tin an toàn để công bố
@@ -28,5 +29,7 @@ readonly class TraceabilityData
         public string $supplierName,
         public ?string $batchCode,
         public array $timeline,
+        public PrintLogStatus $status = PrintLogStatus::Active,
+        public ?string $statusReason = null,
     ) {}
 }
