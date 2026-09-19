@@ -41,6 +41,22 @@
             </a>
             @endcan
 
+            @can('product.view')
+            <a href="{{ route('backend.products.index') }}"
+               class="nav-link {{ request()->routeIs('backend.products.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+                <span class="nav-label">Quản lý Sản phẩm</span>
+            </a>
+            @endcan
+
+            @can('product.view')
+            <a href="{{ route('backend.categories.index') }}"
+               class="nav-link {{ request()->routeIs('backend.categories.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3zM6 6h.008v.008H6V6z"/></svg>
+                <span class="nav-label">Quản lý danh mục sản phẩm</span>
+            </a>
+            @endcan
+
             @can('customer.view')
             <a href="{{ route('backend.customers.index') }}"
                class="nav-link {{ request()->routeIs('backend.customers.*') ? 'active' : '' }}">
@@ -147,22 +163,7 @@
             @endcan
 
         </div>
-        
-        <div class="nav-group">
-            @can('product.view')
-            <details {{ request()->routeIs('backend.products.*', 'backend.categories.*') ? 'open' : '' }}>
-                <summary class="nav-summary {{ request()->routeIs('backend.products.*', 'backend.categories.*') ? 'active' : '' }}">
-                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
-                    <span class="nav-label">Sản phẩm & Truy xuất</span>
-                    <svg class="nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m9 18 6-6-6-6"/></svg>
-                </summary>
-                <div class="sub-menu">
-                    <a href="{{ route('backend.products.index') }}" class="sub-link {{ request()->routeIs('backend.products.*') ? 'active' : '' }}">Danh mục Sản phẩm</a>
-                    <a href="{{ route('backend.categories.index') }}" class="sub-link {{ request()->routeIs('backend.categories.*') ? 'active' : '' }}">Danh mục Nhóm hàng</a>
-                </div>
-            </details>
-            @endcan
-        </div>
+
 
         <div class="nav-group">
             @canany(['compliance.view', 'product.manage', 'traceability.view'])

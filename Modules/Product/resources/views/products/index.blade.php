@@ -1,5 +1,5 @@
 @extends('layouts.backend')
-@section('title', 'Sản phẩm')
+@section('title', 'Quản lý Sản phẩm')
 
 @section('content')
 <div x-data="productListPage({{ Js::from([
@@ -12,7 +12,7 @@
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
-            <h1 class="text-2xl font-bold text-base-content">Danh mục sản phẩm</h1>
+            <h1 class="text-2xl font-bold text-base-content">Quản lý Sản phẩm</h1>
             <p class="text-sm text-base-content/50 mt-0.5">Quản lý SKU và hồ sơ pháp lý đi kèm</p>
         </div>
         <div class="flex items-center gap-2">

@@ -7,6 +7,7 @@ enum VendorSourceGroup: string
     case N1 = 'n1';
     case N2 = 'n2';
     case N3 = 'n3';
+    case N4 = 'n4';
 
     public function label(): string
     {

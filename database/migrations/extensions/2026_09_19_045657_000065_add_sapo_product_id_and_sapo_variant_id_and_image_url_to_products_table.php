@@ -26,6 +26,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('products', 'product_type')) {
                 $table->string('product_type', 20)->after('category_id')->comment('raw_material | finished_good | trading_good | consumables');
             }
+            if (!Schema::hasColumn('products', 'shelf_life_days')) {
+                $table->unsignedInteger('shelf_life_days')->nullable()->after('product_type')->comment('Số ngày bảo quản mặc định để tự động tính HSD');
+            }
         });
     }
 
@@ -33,7 +36,7 @@ return new class extends Migration {
     {
         Schema::table('products', function (Blueprint $table) {
             if (Schema::hasColumn('products', 'category_id')) $table->dropForeign(['category_id']);
-            $cols = array_filter(['sapo_product_id', 'sapo_variant_id', 'image_url', 'category_id', 'product_type'], fn($c) => Schema::hasColumn('products', $c));
+            $cols = array_filter(['sapo_product_id', 'sapo_variant_id', 'image_url', 'category_id', 'product_type', 'shelf_life_days'], fn($c) => Schema::hasColumn('products', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

@@ -20,7 +20,7 @@ return [
     */
     'model_name_attributes' => [
         'full_name', 'name', 'title', 'subject', 'label',
-        'contract_number', 'batch_code', 'source_code', 'vendor_code', 'customer_code', 'document_number',
+        'contract_number', 'misa_ref_id', 'batch_code', 'source_code', 'vendor_code', 'customer_code', 'document_number',
         'code',
     ],
 
@@ -54,8 +54,8 @@ return [
         // ── Nhà cung cấp & Sản phẩm ──────────────────────────────────────────
         'vendors'               => 'Quản lý Nhà cung cấp',
         'partner-products'      => 'Hàng hóa Nhà cung cấp',
-        'products'              => 'Danh mục Sản phẩm',
-        'categories'            => 'Danh mục Nhóm hàng',
+        'products'              => 'Quản lý Sản phẩm',
+        'categories'            => 'Quản lý danh mục sản phẩm',
         'documents'             => 'Hồ sơ đính kèm',
         'farming-steps'         => 'Công đoạn canh tác',
 
@@ -76,6 +76,13 @@ return [
         'items'                 => 'Tài liệu trong gói',
         'status'                => 'Trạng thái',
         'export'                => 'Xuất dữ liệu',
+
+        // ── Mua hàng & Bán hàng (import phiếu MISA) ─────────────────────────
+        // Nhãn trùng với tên mục trên sidebar.
+        'goods-receipts'        => 'Quản lý Mua hàng',
+        'sales-orders'          => 'Quản lý Bán hàng',
+        'import'                => 'Import phiếu MISA',
+        'print-logs'            => 'Lịch sử in tem',
 
         // ── Nhân sự ──────────────────────────────────────────────────────────
         'employees'             => 'Danh sách nhân viên',

@@ -125,6 +125,14 @@ class SyncMigrationJson extends Command
                     : $row;
             }
 
+            // Index đã có trong bảng gốc (cùng tên) → không nhân đôi vào extension.
+            $baseIndexNames = $baseColumnMap[$tableName]['indexNames'] ?? [];
+            foreach ($mergedIndexes as $key => $idxRow) {
+                $idxCols = explode('///', $idxRow)[5] ?? '';
+                $idxName = str_contains($idxCols, '|') ? explode('|', $idxCols)[1] : null;
+                if ($idxName !== null && isset($baseIndexNames[$idxName])) unset($mergedIndexes[$key]);
+            }
+
             $allMergedRows = array_values($mergedCols) + [];
             foreach ($mergedIndexes as $idxRow) $allMergedRows[] = $idxRow;
 
@@ -315,12 +323,19 @@ class SyncMigrationJson extends Command
         foreach ($json as $i => $entry) {
             $tableName = trim(explode('///', $entry[0])[0]);
             $cols = [];
+            $indexNames = [];
             foreach (array_slice($entry, 1) as $offset => $row) {
-                $colName = explode('///', $row)[0];
-                if ($colName === '__index') continue;
-                $cols[$colName] = $offset + 1;
+                $parts = explode('///', $row);
+                if ($parts[0] === '__index') {
+                    // "cols|index_name" ở phần tử thứ 6
+                    if (isset($parts[5]) && str_contains($parts[5], '|')) {
+                        $indexNames[explode('|', $parts[5])[1]] = true;
+                    }
+                    continue;
+                }
+                $cols[$parts[0]] = $offset + 1;
             }
-            $map[$tableName] = ['entryIndex' => $i, 'cols' => $cols];
+            $map[$tableName] = ['entryIndex' => $i, 'cols' => $cols, 'indexNames' => $indexNames];
         }
         return $map;
     }
@@ -861,8 +876,9 @@ class SyncMigrationJson extends Command
                         $mergedCols[$colName] = $row;
                     }
                 } else {
-                    // Add mới: first-seen wins cho ADD (sau đó chỉ change() mới update)
-                    if (!isset($mergedCols[$colName])) {
+                    // Add mới: first-seen wins cho ADD (sau đó chỉ change() mới update).
+                    // Cột đã có trong bảng gốc (JSON đã hợp nhất schema cuối) → không nhân đôi vào extension.
+                    if (!isset($mergedCols[$colName]) && !isset($baseCols[$colName])) {
                         $mergedCols[$colName] = $row;
                     }
                 }
@@ -1071,7 +1087,8 @@ class SyncMigrationJson extends Command
 
         [$type, $chain] = $this->normalizeType($type, $chain);
 
-        $nullable  = $this->chainHas($chain, 'nullable');
+        $nullable  = $this->chainHas($chain, 'nullable')
+            && !preg_match('/->\s*nullable\(\s*false\s*\)/', $chain);
         $default   = $this->extractChainDefault($chain);
         $comment   = $this->extractChainComment($chain);
         $modifiers = $this->extractChainModifiers($type, $chain, $colName);
@@ -1103,8 +1120,14 @@ class SyncMigrationJson extends Command
     {
         $argsStr = trim($argsStr);
 
-        if ($type === 'foreignId') {
+        if (in_array($type, ['foreignId', 'foreignUlid'], true)) {
             if (preg_match("/^['\"]([^'\"]+)['\"]/", $argsStr, $m)) return [$m[1], '__'];
+            return [null, '__'];
+        }
+
+        // ulid('id') là khóa chính — generator tự thêm ulid('id')->primary(), nên bỏ qua.
+        // (Trước đây bị parse nhầm thành cột tên "ulid", ghi dòng thừa "ulid///ulid" vào JSON.)
+        if ($type === 'ulid' && preg_match("/^['\"]id['\"]/", $argsStr)) {
             return [null, '__'];
         }
 
@@ -1133,7 +1156,7 @@ class SyncMigrationJson extends Command
 
     private function normalizeType(string $type, string $chain): array
     {
-        if ($type === 'foreignId') return ['unsignedBigInteger', $chain];
+        if (in_array($type, ['foreignId', 'foreignUlid'], true)) return ['unsignedBigInteger', $chain];
 
         if ($this->chainHas($chain, 'unsigned') && !str_starts_with($type, 'unsigned')) {
             $map = [

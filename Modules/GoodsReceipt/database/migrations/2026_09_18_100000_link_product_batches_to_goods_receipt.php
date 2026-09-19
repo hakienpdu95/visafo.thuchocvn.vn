@@ -9,6 +9,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Schema cuối (goods_receipt_id, không còn goods_receipt_item_id) đã được tạo sẵn
+        // bởi migration:generate — không còn gì để chuyển đổi.
+        if (! Schema::hasColumn('product_batches', 'goods_receipt_item_id')) {
+            return;
+        }
+
         if (!Schema::hasColumn('product_batches', 'goods_receipt_id')) {
             Schema::table('product_batches', function (Blueprint $table) {
                 $table->foreignUlid('goods_receipt_id')->nullable()->after('id')
