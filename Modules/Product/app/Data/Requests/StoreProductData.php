@@ -5,7 +5,9 @@ namespace Modules\Product\Data\Requests;
 use Illuminate\Validation\Rule;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
+use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
@@ -29,6 +31,9 @@ class StoreProductData extends Data
         public readonly string $unit,
 
         public readonly ProductStatus $status = ProductStatus::Active,
+
+        #[Nullable, IntegerType, Min(1), Max(3650)]
+        public readonly ?int $shelf_life_days = null,
     ) {}
 
     public static function rules(): array
@@ -66,6 +71,10 @@ class StoreProductData extends Data
 
             'status.required' => 'Vui lòng chọn trạng thái.',
             'status.enum'     => 'Trạng thái không hợp lệ.',
+
+            'shelf_life_days.integer' => 'Số ngày bảo quản phải là số nguyên.',
+            'shelf_life_days.min'     => 'Số ngày bảo quản tối thiểu là 1 ngày.',
+            'shelf_life_days.max'     => 'Số ngày bảo quản không được vượt quá 3650 ngày.',
         ];
     }
 }

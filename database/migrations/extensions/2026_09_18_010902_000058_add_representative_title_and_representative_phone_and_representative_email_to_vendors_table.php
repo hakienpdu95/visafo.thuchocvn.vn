@@ -44,7 +44,7 @@ return new class extends Migration {
                 $table->index(['province_code', 'ward_code'], 'idx_vendors_address');
             }
             if (!Schema::hasColumn('vendors', 'source_group')) {
-                $table->string('source_group', 10)->nullable()->after('ward_code')->comment('n1 = Tự sản xuất | n2 = Thu gom | n3 = Chợ đầu mối / siêu thị');
+                $table->string('source_group', 10)->nullable()->after('ward_code')->comment('n1 = Tự sản xuất | n2 = Thu gom | n3 = Chợ đầu mối / siêu thị | n4 = Doanh nghiệp/ thương mại');
             }
             if (!Schema::hasIndex('vendors', 'idx_vendors_source_group')) {
                 $table->index('source_group', 'idx_vendors_source_group');

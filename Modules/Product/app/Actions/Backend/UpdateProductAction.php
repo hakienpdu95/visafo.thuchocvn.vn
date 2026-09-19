@@ -18,6 +18,7 @@ class UpdateProductAction
             'category_id'  => $data->category_id,
             'product_type' => $data->product_type->value,
             'unit'         => $data->unit,
+            'shelf_life_days' => $data->shelf_life_days,
             'status'       => $data->status->value,
         ]);
 

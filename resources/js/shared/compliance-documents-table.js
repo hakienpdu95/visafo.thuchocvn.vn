@@ -76,9 +76,15 @@ export function initComplianceDocumentsTable(tableId, onEdit, opts = {}) {
             },
         },
         {
-            title: 'File', field: 'file_url', width: 90, hozAlign: 'center', headerSort: false,
+            title: 'File', field: 'file_url', width: 120, hozAlign: 'center', headerSort: false,
             formatter: (cell) => {
-                const url = cell.getValue();
+                const d = cell.getRow().getData();
+                // Hồ sơ nhiều file: liệt kê từng file; hồ sơ cũ chưa có `media` dùng file_url.
+                if (Array.isArray(d.media) && d.media.length > 1) {
+                    return d.media.map((m, i) => '<a href="' + _escHtml(m.url) + '" target="_blank" title="' + _escHtml(m.name)
+                        + '" class="link link-primary text-xs mr-1">File ' + (i + 1) + '</a>').join('');
+                }
+                const url = d.media?.[0]?.url ?? cell.getValue();
                 return url ? '<a href="' + _escHtml(url) + '" target="_blank" class="link link-primary text-xs">Xem file</a>' : _emptyOr(null);
             },
         },

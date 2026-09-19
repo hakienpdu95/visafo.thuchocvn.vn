@@ -55,6 +55,8 @@ document.addEventListener('alpine:init', () => {
 
         let tableInst = null;
         let tsVendor = null;
+        let fpFrom = null;
+        let fpTo = null;
 
         return {
             filters: { search: '', vendor: '', dateFrom: '', dateTo: '' },
@@ -87,7 +89,7 @@ document.addEventListener('alpine:init', () => {
             init() {
                 this.loadState();
                 try { this.hiddenCols = JSON.parse(localStorage.getItem(LS_COLS) || '[]'); } catch (_) {}
-                this.$nextTick(() => { this._setup(); this._initTomSelects(); });
+                this.$nextTick(() => { this._setup(); this._initTomSelects(); this._initDatePickers(); });
             },
 
             _initTomSelects() {
@@ -99,6 +101,39 @@ document.addEventListener('alpine:init', () => {
                     maxOptions: null,
                     onChange() { vendorEl.dispatchEvent(new Event('change', { bubbles: true })); },
                 });
+            },
+
+            _initDatePickers() {
+                const fromEl = document.getElementById('fp-date-from');
+                const toEl = document.getElementById('fp-date-to');
+                if (!fromEl || !toEl || !window.initDatePicker) return;
+
+                const opts = (key, other) => ({
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                    allowInput: true,
+                    disableMobile: true,
+                    onChange: (_sel, dateStr) => {
+                        this.filters[key] = dateStr;
+                        other()?.set(key === 'dateFrom' ? 'minDate' : 'maxDate', dateStr || null);
+                        this.onFilterChange();
+                    },
+                });
+
+                fpFrom = window.initDatePicker(fromEl, { ...opts('dateFrom', () => fpTo), defaultDate: this.filters.dateFrom || null });
+                fpTo = window.initDatePicker(toEl, { ...opts('dateTo', () => fpFrom), defaultDate: this.filters.dateTo || null });
+                if (this.filters.dateFrom) fpTo.set('minDate', this.filters.dateFrom);
+                if (this.filters.dateTo) fpFrom.set('maxDate', this.filters.dateTo);
+            },
+
+            _clearDates() {
+                this.filters.dateFrom = '';
+                this.filters.dateTo = '';
+                fpFrom?.clear(false);
+                fpTo?.clear(false);
+                fpFrom?.set('maxDate', null);
+                fpTo?.set('minDate', null);
             },
 
             _setup() {
@@ -175,7 +210,7 @@ document.addEventListener('alpine:init', () => {
 
             removeChip(key) {
                 if (key === 'search') this.filters.search = '';
-                if (key === 'date') { this.filters.dateFrom = ''; this.filters.dateTo = ''; }
+                if (key === 'date') this._clearDates();
                 if (key === 'vendor') { this.filters.vendor = ''; tsVendor?.setValue('', true); }
                 this.saveState();
                 this.refresh();
@@ -183,6 +218,7 @@ document.addEventListener('alpine:init', () => {
 
             reset() {
                 this.filters = { search: '', vendor: '', dateFrom: '', dateTo: '' };
+                this._clearDates();
                 tsVendor?.setValue('', true);
                 history.replaceState(null, '', location.pathname);
                 this.refresh();

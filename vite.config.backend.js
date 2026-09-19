@@ -77,6 +77,7 @@ const JS_OUTPUT = {
   'contract':             'assets/modules/contract.[hash].js',
   'salespackage':         'assets/modules/salespackage.[hash].js',
   'goodsreceipt':         'assets/modules/goodsreceipt.[hash].js',
+  'salesorder':           'assets/modules/salesorder.[hash].js',
 };
 
 /** CSS asset name → output path.
@@ -104,6 +105,7 @@ const CSS_OUTPUT = {
   'employee.css':             'assets/modules/employee.[hash].css',
   'salespackage.css':         'assets/modules/salespackage.[hash].css',
   'goodsreceipt.css':         'assets/modules/goodsreceipt.[hash].css',
+  'salesorder.css':           'assets/modules/salesorder.[hash].css',
 };
 
 // ─── Module input entries ─────────────────────────────────────────────
@@ -142,6 +144,9 @@ const MODULE_ENTRIES = [
   // GoodsReceipt
   'Modules/GoodsReceipt/resources/assets/sass/goodsreceipt.scss',
   'Modules/GoodsReceipt/resources/assets/js/goodsreceipt.js',
+  // SalesOrder
+  'Modules/SalesOrder/resources/assets/sass/salesorder.scss',
+  'Modules/SalesOrder/resources/assets/js/salesorder.js',
 ];
 
 // ─────────────────────────────────────────────────────────────────────

@@ -82,6 +82,17 @@
                         @error('unit')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5">
+                            <span class="label-text font-medium">Số ngày bảo quản (HSD mặc định)</span>
+                        </label>
+                        <input type="number" name="shelf_life_days" value="{{ old('shelf_life_days') }}" min="1" max="3650" step="1" inputmode="numeric"
+                               class="input input-bordered input-sm w-full @error('shelf_life_days') input-error @enderror"
+                               placeholder="VD: 3 (rau ăn lá), 7 (củ quả), 3 (thịt lợn sơ chế)">
+                        <p class="mt-1 text-xs text-base-content/40">Để trống nếu sản phẩm này dùng HSD ghi trên bao bì từ NSX (VD: Đồ hộp). Nhập số ngày nếu là hàng tươi sống (VD: Rau lá 3 ngày, Củ quả 7 ngày).</p>
+                        @error('shelf_life_days')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <div class="form-control">

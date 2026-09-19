@@ -43,6 +43,8 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
         ->name('partner-products.documents.update');
     Route::delete('partner-products/{partner_product}/documents/{document}', [ComplianceDocumentController::class, 'destroyForPartnerProduct'])
         ->name('partner-products.documents.destroy');
+    Route::delete('partner-products/{partner_product}/documents/{document}/media/{media}', [ComplianceDocumentController::class, 'destroyMediaForPartnerProduct'])
+        ->name('partner-products.documents.media.destroy');
 
     Route::prefix('master-data/pesticides')->name('master-data.pesticides.')->group(function () {
         Route::get('/', [AgriPesticideController::class, 'index'])->name('index');

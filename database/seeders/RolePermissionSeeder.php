@@ -70,6 +70,9 @@ class RolePermissionSeeder extends Seeder
                 P::GOODS_RECEIPT_VIEW->value,
                 P::GOODS_RECEIPT_MANAGE->value,
 
+                P::SALES_ORDER_VIEW->value,
+                P::SALES_ORDER_MANAGE->value,
+
                 P::CUSTOMER_VIEW->value,
                 P::CUSTOMER_MANAGE->value,
 
@@ -95,6 +98,7 @@ class RolePermissionSeeder extends Seeder
                 P::PRODUCT_VIEW->value,
                 P::VENDOR_VIEW->value,
                 P::GOODS_RECEIPT_VIEW->value,
+                P::SALES_ORDER_VIEW->value,
                 P::CUSTOMER_VIEW->value,
                 P::CONTRACT_VIEW->value,
                 P::COMPLIANCE_VIEW->value,
@@ -119,6 +123,7 @@ class RolePermissionSeeder extends Seeder
                 P::CUSTOMER_VIEW->value,
 
                 P::GOODS_RECEIPT_VIEW->value,
+                P::SALES_ORDER_VIEW->value,
             ],
 
             // ─────────────────────────────────────────────────────────
@@ -143,6 +148,9 @@ class RolePermissionSeeder extends Seeder
             RoleEnum::SALES_STAFF->value => [
                 P::CUSTOMER_VIEW->value,
                 P::CUSTOMER_MANAGE->value,
+
+                P::SALES_ORDER_VIEW->value,
+                P::SALES_ORDER_MANAGE->value,
 
                 P::TRACEABILITY_VIEW->value,
                 P::CONTRACT_VIEW->value,

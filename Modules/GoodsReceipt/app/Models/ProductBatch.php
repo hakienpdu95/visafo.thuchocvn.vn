@@ -4,6 +4,7 @@ namespace Modules\GoodsReceipt\Models;
 
 use App\Foundation\Models\TenantAwareModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Modules\Product\Models\Product;
 
 class ProductBatch extends TenantAwareModel
@@ -26,6 +27,15 @@ class ProductBatch extends TenantAwareModel
             'mfg_date'    => 'date',
             'exp_date'    => 'date',
         ];
+    }
+
+    /**
+     * HSD tự tính = NSX + Product::shelf_life_days. Trả null nếu thiếu NSX
+     * hoặc sản phẩm chưa khai báo số ngày bảo quản.
+     */
+    public function calculateExpDate(Carbon|string|null $mfgDate): ?Carbon
+    {
+        return $this->product?->calculateExpDate($mfgDate);
     }
 
     public function product(): BelongsTo

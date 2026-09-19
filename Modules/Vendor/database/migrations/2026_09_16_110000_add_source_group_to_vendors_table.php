@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('vendors', function (Blueprint $table) {
             $table->string('source_group', 10)->nullable()->after('tax_code')
-                ->comment('n1 = Tự sản xuất | n2 = Thu gom | n3 = Chợ đầu mối / siêu thị');
+                ->comment('n1 = Tự sản xuất | n2 = Thu gom | n3 = Chợ đầu mối / siêu thị | n4 = Doanh nghiệp/ thương mại');
         });
 
         Schema::table('vendors', function (Blueprint $table) {

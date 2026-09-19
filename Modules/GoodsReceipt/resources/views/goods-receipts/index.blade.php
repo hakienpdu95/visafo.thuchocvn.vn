@@ -97,7 +97,7 @@
                         <label class="label py-0.5">
                             <span class="label-text text-xs font-medium">Từ ngày</span>
                         </label>
-                        <input type="date" x-model="filters.dateFrom" @change="onFilterChange()"
+                        <input id="fp-date-from" type="text" placeholder="dd/mm/yyyy" autocomplete="off"
                                class="input input-sm input-bordered w-full"/>
                     </div>
 
@@ -105,7 +105,7 @@
                         <label class="label py-0.5">
                             <span class="label-text text-xs font-medium">Đến ngày</span>
                         </label>
-                        <input type="date" x-model="filters.dateTo" @change="onFilterChange()"
+                        <input id="fp-date-to" type="text" placeholder="dd/mm/yyyy" autocomplete="off"
                                class="input input-sm input-bordered w-full"/>
                     </div>
 
@@ -157,6 +157,7 @@
     @vite([
         'resources/js/modules/tabulator.js',
         'resources/js/modules/tom-select.js',
+        'resources/js/modules/flatpickr.js',
         'Modules/GoodsReceipt/resources/assets/js/goodsreceipt.js',
     ], 'build/backend')
 @endpush

@@ -14,6 +14,7 @@ enum VendorSourceGroup: string
             self::N1 => 'N1 · Tự sản xuất',
             self::N2 => 'N2 · Thu gom',
             self::N3 => 'N3 · Chợ đầu mối / siêu thị',
+            self::N4 => 'N4 · Doanh nghiệp/ thương mại',
         };
     }
 }

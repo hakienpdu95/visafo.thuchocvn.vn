@@ -51,6 +51,7 @@ class ImportGoodsReceiptFileAction
     private function persist(ParsedGoodsReceipt $parsed, string $originalName, ?string $importedById): array
     {
         $productIds = [];
+        $products = [];
         $newProducts = [];
 
         foreach ($parsed->items as $item) {
@@ -69,6 +70,7 @@ class ImportGoodsReceiptFileAction
             }
 
             $productIds[$item->sku] = $product->id;
+            $products[$item->sku] = $product;
         }
 
         $vendorId = $parsed->supplierName !== null
@@ -101,6 +103,9 @@ class ImportGoodsReceiptFileAction
             $batchQtyBySku[$item->sku] = ($batchQtyBySku[$item->sku] ?? 0) + $item->quantity;
         }
 
+        // File MISA không có NSX → lấy ngày nhập làm gốc để tự tính HSD cho hàng có shelf_life_days.
+        $baseDate = $parsed->receiptDate ?? now();
+
         foreach ($batchQtyBySku as $sku => $totalQty) {
             ProductBatch::create([
                 'batch_code'        => $parsed->misaRefId . '-' . $sku,
@@ -108,6 +113,7 @@ class ImportGoodsReceiptFileAction
                 'goods_receipt_id'  => $receipt->id,
                 'initial_qty'       => $totalQty,
                 'current_qty'       => $totalQty,
+                'exp_date'          => $products[$sku]->calculateExpDate($baseDate)?->toDateString(),
             ]);
         }
 

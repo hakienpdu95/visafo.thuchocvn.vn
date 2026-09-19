@@ -26,6 +26,13 @@ function buildColumns(canDelete) {
             title: 'Loại sản phẩm', field: 'product_type_label', minWidth: 140, headerSort: false,
         },
         {
+            title: 'Bảo quản (ngày)', field: 'shelf_life_days', width: 130, hozAlign: 'center', headerSort: false,
+            formatter(cell) {
+                const v = cell.getValue();
+                return v ? esc(String(v)) : '<span class="text-base-content/25 text-xs">—</span>';
+            },
+        },
+        {
             title: 'Hồ sơ pháp lý gần nhất', field: 'compliance_document_name', minWidth: 220, headerSort: false,
             formatter(cell) {
                 const d = cell.getRow().getData();

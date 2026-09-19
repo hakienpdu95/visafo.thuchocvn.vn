@@ -18,6 +18,9 @@ class ProductListResource extends JsonResource
             'sku'     => $this->sku,
             'name'    => $this->name,
 
+            'unit'            => $this->unit,
+            'shelf_life_days' => $this->shelf_life_days,
+
             'category_id'   => $this->category_id,
             'category_name' => $this->category?->name,
 

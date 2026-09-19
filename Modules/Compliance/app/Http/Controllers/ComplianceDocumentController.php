@@ -177,6 +177,16 @@ class ComplianceDocumentController extends Controller
         return $this->destroy($document, $action, 'backend.partner-products.show', $partnerProduct);
     }
 
+    public function destroyMediaForPartnerProduct(PartnerProduct $partnerProduct, ComplianceDocument $document, Media $media, DestroyComplianceDocumentMediaAction $action): JsonResponse
+    {
+        $this->authorize('update', $partnerProduct);
+        abort_unless($document->documentable_id === $partnerProduct->id && $document->documentable_type === $partnerProduct->getMorphClass(), 404);
+
+        $action->handle($document, $media);
+
+        return response()->json(['ok' => true]);
+    }
+
     public function storeForInternalFacility(Request $request, InternalFacility $internalFacility, StoreComplianceDocumentAction $action): RedirectResponse
     {
         $this->authorize('update', $internalFacility);

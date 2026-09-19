@@ -5,7 +5,10 @@ namespace Modules\Product\Data\Requests;
 use Illuminate\Validation\Rule;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
+use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Min;
+use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
@@ -28,6 +31,9 @@ class UpdateProductData extends Data
         public readonly string $unit,
 
         public readonly ProductStatus $status,
+
+        #[Nullable, IntegerType, Min(1), Max(3650)]
+        public readonly ?int $shelf_life_days = null,
     ) {}
 
     public static function rules(): array

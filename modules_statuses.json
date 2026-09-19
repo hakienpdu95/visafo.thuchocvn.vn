@@ -9,5 +9,6 @@
     "Contract": true,
     "Customer": true,
     "SalesPackage": true,
-    "GoodsReceipt": true
+    "GoodsReceipt": true,
+    "SalesOrder": true
 }

@@ -36,6 +36,7 @@ class Product extends TenantAwareModel
         'category_id',
         'product_type',
         'unit',
+        'shelf_life_days',
         'external_product_id',
         'sapo_product_id',
         'sapo_variant_id',
@@ -48,7 +49,21 @@ class Product extends TenantAwareModel
         return [
             'product_type' => ProductType::class,
             'status'       => ProductStatus::class,
+            'shelf_life_days' => 'integer',
         ];
+    }
+
+    /**
+     * HSD tự tính = ngày gốc (NSX, hoặc ngày nhập nếu không có NSX) + shelf_life_days.
+     * Null khi sản phẩm không cấu hình số ngày bảo quản (dùng HSD in trên bao bì).
+     */
+    public function calculateExpDate(\Illuminate\Support\Carbon|string|null $baseDate): ?\Illuminate\Support\Carbon
+    {
+        if (! $this->shelf_life_days || $baseDate === null || $baseDate === '') {
+            return null;
+        }
+
+        return \Illuminate\Support\Carbon::parse($baseDate)->startOfDay()->addDays($this->shelf_life_days);
     }
 
     public function category(): BelongsTo
