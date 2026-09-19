@@ -4,6 +4,7 @@ namespace Modules\GoodsReceipt\Models;
 
 use App\Foundation\Models\TenantAwareModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Modules\Product\Models\Product;
 
@@ -36,6 +37,12 @@ class ProductBatch extends TenantAwareModel
     public function calculateExpDate(Carbon|string|null $mfgDate): ?Carbon
     {
         return $this->product?->calculateExpDate($mfgDate);
+    }
+
+    /** Thông tin bổ sung động (EAV): HDSD, Liều dùng, Bảo quản... */
+    public function extraAttributes(): HasMany
+    {
+        return $this->hasMany(BatchAttribute::class, 'batch_id')->orderBy('created_at')->orderBy('id');
     }
 
     public function product(): BelongsTo

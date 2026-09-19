@@ -10,5 +10,6 @@
     "Customer": true,
     "SalesPackage": true,
     "GoodsReceipt": true,
-    "SalesOrder": true
+    "SalesOrder": true,
+    "LabelTemplate": true
 }

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Chứng nhận">
+  <!-- Placeholder icon chứng nhận — thay bằng icon thật (giữ tên file) -->
+  <path d="M24 3l17 6v13c0 11-7 19-17 23C14 41 7 33 7 22V9l17-6z" fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M15 24l7 7 12-14" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

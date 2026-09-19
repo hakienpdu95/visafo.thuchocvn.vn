@@ -105,6 +105,14 @@
             </a>
             @endcan
 
+            @can('label_template.view')
+            <a href="{{ route('backend.label-templates.index') }}"
+               class="nav-link {{ request()->routeIs('backend.label-templates.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+                <span class="nav-label">Quản lý Mẫu tem</span>
+            </a>
+            @endcan
+
             <a href="{{ route('backend.notifications.index') }}"
                class="nav-link {{ request()->routeIs('backend.notifications.*') ? 'active' : '' }}" style="display:none;">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">

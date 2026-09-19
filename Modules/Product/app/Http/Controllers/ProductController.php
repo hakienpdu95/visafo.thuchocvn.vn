@@ -11,6 +11,8 @@ use Modules\Product\Actions\Backend\StoreProductAction;
 use Modules\Product\Actions\Backend\UpdateProductAction;
 use Modules\Product\Data\Requests\StoreProductData;
 use Modules\Product\Data\Requests\UpdateProductData;
+use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsHandler;
+use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsQuery;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
 use Modules\Product\Models\Category;
@@ -40,11 +42,12 @@ class ProductController extends Controller
         return view('product::products.index', compact('categories', 'productTypes', 'statuses'));
     }
 
-    public function create()
+    public function create(ListLabelTemplateOptionsHandler $labelTemplateOptions)
     {
         $categories = Category::orderBy('name')->get();
+        $labelTemplates = $labelTemplateOptions->handle(new ListLabelTemplateOptionsQuery());
 
-        return view('product::products.create', compact('categories'));
+        return view('product::products.create', compact('categories', 'labelTemplates'));
     }
 
     public function store(Request $request, StoreProductAction $action): RedirectResponse
@@ -56,11 +59,12 @@ class ProductController extends Controller
             ->with('success', 'Sản phẩm "' . $product->name . '" đã được tạo thành công.');
     }
 
-    public function edit(Product $product)
+    public function edit(Product $product, ListLabelTemplateOptionsHandler $labelTemplateOptions)
     {
         $categories = Category::orderBy('name')->get();
+        $labelTemplates = $labelTemplateOptions->handle(new ListLabelTemplateOptionsQuery());
 
-        return view('product::products.edit', compact('product', 'categories'));
+        return view('product::products.edit', compact('product', 'categories', 'labelTemplates'));
     }
 
     public function update(Request $request, Product $product, UpdateProductAction $action): RedirectResponse

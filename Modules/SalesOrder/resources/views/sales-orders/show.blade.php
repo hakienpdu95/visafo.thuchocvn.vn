@@ -33,6 +33,8 @@
         'actual_qty'    => $item->actual_qty !== null ? number_format((float) $item->actual_qty, 3) : null,
         'printed_qty'   => number_format((float) $item->printed_qty, 3),
         'printed_qty_raw' => (float) $item->printed_qty,
+        'label_template_id' => $item->product?->label_template_id,
+        'attributes_url' => route('backend.sales-orders.items.batch-attributes', $item),
         'history_url'   => route('backend.sales-orders.items.print-logs', $item),
         'shelf_life_days' => $item->product?->shelf_life_days,
         'print_url'     => $canPrint ? route('backend.sales-orders.items.print', $item) : null,
@@ -132,7 +134,7 @@
 @can('view', $salesOrder)
 <div x-data="printHistoryModal()" @open-print-history.window="openFor($event.detail)" x-cloak>
     <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">
-        <div class="modal-box max-w-3xl">
+        <div class="modal-box max-w-5xl">
             <h3 class="font-bold text-lg">Lịch sử in tem của mặt hàng này</h3>
             <p class="text-sm text-base-content/60 mt-1" x-text="item?.product_name"></p>
 
@@ -196,7 +198,7 @@
 @can('print', $salesOrder)
 <div x-data="printLabelModal()" @open-print-label.window="openFor($event.detail)" x-cloak>
     <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">
-        <div class="modal-box max-w-xl overflow-visible">
+        <div class="modal-box max-w-6xl overflow-visible">
 
             <h3 class="card-title text-base mb-5">
                 <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -210,6 +212,22 @@
             <form @submit.prevent="submit()" novalidate>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    <div class="form-control sm:col-span-2">
+                        <label class="label py-0 pb-1.5" for="ts-label-template">
+                            <span class="label-text font-medium">Mẫu tem in</span>
+                            <span class="label-text-alt text-base-content/40 text-xs">Mặc định theo mẫu gán cho sản phẩm</span>
+                        </label>
+                        <select id="ts-label-template" name="label_template_id"
+                                class="select select-bordered select-sm w-full"
+                                data-ts-placeholder="— Mẫu mặc định (theo sản phẩm / hệ thống) —">
+                            <option value="">— Mẫu mặc định (theo sản phẩm / hệ thống) —</option>
+                            @foreach($labelTemplates as $labelTemplate)
+                            <option value="{{ $labelTemplate['value'] }}">{{ $labelTemplate['text'] }}</option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-error" x-show="errors.label_template_id" x-text="errors.label_template_id"></p>
+                    </div>
 
                     <div class="form-control">
                         <label class="label py-0 pb-1.5" for="pl-weight">
@@ -275,6 +293,32 @@
 
                 </div>
 
+                <div class="divider my-4 text-xs text-base-content/30">Thông tin in bổ sung</div>
+
+                <div class="space-y-2">
+                    <p class="text-xs text-base-content/40" x-show="loadingAttributes">Đang tải thông tin của lô hàng...</p>
+                    <p class="text-xs text-base-content/40" x-show="!loadingAttributes && attributes.length === 0">
+                        Chưa có thông tin bổ sung. Bấm "Thêm thông tin" để in thêm HDSD, Liều dùng, Bảo quản...
+                    </p>
+
+                    <template x-for="(attr, index) in attributes" :key="attr.uid">
+                        <div class="grid grid-cols-[1fr_1.6fr_auto] gap-2 items-center">
+                            <input type="text" maxlength="100" x-model="attr.key" placeholder="Tên thông tin (VD: HDSD)"
+                                   class="input input-bordered input-sm w-full">
+                            <input type="text" maxlength="1000" x-model="attr.value" placeholder="Nội dung"
+                                   class="input input-bordered input-sm w-full">
+                            <button type="button" class="btn btn-ghost btn-sm text-error" @click="removeAttribute(index)" title="Xóa dòng này">Xóa</button>
+                        </div>
+                    </template>
+
+                    <p class="text-xs text-error" x-show="errors.extra_attributes" x-text="errors.extra_attributes"></p>
+
+                    <button type="button" class="btn btn-ghost btn-sm gap-1.5 text-primary" @click="addAttribute()">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Thêm thông tin
+                    </button>
+                </div>
+
                 <div class="alert alert-warning py-2 px-3 mt-4 text-xs" x-show="message" x-text="message"></div>
                 <div class="alert alert-warning py-2 px-3 mt-4 text-xs" x-show="blockedUrl">
                     Trình duyệt đã chặn cửa sổ in. <a :href="blockedUrl" target="_blank" class="link font-semibold">Bấm vào đây để mở tem</a>.
@@ -309,6 +353,7 @@
     @vite([
         'resources/js/modules/tabulator.js',
         'resources/js/modules/flatpickr.js',
+        'resources/js/modules/tom-select.js',
         'Modules/SalesOrder/resources/assets/js/salesorder.js',
     ], 'build/backend')
 @endpush

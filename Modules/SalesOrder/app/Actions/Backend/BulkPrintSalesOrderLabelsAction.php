@@ -5,8 +5,10 @@ namespace Modules\SalesOrder\Actions\Backend;
 use Illuminate\Support\Facades\DB;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\SalesOrder\Models\PrintLog;
+use Modules\SalesOrder\Models\PrintLogAttribute;
 use Modules\SalesOrder\Models\SalesOrder;
 use Modules\SalesOrder\Models\SalesOrderItem;
+use Modules\SalesOrder\Support\BatchAttributeResolver;
 
 class BulkPrintSalesOrderLabelsAction
 {
@@ -18,9 +20,13 @@ class BulkPrintSalesOrderLabelsAction
      *
      * @return array{logs: PrintLog[], total: int, printed: int, manual: int, items: array<int, array{id: string, printed_qty: string, printed_qty_raw: float}>}
      */
+    public function __construct(private readonly BatchAttributeResolver $resolver) {}
+
     public function handle(SalesOrder $order, ?string $printedBy): array
     {
-        return DB::transaction(function () use ($order, $printedBy) {
+        $resolver = $this->resolver;
+
+        return DB::transaction(function () use ($order, $printedBy, $resolver) {
             // Khóa dòng hàng để hai lần bấm đồng thời không in trùng phần còn lại.
             $items = SalesOrderItem::query()
                 ->where('order_id', $order->id)
@@ -52,6 +58,7 @@ class BulkPrintSalesOrderLabelsAction
 
                 $logs[] = PrintLog::create([
                     'order_item_id'    => $item->id,
+                    'label_template_id' => $item->product?->label_template_id,
                     'weight_per_label' => $remaining,
                     'label_count'      => 1,
                     'mfg_date'         => $today->toDateString(),
@@ -59,6 +66,14 @@ class BulkPrintSalesOrderLabelsAction
                     'supplier_name'    => null,
                     'printed_by'       => $printedBy,
                 ]);
+
+                foreach ($resolver->forItem($item)['attributes'] as $attr) {
+                    PrintLogAttribute::create([
+                        'print_log_id'    => end($logs)->id,
+                        'attribute_key'   => $attr['key'],
+                        'attribute_value' => $attr['value'],
+                    ]);
+                }
 
                 $item->increment('printed_qty', $remaining);
                 $printedQty = (float) $item->fresh()->printed_qty;

@@ -29,6 +29,10 @@ enum PermissionEnum: string
     case SALES_ORDER_VIEW   = 'sales_order.view';
     case SALES_ORDER_MANAGE = 'sales_order.manage';
 
+    // ══ LABEL TEMPLATE (Mẫu tem in) ══
+    case LABEL_TEMPLATE_VIEW   = 'label_template.view';
+    case LABEL_TEMPLATE_MANAGE = 'label_template.manage';
+
     // ══ CUSTOMER (Khách hàng B2B F&B) ══
     case CUSTOMER_VIEW   = 'customer.view';
     case CUSTOMER_MANAGE = 'customer.manage';

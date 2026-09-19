@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" width="160" height="40" role="img" aria-label="VISAFO">
+  <!-- Placeholder logo VISAFO — thay bằng logo thật (giữ tên file) -->
+  <rect x="1" y="1" width="38" height="38" rx="8" fill="#000"/>
+  <path d="M10 22c4 8 10 10 10 10s8-3 10-14c-5 4-9 3-12-3-3 4-6 5-8 7z" fill="#fff"/>
+  <text x="48" y="29" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#000" letter-spacing="1">VISAFO</text>
+</svg>

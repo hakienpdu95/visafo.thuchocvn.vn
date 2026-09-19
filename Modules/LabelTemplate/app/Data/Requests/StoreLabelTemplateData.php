@@ -1,0 +1,48 @@
+<?php
+
+namespace Modules\LabelTemplate\Data\Requests;
+
+use Modules\LabelTemplate\Models\LabelTemplate;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Nullable;
+use Spatie\LaravelData\Attributes\Validation\Regex;
+use Spatie\LaravelData\Attributes\Validation\Required;
+use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Data;
+
+class StoreLabelTemplateData extends Data
+{
+    public function __construct(
+        #[Required, StringType, Max(255)]
+        public readonly string $name,
+
+        #[Required, StringType, Max(255), Regex(LabelTemplate::VIEW_PATH_REGEX)]
+        public readonly string $view_path,
+
+        #[Nullable, StringType, Max(2000)]
+        public readonly ?string $description = null,
+
+        #[Nullable, StringType, Max(50)]
+        public readonly ?string $default_size = null,
+    ) {}
+
+    public static function messages(): array
+    {
+        return [
+            'name.required' => 'Vui lòng nhập tên mẫu tem.',
+            'name.string'   => 'Tên mẫu tem không hợp lệ.',
+            'name.max'      => 'Tên mẫu tem không được vượt quá :max ký tự.',
+
+            'view_path.required' => 'Vui lòng nhập View Path.',
+            'view_path.string'   => 'View Path không hợp lệ.',
+            'view_path.max'      => 'View Path không được vượt quá :max ký tự.',
+            'view_path.regex'    => 'View Path phải bắt đầu bằng "labels." và chỉ gồm chữ, số, "_" hoặc "-" cách nhau bởi dấu chấm (VD: labels.templates.functional_food).',
+
+            'description.string' => 'Mô tả không hợp lệ.',
+            'description.max'    => 'Mô tả không được vượt quá :max ký tự.',
+
+            'default_size.string' => 'Kích thước không hợp lệ.',
+            'default_size.max'    => 'Kích thước không được vượt quá :max ký tự.',
+        ];
+    }
+}

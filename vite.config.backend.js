@@ -78,6 +78,7 @@ const JS_OUTPUT = {
   'salespackage':         'assets/modules/salespackage.[hash].js',
   'goodsreceipt':         'assets/modules/goodsreceipt.[hash].js',
   'salesorder':           'assets/modules/salesorder.[hash].js',
+  'labeltemplate':        'assets/modules/labeltemplate.[hash].js',
 };
 
 /** CSS asset name → output path.
@@ -106,6 +107,7 @@ const CSS_OUTPUT = {
   'salespackage.css':         'assets/modules/salespackage.[hash].css',
   'goodsreceipt.css':         'assets/modules/goodsreceipt.[hash].css',
   'salesorder.css':           'assets/modules/salesorder.[hash].css',
+  'labeltemplate.css':        'assets/modules/labeltemplate.[hash].css',
 };
 
 // ─── Module input entries ─────────────────────────────────────────────
@@ -147,6 +149,9 @@ const MODULE_ENTRIES = [
   // SalesOrder
   'Modules/SalesOrder/resources/assets/sass/salesorder.scss',
   'Modules/SalesOrder/resources/assets/js/salesorder.js',
+  // LabelTemplate
+  'Modules/LabelTemplate/resources/assets/sass/labeltemplate.scss',
+  'Modules/LabelTemplate/resources/assets/js/labeltemplate.js',
 ];
 
 // ─────────────────────────────────────────────────────────────────────

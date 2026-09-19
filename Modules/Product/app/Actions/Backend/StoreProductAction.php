@@ -19,6 +19,7 @@ class StoreProductAction
             'product_type' => $data->product_type->value,
             'unit'         => $data->unit,
             'shelf_life_days' => $data->shelf_life_days,
+            'label_template_id' => $data->label_template_id,
             'status'       => $data->status->value,
         ]);
     }

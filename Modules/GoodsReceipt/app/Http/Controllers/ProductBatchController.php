@@ -15,7 +15,13 @@ class ProductBatchController extends Controller
     {
         $this->authorize('update', $productBatch);
 
-        $data = UpdateProductBatchData::validateAndCreate($request->all());
+        // Bỏ các dòng thông tin bổ sung trống hoàn toàn.
+        $extra = collect($request->input('extra_attributes', []))
+            ->filter(fn ($a) => is_array($a) && (trim((string) ($a['key'] ?? '')) !== '' || trim((string) ($a['value'] ?? '')) !== ''))
+            ->map(fn ($a) => ['key' => trim((string) ($a['key'] ?? '')), 'value' => trim((string) ($a['value'] ?? ''))])
+            ->values()->all();
+
+        $data = UpdateProductBatchData::validateAndCreate(array_merge($request->all(), ['extra_attributes' => $extra]));
         $action->handle($productBatch, $data);
 
         return redirect()->route('backend.goods-receipts.show', $productBatch->goods_receipt_id)

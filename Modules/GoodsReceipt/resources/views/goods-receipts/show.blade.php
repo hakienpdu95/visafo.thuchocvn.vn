@@ -18,6 +18,7 @@
             'mfg_date'   => $batch?->mfg_date?->format('Y-m-d'),
             'exp_date'   => $batch?->exp_date?->format('Y-m-d'),
             'shelf_life_days' => $item->product?->shelf_life_days,
+            'attributes' => $batch?->extraAttributes->map(fn ($a) => ['key' => $a->attribute_key, 'value' => (string) $a->attribute_value])->values() ?? [],
             'update_url' => $canEdit ? route('backend.product-batches.update', $batch) : null,
         ];
     })->values();
@@ -86,7 +87,7 @@
 </div>
 
 <dialog id="batchDateModal" class="modal">
-    <div class="modal-box max-w-md overflow-visible">
+    <div class="modal-box max-w-lg overflow-visible">
         <h3 class="font-bold text-lg">Cập nhật NSX / HSD</h3>
         <p class="text-sm text-base-content/60 mt-1">Lô <strong id="batchDateModalCode" class="font-mono text-base-content"></strong></p>
 
@@ -106,6 +107,27 @@
                            class="input input-sm input-bordered w-full"/>
                     <p id="batchShelfLifeHint" class="mt-1 text-xs text-base-content/40 hidden"></p>
                 </div>
+            </div>
+
+            <div class="divider my-4 text-xs text-base-content/30">Thông tin in bổ sung</div>
+
+            <div x-data="batchAttributeEditor()" @set-batch-attributes.window="setRows($event.detail)" class="space-y-2" x-cloak>
+                <p class="text-xs text-base-content/40" x-show="rows.length === 0">
+                    Chưa có thông tin. Thông tin này sẽ được điền sẵn khi in tem xuất kho (HDSD, Liều dùng, Bảo quản...).
+                </p>
+                <template x-for="(row, index) in rows" :key="row.uid">
+                    <div class="grid grid-cols-[1fr_1.6fr_auto] gap-2 items-center">
+                        <input type="text" maxlength="100" :name="'extra_attributes[' + index + '][key]'" x-model="row.key"
+                               placeholder="Tên thông tin (VD: HDSD)" class="input input-bordered input-sm w-full">
+                        <input type="text" maxlength="1000" :name="'extra_attributes[' + index + '][value]'" x-model="row.value"
+                               placeholder="Nội dung" class="input input-bordered input-sm w-full">
+                        <button type="button" class="btn btn-ghost btn-sm text-error" @click="remove(index)" title="Xóa dòng này">Xóa</button>
+                    </div>
+                </template>
+                <button type="button" class="btn btn-ghost btn-sm gap-1.5 text-primary" @click="add()">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Thêm thông tin
+                </button>
             </div>
 
             <div class="modal-action mt-6">

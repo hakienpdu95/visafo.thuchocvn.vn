@@ -39,6 +39,12 @@ class SalesOrderItem extends TenantAwareModel
         return $this->hasMany(PrintLog::class, 'order_item_id');
     }
 
+    /** Alias của order() — template tem dùng $item->salesOrder. */
+    public function salesOrder(): BelongsTo
+    {
+        return $this->order();
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

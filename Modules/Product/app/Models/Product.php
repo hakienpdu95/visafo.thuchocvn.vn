@@ -37,6 +37,7 @@ class Product extends TenantAwareModel
         'product_type',
         'unit',
         'shelf_life_days',
+        'label_template_id',
         'external_product_id',
         'sapo_product_id',
         'sapo_variant_id',
@@ -64,6 +65,12 @@ class Product extends TenantAwareModel
         }
 
         return \Illuminate\Support\Carbon::parse($baseDate)->startOfDay()->addDays($this->shelf_life_days);
+    }
+
+    /** Mẫu tem in của sản phẩm — null = dùng tem mặc định của hệ thống. */
+    public function labelTemplate(): BelongsTo
+    {
+        return $this->belongsTo(\Modules\LabelTemplate\Models\LabelTemplate::class, 'label_template_id');
     }
 
     public function category(): BelongsTo

@@ -1,0 +1,11 @@
+{
+    "name": "LabelTemplate",
+    "alias": "labeltemplate",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\LabelTemplate\\Providers\\LabelTemplateServiceProvider"
+    ],
+    "files": []
+}

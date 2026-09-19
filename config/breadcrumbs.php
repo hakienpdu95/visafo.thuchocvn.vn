@@ -83,6 +83,8 @@ return [
         'sales-orders'          => 'Quản lý Bán hàng',
         'import'                => 'Import phiếu MISA',
         'print-logs'            => 'Lịch sử in tem',
+        'label-templates'       => 'Quản lý Mẫu tem',
+        'preview'               => 'Xem trước',
 
         // ── Nhân sự ──────────────────────────────────────────────────────────
         'employees'             => 'Danh sách nhân viên',

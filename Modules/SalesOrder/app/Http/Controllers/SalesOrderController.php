@@ -3,6 +3,8 @@
 namespace Modules\SalesOrder\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsHandler;
+use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsQuery;
 use Modules\SalesOrder\Models\SalesOrder;
 
 class SalesOrderController extends Controller
@@ -22,10 +24,11 @@ class SalesOrderController extends Controller
         return view('salesorder::sales-orders.index', compact('statuses'));
     }
 
-    public function show(SalesOrder $salesOrder)
+    public function show(SalesOrder $salesOrder, ListLabelTemplateOptionsHandler $labelTemplateOptions)
     {
         $salesOrder->load(['importedBy', 'items.product']);
+        $labelTemplates = $labelTemplateOptions->handle(new ListLabelTemplateOptionsQuery());
 
-        return view('salesorder::sales-orders.show', compact('salesOrder'));
+        return view('salesorder::sales-orders.show', compact('salesOrder', 'labelTemplates'));
     }
 }

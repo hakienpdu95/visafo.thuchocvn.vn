@@ -820,5 +820,36 @@
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
         "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "batch_attributes///__///__///",
+        "batch_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('product_batches')->onDelete('cascade')///Lô hàng sở hữu thông tin bổ sung này",
+        "attribute_key///string///100///NOT_NULL///__///__///Tên thông tin, VD: HDSD, Liều dùng, Bảo quản",
+        "attribute_value///text///__///_NULL///NULL///__///Nội dung thông tin",
+        "__index///index///__///__///__///batch_id|idx_batch_attributes_batch///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "print_log_attributes///__///__///",
+        "print_log_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('print_logs')->onDelete('cascade')///Lần in tem sở hữu thông tin này",
+        "attribute_key///string///100///NOT_NULL///__///__///Tên thông tin in trên tem",
+        "attribute_value///text///__///_NULL///NULL///__///Nội dung thông tin in trên tem",
+        "__index///index///__///__///__///print_log_id|idx_print_log_attributes_log///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "label_templates///__///__///",
+        "name///string///255///NOT_NULL///__///__///Tên mẫu tem, VD: Tem Thực Phẩm Chức Năng 60x40",
+        "view_path///string///255///NOT_NULL///__///__///Đường dẫn Blade view của mẫu tem, VD: labels.templates.functional_food",
+        "description///text///__///_NULL///NULL///__///Ghi chú các attribute động mẫu hỗ trợ",
+        "default_size///string///50///_NULL///NULL///__///Kích thước tem mặc định, VD: 60x40 mm",
+        "__index///index///__///__///__///name|idx_label_templates_name///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
     ]
 ]

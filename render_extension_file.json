@@ -62,7 +62,8 @@
         "image_url///string///500///_NULL///NULL///__///Ảnh đại diện — đồng bộ từ Sapo POS",
         "category_id///unsignedBigInteger///__///_NULL///NULL///->constrained('categories')->onDelete('restrict')///NULL = CCDC/vật tư tiêu hao, không thuộc đối tượng quản lý giấy tờ ATTP",
         "product_type///string///20///NOT_NULL///__///__///raw_material | finished_good | trading_good | consumables",
-        "shelf_life_days///unsignedInteger///__///_NULL///NULL///__///Số ngày bảo quản mặc định để tự động tính HSD"
+        "shelf_life_days///unsignedInteger///__///_NULL///NULL///__///Số ngày bảo quản mặc định để tự động tính HSD",
+        "label_template_id///unsignedBigInteger///__///_NULL///NULL///->constrained('label_templates')->onDelete('set null')///Mẫu tem in cho sản phẩm — NULL = dùng tem mặc định của hệ thống"
     ],
     [
         "contracts///add///__///",
@@ -113,5 +114,9 @@
     [
         "sales_order_items///add///__///",
         "printed_qty///decimal///14,3///NOT_NULL///0///__///Tổng khối lượng (kg) đã in tem — cộng dồn theo từng lần in"
+    ],
+    [
+        "print_logs///add///__///",
+        "label_template_id///unsignedBigInteger///__///_NULL///NULL///->constrained('label_templates')->onDelete('set null')///Mẫu tem đã chọn khi in — NULL = theo mẫu gán cho sản phẩm, hoặc mẫu mặc định"
     ]
 ]

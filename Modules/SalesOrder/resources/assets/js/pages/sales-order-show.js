@@ -1,3 +1,5 @@
+import { createTs } from '@shared/tom-select-factory.js';
+
 function esc(v) {
     if (v == null) return '';
     return String(v)
@@ -62,6 +64,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('printLabelModal', () => {
         let mfgPicker = null;
         let expPicker = null;
+        let templateTs = null;
 
         return {
             open: false,
@@ -71,7 +74,10 @@ document.addEventListener('alpine:init', () => {
             blockedUrl: '',
             errors: {},
             remaining: 0,
-            form: { weight: '', count: 1, mfg: '', exp: '', supplier: '' },
+            attributes: [],
+            loadingAttributes: false,
+            _uid: 0,
+            form: { weight: '', count: 1, mfg: '', exp: '', supplier: '', template: '' },
 
             get canSubmit() {
                 return !this.submitting
@@ -82,6 +88,19 @@ document.addEventListener('alpine:init', () => {
 
             init() {
                 this.$nextTick(() => {
+                    // Select tìm kiếm được (Tom Select) — dùng được khi có hàng chục mẫu tem.
+                    const tplEl = document.getElementById('ts-label-template');
+                    if (tplEl && !tplEl.tomselect) {
+                        templateTs = createTs(tplEl, {
+                            placeholder: '— Mẫu mặc định (theo sản phẩm / hệ thống) —',
+                            maxOptions: null,
+                            // Gắn danh sách vào <body> (z-index 9999 > modal 999): .modal-box của DaisyUI có transform +
+                            // overflow nên gắn vào đó sẽ làm danh sách bị lệch xuống đáy modal.
+                            dropdownParent: 'body',
+                            onChange: (value) => { this.form.template = value || ''; },
+                        });
+                    }
+
                     if (!window.initDatePicker) return;
                     const base = { dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: true, disableMobile: true, static: true };
 
@@ -114,15 +133,45 @@ document.addEventListener('alpine:init', () => {
                 // Mặc định = số lượng yêu cầu − đã in; ≤ 0 thì để trống.
                 const remaining = Math.round((Number(row.requested_qty_raw) - Number(row.printed_qty_raw)) * 1000) / 1000;
                 this.remaining = Math.max(remaining, 0);
-                this.form = { weight: remaining > 0 ? remaining : '', count: 1, mfg: toYmd(new Date()), exp: '', supplier: '' };
+                this.form = { weight: remaining > 0 ? remaining : '', count: 1, mfg: toYmd(new Date()), exp: '', supplier: '', template: row.label_template_id || '' };
+                templateTs?.setValue(this.form.template, true);
                 mfgPicker?.setDate(this.form.mfg, false);
                 expPicker?.clear(false);
                 this.recalcExp();
                 this.open = true;
+                this.loadBatchAttributes(row);
                 this.$nextTick(() => this.$refs.weight?.focus());
             },
 
             close() { this.open = false; },
+
+            addAttribute(key = '', value = '') {
+                this.attributes.push({ uid: ++this._uid, key, value });
+            },
+
+            removeAttribute(index) {
+                this.attributes.splice(index, 1);
+            },
+
+            // Điền sẵn thông tin bổ sung (EAV) của lô hàng tương ứng; nhân viên có thể sửa/xóa/thêm trước khi in.
+            async loadBatchAttributes(row) {
+                this.attributes = [];
+                this.loadingAttributes = true;
+                try {
+                    const res = await fetch(row.attributes_url, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    // Bỏ kết quả nếu modal đã chuyển sang dòng hàng khác trong lúc chờ.
+                    if (this.item?.id !== row.id) return;
+                    (data.attributes ?? []).forEach((a) => this.addAttribute(a.key, a.value));
+                } catch (e) {
+                    console.error('[print-label] load attributes failed', e);
+                } finally {
+                    this.loadingAttributes = false;
+                }
+            },
 
             async submit() {
                 if (!this.canSubmit) return;
@@ -149,13 +198,21 @@ document.addEventListener('alpine:init', () => {
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             supplier_name: this.form.supplier || null,
+                            label_template_id: this.form.template || null,
+                            extra_attributes: this.attributes
+                                .filter((a) => a.key.trim() !== '' || a.value.trim() !== '')
+                                .map((a) => ({ key: a.key.trim(), value: a.value.trim() })),
                         }),
                     });
                     const data = await res.json().catch(() => ({}));
 
                     if (res.status === 422) {
                         win?.close();
-                        Object.entries(data.errors ?? {}).forEach(([k, v]) => { this.errors[k] = v[0]; });
+                        Object.entries(data.errors ?? {}).forEach(([k, v]) => {
+                            // extra_attributes.2.key → gom về một thông báo chung của khu vực thông tin bổ sung
+                            const field = k.startsWith('extra_attributes') ? 'extra_attributes' : k;
+                            this.errors[field] ??= v[0];
+                        });
                         return;
                     }
                     if (!res.ok) {
@@ -169,10 +226,10 @@ document.addEventListener('alpine:init', () => {
                     }]);
 
                     if (win) {
-                        win.location = data.url;
+                        win.location = data.print_url;
                         this.close();
                     } else {
-                        this.blockedUrl = data.url;
+                        this.blockedUrl = data.print_url;
                     }
                 } catch (e) {
                     console.error('[print-label] failed', e);

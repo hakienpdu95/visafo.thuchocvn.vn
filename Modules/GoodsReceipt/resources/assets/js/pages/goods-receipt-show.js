@@ -58,6 +58,8 @@ window.openBatchDateModal = function (row) {
         hint.classList.toggle('hidden', !shelfLifeDays);
     }
 
+    window.dispatchEvent(new CustomEvent('set-batch-attributes', { detail: row.attributes ?? [] }));
+
     document.getElementById('batchDateModal')?.showModal();
 };
 
@@ -115,4 +117,18 @@ document.addEventListener('DOMContentLoaded', () => {
         movableColumns: false,
         placeholder: '<div class="py-10 text-center text-sm text-base-content/40">Phiếu này chưa có dòng hàng nào.</div>',
     });
+});
+
+// ── Thông tin bổ sung của lô (EAV) trong modal sửa NSX/HSD ─────────────
+document.addEventListener('alpine:init', () => {
+    Alpine.data('batchAttributeEditor', () => ({
+        rows: [],
+        _uid: 0,
+
+        setRows(list) {
+            this.rows = (list ?? []).map((a) => ({ uid: ++this._uid, key: a.key, value: a.value }));
+        },
+        add() { this.rows.push({ uid: ++this._uid, key: '', value: '' }); },
+        remove(index) { this.rows.splice(index, 1); },
+    }));
 });
