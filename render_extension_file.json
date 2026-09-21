@@ -123,6 +123,7 @@
         "status///string///20///NOT_NULL///'active'///->index()///active | recalled | error — QC đánh dấu tem thu hồi/lỗi",
         "status_reason///string///255///_NULL///NULL///__///Lý do thu hồi/lỗi (hiển thị trên trang truy xuất công khai)",
         "status_changed_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người đổi trạng thái gần nhất",
-        "status_changed_at///timestamp///__///_NULL///NULL///__///Thời điểm đổi trạng thái gần nhất"
+        "status_changed_at///timestamp///__///_NULL///NULL///__///Thời điểm đổi trạng thái gần nhất",
+        "batch_code///string///100///_NULL///NULL///__///Mã lô tự sinh LOT-[NSX]-[HSD] tại thời điểm in"
     ]
 ]

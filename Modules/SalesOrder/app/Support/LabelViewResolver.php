@@ -11,7 +11,8 @@ use Modules\SalesOrder\Models\PrintLog;
  */
 class LabelViewResolver
 {
-    public const DEFAULT_VIEW = 'labels.templates.general_default_60x40';
+    /** Mặc định toàn hệ thống: đa số hàng hoá là rau củ quả nên dùng luôn mẫu tem này thay vì mẫu chung chung. */
+    public const DEFAULT_VIEW = 'labels.templates.produce_60x40';
 
     /**
      * Thứ tự ưu tiên: mẫu đã chọn khi in (lưu trên log) → mẫu gán cho sản phẩm → mẫu mặc định.

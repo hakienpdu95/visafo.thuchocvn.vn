@@ -51,7 +51,13 @@
 @endforeach
 
 @if (!empty($autoPrint))
-<script>window.onload = function() { window.print(); window.close(); }</script>
+<script>
+    // Chỉ mở hộp thoại in tự động.
+    // Tuyệt đối không dùng window.close() ở đây để nhân viên xem lại tem trên tab sau khi in/hủy.
+    window.onload = function() {
+        window.print();
+    };
+</script>
 @endif
 </body>
 </html>

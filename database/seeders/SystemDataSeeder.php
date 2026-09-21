@@ -8,6 +8,7 @@ use Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
 use Modules\Contract\Database\Seeders\ContractTypeSeeder;
 use Modules\Customer\Database\Seeders\CustomerMasterDataSeeder;
 use Modules\Employee\Database\Seeders\DepartmentSeeder;
+use Modules\LabelTemplate\Database\Seeders\LabelTemplateSeeder;
 use Modules\Product\Database\Seeders\AgriFertilizerSeeder;
 use Modules\Product\Database\Seeders\AgriPesticideSeeder;
 use Modules\Product\Database\Seeders\AgriSeedSeeder;
@@ -63,6 +64,9 @@ class SystemDataSeeder extends Seeder
 
             // ── 5b. Từ điển loại hợp đồng (contract_types) ────────────────
             ContractTypeSeeder::class,
+
+            // ── 5c. 6 mẫu tem in 60x40 chuyên biệt theo ngành hàng (label_templates) ─
+            LabelTemplateSeeder::class,
 
             // ── 6. 6 nhóm thực phẩm chuẩn ATTP (categories) — Rule Engine ─
             CategorySeeder::class,

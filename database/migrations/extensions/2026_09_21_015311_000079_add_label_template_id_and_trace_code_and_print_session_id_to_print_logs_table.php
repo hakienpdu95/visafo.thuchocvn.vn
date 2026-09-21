@@ -32,6 +32,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('print_logs', 'status_changed_at')) {
                 $table->timestamp('status_changed_at')->nullable()->after('status_changed_by')->comment('Thời điểm đổi trạng thái gần nhất');
             }
+            if (!Schema::hasColumn('print_logs', 'batch_code')) {
+                $table->string('batch_code', 100)->nullable()->after('status_changed_at')->comment('Mã lô tự sinh LOT-[NSX]-[HSD] tại thời điểm in');
+            }
         });
     }
 
@@ -40,7 +43,7 @@ return new class extends Migration {
         Schema::table('print_logs', function (Blueprint $table) {
             if (Schema::hasColumn('print_logs', 'label_template_id')) $table->dropForeign(['label_template_id']);
             if (Schema::hasColumn('print_logs', 'status_changed_by')) $table->dropForeign(['status_changed_by']);
-            $cols = array_filter(['label_template_id', 'trace_code', 'print_session_id', 'status', 'status_reason', 'status_changed_by', 'status_changed_at'], fn($c) => Schema::hasColumn('print_logs', $c));
+            $cols = array_filter(['label_template_id', 'trace_code', 'print_session_id', 'status', 'status_reason', 'status_changed_by', 'status_changed_at', 'batch_code'], fn($c) => Schema::hasColumn('print_logs', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

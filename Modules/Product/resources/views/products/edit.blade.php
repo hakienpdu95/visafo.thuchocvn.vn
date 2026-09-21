@@ -101,13 +101,13 @@
                         </label>
                         <select id="ts-label_template_id" name="label_template_id"
                                 class="select select-bordered select-sm w-full ts-init @error('label_template_id') select-error @enderror"
-                                data-ts-placeholder="— Dùng tem mặc định của hệ thống —">
-                            <option value="">— Dùng tem mặc định của hệ thống —</option>
+                                data-ts-placeholder="— Mặc định: Tem Rau Củ Quả —">
+                            <option value="">— Mặc định: Tem Rau Củ Quả —</option>
                             @foreach($labelTemplates as $labelTemplate)
                             <option value="{{ $labelTemplate['value'] }}" @selected(old('label_template_id', $product->label_template_id) === $labelTemplate['value'])>{{ $labelTemplate['text'] }}</option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-base-content/40">Để trống nếu sản phẩm dùng tem mặc định. Quản lý mẫu tem tại mục "Quản lý Mẫu tem".</p>
+                        <p class="mt-1 text-xs text-base-content/40">Để trống nếu sản phẩm dùng tem Rau Củ Quả mặc định. Quản lý mẫu tem tại mục "Quản lý Mẫu tem".</p>
                         @error('label_template_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 

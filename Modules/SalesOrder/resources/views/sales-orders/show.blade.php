@@ -216,12 +216,12 @@
                     <div class="form-control sm:col-span-2">
                         <label class="label py-0 pb-1.5" for="ts-label-template">
                             <span class="label-text font-medium">Mẫu tem in</span>
-                            <span class="label-text-alt text-base-content/40 text-xs">Mặc định theo mẫu gán cho sản phẩm</span>
+                            <span class="label-text-alt text-base-content/40 text-xs">Ưu tiên mẫu gán cho sản phẩm, nếu không có thì dùng mặc định</span>
                         </label>
                         <select id="ts-label-template" name="label_template_id"
                                 class="select select-bordered select-sm w-full"
-                                data-ts-placeholder="— Mẫu mặc định (theo sản phẩm / hệ thống) —">
-                            <option value="">— Mẫu mặc định (theo sản phẩm / hệ thống) —</option>
+                                data-ts-placeholder="— Mặc định: Tem Rau Củ Quả (60x40) —">
+                            <option value="">— Mặc định: Tem Rau Củ Quả (60x40) —</option>
                             @foreach($labelTemplates as $labelTemplate)
                             <option value="{{ $labelTemplate['value'] }}">{{ $labelTemplate['text'] }}</option>
                             @endforeach
@@ -229,19 +229,31 @@
                         <p class="mt-1 text-xs text-error" x-show="errors.label_template_id" x-text="errors.label_template_id"></p>
                     </div>
 
-                    <div class="form-control">
+                    {{-- Hàng đã in đủ (remaining ≤ 0): ẩn 2 ô Khối lượng/Số lượng, hướng dẫn dùng "In lại" thay vì in mới. --}}
+                    <div class="form-control sm:col-span-2" x-show="remaining <= 0 && !form.overrideLock" x-cloak>
+                        <div class="alert alert-warning py-2.5 px-3 text-xs items-start gap-2">
+                            <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m0 3.75h.007M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
+                            <span>Mặt hàng này đã được in đủ số lượng yêu cầu. Nếu bạn muốn in lại tem bị hỏng, vui lòng đóng hộp thoại này và bấm vào số ở cột "Đã in tem" để xem Lịch sử và In lại.</span>
+                        </div>
+                        <label class="label cursor-pointer justify-start gap-2 py-1.5">
+                            <input type="checkbox" x-model="form.overrideLock" class="checkbox checkbox-warning checkbox-xs">
+                            <span class="label-text text-xs">Bỏ qua cảnh báo và tiếp tục in thêm (In lố/Chia lại tem)</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control" x-show="remaining > 0 || form.overrideLock" x-cloak>
                         <label class="label py-0 pb-1.5" for="pl-weight">
                             <span class="label-text font-medium">Khối lượng/Tem (kg) <span class="text-error">*</span></span>
-                            <span class="label-text-alt text-base-content/40 text-xs">Tự động theo SL yêu cầu</span>
+                            <span class="label-text-alt text-base-content/40 text-xs">Tự động theo SL yêu cầu, không thể sửa</span>
                         </label>
                         <input id="pl-weight" type="number" name="weight_per_label" step="0.001" min="0.001" inputmode="decimal"
-                               x-model="form.weight" x-ref="weight" placeholder="VD: 0.5" readonly disabled
-                               class="input input-bordered input-sm w-full bg-base-200 text-base-content/70 cursor-not-allowed"
+                               x-model="form.weight" x-ref="weight" readonly disabled
+                               class="input input-bordered input-sm w-full bg-gray-100 text-gray-500 cursor-not-allowed"
                                :class="{ 'input-error': errors.weight_per_label }">
                         <p class="mt-1 text-xs text-error" x-show="errors.weight_per_label" x-text="errors.weight_per_label"></p>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control" x-show="remaining > 0 || form.overrideLock" x-cloak>
                         <label class="label py-0 pb-1.5" for="pl-count">
                             <span class="label-text font-medium">Số lượng Tem cần in <span class="text-error">*</span></span>
                             <span class="label-text-alt text-base-content/40 text-xs">Tối đa 200</span>
@@ -360,7 +372,7 @@
                 </div>
 
                 <div class="flex items-center gap-3 pt-4 mt-4 border-t border-base-200">
-                    <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting">
+                    <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting && !(remaining <= 0 && !form.overrideLock)">
                         Nhập khối lượng &gt; 0 và HSD để in tem
                     </p>
                     <div class="ml-auto flex gap-2">

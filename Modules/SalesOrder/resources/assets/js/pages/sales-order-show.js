@@ -84,10 +84,11 @@ document.addEventListener('alpine:init', () => {
             attributes: [],
             loadingAttributes: false,
             _uid: 0,
-            form: { weight: '', count: 1, mfg: '', exp: '', supplierManual: false, supplierText: '', batchCode: '', template: '' },
+            form: { weight: '', count: 1, mfg: '', exp: '', overrideLock: false, supplierManual: false, supplierText: '', batchCode: '', template: '' },
 
             get canSubmit() {
                 return !this.submitting
+                    && (this.remaining > 0 || this.form.overrideLock)
                     && Number(this.form.weight) > 0
                     && Number(this.form.count) >= 1
                     && !!this.form.exp;
@@ -99,7 +100,7 @@ document.addEventListener('alpine:init', () => {
                     const tplEl = document.getElementById('ts-label-template');
                     if (tplEl && !tplEl.tomselect) {
                         templateTs = createTs(tplEl, {
-                            placeholder: '— Mẫu mặc định (theo sản phẩm / hệ thống) —',
+                            placeholder: '— Mặc định: Tem Rau Củ Quả (60x40) —',
                             maxOptions: null,
                             // Gắn danh sách vào <body> (z-index 9999 > modal 999): .modal-box của DaisyUI có transform +
                             // overflow nên gắn vào đó sẽ làm danh sách bị lệch xuống đáy modal.
@@ -164,14 +165,15 @@ document.addEventListener('alpine:init', () => {
                 this.errors = {};
                 this.message = '';
                 this.blockedUrl = '';
-                // Khối lượng/tem khoá cứng theo SL yêu cầu còn lại; ≤ 0 thì để trống (không cho in).
+                // Khối lượng/tem khoá cứng theo SL yêu cầu của đơn — không bao giờ đổi theo phần còn lại đã in.
                 const remaining = Math.round((Number(row.requested_qty_raw) - Number(row.printed_qty_raw)) * 1000) / 1000;
                 this.remaining = Math.max(remaining, 0);
                 this.form = {
-                    weight: this.remaining > 0 ? this.remaining : '',
+                    weight: Math.round(Number(row.requested_qty_raw) * 1000) / 1000,
                     count: 1,
                     mfg: toYmd(new Date()),
                     exp: '',
+                    overrideLock: false,
                     supplierManual: false,
                     supplierText: '',
                     batchCode: '',
