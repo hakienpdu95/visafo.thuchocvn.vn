@@ -84,6 +84,8 @@ return [
         'menus'                 => 'Thực đơn',
         'food-inspection-step2' => 'Sổ kiểm thực Bước 2',
         'food-inspection-step3' => 'Sổ kiểm thực Bước 3',
+        'food-samples'          => 'Lưu & hủy mẫu thức ăn',
+        'labels'                => 'In tem lưu mẫu',
         'source-dishes'         => 'Đồng bộ từ Bước 2',
         'menu-dishes'           => 'Đồng bộ thực đơn',
         'sales-orders'          => 'Quản lý Bán hàng',

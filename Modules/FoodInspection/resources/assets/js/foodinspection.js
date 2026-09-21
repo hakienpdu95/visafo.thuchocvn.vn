@@ -7,3 +7,6 @@ import './pages/food-inspection-step2-show.js';
 import './pages/food-inspection-step3-index.js';
 import './pages/food-inspection-step3-form.js';
 import './pages/food-inspection-step3-show.js';
+import './pages/food-sample-index.js';
+import './pages/food-sample-form.js';
+import './pages/food-sample-show.js';

@@ -2,9 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\FoodInspection\Http\Controllers\Api\FoodInspectionStep1ApiController;
+use Modules\FoodInspection\Http\Controllers\Api\FoodSampleApiController;
 use Modules\FoodInspection\Http\Controllers\Api\FoodInspectionStep2ApiController;
 use Modules\FoodInspection\Http\Controllers\Api\FoodInspectionStep3ApiController;
 use Modules\FoodInspection\Http\Controllers\FoodInspectionStep1Controller;
+use Modules\FoodInspection\Http\Controllers\FoodSampleController;
 use Modules\FoodInspection\Http\Controllers\FoodInspectionStep2Controller;
 use Modules\FoodInspection\Http\Controllers\FoodInspectionStep3Controller;
 
@@ -30,8 +32,16 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::resource('food-inspection-step3', FoodInspectionStep3Controller::class)->parameters(['food-inspection-step3' => 'food_inspection_step3']);
 });
 
+// Lưu & hủy mẫu thức ăn (Mẫu số 4 & 5)
+Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(function () {
+    Route::get('food-samples/source-dishes', [FoodSampleController::class, 'sourceDishes'])->name('food-samples.source-dishes');
+    Route::get('food-samples/{food_sample}/labels', [FoodSampleController::class, 'labels'])->name('food-samples.labels');
+    Route::resource('food-samples', FoodSampleController::class)->parameters(['food-samples' => 'food_sample']);
+});
+
 Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(function () {
     Route::get('food-inspections', [FoodInspectionStep1ApiController::class, 'index'])->name('food-inspections');
     Route::get('food-inspection-step2', [FoodInspectionStep2ApiController::class, 'index'])->name('food-inspection-step2');
     Route::get('food-inspection-step3', [FoodInspectionStep3ApiController::class, 'index'])->name('food-inspection-step3');
+    Route::get('food-samples', [FoodSampleApiController::class, 'index'])->name('food-samples');
 });
