@@ -80,6 +80,12 @@ return [
         // ── Mua hàng & Bán hàng (import phiếu MISA) ─────────────────────────
         // Nhãn trùng với tên mục trên sidebar.
         'goods-receipts'        => 'Quản lý Mua hàng',
+        'food-inspections'      => 'Sổ kiểm thực Bước 1',
+        'menus'                 => 'Thực đơn',
+        'food-inspection-step2' => 'Sổ kiểm thực Bước 2',
+        'food-inspection-step3' => 'Sổ kiểm thực Bước 3',
+        'source-dishes'         => 'Đồng bộ từ Bước 2',
+        'menu-dishes'           => 'Đồng bộ thực đơn',
         'sales-orders'          => 'Quản lý Bán hàng',
         'import'                => 'Import phiếu MISA',
         'print-logs'            => 'Lịch sử in tem',

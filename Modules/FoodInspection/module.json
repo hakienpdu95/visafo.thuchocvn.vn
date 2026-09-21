@@ -1,0 +1,11 @@
+{
+    "name": "FoodInspection",
+    "alias": "foodinspection",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\FoodInspection\\Providers\\FoodInspectionServiceProvider"
+    ],
+    "files": []
+}

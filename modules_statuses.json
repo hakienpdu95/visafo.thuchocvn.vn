@@ -12,5 +12,7 @@
     "GoodsReceipt": true,
     "SalesOrder": true,
     "LabelTemplate": true,
-    "TraceLog": true
+    "TraceLog": true,
+    "FoodInspection": true,
+    "Menu": true
 }

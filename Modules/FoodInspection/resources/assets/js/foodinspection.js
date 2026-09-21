@@ -1,0 +1,9 @@
+import './pages/food-inspection-index.js';
+import './pages/food-inspection-form.js';
+import './pages/food-inspection-show.js';
+import './pages/food-inspection-step2-index.js';
+import './pages/food-inspection-step2-form.js';
+import './pages/food-inspection-step2-show.js';
+import './pages/food-inspection-step3-index.js';
+import './pages/food-inspection-step3-form.js';
+import './pages/food-inspection-step3-show.js';

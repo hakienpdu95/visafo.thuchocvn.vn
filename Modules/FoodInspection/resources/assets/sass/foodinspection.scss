@@ -1,0 +1,5 @@
+@use 'form-patterns';
+@use 'tom-select';
+
+// initFormValidation tô lỗi lên <select> gốc (bị TomSelect ẩn) → phản chiếu sang khung TomSelect liền kề.
+select.select-error + .ts-wrapper .ts-control { border-color: var(--color-error); }

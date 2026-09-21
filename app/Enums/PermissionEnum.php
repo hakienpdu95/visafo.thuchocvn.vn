@@ -25,6 +25,14 @@ enum PermissionEnum: string
     case GOODS_RECEIPT_VIEW   = 'goods_receipt.view';
     case GOODS_RECEIPT_MANAGE = 'goods_receipt.manage';
 
+    // ══ FOOD INSPECTION (Sổ kiểm thực Bước 1 — QĐ 1246/QĐ-BYT) ══
+    case FOOD_INSPECTION_VIEW   = 'food_inspection.view';
+    case FOOD_INSPECTION_MANAGE = 'food_inspection.manage';
+
+    // ══ MENU (Thực đơn theo ngày / bữa ăn của cơ sở) ══
+    case MENU_VIEW   = 'menu.view';
+    case MENU_MANAGE = 'menu.manage';
+
     // ══ SALES ORDER (Đơn xuất hàng — import phiếu xuất kho MISA) ══
     case SALES_ORDER_VIEW   = 'sales_order.view';
     case SALES_ORDER_MANAGE = 'sales_order.manage';

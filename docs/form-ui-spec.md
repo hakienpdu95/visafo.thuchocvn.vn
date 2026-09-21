@@ -1,6 +1,6 @@
 # Form UI/UX Specification — Backend SaaS
 
-> **Version:** 5.0  
+> **Version:** 5.1  
 > **Stack:** Laravel 13 · DaisyUI 5 · Tailwind CSS 4 · Alpine.js 3 · TomSelect · SCSS (sass) · Vite 8  
 > **Gold Standard:** `Modules/Organization/resources/views/`  
 > **Build:** `vite.config.backend.js` — **một build duy nhất** cho toàn backend
@@ -19,7 +19,7 @@
 8. **[Quyết định bố cục form — Flat vs Tab](#8-quyết-định-bố-cục-form)** ← NEW v5
 9. **[Flat Form (≤ ~10 trường)](#9-flat-form)**
 10. **[Tab-Based Form (> 10 trường / ≥ 3 nhóm)](#10-tab-based-form)** ← NEW v5
-11. **[Sidebar Publish Block](#11-sidebar-publish-block)** ← NEW v5
+11. **[Publish Block (full width)](#11-publish-block)** ← v5.1 đổi từ sidebar
 12. [Card Section](#12-card-section)
 13. [Grid & bố cục cột](#13-grid)
 14. [Form Control — cấu trúc bắt buộc](#14-form-control)
@@ -57,11 +57,12 @@ Input height:    input-sm  = 2.25rem (36px)
 Card gap:        space-y-5 = 1.25rem (20px)   ← giữa các card
 Field gap:       gap-4     = 1rem    (16px)    ← giữa fields trong card
 Label→Input:     pb-1.5    = 6px
-Sidebar width:   268px     (xl:grid-cols-[1fr_268px])
+Khối form:       full width, xếp dọc (space-y-6) — không chia cột main/sidebar
 ```
 
 > ⚠️ **v5 breaking change:** Không dùng `max-w-3xl` làm container form.
-> Form dùng layout grid full-width + sidebar thay thế.
+> **v5.1 breaking change:** Không còn layout 2 cột `xl:grid-cols-[1fr_268px]` + sidebar sticky.
+> Form gồm 2 khối **full width xếp dọc**: (1) khối thông tin (card + tab), (2) khối Publish (tóm tắt + nút Lưu/Hủy).
 
 ---
 
@@ -437,17 +438,17 @@ Dùng khi > 10 trường hoặc có từ 3+ nhóm thông tin riêng biệt.
 ### 10.1 Layout tổng thể
 
 ```
-┌─────────────────────────────────┬──────────────────┐
-│  [Tab 1] [Tab 2] [Tab 3]        │                  │
-│  ─────────────────────────────  │   SIDEBAR        │
-│                                 │   (sticky)       │
-│  Chỉ hiện 1 tab tại 1 thời điểm│                  │
-│  → không bao giờ scroll form    │   - Trạng thái   │
-│                                 │   - Submit/Hủy   │
-│  [← Trước]       [Tiếp theo →] │   - Meta         │
-└─────────────────────────────────┴──────────────────┘
+┌───────────────────────────────────────────────────────┐
+│  [Tab 1] [Tab 2] [Tab 3]                              │  ← Khối 1: thông tin (full width)
+│  ───────────────────────────────────────────────────  │
+│  Chỉ hiện 1 tab tại 1 thời điểm                       │
+│  [← Trước]                          [Tiếp theo →]     │
+└───────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────┐
+│  Tóm tắt / Trạng thái        * bắt buộc  [Hủy] [Lưu]  │  ← Khối 2: Publish (full width)
+└───────────────────────────────────────────────────────┘
 
-Grid: xl:grid-cols-[1fr_268px] gap-6 items-start
+Wrapper: space-y-6  (2 khối xếp dọc, cùng chiều rộng)
 ```
 
 ### 10.2 Alpine x-data — cấu trúc
@@ -543,7 +544,7 @@ Tab state quản lý bằng Alpine inline (đủ đơn giản, không cần file
             <button type="button" @click="tab = 'contact'" class="btn btn-ghost btn-sm gap-1.5">
                 <svg ...>← arrow</svg> Liên hệ
             </button>
-            <span class="text-xs text-base-content/40">Nhấn <strong>Lưu</strong> ở bên phải khi xong</span>
+            <span class="text-xs text-base-content/40">Nhấn <strong>Lưu</strong> ở khối bên dưới khi xong</span>
         </div>
     </div>
 
@@ -569,9 +570,9 @@ Tab state quản lý bằng Alpine inline (đủ đơn giản, không cần file
 <form method="POST" action="..." novalidate data-[entity]-form>
     @csrf
 
-    <div class="grid grid-cols-1 xl:grid-cols-[1fr_268px] gap-6 items-start">
+    <div class="space-y-6">
 
-        {{-- Card chính: tab nav + panels --}}
+        {{-- Khối 1 (full width): tab nav + panels --}}
         <div class="card bg-base-100 shadow-sm border border-base-200">
             <div class="border-b border-base-200 px-6">
                 <nav class="flex -mb-px" role="tablist">
@@ -583,10 +584,8 @@ Tab state quản lý bằng Alpine inline (đủ đơn giản, không cần file
             </div>
         </div>
 
-        {{-- Sidebar sticky --}}
-        <div class="xl:sticky xl:top-4 space-y-4">
-            {{-- Publish block (Section 11) --}}
-        </div>
+        {{-- Khối 2 (full width): Publish block (Section 11) --}}
+        <div class="card bg-base-100 shadow-sm border border-base-200">...</div>
 
     </div>
 </form>
@@ -596,96 +595,96 @@ Tab state quản lý bằng Alpine inline (đủ đơn giản, không cần file
 
 ---
 
-## 11. Sidebar Publish Block
+## 11. Publish Block (full width)
 
-Block sidebar xuất hiện trong cả flat form (nếu cần sidebar) và tab form. Mục đích: tổng hợp trạng thái + action submit vào 1 vị trí cố định, không bao giờ bị cuộn khuất.
+Block Publish là **khối thứ 2, full width, đặt ngay dưới card thông tin** (cả tab form và flat form nếu cần). Mục đích: tổng hợp trạng thái + action submit vào 1 vị trí cố định ngay cuối form, thay cho sidebar cũ (v5).
 
 ### 11.1 Create form
 
 ```blade
 <div class="card bg-base-100 shadow-sm border border-base-200">
     <div class="card-body p-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
 
-        <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-3">
-            Xuất bản
-        </p>
+            {{-- Trái: tiêu đề + trạng thái/tóm tắt --}}
+            <div>
+                <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-2">
+                    Xuất bản
+                </p>
+                <div class="form-control">
+                    <label class="label py-0 pb-1">
+                        <span class="label-text text-xs font-medium">
+                            Trạng thái <span class="text-error">*</span>
+                        </span>
+                    </label>
+                    <select id="ts-status" name="status"
+                            class="select select-bordered select-sm w-56 ts-init @error('status') select-error @enderror">
+                        <option value="active"   {{ old('status', 'active') === 'active'   ? 'selected' : '' }}>Hoạt động</option>
+                        <option value="inactive" {{ old('status') === 'inactive'           ? 'selected' : '' }}>Không hoạt động</option>
+                    </select>
+                    @error('status')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                </div>
+            </div>
 
-        <div class="form-control mb-4">
-            <label class="label py-0 pb-1">
-                <span class="label-text text-xs font-medium">
-                    Trạng thái <span class="text-error">*</span>
-                </span>
-            </label>
-            <select name="status"
-                    class="select select-bordered select-sm w-full @error('status') select-error @enderror">
-                <option value="active"    {{ old('status', 'active') === 'active'    ? 'selected' : '' }}>Hoạt động</option>
-                <option value="inactive"  {{ old('status') === 'inactive'            ? 'selected' : '' }}>Không hoạt động</option>
-                <option value="suspended" {{ old('status') === 'suspended'           ? 'selected' : '' }}>Tạm khóa</option>
-            </select>
-            @error('status')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+            {{-- Phải: ghi chú bắt buộc + 2 nút nằm ngang, kích thước tự nhiên (không flex-1) --}}
+            <div class="flex items-center gap-4">
+                <p class="text-xs text-base-content/30"><span class="text-error">*</span> là trường bắt buộc</p>
+                <div class="flex gap-2">
+                    <a href="{{ route('...index') }}" class="btn btn-ghost btn-sm">Hủy</a>
+                    <button type="submit" class="btn btn-primary btn-sm gap-1.5">
+                        <svg class="w-3.5 h-3.5" ...>+ icon</svg>
+                        Tạo mới
+                    </button>
+                </div>
+            </div>
+
         </div>
+    </div>
+</div>
+```
 
-        {{-- 2 nút ngang nhau — không full-width stacked --}}
-        <div class="flex gap-2">
-            <a href="{{ route('...index') }}" class="btn btn-ghost btn-sm flex-1">Hủy</a>
-            <button type="submit" class="btn btn-primary btn-sm flex-1 gap-1.5">
-                <svg class="w-3.5 h-3.5" ...>+ icon</svg>
-                Tạo mới
-            </button>
-        </div>
+Khi form không có trường trạng thái, cột trái chỉ hiện **Tóm tắt** dạng inline:
 
-        <p class="text-center text-xs text-base-content/30 mt-2.5">
-            <span class="text-error">*</span> là trường bắt buộc
-        </p>
-
+```blade
+<div>
+    <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-2">Tóm tắt</p>
+    <div class="flex flex-wrap gap-x-6 gap-y-1 text-xs">
+        <span><span class="text-base-content/50">Nhãn:</span> <span class="font-mono">12</span></span>
     </div>
 </div>
 ```
 
 ### 11.2 Edit form (thêm meta timestamps)
 
+Cột trái thêm 1 dòng meta inline dưới tiêu đề; cột phải giữ nguyên, nút Hủy trỏ về trang chi tiết, nút submit là `Lưu lại`:
+
 ```blade
-<div class="card bg-base-100 shadow-sm border border-base-200">
-    <div class="card-body p-4">
-
-        <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-3">
-            Xuất bản
-        </p>
-
-        {{-- Status select (như trên, old() fallback về model) --}}
-        <div class="form-control mb-3">...</div>
-
-        {{-- Meta: 1 dòng inline, không block riêng --}}
-        <div class="flex justify-between text-xs text-base-content/40 mb-4 px-0.5">
-            <span>Tạo {{ $model->created_at->format('d/m/Y') }}</span>
-            <span>Sửa {{ $model->updated_at->diffForHumans() }}</span>
-        </div>
-
-        <div class="flex gap-2">
-            <a href="{{ route('...show', $model) }}" class="btn btn-ghost btn-sm flex-1">Hủy</a>
-            <button type="submit" class="btn btn-primary btn-sm flex-1 gap-1.5">
-                <svg class="w-3.5 h-3.5" ...>✓ icon</svg>
-                Lưu lại
-            </button>
-        </div>
-
-        <p class="text-center text-xs text-base-content/30 mt-2.5">
-            <span class="text-error">*</span> là trường bắt buộc
-        </p>
-
+<div>
+    <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-2">Xuất bản</p>
+    {{-- Status select như trên (old() fallback về model) --}}
+    <div class="flex gap-4 text-xs text-base-content/40 mt-2">
+        <span>Tạo {{ $model->created_at->format('d/m/Y') }}</span>
+        <span>Sửa {{ $model->updated_at->diffForHumans() }}</span>
     </div>
 </div>
+...
+<a href="{{ route('...show', $model) }}" class="btn btn-ghost btn-sm">Hủy</a>
+<button type="submit" class="btn btn-primary btn-sm gap-1.5">
+    <svg class="w-3.5 h-3.5" ...>✓ icon</svg>
+    Lưu lại
+</button>
 ```
 
 ### 11.3 Nguyên tắc thiết kế
 
 | Nguyên tắc | Lý do |
 |---|---|
+| Block full width, đặt dưới card thông tin, cách `space-y-6` | 2 khối cùng chiều rộng → không bị hẹp cột khi form có bảng/lưới rộng |
+| Không sticky, không sidebar | Bảng nhiều cột cần tối đa chiều ngang; nút Lưu nằm cuối form, đúng luồng nhập liệu |
 | Title dùng `text-xs uppercase tracking-wide` (không phải `h3`) | Phân biệt rõ với section title trong card chính |
-| Label trạng thái dùng `text-xs` | Sidebar nhỏ hơn main content |
-| 2 nút `flex-1` nằm ngang | Full-width stacked button trông thừa và nặng |
-| Meta timestamps trên 1 dòng | Không dùng `dl/dt/dd` block riêng — quá nặng cho sidebar |
-| Padding `p-4` (không phải `card-body` default) | Card sidebar cần compact hơn card main |
+| `flex flex-wrap items-center justify-between gap-4` | Tự xuống dòng gọn trên màn hình hẹp |
+| 2 nút cạnh nhau, kích thước tự nhiên (`btn btn-sm`), căn phải | Không dùng nút full-width/`flex-1` kéo dãn cả khối |
+| Padding `p-4` (không phải `card-body` default) | Block Publish cần compact hơn card thông tin |
 
 ---
 
@@ -748,16 +747,16 @@ Card dùng trong cả flat form và tab panel:
 | Slug | Half (nằm dưới tên) |
 | Textarea, rich text | Full (ngoài grid) |
 
-### 13.3 Grid tổng thể form (tab + sidebar)
+### 13.3 Bố cục tổng thể form (tab + Publish)
 
 ```blade
-{{-- Tab form --}}
-<div class="grid grid-cols-1 xl:grid-cols-[1fr_268px] gap-6 items-start">
-    <div>{{-- card chính --}}</div>
-    <div class="xl:sticky xl:top-4 space-y-4">{{-- sidebar --}}</div>
+{{-- Tab form — 2 khối full width xếp dọc --}}
+<div class="space-y-6">
+    <div class="card ...">{{-- khối 1: tab nav + panels --}}</div>
+    <div class="card ...">{{-- khối 2: Publish block --}}</div>
 </div>
 
-{{-- Flat form — không dùng grid tổng thể, để form chiếm full width --}}
+{{-- Flat form — form chiếm full width, submit bar Section 20 --}}
 <form class="space-y-5">...</form>
 ```
 
@@ -1311,7 +1310,7 @@ function _toSlug(str) {
 
 ## 20. Submit Actions Bar
 
-Dùng cho flat form (không có sidebar). Tab form dùng sidebar publish block (Section 11).
+Dùng cho flat form. Tab form dùng Publish block full width (Section 11).
 
 ```blade
 {{-- Cơ bản --}}
@@ -1628,9 +1627,8 @@ Slug:  "ten-slug-vd"
 
 | Thành phần | Class |
 |---|---|
-| Grid tab form | `grid grid-cols-1 xl:grid-cols-[1fr_268px] gap-6 items-start` |
+| Wrapper 2 khối (tab form) | `space-y-6` |
 | Card chính (tab) | `card bg-base-100 shadow-sm border border-base-200` |
-| Sidebar wrapper | `xl:sticky xl:top-4 space-y-4` |
 | Tab nav container | `border-b border-base-200 px-6` |
 | Tab nav inner | `flex -mb-px` |
 | Tab button active | `border-b-2 border-primary text-primary` |
@@ -1638,11 +1636,12 @@ Slug:  "ten-slug-vd"
 | Tab panel | `x-show="tab === 'key'" data-tab-label="Label"` |
 | Tab panel body | `p-6` |
 | Tab footer nav | `flex items-center justify-between pt-2` |
-| Sidebar card | `card bg-base-100 shadow-sm border border-base-200` |
-| Sidebar card body | `card-body p-4` |
-| Sidebar title | `text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-3` |
-| Sidebar 2-btn row | `flex gap-2` + từng nút `btn btn-sm flex-1` |
-| Sidebar meta | `flex justify-between text-xs text-base-content/40 mb-4 px-0.5` |
+| Publish card | `card bg-base-100 shadow-sm border border-base-200` |
+| Publish card body | `card-body p-4` |
+| Publish row | `flex flex-wrap items-center justify-between gap-4` |
+| Publish title | `text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-2` |
+| Publish 2-btn group | `flex gap-2` (nút `btn btn-sm`, không `flex-1`) |
+| Publish meta | `flex gap-4 text-xs text-base-content/40 mt-2` |
 
 ### Cards & sections
 
@@ -1681,8 +1680,8 @@ Slug:  "ten-slug-vd"
 |---|---|
 | Primary submit | `btn btn-primary btn-sm gap-1.5` |
 | Cancel / ghost | `btn btn-ghost btn-sm` |
-| Sidebar submit | `btn btn-primary btn-sm flex-1 gap-1.5` |
-| Sidebar cancel | `btn btn-ghost btn-sm flex-1` |
+| Publish submit | `btn btn-primary btn-sm gap-1.5` |
+| Publish cancel | `btn btn-ghost btn-sm` |
 | Tab nav prev/next | `btn btn-ghost btn-sm gap-1.5` |
 | Loading spinner | `loading loading-spinner loading-xs` |
 
@@ -1694,8 +1693,9 @@ Slug:  "ten-slug-vd"
 
 | ❌ Sai | ✅ Đúng |
 |---|---|
-| `max-w-3xl` làm container form | Grid `xl:grid-cols-[1fr_268px]` + sidebar |
-| Full-width stacked submit buttons trong sidebar | 2 nút `flex-1` nằm ngang |
+| `max-w-3xl` làm container form | 2 khối full width xếp dọc (`space-y-6`) |
+| Chia 2 cột main + sidebar `xl:grid-cols-[1fr_268px]`, sidebar sticky | Publish block full width dưới card thông tin |
+| Nút Lưu/Hủy `flex-1` kéo dãn hết chiều ngang | 2 nút kích thước tự nhiên, căn phải trong Publish block |
 | Icon box màu (`bg-primary/10 rounded-lg`) trong section header | Icon inline `w-4 h-4 text-primary` |
 | Subtitle dưới section header | Bỏ — dùng hint dưới field nếu cần giải thích |
 | Icon wrapper trong input (phone, email) | Input thông thường, không icon prefix |
@@ -1807,8 +1807,8 @@ Slug:  "ten-slug-vd"
 - [ ] `[data-req]` trên mọi required field
 - [ ] `toastify.js` load trước module JS trong `@push('scripts')`
 - [ ] `_setupTabGuard(form)` được gọi trong page controller
-- [ ] Sidebar dùng Section 11 pattern (không full-width stacked buttons)
-- [ ] Grid `xl:grid-cols-[1fr_268px]` với `xl:sticky xl:top-4` trên sidebar
+- [ ] Publish block dùng Section 11 pattern (full width, dưới card thông tin, nút kích thước tự nhiên)
+- [ ] Wrapper 2 khối `space-y-6` — không dùng grid 2 cột / sidebar sticky
 - [ ] Mỗi tab panel có footer nav (Prev/Next buttons)
 - [ ] `init()` trong x-data tự chuyển tab có lỗi server
 

@@ -1,0 +1,44 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (Schema::hasTable('food_inspection_step3_logs')) {
+            return;
+        }
+
+        Schema::create('food_inspection_step3_logs', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+
+            $table->foreignUlid('customer_id')->constrained('customers')->restrictOnDelete()
+                ->comment('Khách hàng / điểm phục vụ — cô lập dữ liệu, khớp với Thực đơn và Sổ Bước 1, 2');
+            $table->string('customer_name', 255)->comment('Snapshot tên cơ sở tại thời điểm kiểm thực');
+            $table->foreignUlid('delivery_point_id')->nullable()->constrained('customer_delivery_points')->nullOnDelete();
+            $table->string('location_name', 255)->nullable()->comment('Địa điểm kiểm thực');
+
+            $table->date('inspection_date')->comment('Ngày kiểm tra');
+            $table->text('note')->nullable();
+
+            $table->unsignedSmallInteger('failed_items_count')->default(0)->comment('Số món cảm quan không đạt');
+
+            $table->foreignUlid('inspected_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('inspector_name', 255)->comment('Snapshot tên người kiểm tra');
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->index('inspection_date', 'idx_fi_step3_logs_date');
+            $table->index('customer_id', 'idx_fi_step3_logs_customer');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('food_inspection_step3_logs');
+    }
+};

@@ -1,50 +1,3 @@
-/**
- * vite.config.backend.js
- *
- * Laravel 13 | Vite 8 | Tailwind 4 | DaisyUI 5 | Alpine 3
- * ─────────────────────────────────────────────────────────────────────
- *
- * CHIẾN LƯỢC BUNDLE
- * ┌────────────────────────────────────────────────────────────────────┐
- * │ CORE  — tải trên MỌI trang backend                                 │
- * │  · app.css  → Tailwind 4 + DaisyUI 5 + admin shell layout          │
- * │  · app.js   → jQuery, Alpine 3, Iconify, admin-shell, form-valid.  │
- * ├────────────────────────────────────────────────────────────────────┤
- * │ WIDGET LIBS  — tải lazy theo trang (@vite trong blade)             │
- * │  · toastify    toast notification  (nhẹ, nhiều trang)              │
- * │  · tabulator   Tabulator v6        (bảng nâng cao)                 │
- * │  · filepond    FilePond + plugins  (trang upload)                  │
- * │  · flatpickr   date/time picker    (form có date)                  │
- * │  · jodit       rich-text editor    (~500 KB, lazy)                 │
- * │  · tom-select  select/autocomplete (form có select nâng cao)       │
- * │  · swiper      carousel/slider                                     │
- * │  · qrcode      QR code generator                                   │
- * ├────────────────────────────────────────────────────────────────────┤
- * │ MODULE ASSETS  — SCSS + JS riêng mỗi module, tải per-page          │
- * │                                                                    │
- * │  SCSS — @use shared partials từ resources/scss/:                   │
- * │    @use 'tokens'        → DaisyUI CSS vars → SCSS vars             │
- * │    @use 'mixins'        → mixin tái dụng                           │
- * │    @use 'form-patterns' → .color-picker-combo, .field-readonly...  │
- * │    @use 'tom-select'    → TomSelect dark/light theme               │
- * │                                                                    │
- * │  JS — import shared utils từ resources/js/shared/:                 │
- * │    import { makeFormController }   from '@shared/form-controller'  │
- * │    import { makeWizardController } from '@shared/wizard-controller'│
- * │    import { createTs }             from '@shared/tom-select-factory'│
- * └────────────────────────────────────────────────────────────────────┘
- *
- * LỆNH:
- *   npm run dev    → vite --config vite.config.backend.js
- *   npm run build  → vite build --config vite.config.backend.js
- *
- * BLADE:
- *   Core  : @vite(['resources/css/app.css', 'resources/js/app.js'], 'build/backend')
- *   Widget: @vite(['resources/js/modules/tom-select.js'], 'build/backend')
- *   Module: @vite(['Modules/Organization/resources/assets/sass/organization.scss',
- *                  'Modules/Organization/resources/assets/js/organization.js'], 'build/backend')
- */
-
 import { defineConfig } from 'vite';
 import laravel          from 'laravel-vite-plugin';
 import tailwindcss      from '@tailwindcss/vite';
@@ -65,6 +18,7 @@ const JS_OUTPUT = {
   'jodit':      'assets/jodit.[hash].js',
   'tom-select': 'assets/tom-select.[hash].js',
   'swiper':     'assets/swiper.[hash].js',
+  'handsontable':'assets/handsontable.[hash].js',
   'qrcode':     'assets/qrcode.[hash].js',
   // Module JS — named [module] to avoid chunk name collision
   'user':                 'assets/modules/user.[hash].js',
@@ -80,6 +34,8 @@ const JS_OUTPUT = {
   'salesorder':           'assets/modules/salesorder.[hash].js',
   'labeltemplate':        'assets/modules/labeltemplate.[hash].js',
   'tracelog':             'assets/modules/tracelog.[hash].js',
+  'foodinspection':       'assets/modules/foodinspection.[hash].js',
+  'menu':                 'assets/modules/menu.[hash].js',
 };
 
 /** CSS asset name → output path.
@@ -95,6 +51,7 @@ const CSS_OUTPUT = {
   'jodit.min.css':                 'assets/jodit.[hash].css',
   'tom-select.css':                'assets/tom-select.[hash].css',
   'swiper.css':                    'assets/swiper.[hash].css',
+  'handsontable.css':              'assets/handsontable.[hash].css',
   // Module SCSS → CSS
   // asset.name là tên sau khi compile: 'user.css', không phải 'user.scss'
   'user.css':                 'assets/modules/user.[hash].css',
@@ -110,6 +67,8 @@ const CSS_OUTPUT = {
   'salesorder.css':           'assets/modules/salesorder.[hash].css',
   'labeltemplate.css':        'assets/modules/labeltemplate.[hash].css',
   'tracelog.css':             'assets/modules/tracelog.[hash].css',
+  'foodinspection.css':       'assets/modules/foodinspection.[hash].css',
+  'menu.css':                 'assets/modules/menu.[hash].css',
 };
 
 // ─── Module input entries ─────────────────────────────────────────────
@@ -157,6 +116,12 @@ const MODULE_ENTRIES = [
   // TraceLog
   'Modules/TraceLog/resources/assets/sass/tracelog.scss',
   'Modules/TraceLog/resources/assets/js/tracelog.js',
+  // FoodInspection
+  'Modules/FoodInspection/resources/assets/sass/foodinspection.scss',
+  'Modules/FoodInspection/resources/assets/js/foodinspection.js',
+  // Menu
+  'Modules/Menu/resources/assets/sass/menu.scss',
+  'Modules/Menu/resources/assets/js/menu.js',
 ];
 
 // ─────────────────────────────────────────────────────────────────────
@@ -189,6 +154,7 @@ export default defineConfig(({ mode }) => {
           'resources/js/modules/jodit.js',
           'resources/js/modules/tom-select.js',
           'resources/js/modules/swiper.js',
+          'resources/js/modules/handsontable.js',
           'resources/js/modules/qrcode.js',
 
           /* ── MODULE ASSETS (lazy per-page) ────────────────────── */
@@ -297,6 +263,7 @@ export default defineConfig(({ mode }) => {
               'vendor-iconify':    'assets/vendor-iconify.[hash].js',
               'vendor-jodit':      'assets/vendor-jodit.[hash].js',
               'vendor-swiper':     'assets/vendor-swiper.[hash].js',
+              'vendor-handsontable':'assets/vendor-handsontable.[hash].js',
               'vendor-tabulator':  'assets/vendor-tabulator.[hash].js',
               'vendor-filepond':   'assets/vendor-filepond.[hash].js',
               'vendor-tom-select': 'assets/vendor-tom-select.[hash].js',
@@ -333,6 +300,7 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/iconify-icon'))    return 'vendor-iconify';
             if (id.includes('node_modules/jodit'))           return 'vendor-jodit';
             if (id.includes('node_modules/swiper'))          return 'vendor-swiper';
+            if (id.includes('node_modules/handsontable'))    return 'vendor-handsontable';
             if (id.includes('node_modules/tabulator-tables'))return 'vendor-tabulator';
             if (id.includes('node_modules/filepond'))        return 'vendor-filepond';
             if (id.includes('node_modules/tom-select'))      return 'vendor-tom-select';
@@ -363,6 +331,7 @@ export default defineConfig(({ mode }) => {
       exclude: [
         'jodit',
         'swiper',
+        'handsontable',
         'tabulator-tables',
         'filepond',
         'filepond-plugin-image-preview',

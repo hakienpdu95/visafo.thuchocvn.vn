@@ -70,6 +70,12 @@ class RolePermissionSeeder extends Seeder
                 P::GOODS_RECEIPT_VIEW->value,
                 P::GOODS_RECEIPT_MANAGE->value,
 
+                P::FOOD_INSPECTION_VIEW->value,
+                P::FOOD_INSPECTION_MANAGE->value,
+
+                P::MENU_VIEW->value,
+                P::MENU_MANAGE->value,
+
                 P::SALES_ORDER_VIEW->value,
                 P::SALES_ORDER_MANAGE->value,
 
@@ -104,6 +110,8 @@ class RolePermissionSeeder extends Seeder
                 P::PRODUCT_VIEW->value,
                 P::VENDOR_VIEW->value,
                 P::GOODS_RECEIPT_VIEW->value,
+                P::FOOD_INSPECTION_VIEW->value,
+                P::MENU_VIEW->value,
                 P::SALES_ORDER_VIEW->value,
                 P::LABEL_TEMPLATE_VIEW->value,
                 P::TRACE_LOG_VIEW->value,
@@ -131,6 +139,10 @@ class RolePermissionSeeder extends Seeder
                 P::CUSTOMER_VIEW->value,
 
                 P::GOODS_RECEIPT_VIEW->value,
+                P::FOOD_INSPECTION_VIEW->value,
+                P::FOOD_INSPECTION_MANAGE->value,
+                P::MENU_VIEW->value,
+                P::MENU_MANAGE->value,
                 P::SALES_ORDER_VIEW->value,
 
                 P::TRACE_LOG_VIEW->value,
@@ -151,6 +163,12 @@ class RolePermissionSeeder extends Seeder
 
                 P::GOODS_RECEIPT_VIEW->value,
                 P::GOODS_RECEIPT_MANAGE->value,
+
+                P::FOOD_INSPECTION_VIEW->value,
+                P::FOOD_INSPECTION_MANAGE->value,
+
+                P::MENU_VIEW->value,
+                P::MENU_MANAGE->value,
             ],
 
             // ─────────────────────────────────────────────────────────
