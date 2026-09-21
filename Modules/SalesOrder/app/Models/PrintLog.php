@@ -47,6 +47,7 @@ class PrintLog extends TenantAwareModel
         'mfg_date',
         'exp_date',
         'supplier_name',
+        'batch_code',
         'printed_by',
     ];
 

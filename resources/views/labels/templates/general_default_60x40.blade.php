@@ -47,6 +47,9 @@
             @if(!empty($log->supplier_name))
             <div class="supplier"><b>Nguồn:</b> {{ $log->supplier_name }}</div>
             @endif
+            @if(!empty($log->batch_code))
+            <div class="supplier"><b>Lô:</b> {{ $log->batch_code }}</div>
+            @endif
         </div>
         @isset($qrSvg)
         <div class="qr">

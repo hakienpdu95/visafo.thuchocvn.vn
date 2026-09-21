@@ -19,7 +19,7 @@ class PrintSalesOrderItemLabelAction
      * và bản sao thông tin bổ sung (EAV) riêng; các tem cùng lần in chung một print_session_id.
      * Cộng dồn khối lượng đã in tem (N × khối lượng/tem) vào dòng hàng trong cùng transaction.
      *
-     * @param  array{weight_per_label: float|string, label_count: int, mfg_date: ?string, exp_date: string, supplier_name: ?string, label_template_id?: ?string, extra_attributes?: array<int, array{key: string, value: ?string}>}  $data
+     * @param  array{weight_per_label: float|string, label_count: int, mfg_date: ?string, exp_date: string, supplier_name: ?string, batch_code?: ?string, label_template_id?: ?string, extra_attributes?: array<int, array{key: string, value: ?string}>}  $data
      * @return array{session_id: string, logs: Collection<int, PrintLog>}
      */
     public function handle(SalesOrderItem $item, array $data, ?string $printedBy): array
@@ -38,6 +38,7 @@ class PrintSalesOrderItemLabelAction
                     'mfg_date'          => $data['mfg_date'] ?? null,
                     'exp_date'          => $data['exp_date'],
                     'supplier_name'     => $data['supplier_name'] ?? null,
+                    'batch_code'        => $data['batch_code'] ?? null,
                     'printed_by'        => $printedBy,
                 ]); // trace_code độc nhất được sinh trong PrintLog::creating
 

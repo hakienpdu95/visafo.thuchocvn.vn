@@ -232,11 +232,11 @@
                     <div class="form-control">
                         <label class="label py-0 pb-1.5" for="pl-weight">
                             <span class="label-text font-medium">Khối lượng/Tem (kg) <span class="text-error">*</span></span>
-                            <span class="label-text-alt text-base-content/40 text-xs" x-show="remaining > 0" x-text="'Còn lại: ' + remaining + ' kg'"></span>
+                            <span class="label-text-alt text-base-content/40 text-xs">Tự động theo SL yêu cầu</span>
                         </label>
                         <input id="pl-weight" type="number" name="weight_per_label" step="0.001" min="0.001" inputmode="decimal"
-                               x-model="form.weight" x-ref="weight" placeholder="VD: 0.5"
-                               class="input input-bordered input-sm w-full"
+                               x-model="form.weight" x-ref="weight" placeholder="VD: 0.5" readonly disabled
+                               class="input input-bordered input-sm w-full bg-base-200 text-base-content/70 cursor-not-allowed"
                                :class="{ 'input-error': errors.weight_per_label }">
                         <p class="mt-1 text-xs text-error" x-show="errors.weight_per_label" x-text="errors.weight_per_label"></p>
                     </div>
@@ -253,41 +253,76 @@
                         <p class="mt-1 text-xs text-error" x-show="errors.label_count" x-text="errors.label_count"></p>
                     </div>
 
-                    <div class="form-control">
-                        <label class="label py-0 pb-1.5" for="fp-label-mfg">
-                            <span class="label-text font-medium">NSX</span>
-                            <span class="label-text-alt text-base-content/40 text-xs">Mặc định hôm nay</span>
-                        </label>
-                        <input id="fp-label-mfg" type="text" name="mfg_date" autocomplete="off" placeholder="DD/MM/YYYY"
-                               class="input input-bordered input-sm w-full"
-                               :class="{ 'input-error': errors.mfg_date }">
-                        <p class="mt-1 text-xs text-error" x-show="errors.mfg_date" x-text="errors.mfg_date"></p>
-                    </div>
+                    {{-- NSX/HSD xếp chồng label-trên-input trong từng ô, 2 ô cạnh nhau trên màn hình vừa/lớn. --}}
+                    <div class="sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                    <div class="form-control">
-                        <label class="label py-0 pb-1.5" for="fp-label-exp">
-                            <span class="label-text font-medium">HSD <span class="text-error">*</span></span>
-                            <span class="label-text-alt text-base-content/40 text-xs" x-show="item?.shelf_life_days"
-                                  x-text="'NSX + ' + item?.shelf_life_days + ' ngày'"></span>
-                        </label>
-                        <input id="fp-label-exp" type="text" name="exp_date" autocomplete="off" placeholder="DD/MM/YYYY"
-                               class="input input-bordered input-sm w-full"
-                               :class="{ 'input-error': errors.exp_date }">
-                        <p class="mt-1 text-xs text-base-content/40" x-show="item?.shelf_life_days && !errors.exp_date">
-                            Tự tính theo số ngày bảo quản của sản phẩm, vẫn có thể chỉnh tay.
-                        </p>
-                        <p class="mt-1 text-xs text-error" x-show="errors.exp_date" x-text="errors.exp_date"></p>
+                        <div class="flex flex-col">
+                            <label class="block text-sm font-medium text-base-content mb-1" for="fp-label-mfg">
+                                NSX <span class="text-xs font-normal text-base-content/40 ml-1">Mặc định hôm nay</span>
+                            </label>
+                            <input id="fp-label-mfg" type="text" name="mfg_date" autocomplete="off" placeholder="DD/MM/YYYY"
+                                   class="input input-bordered input-sm w-full"
+                                   :class="{ 'input-error': errors.mfg_date }">
+                            <p class="mt-1 text-xs text-error" x-show="errors.mfg_date" x-text="errors.mfg_date"></p>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label class="block text-sm font-medium text-base-content mb-1" for="fp-label-exp">
+                                HSD <span class="text-error">*</span>
+                                <span class="text-xs font-normal text-base-content/40 ml-1" x-show="item?.shelf_life_days"
+                                      x-text="'NSX + ' + item?.shelf_life_days + ' ngày'"></span>
+                            </label>
+                            <input id="fp-label-exp" type="text" name="exp_date" autocomplete="off" placeholder="DD/MM/YYYY"
+                                   class="input input-bordered input-sm w-full"
+                                   :class="{ 'input-error': errors.exp_date }">
+                            <p class="mt-1 text-xs text-base-content/40" x-show="item?.shelf_life_days && !errors.exp_date">
+                                Tự tính theo số ngày bảo quản của sản phẩm, vẫn có thể chỉnh tay.
+                            </p>
+                            <p class="mt-1 text-xs text-error" x-show="errors.exp_date" x-text="errors.exp_date"></p>
+                        </div>
+
                     </div>
 
                     <div class="form-control sm:col-span-2">
-                        <label class="label py-0 pb-1.5" for="pl-supplier">
+                        <label class="label py-0 pb-1.5" for="pl-batch-code">
+                            <span class="label-text font-medium">Mã lô</span>
+                            <span class="label-text-alt text-base-content/40 text-xs">Tự sinh theo NSX/HSD</span>
+                        </label>
+                        <input id="pl-batch-code" type="text" name="batch_code" readonly disabled
+                               x-model="form.batchCode" placeholder="LOT-..."
+                               class="input input-bordered input-sm w-full bg-base-200 text-base-content/70 cursor-not-allowed font-mono">
+                    </div>
+
+                    <div class="form-control sm:col-span-2">
+                        <label class="label py-0 pb-1.5" for="ts-supplier">
                             <span class="label-text font-medium">Nguồn cung</span>
                             <span class="label-text-alt text-base-content/40 text-xs">Tuỳ chọn</span>
                         </label>
-                        <input id="pl-supplier" type="text" name="supplier_name" maxlength="255"
-                               x-model="form.supplier" placeholder="VD: HTX Rau sạch Đà Lạt"
-                               class="input input-bordered input-sm w-full"
-                               :class="{ 'input-error': errors.supplier_name }">
+
+                        <div x-show="!form.supplierManual">
+                            <select id="ts-supplier" name="vendor_id"
+                                    class="select select-bordered select-sm w-full"
+                                    data-ts-placeholder="— Chọn nhà cung cấp —">
+                                <option value="">— Chọn nhà cung cấp —</option>
+                                @foreach($vendors as $vendor)
+                                <option value="{{ $vendor['value'] }}" data-text="{{ $vendor['text'] }}">{{ $vendor['text'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div x-show="form.supplierManual">
+                            <input id="pl-supplier-manual" type="text" name="supplier_name" maxlength="255"
+                                   x-model="form.supplierText" placeholder="VD: HTX Rau sạch Đà Lạt"
+                                   class="input input-bordered input-sm w-full"
+                                   :class="{ 'input-error': errors.supplier_name }">
+                        </div>
+
+                        <label class="label cursor-pointer justify-start gap-2 py-1.5" for="pl-supplier-manual-toggle">
+                            <input id="pl-supplier-manual-toggle" type="checkbox" x-model="form.supplierManual"
+                                   @change="onSupplierManualToggle()" class="checkbox checkbox-xs">
+                            <span class="label-text text-xs">Khác / Nhập tay</span>
+                        </label>
+
                         <p class="mt-1 text-xs text-error" x-show="errors.supplier_name" x-text="errors.supplier_name"></p>
                     </div>
 

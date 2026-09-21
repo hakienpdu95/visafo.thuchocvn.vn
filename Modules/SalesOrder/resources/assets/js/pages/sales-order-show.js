@@ -59,12 +59,19 @@ const COLUMNS = [
 const pad = (n) => String(n).padStart(2, '0');
 const toYmd = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 const fromYmd = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+// 'Y-m-d' → 'ddMMyy' (dùng để ráp Mã lô LOT-[NSX]-[HSD]).
+const toDdMmYy = (ymd) => {
+    if (!ymd) return '';
+    const [y, m, d] = ymd.split('-');
+    return d + m + y.slice(2);
+};
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('printLabelModal', () => {
         let mfgPicker = null;
         let expPicker = null;
         let templateTs = null;
+        let supplierTs = null;
 
         return {
             open: false,
@@ -77,7 +84,7 @@ document.addEventListener('alpine:init', () => {
             attributes: [],
             loadingAttributes: false,
             _uid: 0,
-            form: { weight: '', count: 1, mfg: '', exp: '', supplier: '', template: '' },
+            form: { weight: '', count: 1, mfg: '', exp: '', supplierManual: false, supplierText: '', batchCode: '', template: '' },
 
             get canSubmit() {
                 return !this.submitting
@@ -101,16 +108,29 @@ document.addEventListener('alpine:init', () => {
                         });
                     }
 
+                    // Select tìm kiếm được cho Nguồn cung — lấy nhãn hiển thị trực tiếp từ option đã chọn.
+                    const supplierEl = document.getElementById('ts-supplier');
+                    if (supplierEl && !supplierEl.tomselect) {
+                        supplierTs = createTs(supplierEl, {
+                            placeholder: '— Chọn nhà cung cấp —',
+                            maxOptions: null,
+                            dropdownParent: 'body',
+                            onChange: (value) => {
+                                this.form.supplierText = value ? (supplierTs.options[value]?.text ?? '') : '';
+                            },
+                        });
+                    }
+
                     if (!window.initDatePicker) return;
                     const base = { dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: true, disableMobile: true, static: true };
 
                     mfgPicker = window.initDatePicker('#fp-label-mfg', {
                         ...base,
-                        onChange: (_s, dateStr) => { this.form.mfg = dateStr; this.recalcExp(); },
+                        onChange: (_s, dateStr) => { this.form.mfg = dateStr; this.recalcExp(); this.recalcBatchCode(); },
                     });
                     expPicker = window.initDatePicker('#fp-label-exp', {
                         ...base,
-                        onChange: (_s, dateStr) => { this.form.exp = dateStr; },
+                        onChange: (_s, dateStr) => { this.form.exp = dateStr; this.recalcBatchCode(); },
                     });
                 });
             },
@@ -123,6 +143,20 @@ document.addEventListener('alpine:init', () => {
                 d.setDate(d.getDate() + days);
                 this.form.exp = toYmd(d);
                 expPicker?.setDate(this.form.exp, false);
+                this.recalcBatchCode();
+            },
+
+            // Mã lô = LOT-[NSX ddMMyy]-[HSD ddMMyy], cập nhật real-time mỗi khi NSX/HSD đổi.
+            recalcBatchCode() {
+                const mfg = toDdMmYy(this.form.mfg);
+                const exp = toDdMmYy(this.form.exp);
+                this.form.batchCode = (mfg && exp) ? `LOT-${mfg}-${exp}` : '';
+            },
+
+            // Bật/tắt "Khác / Nhập tay": đổi chế độ thì xoá lựa chọn của chế độ kia để tránh lẫn dữ liệu.
+            onSupplierManualToggle() {
+                supplierTs?.clear(true);
+                this.form.supplierText = '';
             },
 
             openFor(row) {
@@ -130,14 +164,25 @@ document.addEventListener('alpine:init', () => {
                 this.errors = {};
                 this.message = '';
                 this.blockedUrl = '';
-                // Mặc định = số lượng yêu cầu − đã in; ≤ 0 thì để trống.
+                // Khối lượng/tem khoá cứng theo SL yêu cầu còn lại; ≤ 0 thì để trống (không cho in).
                 const remaining = Math.round((Number(row.requested_qty_raw) - Number(row.printed_qty_raw)) * 1000) / 1000;
                 this.remaining = Math.max(remaining, 0);
-                this.form = { weight: remaining > 0 ? remaining : '', count: 1, mfg: toYmd(new Date()), exp: '', supplier: '', template: row.label_template_id || '' };
+                this.form = {
+                    weight: this.remaining > 0 ? this.remaining : '',
+                    count: 1,
+                    mfg: toYmd(new Date()),
+                    exp: '',
+                    supplierManual: false,
+                    supplierText: '',
+                    batchCode: '',
+                    template: row.label_template_id || '',
+                };
                 templateTs?.setValue(this.form.template, true);
+                supplierTs?.clear(true);
                 mfgPicker?.setDate(this.form.mfg, false);
                 expPicker?.clear(false);
                 this.recalcExp();
+                this.recalcBatchCode();
                 this.open = true;
                 this.loadBatchAttributes(row);
                 this.$nextTick(() => this.$refs.weight?.focus());
@@ -197,7 +242,8 @@ document.addEventListener('alpine:init', () => {
                             label_count: this.form.count,
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
-                            supplier_name: this.form.supplier || null,
+                            supplier_name: this.form.supplierText.trim() || null,
+                            batch_code: this.form.batchCode || null,
                             label_template_id: this.form.template || null,
                             extra_attributes: this.attributes
                                 .filter((a) => a.key.trim() !== '' || a.value.trim() !== '')
