@@ -342,12 +342,21 @@ document.addEventListener('alpine:init', () => {
 
         return {
             confirming: false,
+            // 'reprint-confirm' → hỏi xác nhận khi mọi mặt hàng đã in đủ; 'form' → form cấu hình bình thường.
+            stage: 'form',
+            reprintAll: false,
             submitting: false,
             message: '',
             ok: true,
             errors: {},
             preview: { total: 0 },
             form: { template: '', mfg: '', exp: '', batchCode: '', supplierManual: false, supplierText: '' },
+
+            get introText() {
+                return this.reprintAll
+                    ? `Cấu hình dưới đây sẽ IN LẠI tem cho toàn bộ ${this.preview.total} mặt hàng trong đơn. Khối lượng mỗi tem lấy theo số lượng yêu cầu của từng mặt hàng.`
+                    : `Cấu hình dưới đây áp dụng chung cho ${this.preview.total} mặt hàng còn thiếu tem trong đơn. Khối lượng mỗi tem lấy tự động theo số lượng còn lại của từng mặt hàng.`;
+            },
 
             get alertClass() { return this.ok ? 'alert-success' : 'alert-warning'; },
 
@@ -410,12 +419,42 @@ document.addEventListener('alpine:init', () => {
                 this.form.supplierText = '';
             },
 
+            // Chỉ CẢNH BÁO khi mọi mặt hàng đã in đủ — không chặn cứng, người dùng vẫn tự quyết định in lại.
             openConfirm() {
                 const rows = window.salesOrderItemsTable?.getData() ?? [];
-                const pending = rows.filter(r => Math.round((r.requested_qty_raw - r.printed_qty_raw) * 1000) > 0);
-                this.preview = { total: pending.length };
                 this.errors = {};
                 this.message = '';
+                this.reprintAll = false;
+
+                if (rows.length === 0) {
+                    this.confirming = false;
+                    this.ok = false;
+                    this.message = 'Đơn hàng chưa có mặt hàng nào.';
+                    return;
+                }
+
+                const pending = rows.filter(r => Math.round((r.requested_qty_raw - r.printed_qty_raw) * 1000) > 0);
+
+                if (pending.length === 0) {
+                    // Tất cả đã in đủ — hỏi xác nhận thay vì chặn, kho vẫn cần in lại tem rách/hỏng.
+                    this.preview = { total: rows.length };
+                    this.stage = 'reprint-confirm';
+                    this.confirming = true;
+                    return;
+                }
+
+                this.preview = { total: pending.length };
+                this.openForm();
+            },
+
+            // Người dùng xác nhận "Tiếp tục in lại" ở bước cảnh báo — mở form cấu hình, áp dụng cho toàn đơn.
+            confirmReprintAll() {
+                this.reprintAll = true;
+                this.openForm();
+            },
+
+            openForm() {
+                this.stage = 'form';
                 this.form = { template: '', mfg: toYmd(new Date()), exp: '', batchCode: '', supplierManual: false, supplierText: '' };
                 templateTs?.clear(true);
                 supplierTs?.clear(true);
@@ -443,6 +482,7 @@ document.addEventListener('alpine:init', () => {
                             'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
                         },
                         body: JSON.stringify({
+                            reprint_all: this.reprintAll,
                             label_template_id: this.form.template || null,
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,

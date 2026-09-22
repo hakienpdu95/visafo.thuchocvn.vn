@@ -20,7 +20,10 @@ class BulkPrintSalesOrderLabelsAction
      * nguồn cung) do người dùng khai báo một lần cho cả đơn. Khối lượng mỗi tem vẫn tự động = phần còn lại
      * của từng dòng (một PrintLog/tem cho mỗi dòng).
      *
-     * @param  array{label_template_id?: ?string, mfg_date?: ?string, exp_date: string, supplier_name?: ?string, batch_code?: ?string}  $data
+     * `reprint_all`: người dùng đã chủ động xác nhận in lại dù dòng đó đã in đủ/thừa (tem rách/hỏng cần in bù)
+     * — khi đó bỏ qua điều kiện "còn thiếu" và dùng số lượng yêu cầu ban đầu của dòng làm khối lượng/tem.
+     *
+     * @param  array{reprint_all?: bool, label_template_id?: ?string, mfg_date?: ?string, exp_date: string, supplier_name?: ?string, batch_code?: ?string}  $data
      * @return array{session_id: string, logs: PrintLog[], total: int, printed: int, items: array<int, array{id: string, printed_qty: string, printed_qty_raw: float}>}
      */
     public function __construct(private readonly BatchAttributeResolver $resolver) {}
@@ -28,8 +31,9 @@ class BulkPrintSalesOrderLabelsAction
     public function handle(SalesOrder $order, array $data, ?string $printedBy): array
     {
         $resolver = $this->resolver;
+        $reprintAll = (bool) ($data['reprint_all'] ?? false);
 
-        return DB::transaction(function () use ($order, $data, $printedBy, $resolver) {
+        return DB::transaction(function () use ($order, $data, $reprintAll, $printedBy, $resolver) {
             // Khóa dòng hàng để hai lần bấm đồng thời không in trùng phần còn lại.
             $items = SalesOrderItem::query()
                 ->where('order_id', $order->id)
@@ -45,8 +49,18 @@ class BulkPrintSalesOrderLabelsAction
 
             foreach ($items as $item) {
                 $remaining = round((float) $item->requested_qty - (float) $item->printed_qty, 3);
+                $weight = $remaining;
+
                 if ($remaining <= 0) {
-                    continue;
+                    if (!$reprintAll) {
+                        continue;
+                    }
+
+                    // In lại toàn bộ: dùng đúng khối lượng yêu cầu ban đầu của dòng làm khối lượng/tem.
+                    $weight = round((float) $item->requested_qty, 3);
+                    if ($weight <= 0) {
+                        continue;
+                    }
                 }
 
                 $total++;
@@ -57,7 +71,7 @@ class BulkPrintSalesOrderLabelsAction
                     // Mẫu chọn chung ưu tiên; để trống thì mẫu gán riêng cho sản phẩm/mặc định hệ thống
                     // sẽ được LabelViewResolver tự suy ra lúc render (xem forLog/forProduct).
                     'label_template_id' => $data['label_template_id'] ?? null,
-                    'weight_per_label'  => $remaining,
+                    'weight_per_label'  => $weight,
                     'mfg_date'          => $data['mfg_date'] ?? null,
                     'exp_date'          => $data['exp_date'],
                     'supplier_name'     => $data['supplier_name'] ?? null,
@@ -73,7 +87,7 @@ class BulkPrintSalesOrderLabelsAction
                     ]);
                 }
 
-                $item->increment('printed_qty', $remaining);
+                $item->increment('printed_qty', $weight);
                 $printedQty = (float) $item->fresh()->printed_qty;
 
                 $updated[] = [

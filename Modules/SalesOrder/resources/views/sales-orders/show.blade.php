@@ -56,16 +56,29 @@
             <div class="modal-box max-w-2xl overflow-visible">
                 <h3 class="font-bold text-lg mb-1">In tem toàn bộ đơn</h3>
 
-                <template x-if="preview.total === 0">
-                    <p class="text-sm text-base-content/70 mt-3">Tất cả mặt hàng đã được in đủ tem.</p>
-                </template>
+                {{--
+                    QUAN TRỌNG: dùng x-show (không dùng <template x-if>) cho khối form bên dưới — các input
+                    #bp-mfg/#bp-exp/#bp-label-template/#bp-supplier phải LUÔN có mặt trong DOM để init() gắn
+                    flatpickr/Tom Select được ngay từ lúc component mount (khi đó preview.total vẫn = 0 mặc
+                    định). Dùng x-if sẽ khiến các phần tử này chưa tồn tại lúc init() chạy — flatpickr('#sel')
+                    trên selector rỗng trả về mảng [] (không phải null), khiến mfgPicker/expPicker không có
+                    .setDate và ném lỗi "... .setDate is not a function" khi openConfirm()/recalcExp() gọi tới.
+                --}}
+                {{-- Chỉ CẢNH BÁO khi mọi mặt hàng đã in đủ — không chặn, kho vẫn được chủ động in lại tem rách/hỏng. --}}
+                <div x-show="stage === 'reprint-confirm'" class="mt-3">
+                    <p class="text-sm text-base-content/80">
+                        Tất cả mặt hàng trong đơn đã được in đủ tem trước đó. Bạn có chắc chắn muốn cấu hình in lại toàn bộ không?
+                    </p>
+                    <div class="modal-action mt-5">
+                        <button type="button" class="btn btn-sm border-0 bg-blue-800 text-white hover:bg-blue-900" @click="confirmReprintAll()">
+                            Tiếp tục in lại
+                        </button>
+                        <button type="button" class="btn btn-ghost btn-sm" @click="confirming = false">Hủy</button>
+                    </div>
+                </div>
 
-                <template x-if="preview.total > 0">
-                    <form @submit.prevent="run()" novalidate>
-                        <p class="text-sm text-base-content/60 mb-4">
-                            Cấu hình dưới đây áp dụng chung cho <strong x-text="preview.total"></strong> mặt hàng còn thiếu tem trong đơn.
-                            Khối lượng mỗi tem lấy tự động theo số lượng còn lại của từng mặt hàng.
-                        </p>
+                <form x-show="stage === 'form'" @submit.prevent="run()" novalidate>
+                        <p class="text-sm text-base-content/60 mb-4" x-text="introText"></p>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
@@ -155,8 +168,7 @@
                             </button>
                             <button type="button" class="btn btn-ghost btn-sm" @click="confirming = false">Hủy</button>
                         </div>
-                    </form>
-                </template>
+                </form>
             </div>
             <div class="modal-backdrop" @click="confirming = false"></div>
         </div>

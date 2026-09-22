@@ -118,12 +118,15 @@ class PrintLabelController extends Controller
     /**
      * In tem toàn bộ đơn: áp dụng MỘT cấu hình chung (mẫu tem, NSX, HSD, mã lô, nguồn cung) cho mọi
      * dòng còn thiếu tem trong đơn; khối lượng mỗi tem vẫn lấy tự động theo số lượng còn lại của từng dòng.
+     * `reprint_all`: true khi người dùng chủ động xác nhận in lại dù mọi dòng đã in đủ (tem rách/hỏng) —
+     * khi đó các dòng đã đủ vẫn được in, với khối lượng/tem = số lượng yêu cầu ban đầu của dòng đó.
      */
     public function storeAll(Request $request, SalesOrder $salesOrder, BulkPrintSalesOrderLabelsAction $action): JsonResponse
     {
         $this->authorize('print', $salesOrder);
 
         $data = $request->validate([
+            'reprint_all'      => ['nullable', 'boolean'],
             'mfg_date'         => ['nullable', 'date'],
             'exp_date'         => array_filter([
                 'required', 'date',
