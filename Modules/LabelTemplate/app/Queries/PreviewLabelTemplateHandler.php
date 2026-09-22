@@ -23,7 +23,7 @@ class PreviewLabelTemplateHandler implements QueryHandlerInterface
         $template = $query->labelTemplate;
 
         $item = (object) [
-            'product'    => (object) ['name' => 'Sản phẩm Test (Dài để test rớt dòng)'],
+            'product'    => (object) ['name' => 'Cải xanh'],
             'salesOrder' => (object) [
                 'customer_name'    => 'Khách hàng Demo',
                 'delivery_address' => '123 Đường ABC, Quận XYZ, TP HCM',

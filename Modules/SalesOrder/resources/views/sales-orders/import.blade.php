@@ -20,30 +20,38 @@
         <div class="overflow-x-auto">
             <table class="table table-sm">
                 <thead>
-                        <tr class="bg-gray-100 font-bold text-gray-800">
-                            <th class="border border-gray-300 px-3 py-2 text-center">STT</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Tên, nhãn hiệu...</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Mã số <span class="text-red-600">(Bắt buộc)</span></th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Đơn vị tính</th>
-                            <th class="border border-gray-300 px-3 py-2 text-right">Yêu cầu <span class="text-green-700">(được đọc)</span></th>
-                            <th class="border border-gray-300 px-3 py-2 text-right text-gray-400">Thực xuất <span>(bỏ qua)</span></th>
-                            <th class="border border-gray-300 px-3 py-2 text-right">Đơn giá</th>
-                            <th class="border border-gray-300 px-3 py-2 text-right">Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="border border-gray-300 px-3 py-2 text-center">1</td>
-                            <td class="border border-gray-300 px-3 py-2">Bánh gạo mật ong ICHI 180g</td>
-                            <td class="border border-gray-300 px-3 py-2 font-mono">HH00294</td>
-                            <td class="border border-gray-300 px-3 py-2">Gói</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">10.5</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right text-gray-400">...</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">...</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">...</td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <tr class="bg-gray-100 font-bold text-gray-800">
+                        <th class="border border-gray-300 px-3 py-2 text-center">STT</th>
+                        <th class="border border-gray-300 px-3 py-2 text-left">Tên file</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center">Trạng thái</th>
+                        <th class="border border-gray-300 px-3 py-2 text-left">Số chứng từ</th>
+                        <th class="border border-gray-300 px-3 py-2 text-right">Số mặt hàng</th>
+                        <th class="border border-gray-300 px-3 py-2 text-left">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($summary['results'] as $index => $result)
+                    <tr>
+                        <td class="border border-gray-300 px-3 py-2 text-center">{{ $index + 1 }}</td>
+                        <td class="border border-gray-300 px-3 py-2 font-mono break-all">{{ $result['file_name'] }}</td>
+                        <td class="border border-gray-300 px-3 py-2 text-center">
+                            @if($result['status'] === 'imported')
+                                <span class="badge badge-success badge-sm">Thành công</span>
+                            @elseif($result['status'] === 'duplicate')
+                                <span class="badge badge-warning badge-sm">Trùng lặp</span>
+                            @else
+                                <span class="badge badge-error badge-sm">Lỗi</span>
+                            @endif
+                        </td>
+                        <td class="border border-gray-300 px-3 py-2">{{ $result['misa_ref_id'] ?? '—' }}</td>
+                        <td class="border border-gray-300 px-3 py-2 text-right">{{ $result['items_count'] ?: '—' }}</td>
+                        <td class="border border-gray-300 px-3 py-2 {{ $result['status'] === 'failed' ? 'text-error' : 'text-base-content/70' }}">
+                            {{ $result['message'] ?? '—' }}
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

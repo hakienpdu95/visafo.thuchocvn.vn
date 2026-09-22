@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedInteger('order_column')->nullable()->index()->comment('Thứ tự sắp xếp — Spatie Sortable / ORDER BY');
             $table->string('vendor_code', 50)->nullable()->unique()->comment('Mã quản lý nội bộ');
             $table->string('name', 255)->comment('Tên tổ chức/cá nhân theo ĐKKD');
-            $table->string('tax_code', 50)->unique()->comment('Mã số thuế');
+            $table->string('tax_code', 50)->nullable()->unique()->comment('Mã số thuế');
             $table->string('address', 500)->nullable()->comment('Địa chỉ trụ sở chính');
             $table->string('phone_number', 20)->nullable();
             $table->string('email', 100)->nullable();

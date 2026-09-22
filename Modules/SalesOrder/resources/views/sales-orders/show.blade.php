@@ -220,8 +220,9 @@
                         </label>
                         <select id="ts-label-template" name="label_template_id"
                                 class="select select-bordered select-sm w-full"
-                                data-ts-placeholder="— Mặc định: Tem Rau Củ Quả (60x40) —">
-                            <option value="">— Mặc định: Tem Rau Củ Quả (60x40) —</option>
+                                data-ts-placeholder="— Mặc định: Tem VISAFO Rau Củ Khổ Lớn (100x75) —"
+                                data-default-template-id="{{ $defaultLabelTemplateId }}">
+                            <option value="">— Mặc định: Tem VISAFO Rau Củ Khổ Lớn (100x75) —</option>
                             @foreach($labelTemplates as $labelTemplate)
                             <option value="{{ $labelTemplate['value'] }}">{{ $labelTemplate['text'] }}</option>
                             @endforeach

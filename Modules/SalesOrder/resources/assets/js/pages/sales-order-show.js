@@ -72,6 +72,7 @@ document.addEventListener('alpine:init', () => {
         let expPicker = null;
         let templateTs = null;
         let supplierTs = null;
+        let defaultTemplateId = '';
 
         return {
             open: false,
@@ -98,9 +99,10 @@ document.addEventListener('alpine:init', () => {
                 this.$nextTick(() => {
                     // Select tìm kiếm được (Tom Select) — dùng được khi có hàng chục mẫu tem.
                     const tplEl = document.getElementById('ts-label-template');
+                    if (tplEl) defaultTemplateId = tplEl.dataset.defaultTemplateId || '';
                     if (tplEl && !tplEl.tomselect) {
                         templateTs = createTs(tplEl, {
-                            placeholder: '— Mặc định: Tem Rau Củ Quả (60x40) —',
+                            placeholder: '— Mặc định: Tem VISAFO Rau Củ Khổ Lớn (100x75) —',
                             maxOptions: null,
                             // Gắn danh sách vào <body> (z-index 9999 > modal 999): .modal-box của DaisyUI có transform +
                             // overflow nên gắn vào đó sẽ làm danh sách bị lệch xuống đáy modal.
@@ -177,7 +179,8 @@ document.addEventListener('alpine:init', () => {
                     supplierManual: false,
                     supplierText: '',
                     batchCode: '',
-                    template: row.label_template_id || '',
+                    // Ưu tiên mẫu tem gán riêng cho sản phẩm; nếu chưa có thì dùng mẫu mặc định của đơn.
+                    template: row.label_template_id || defaultTemplateId || '',
                 };
                 templateTs?.setValue(this.form.template, true);
                 supplierTs?.clear(true);

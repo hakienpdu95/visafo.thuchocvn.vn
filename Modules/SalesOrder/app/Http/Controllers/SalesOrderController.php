@@ -31,7 +31,10 @@ class SalesOrderController extends Controller
         $salesOrder->load(['importedBy', 'items.product']);
         $labelTemplates = $labelTemplateOptions->handle(new ListLabelTemplateOptionsQuery());
         $vendors = $vendorOptions->handle(new ListVendorOptionsQuery());
+        // Mặc định chọn sẵn mẫu tem này khi sản phẩm chưa được gán mẫu riêng.
+        $defaultLabelTemplateId = collect($labelTemplates)
+            ->firstWhere('text', 'Tem VISAFO Rau Củ Khổ Lớn (100x75)')['value'] ?? '';
 
-        return view('salesorder::sales-orders.show', compact('salesOrder', 'labelTemplates', 'vendors'));
+        return view('salesorder::sales-orders.show', compact('salesOrder', 'labelTemplates', 'vendors', 'defaultLabelTemplateId'));
     }
 }

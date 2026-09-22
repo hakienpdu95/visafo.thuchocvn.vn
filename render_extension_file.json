@@ -125,5 +125,17 @@
         "status_changed_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người đổi trạng thái gần nhất",
         "status_changed_at///timestamp///__///_NULL///NULL///__///Thời điểm đổi trạng thái gần nhất",
         "batch_code///string///100///_NULL///NULL///__///Mã lô tự sinh LOT-[NSX]-[HSD] tại thời điểm in"
+    ],
+    [
+        "food_inspection_step1_details///add///__///",
+        "supplier_address_phone///string///500///_NULL///NULL///__///Địa chỉ, điện thoại nơi cung cấp — chuỗi \"[Địa chỉ] - [SĐT]\" (Cột 6 Mục I / Cột 9 Mục II, Mẫu số 1 QĐ 1246/QĐ-BYT)",
+        "supplier_address///string///500///_NULL///NULL///__///__",
+        "supplier_phone///string///30///_NULL///NULL///__///__"
+    ],
+    [
+        "food_inspection_step1_logs///add///__///",
+        "customer_id///unsignedBigInteger///__///_NULL///NULL///->constrained('customers')->onDelete('restrict')///Khách hàng / điểm phục vụ mà lô nguyên liệu này dùng cho",
+        "customer_name///string///255///_NULL///NULL///__///Snapshot tên cơ sở tại thời điểm kiểm thực (header của sổ)",
+        "__index///index///__///__///__///customer_id|idx_fi_step1_logs_customer///__"
     ]
 ]
