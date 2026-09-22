@@ -138,10 +138,11 @@ document.addEventListener('alpine:init', () => {
                 });
             },
 
-            // HSD = NSX + shelf_life_days (chỉ khi sản phẩm có cấu hình)
+            // HSD = NSX + shelf_life_days (nếu sản phẩm có cấu hình riêng), mặc định NSX + 2 ngày nếu chưa cấu hình.
+            // Chỉ tính lại khi NSX đổi — người dùng vẫn sửa tay HSD sau đó mà không bị ghi đè.
             recalcExp() {
-                const days = Number(this.item?.shelf_life_days) || 0;
-                if (!days || !this.form.mfg) return;
+                if (!this.form.mfg) return;
+                const days = Number(this.item?.shelf_life_days) || 2;
                 const d = fromYmd(this.form.mfg);
                 d.setDate(d.getDate() + days);
                 this.form.exp = toYmd(d);
@@ -332,65 +333,155 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    // ── In tem toàn bộ đơn (Bulk Print) ──────────────────────────────
-    Alpine.data('bulkPrintOrder', ({ url }) => ({
-        confirming: false,
-        submitting: false,
-        message: '',
-        ok: true,
-        preview: { total: 0, printable: 0, manual: 0 },
+    // ── In tem toàn bộ đơn (Bulk Print) — modal cấu hình chung áp dụng cho mọi mặt hàng còn thiếu ──
+    Alpine.data('bulkPrintOrder', ({ url }) => {
+        let templateTs = null;
+        let supplierTs = null;
+        let mfgPicker = null;
+        let expPicker = null;
 
-        get alertClass() { return this.ok ? 'alert-success' : 'alert-warning'; },
+        return {
+            confirming: false,
+            submitting: false,
+            message: '',
+            ok: true,
+            errors: {},
+            preview: { total: 0 },
+            form: { template: '', mfg: '', exp: '', batchCode: '', supplierManual: false, supplierText: '' },
 
-        openConfirm() {
-            const rows = window.salesOrderItemsTable?.getData() ?? [];
-            const pending = rows.filter(r => Math.round((r.requested_qty_raw - r.printed_qty_raw) * 1000) > 0);
-            const printable = pending.filter(r => Number(r.shelf_life_days) > 0).length;
-            this.preview = { total: pending.length, printable, manual: pending.length - printable };
-            this.confirming = true;
-        },
+            get alertClass() { return this.ok ? 'alert-success' : 'alert-warning'; },
 
-        async run() {
-            if (this.submitting || this.preview.printable === 0) return;
+            init() {
+                this.$nextTick(() => {
+                    const tplEl = document.getElementById('bp-label-template');
+                    if (tplEl && !tplEl.tomselect) {
+                        templateTs = createTs(tplEl, {
+                            placeholder: '— Theo từng sản phẩm / mặc định —',
+                            maxOptions: null,
+                            dropdownParent: 'body',
+                            onChange: (value) => { this.form.template = value || ''; },
+                        });
+                    }
 
-            // Mở tab ngay trong sự kiện click để không bị trình duyệt chặn popup.
-            const win = window.open('', '_blank');
-            this.submitting = true;
+                    const supplierEl = document.getElementById('bp-supplier');
+                    if (supplierEl && !supplierEl.tomselect) {
+                        supplierTs = createTs(supplierEl, {
+                            placeholder: '— Chọn nhà cung cấp —',
+                            maxOptions: null,
+                            dropdownParent: 'body',
+                            onChange: (value) => {
+                                this.form.supplierText = value ? (supplierTs.options[value]?.text ?? '') : '';
+                            },
+                        });
+                    }
 
-            try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
-                    },
+                    if (!window.initDatePicker) return;
+                    const base = { dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: true, disableMobile: true, static: true };
+
+                    mfgPicker = window.initDatePicker('#bp-mfg', {
+                        ...base,
+                        onChange: (_s, dateStr) => { this.form.mfg = dateStr; this.recalcExp(); this.recalcBatchCode(); },
+                    });
+                    expPicker = window.initDatePicker('#bp-exp', {
+                        ...base,
+                        onChange: (_s, dateStr) => { this.form.exp = dateStr; this.recalcBatchCode(); },
+                    });
                 });
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+            },
 
-                window.salesOrderItemsTable?.updateData(data.items ?? []);
-                this.confirming = false;
-                this.ok = data.manual === 0;
-                this.message = data.message;
+            // HSD = NSX + 2 ngày (mặc định chung cho cả đơn) — người dùng vẫn sửa tay sau đó được.
+            recalcExp() {
+                if (!this.form.mfg) return;
+                const d = fromYmd(this.form.mfg);
+                d.setDate(d.getDate() + 2);
+                this.form.exp = toYmd(d);
+                expPicker?.setDate(this.form.exp, false);
+                this.recalcBatchCode();
+            },
 
-                if (data.url && win) {
-                    win.location = data.url;
-                } else {
+            recalcBatchCode() {
+                const mfg = toDdMmYy(this.form.mfg);
+                const exp = toDdMmYy(this.form.exp);
+                this.form.batchCode = (mfg && exp) ? `LOT-${mfg}-${exp}` : '';
+            },
+
+            onSupplierManualToggle() {
+                supplierTs?.clear(true);
+                this.form.supplierText = '';
+            },
+
+            openConfirm() {
+                const rows = window.salesOrderItemsTable?.getData() ?? [];
+                const pending = rows.filter(r => Math.round((r.requested_qty_raw - r.printed_qty_raw) * 1000) > 0);
+                this.preview = { total: pending.length };
+                this.errors = {};
+                this.message = '';
+                this.form = { template: '', mfg: toYmd(new Date()), exp: '', batchCode: '', supplierManual: false, supplierText: '' };
+                templateTs?.clear(true);
+                supplierTs?.clear(true);
+                mfgPicker?.setDate(this.form.mfg, false);
+                expPicker?.clear(false);
+                this.recalcExp();
+                this.confirming = true;
+            },
+
+            async run() {
+                if (this.submitting || this.preview.total === 0 || !this.form.exp) return;
+
+                // Mở tab ngay trong sự kiện click để không bị trình duyệt chặn popup.
+                const win = window.open('', '_blank');
+                this.submitting = true;
+                this.errors = {};
+
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+                        },
+                        body: JSON.stringify({
+                            label_template_id: this.form.template || null,
+                            mfg_date: this.form.mfg || null,
+                            exp_date: this.form.exp,
+                            supplier_name: this.form.supplierText.trim() || null,
+                            batch_code: this.form.batchCode || null,
+                        }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (res.status === 422) {
+                        win?.close();
+                        Object.entries(data.errors ?? {}).forEach(([k, v]) => { this.errors[k] ??= v[0]; });
+                        return;
+                    }
+                    if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+
+                    window.salesOrderItemsTable?.updateData(data.items ?? []);
+                    this.confirming = false;
+                    this.ok = true;
+                    this.message = data.message;
+
+                    if (data.url && win) {
+                        win.location = data.url;
+                    } else {
+                        win?.close();
+                        if (data.url) this.message += ' Trình duyệt đã chặn cửa sổ in — cho phép popup rồi bấm In lại từ lịch sử.';
+                    }
+                } catch (e) {
+                    console.error('[bulk-print] failed', e);
                     win?.close();
-                    if (data.url) this.message += ' Trình duyệt đã chặn cửa sổ in — cho phép popup rồi bấm In lại từ lịch sử.';
+                    this.confirming = false;
+                    this.ok = false;
+                    this.message = 'In tem hàng loạt thất bại: ' + e.message;
+                } finally {
+                    this.submitting = false;
                 }
-            } catch (e) {
-                console.error('[bulk-print] failed', e);
-                win?.close();
-                this.confirming = false;
-                this.ok = false;
-                this.message = 'In tem hàng loạt thất bại: ' + e.message;
-            } finally {
-                this.submitting = false;
-            }
-        },
-    }));
+            },
+        };
+    });
 });
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -53,29 +53,110 @@
         </div>
 
         <div class="modal" :class="{ 'modal-open': confirming }" @keydown.escape.window="confirming = false">
-            <div class="modal-box max-w-md">
-                <h3 class="font-bold text-lg">In tem toàn bộ đơn</h3>
-                <div class="mt-3 space-y-2 text-sm">
-                    <template x-if="preview.total === 0">
-                        <p class="text-base-content/70">Tất cả mặt hàng đã được in đủ tem.</p>
-                    </template>
-                    <template x-if="preview.total > 0">
-                        <div class="space-y-2">
-                            <p>Sẽ in tem cho <strong x-text="preview.printable"></strong>/<strong x-text="preview.total"></strong> mặt hàng còn thiếu, với khối lượng = số lượng còn lại và HSD tự tính từ ngày hôm nay.</p>
-                            <p class="text-warning" x-show="preview.manual > 0">
-                                <strong x-text="preview.manual"></strong> mặt hàng chưa cấu hình số ngày bảo quản sẽ bị bỏ qua — cần in thủ công từng dòng để khai báo HSD.
-                            </p>
+            <div class="modal-box max-w-2xl overflow-visible">
+                <h3 class="font-bold text-lg mb-1">In tem toàn bộ đơn</h3>
+
+                <template x-if="preview.total === 0">
+                    <p class="text-sm text-base-content/70 mt-3">Tất cả mặt hàng đã được in đủ tem.</p>
+                </template>
+
+                <template x-if="preview.total > 0">
+                    <form @submit.prevent="run()" novalidate>
+                        <p class="text-sm text-base-content/60 mb-4">
+                            Cấu hình dưới đây áp dụng chung cho <strong x-text="preview.total"></strong> mặt hàng còn thiếu tem trong đơn.
+                            Khối lượng mỗi tem lấy tự động theo số lượng còn lại của từng mặt hàng.
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                            <div class="form-control sm:col-span-2">
+                                <label class="label py-0 pb-1.5" for="bp-label-template">
+                                    <span class="label-text font-medium">Mẫu tem in</span>
+                                    <span class="label-text-alt text-base-content/40 text-xs">Ưu tiên mẫu gán cho từng sản phẩm, nếu không có thì dùng mặc định</span>
+                                </label>
+                                <select id="bp-label-template"
+                                        class="select select-bordered select-sm w-full"
+                                        data-ts-placeholder="— Theo từng sản phẩm / mặc định —">
+                                    <option value="">— Theo từng sản phẩm / mặc định —</option>
+                                    @foreach($labelTemplates as $labelTemplate)
+                                    <option value="{{ $labelTemplate['value'] }}">{{ $labelTemplate['text'] }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-error" x-show="errors.label_template_id" x-text="errors.label_template_id"></p>
+                            </div>
+
+                            <div class="flex flex-col">
+                                <label class="block text-sm font-medium text-base-content mb-1" for="bp-mfg">
+                                    NSX <span class="text-xs font-normal text-base-content/40 ml-1">Mặc định hôm nay</span>
+                                </label>
+                                <input id="bp-mfg" type="text" autocomplete="off" placeholder="DD/MM/YYYY"
+                                       class="input input-bordered input-sm w-full"
+                                       :class="{ 'input-error': errors.mfg_date }">
+                                <p class="mt-1 text-xs text-error" x-show="errors.mfg_date" x-text="errors.mfg_date"></p>
+                            </div>
+
+                            <div class="flex flex-col">
+                                <label class="block text-sm font-medium text-base-content mb-1" for="bp-exp">
+                                    HSD <span class="text-error">*</span>
+                                    <span class="text-xs font-normal text-base-content/40 ml-1">Mặc định NSX + 2 ngày</span>
+                                </label>
+                                <input id="bp-exp" type="text" autocomplete="off" placeholder="DD/MM/YYYY"
+                                       class="input input-bordered input-sm w-full"
+                                       :class="{ 'input-error': errors.exp_date }">
+                                <p class="mt-1 text-xs text-error" x-show="errors.exp_date" x-text="errors.exp_date"></p>
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label py-0 pb-1.5" for="bp-batch-code">
+                                    <span class="label-text font-medium">Mã lô</span>
+                                    <span class="label-text-alt text-base-content/40 text-xs">Tự sinh theo NSX/HSD</span>
+                                </label>
+                                <input id="bp-batch-code" type="text" readonly disabled
+                                       x-model="form.batchCode" placeholder="LOT-..."
+                                       class="input input-bordered input-sm w-full bg-base-200 text-base-content/70 cursor-not-allowed font-mono">
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label py-0 pb-1.5" for="bp-supplier">
+                                    <span class="label-text font-medium">Nguồn cung</span>
+                                    <span class="label-text-alt text-base-content/40 text-xs">Tuỳ chọn</span>
+                                </label>
+
+                                <div x-show="!form.supplierManual">
+                                    <select id="bp-supplier"
+                                            class="select select-bordered select-sm w-full"
+                                            data-ts-placeholder="— Chọn nhà cung cấp —">
+                                        <option value="">— Chọn nhà cung cấp —</option>
+                                        @foreach($vendors as $vendor)
+                                        <option value="{{ $vendor['value'] }}" data-text="{{ $vendor['text'] }}">{{ $vendor['text'] }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div x-show="form.supplierManual">
+                                    <input type="text" maxlength="255" x-model="form.supplierText" placeholder="VD: HTX Rau sạch Đà Lạt"
+                                           class="input input-bordered input-sm w-full"
+                                           :class="{ 'input-error': errors.supplier_name }">
+                                </div>
+
+                                <label class="label cursor-pointer justify-start gap-2 py-1.5">
+                                    <input type="checkbox" x-model="form.supplierManual" @change="onSupplierManualToggle()" class="checkbox checkbox-xs">
+                                    <span class="label-text text-xs">Khác / Nhập tay</span>
+                                </label>
+                                <p class="mt-1 text-xs text-error" x-show="errors.supplier_name" x-text="errors.supplier_name"></p>
+                            </div>
                         </div>
-                    </template>
-                </div>
-                <div class="modal-action mt-5">
-                    <button type="button" class="btn btn-sm border-0 bg-blue-800 text-white hover:bg-blue-900"
-                            :disabled="submitting || preview.printable === 0" @click="run()">
-                        <span class="loading loading-spinner loading-xs" x-show="submitting"></span>
-                        In tem
-                    </button>
-                    <button type="button" class="btn btn-ghost btn-sm" @click="confirming = false">Hủy</button>
-                </div>
+
+                        <div class="modal-action mt-5">
+                            <button type="submit" class="btn btn-sm border-0 bg-blue-800 text-white hover:bg-blue-900"
+                                    :disabled="submitting || preview.total === 0 || !form.exp">
+                                <span class="loading loading-spinner loading-xs" x-show="submitting"></span>
+                                In tem
+                            </button>
+                            <button type="button" class="btn btn-ghost btn-sm" @click="confirming = false">Hủy</button>
+                        </div>
+                    </form>
+                </template>
             </div>
             <div class="modal-backdrop" @click="confirming = false"></div>
         </div>

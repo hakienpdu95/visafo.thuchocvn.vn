@@ -41,7 +41,7 @@
     .tpl-visafo100 .product-block { flex: none; overflow: hidden; display: flex; align-items: center; background: #000; color: #fff; border-radius: 5px; padding: 1.4mm 2.2mm; gap: 2mm; box-sizing: border-box; }
     .tpl-visafo100 .product-left { flex: 1; min-width: 0; overflow: hidden; }
     .tpl-visafo100 .product-left .label-sm { font-size: 8pt; font-weight: 700;}
-    .tpl-visafo100 .product-left .product-name { font-size: 14.5pt; font-weight: 900; letter-spacing: -.3px; text-transform: uppercase; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .tpl-visafo100 .product-left .product-name { font-size: 14.5pt; font-weight: 900; letter-spacing: -.3px; text-transform: uppercase; line-height: 1.2;white-space: nowrap; overflow: hidden;   text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .tpl-visafo100 .product-divider { flex: none; align-self: stretch; width: 0; border-left: 1px solid #fff; }
     .tpl-visafo100 .product-right { flex: none; width: 28mm; overflow: hidden; display: flex; align-items: center; gap: 1.2mm; font-size: 6pt; font-weight: 700; line-height: 1.2; text-transform: uppercase; }
 
@@ -57,10 +57,10 @@
     .tpl-visafo100 .info-table td.colon { text-align: center; }
     .tpl-visafo100 .info-table td.val { word-wrap: break-word; overflow-wrap: break-word; }
     .tpl-visafo100 .info-table tr.weight td { font-weight: 500; padding-bottom: 1mm;}
-    .tpl-visafo100 .info-table tr.weight td.val {font-weight: 600; font-size: 8.5pt;}
+    .tpl-visafo100 .info-table tr.weight td.val {font-weight: 600; font-size: 7.5pt;}
     .tpl-visafo100 .info-table tr.dashed-sep td { border-top: 1px solid #000; padding-top: 1mm; }
     .tpl-visafo100 .info-table tr.batch td { font-weight: 500; }
-    .tpl-visafo100 .info-table tr.batch td.val {font-weight: 600; font-size: 8.5pt;}
+    .tpl-visafo100 .info-table tr.batch td.val {font-weight: 600; font-size: 7.5pt;}
     .tpl-visafo100 .truncate-2-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
     .tpl-visafo100 .qr-col { flex: none; width: 22%; min-width: 0; overflow: hidden; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: .8mm; text-align: center; box-sizing: border-box; }
@@ -142,10 +142,12 @@
                         <td class="lbl">Hạn sử dụng (HSD)</td><td class="colon">:</td>
                         <td class="val">{{ $log->exp_date?->format('d/m/Y') ?? '—' }}</td>
                     </tr>
+                    @if(!empty($log->supplier_name))
                     <tr>
                         <td class="lbl">Nguồn cung</td><td class="colon">:</td>
-                        <td class="val"><div class="truncate-2-lines">{{ $log->supplier_name ?? '—' }}</div></td>
+                        <td class="val"><div class="truncate-2-lines">{{ $log->supplier_name }}</div></td>
                     </tr>
+                    @endif
                     <tr class="batch">
                         <td class="lbl">Mã lô</td><td class="colon">:</td>
                         <td class="val">{{ $log->batch_code ?? '—' }}</td>

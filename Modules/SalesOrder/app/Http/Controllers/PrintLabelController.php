@@ -115,22 +115,42 @@ class PrintLabelController extends Controller
         return response()->json(['data' => $logs]);
     }
 
-    /** In tem toàn bộ đơn: các dòng còn thiếu và đã cấu hình shelf_life_days. */
+    /**
+     * In tem toàn bộ đơn: áp dụng MỘT cấu hình chung (mẫu tem, NSX, HSD, mã lô, nguồn cung) cho mọi
+     * dòng còn thiếu tem trong đơn; khối lượng mỗi tem vẫn lấy tự động theo số lượng còn lại của từng dòng.
+     */
     public function storeAll(Request $request, SalesOrder $salesOrder, BulkPrintSalesOrderLabelsAction $action): JsonResponse
     {
         $this->authorize('print', $salesOrder);
 
-        $result = $action->handle($salesOrder, $request->user()?->id);
+        $data = $request->validate([
+            'mfg_date'         => ['nullable', 'date'],
+            'exp_date'         => array_filter([
+                'required', 'date',
+                $request->filled('mfg_date') ? 'after_or_equal:mfg_date' : null,
+            ]),
+            'supplier_name'    => ['nullable', 'string', 'max:255'],
+            'batch_code'       => ['nullable', 'string', 'max:100'],
+            'label_template_id' => ['nullable', 'string', Rule::exists('label_templates', 'id')->whereNull('deleted_at')],
+        ], [
+            'mfg_date.date'             => 'NSX không hợp lệ.',
+            'exp_date.required'         => 'HSD là bắt buộc để in tem.',
+            'exp_date.date'             => 'HSD không hợp lệ.',
+            'exp_date.after_or_equal'   => 'HSD phải sau hoặc bằng NSX.',
+            'supplier_name.max'         => 'Nguồn cung không được vượt quá 255 ký tự.',
+            'batch_code.max'            => 'Mã lô không được vượt quá 100 ký tự.',
+            'label_template_id.exists'  => 'Mẫu tem được chọn không hợp lệ.',
+        ]);
+
+        $result = $action->handle($salesOrder, $data, $request->user()?->id);
 
         $message = $result['total'] === 0
             ? 'Không có mặt hàng nào cần in tem.'
-            : "Đã in thành công {$result['printed']}/{$result['total']} mặt hàng."
-                . ($result['manual'] > 0 ? " Có {$result['manual']} mặt hàng cần khai báo HSD thủ công." : '');
+            : "Đã in thành công {$result['printed']}/{$result['total']} mặt hàng.";
 
         return response()->json([
             'printed' => $result['printed'],
             'total'   => $result['total'],
-            'manual'  => $result['manual'],
             'message' => $message,
             'items'   => $result['items'],
             'url'     => $result['logs'] === [] ? null : route('print.render_session', $result['session_id']),

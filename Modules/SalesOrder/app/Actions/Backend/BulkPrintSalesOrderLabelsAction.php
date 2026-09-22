@@ -16,18 +16,20 @@ class BulkPrintSalesOrderLabelsAction
     use AsAction;
 
     /**
-     * In tem cho mọi dòng còn thiếu (yêu cầu > đã in) mà sản phẩm có shelf_life_days.
-     * Dòng chưa cấu hình HSD bị bỏ qua — nhân viên kho phải in tay để khai báo HSD.
+     * In tem cho mọi dòng còn thiếu (yêu cầu > đã in), áp dụng CHUNG một cấu hình (mẫu tem, NSX, HSD, mã lô,
+     * nguồn cung) do người dùng khai báo một lần cho cả đơn. Khối lượng mỗi tem vẫn tự động = phần còn lại
+     * của từng dòng (một PrintLog/tem cho mỗi dòng).
      *
-     * @return array{session_id: string, logs: PrintLog[], total: int, printed: int, manual: int, items: array<int, array{id: string, printed_qty: string, printed_qty_raw: float}>}
+     * @param  array{label_template_id?: ?string, mfg_date?: ?string, exp_date: string, supplier_name?: ?string, batch_code?: ?string}  $data
+     * @return array{session_id: string, logs: PrintLog[], total: int, printed: int, items: array<int, array{id: string, printed_qty: string, printed_qty_raw: float}>}
      */
     public function __construct(private readonly BatchAttributeResolver $resolver) {}
 
-    public function handle(SalesOrder $order, ?string $printedBy): array
+    public function handle(SalesOrder $order, array $data, ?string $printedBy): array
     {
         $resolver = $this->resolver;
 
-        return DB::transaction(function () use ($order, $printedBy, $resolver) {
+        return DB::transaction(function () use ($order, $data, $printedBy, $resolver) {
             // Khóa dòng hàng để hai lần bấm đồng thời không in trùng phần còn lại.
             $items = SalesOrderItem::query()
                 ->where('order_id', $order->id)
@@ -37,11 +39,9 @@ class BulkPrintSalesOrderLabelsAction
                 ->get();
 
             $sessionId = Str::lower((string) Str::ulid());
-            $today = now()->startOfDay();
             $logs = [];
             $updated = [];
             $total = 0;
-            $manual = 0;
 
             foreach ($items as $item) {
                 $remaining = round((float) $item->requested_qty - (float) $item->printed_qty, 3);
@@ -51,22 +51,18 @@ class BulkPrintSalesOrderLabelsAction
 
                 $total++;
 
-                $exp = $item->product?->calculateExpDate($today);
-                if ($exp === null) {
-                    $manual++;
-
-                    continue;
-                }
-
                 $logs[] = PrintLog::create([
-                    'print_session_id' => $sessionId,
-                    'order_item_id'    => $item->id,
-                    'label_template_id' => $item->product?->label_template_id,
-                    'weight_per_label' => $remaining,
-                    'mfg_date'         => $today->toDateString(),
-                    'exp_date'         => $exp->toDateString(),
-                    'supplier_name'    => null,
-                    'printed_by'       => $printedBy,
+                    'print_session_id'  => $sessionId,
+                    'order_item_id'     => $item->id,
+                    // Mẫu chọn chung ưu tiên; để trống thì mẫu gán riêng cho sản phẩm/mặc định hệ thống
+                    // sẽ được LabelViewResolver tự suy ra lúc render (xem forLog/forProduct).
+                    'label_template_id' => $data['label_template_id'] ?? null,
+                    'weight_per_label'  => $remaining,
+                    'mfg_date'          => $data['mfg_date'] ?? null,
+                    'exp_date'          => $data['exp_date'],
+                    'supplier_name'     => $data['supplier_name'] ?? null,
+                    'batch_code'        => $data['batch_code'] ?? null,
+                    'printed_by'        => $printedBy,
                 ]);
 
                 foreach ($resolver->forItem($item)['attributes'] as $attr) {
@@ -92,7 +88,6 @@ class BulkPrintSalesOrderLabelsAction
                 'logs'    => $logs,
                 'total'   => $total,
                 'printed' => count($logs),
-                'manual'  => $manual,
                 'items'   => $updated,
             ];
         });
