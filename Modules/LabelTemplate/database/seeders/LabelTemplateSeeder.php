@@ -18,7 +18,7 @@ class LabelTemplateSeeder extends Seeder
             );
         }
 
-        $this->command?->info('  ✓ label templates seeded: ' . count($definitions) . ' mẫu tem 60x40.');
+        $this->command?->info('  ✓ label templates seeded: ' . count($definitions) . ' mẫu tem.');
     }
 
     /** @return array<int, array{name: string, view_path: string, description: string, default_size: string}> */
@@ -66,6 +66,12 @@ class LabelTemplateSeeder extends Seeder
                 'view_path'    => 'labels.templates.dried_food_60x40',
                 'description'  => 'Phù hợp hàng lưu kho lâu ngày, cảnh báo độ ẩm.',
                 'default_size' => '60x40',
+            ],
+            [
+                'name'         => 'Tem VISAFO Rau Củ Khổ Lớn (100x75)',
+                'view_path'    => 'labels.templates.visafo_100x75',
+                'description'  => 'Mẫu tem khổ lớn 100x75mm thương hiệu VISAFO — header công ty, khối sản phẩm nền đen, bảng thông tin + QR, footer bảo quản/liên hệ.',
+                'default_size' => '100x75',
             ],
         ];
     }

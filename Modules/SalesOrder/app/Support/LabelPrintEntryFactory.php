@@ -19,6 +19,9 @@ class LabelPrintEntryFactory
             'order'      => $log->orderItem->salesOrder,
             'attributes' => $log->attributes,
             'qrSvg'      => QrSvg::make(self::QR_TARGET_URL),
+            // Khổ giấy in thực tế của mẫu đang dùng (VD "100x75") — labels.master_print đọc để set @page.
+            // Cùng thứ tự ưu tiên với LabelViewResolver::forLog: mẫu chọn khi in → mẫu gán cho sản phẩm.
+            'size'       => $log->labelTemplate?->default_size ?: $log->orderItem?->product?->labelTemplate?->default_size,
         ];
     }
 }

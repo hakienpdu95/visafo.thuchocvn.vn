@@ -14,16 +14,33 @@
     Mỗi template tem là một PARTIAL: chỉ chứa một khối <div class="label-wrapper"> (+ CSS tự đóng gói bằng @once,
     có tiền tố riêng để nhiều loại tem cùng nằm trong một lần in mà không đè CSS nhau).
     Master lặp qua từng tem và ngắt trang sau mỗi tem, trừ tem cuối cùng (tránh nhả ra 1 tem trắng).
+
+    Khổ giấy in (@page) được suy ra từ ->size (VD "100x75") của TEM ĐẦU TIÊN trong $items — không đọc theo từng
+    tem, vì @page là quy tắc toàn trang in. Không sao vì một lần in luôn dùng chung một mẫu tem (một
+    print_session_id ứng với một label_template_id duy nhất — xem PrintSalesOrderItemLabelAction). Thiếu/không
+    hợp lệ thì rơi về mặc định 60x40mm (khổ tem phổ biến nhất hệ thống, giữ đúng hành vi trước khi có ->size).
 --}}
+@php
+    $pageSize = '60mm 40mm';
+    $rawSize = $items[0]->size ?? null;
+    if ($rawSize && preg_match('/^(\d+(?:\.\d+)?)\s*[xX]\s*(\d+(?:\.\d+)?)$/', trim($rawSize), $m)) {
+        $pageSize = $m[1] . 'mm ' . $m[2] . 'mm';
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8">
     <title>In tem</title>
     <style>
-        @page { size: 60mm 40mm; margin: 0; }
+        @page { size: {{ $pageSize }}; margin: 0; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box; margin: 0; padding: 0;
+            /* Không có dòng này, Chrome/Edge mặc định KHÔNG in nền màu (nền đen khối sản phẩm, viền...)
+               trừ khi người dùng tự tick "Background graphics" trong hộp thoại in. */
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
         html, body { background: #fff; color: #000; font-family: Arial, Helvetica, sans-serif; }
 
         /* Ép máy in ngắt trang sau mỗi tem */

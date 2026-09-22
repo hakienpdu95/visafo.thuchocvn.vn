@@ -66,6 +66,7 @@ class PreviewLabelTemplateHandler implements QueryHandlerInterface
                 'order'      => null,
                 'attributes' => $attributes,
                 'qrSvg'      => $qrSvg,
+                'size'       => $template->default_size,
             ];
 
             return LabelTemplatePreview::rendered(
