@@ -15,6 +15,8 @@ use Modules\TraceLog\Queries\GetTraceLogDetailHandler;
 use Modules\TraceLog\Queries\GetTraceLogDetailQuery;
 use Modules\TraceLog\Queries\ListTraceLogCustomersHandler;
 use Modules\TraceLog\Queries\ListTraceLogCustomersQuery;
+use Modules\TraceLog\Queries\ListTraceLogsHandler;
+use Modules\Vendor\Models\Vendor;
 
 class TraceLogController extends Controller
 {
@@ -22,7 +24,14 @@ class TraceLogController extends Controller
     {
         $this->authorize('viewAny', PrintLog::class);
 
+        $vendors = Vendor::query()->whereIn('id', PrintLog::query()->whereNotNull('vendor_id')->distinct()->select('vendor_id'))
+            ->orderBy('name')->get(['id', 'name'])
+            ->map(fn (Vendor $v) => ['value' => $v->id, 'text' => $v->name])
+            ->prepend(['value' => ListTraceLogsHandler::VENDOR_NONE, 'text' => 'Nhập tay / Không rõ NCC'])
+            ->values()->all();
+
         return view('tracelog::index', [
+            'vendors'   => $vendors,
             'customers' => $customers->handle(new ListTraceLogCustomersQuery()),
             'statuses'  => collect(PrintLogStatus::cases())
                 ->map(fn (PrintLogStatus $s) => ['value' => $s->value, 'text' => $s->label()])->all(),

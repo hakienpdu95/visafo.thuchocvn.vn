@@ -15,7 +15,7 @@ class GetTraceLogDetailHandler implements QueryHandlerInterface
         /** @var GetTraceLogDetailQuery $query */
         $log = $query->printLog->load([
             'attributes', 'labelTemplate', 'printedBy:id,name', 'statusChangedBy:id,name',
-            'orderItem.product', 'orderItem.salesOrder',
+            'orderItem.product', 'orderItem.salesOrder', 'productBatch:id,batch_code',
         ]);
 
         $item = $log->orderItem;
@@ -43,6 +43,9 @@ class GetTraceLogDetailHandler implements QueryHandlerInterface
             'mfg_date'    => $log->mfg_date?->format('d/m/Y'),
             'exp_date'    => $log->exp_date?->format('d/m/Y'),
             'supplier_name' => $log->supplier_name,
+            'vendor_linked' => $log->vendor_id !== null,
+            'batch_code'    => $log->batch_code,
+            'receipt_batch' => $log->productBatch?->batch_code,
             'template'    => $log->labelTemplate?->name,
             'attributes'  => $log->attributes
                 ->map(fn ($a) => ['key' => $a->attribute_key, 'value' => (string) $a->attribute_value])->values()->all(),

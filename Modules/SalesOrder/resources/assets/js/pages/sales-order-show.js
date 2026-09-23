@@ -22,35 +22,29 @@ const COLUMNS = [
         formatter: (cell) => '<span class="font-mono">' + esc(cell.getValue()) + '</span>',
     },
     {
-        title: 'Đã in tem (kg)', field: 'printed_qty', width: 150, hozAlign: 'right', headerSort: false,
-        formatter: (cell) => {
-            const d = cell.getRow().getData();
-            const num = '<span class="font-mono">' + esc(cell.getValue()) + '</span>';
-            if (!(d.printed_qty_raw > 0)) return num;
-            return '<button type="button" class="inline-flex items-center gap-1 text-primary hover:underline" title="Xem lịch sử in / In lại">'
-                + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M3.05 11a9 9 0 11.5 4M3 4v5h5"/></svg>'
-                + num + '</button>';
-        },
-        cellClick(_e, cell) {
-            const row = cell.getRow().getData();
-            if (row.printed_qty_raw > 0) window.dispatchEvent(new CustomEvent('open-print-history', { detail: row }));
-        },
-    },
-    {
         title: 'Thực xuất', field: 'actual_qty', width: 150, hozAlign: 'right', headerSort: false,
         cssClass: 'bg-primary/5', // highlight sẵn — sau này đổi thành editor nhập liệu cho kho
         formatter: (cell) => cell.getValue() != null
             ? '<span class="font-mono">' + esc(cell.getValue()) + '</span>' : EMPTY,
     },
     {
-        title: 'Thao tác', field: 'print_url', width: 110, hozAlign: 'center', headerSort: false, frozen: true,
-        formatter: (cell) => cell.getValue()
-            ? '<button type="button" class="btn btn-outline btn-primary btn-xs gap-1">'
-                + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>In Tem</button>'
-            : '',
-        cellClick(_e, cell) {
+        title: 'Thao tác', field: 'print_url', width: 190, hozAlign: 'center', headerSort: false, frozen: true,
+        formatter: (cell) => {
+            const d = cell.getRow().getData();
+            return '<div class="flex items-center justify-center gap-1">'
+                + (d.print_url
+                    ? '<button type="button" data-action="print" class="btn btn-outline btn-primary btn-xs gap-1">'
+                        + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>In Tem</button>'
+                    : '')
+                + '<button type="button" data-action="history" class="btn btn-ghost btn-xs gap-1" title="Lịch sử in / In lại">'
+                + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M3.05 11a9 9 0 11.5 4M3 4v5h5"/></svg>Lịch sử</button>'
+                + '</div>';
+        },
+        cellClick(e, cell) {
             const row = cell.getRow().getData();
-            if (row.print_url) window.dispatchEvent(new CustomEvent('open-print-label', { detail: row }));
+            const action = e.target.closest('[data-action]')?.dataset.action;
+            if (action === 'print' && row.print_url) window.dispatchEvent(new CustomEvent('open-print-label', { detail: row }));
+            if (action === 'history') window.dispatchEvent(new CustomEvent('open-print-history', { detail: row }));
         },
     },
 ];
@@ -75,6 +69,7 @@ document.addEventListener('alpine:init', () => {
         let expPicker = null;
         let templateTs = null;
         let supplierTs = null;
+        let batchTs = null;
         let defaultTemplateId = '';
 
         return {
@@ -84,16 +79,17 @@ document.addEventListener('alpine:init', () => {
             message: '',
             blockedUrl: '',
             errors: {},
-            remaining: 0,
             attributes: [],
             loadingAttributes: false,
             _uid: 0,
             requiredTotal: 0,
-            form: { groups: [], mfg: '', exp: '', overrideLock: false, supplierManual: false, supplierText: '', batchCode: '', template: '' },
+            loadingBatches: false,
+            batchCount: 0,
+            batchVendors: {},
+            form: { groups: [], mfg: '', exp: '', supplierManual: false, supplierText: '', vendorId: '', batchId: '', batchCode: '', template: '' },
 
             get canSubmit() {
                 return !this.submitting
-                    && (this.remaining > 0 || this.form.overrideLock)
                     && this.groupsValid
                     && this.labelCount <= 200
                     && !!this.form.exp;
@@ -156,7 +152,25 @@ document.addEventListener('alpine:init', () => {
                             maxOptions: null,
                             dropdownParent: 'body',
                             onChange: (value) => {
+                                this.form.vendorId = value || '';
                                 this.form.supplierText = value ? (supplierTs.options[value]?.text ?? '') : '';
+                            },
+                        });
+                    }
+
+                    const batchEl = document.getElementById('ts-batch');
+                    if (batchEl && !batchEl.tomselect) {
+                        batchTs = createTs(batchEl, {
+                            placeholder: '— Không chọn lô —',
+                            maxOptions: null,
+                            dropdownParent: 'body',
+                            onChange: (value) => {
+                                this.form.batchId = value || '';
+                                const vendorId = this.batchVendors[value];
+                                if (vendorId && supplierTs?.options[vendorId]) {
+                                    this.form.supplierManual = false;
+                                    supplierTs.setValue(vendorId);
+                                }
                             },
                         });
                     }
@@ -198,6 +212,32 @@ document.addEventListener('alpine:init', () => {
             onSupplierManualToggle() {
                 supplierTs?.clear(true);
                 this.form.supplierText = '';
+                this.form.vendorId = '';
+            },
+
+            async loadBatches(row) {
+                batchTs?.clear(true);
+                batchTs?.clearOptions();
+                this.batchVendors = {};
+                this.batchCount = 0;
+                if (!row.batches_url) return;
+                this.loadingBatches = true;
+                try {
+                    const res = await fetch(row.batches_url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    if (this.item?.id !== row.id) return;
+                    (data.data ?? []).forEach((b) => {
+                        batchTs?.addOption({ value: b.value, text: b.text });
+                        this.batchVendors[b.value] = b.vendor_id;
+                    });
+                    this.batchCount = (data.data ?? []).length;
+                    batchTs?.refreshOptions(false);
+                } catch (e) {
+                    console.error('[print-label] load batches failed', e);
+                } finally {
+                    this.loadingBatches = false;
+                }
             },
 
             openFor(row) {
@@ -205,17 +245,15 @@ document.addEventListener('alpine:init', () => {
                 this.errors = {};
                 this.message = '';
                 this.blockedUrl = '';
-                // Khối lượng/tem khoá cứng theo Số lượng của đơn — không bao giờ đổi theo phần còn lại đã in.
-                const remaining = Math.round((Number(row.requested_qty_raw) - Number(row.printed_qty_raw)) * 1000) / 1000;
-                this.remaining = Math.max(remaining, 0);
                 this.requiredTotal = Math.round(Number(row.requested_qty_raw) * 1000) / 1000;
                 this.form = {
                     groups: [],
                     mfg: toYmd(new Date()),
                     exp: '',
-                    overrideLock: false,
                     supplierManual: false,
                     supplierText: '',
+                    vendorId: '',
+                    batchId: '',
                     batchCode: '',
                     // Ưu tiên mẫu tem gán riêng cho sản phẩm; nếu chưa có thì dùng mẫu mặc định của đơn.
                     template: defaultTemplateId || '',
@@ -229,6 +267,7 @@ document.addEventListener('alpine:init', () => {
                 this.recalcBatchCode();
                 this.open = true;
                 this.loadBatchAttributes(row);
+                this.loadBatches(row);
             },
 
             close() { this.open = false; },
@@ -288,6 +327,8 @@ document.addEventListener('alpine:init', () => {
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             supplier_name: this.form.supplierText.trim() || null,
+                            vendor_id: this.form.supplierManual ? null : (this.form.vendorId || null),
+                            product_batch_id: this.form.batchId || null,
                             batch_code: this.form.batchCode || null,
                             label_template_id: this.form.template || null,
                             extra_attributes: this.attributes
@@ -312,10 +353,6 @@ document.addEventListener('alpine:init', () => {
                         this.message = data.message || 'In tem thất bại. Vui lòng thử lại.';
                         return;
                     }
-
-                    window.salesOrderItemsTable?.updateData([{
-                        id: this.item.id, printed_qty: data.printed_qty, printed_qty_raw: data.printed_qty_raw,
-                    }]);
 
                     if (win) {
                         win.location = data.print_url;
@@ -367,7 +404,7 @@ document.addEventListener('alpine:init', () => {
 
         close() { this.open = false; },
 
-        // Chỉ mở lại tem đã có — server không ghi log mới và không cộng dồn printed_qty.
+        // Chỉ mở lại tem đã có — server không ghi log mới.
         reprint(log) {
             if (log.reprint_url) window.open(log.reprint_url, '_blank');
         },
@@ -382,9 +419,6 @@ document.addEventListener('alpine:init', () => {
 
         return {
             confirming: false,
-            // 'reprint-confirm' → hỏi xác nhận khi mọi mặt hàng đã in đủ; 'form' → form cấu hình bình thường.
-            stage: 'form',
-            reprintAll: false,
             submitting: false,
             message: '',
             ok: true,
@@ -392,14 +426,12 @@ document.addEventListener('alpine:init', () => {
             preview: { total: 0 },
             items: [],
             _uid: 0,
-            form: { template: '', mfg: '', exp: '', batchCode: '', supplierManual: false, supplierText: '' },
+            form: { template: '', mfg: '', exp: '', batchCode: '', supplierManual: false, supplierText: '', vendorId: '' },
 
             fmtKg,
 
             get introText() {
-                return this.reprintAll
-                    ? `Cấu hình chung bên dưới sẽ IN LẠI tem cho toàn bộ ${this.preview.total} mặt hàng trong đơn. Kiểm tra cách chia tem của từng mặt hàng và bấm biểu tượng bút để sửa nếu cần.`
-                    : `Cấu hình chung bên dưới áp dụng cho ${this.preview.total} mặt hàng còn thiếu tem. Kiểm tra cách chia tem của từng mặt hàng và bấm biểu tượng bút để sửa nếu cần.`;
+                return `Cấu hình chung bên dưới áp dụng cho ${this.preview.total} mặt hàng trong đơn. Kiểm tra cách chia tem của từng mặt hàng và bấm biểu tượng bút để sửa nếu cần.`;
             },
 
             get totalLabels() {
@@ -438,12 +470,11 @@ document.addEventListener('alpine:init', () => {
 
             buildItems(rows) {
                 this.items = rows.map((r) => {
-                    const remaining = Math.round((r.requested_qty_raw - r.printed_qty_raw) * 1000) / 1000;
                     const row = {
                         id: r.id,
                         name: r.product_name || r.name,
                         unit: r.unit,
-                        total: this.reprintAll || remaining <= 0 ? Math.round(r.requested_qty_raw * 1000) / 1000 : remaining,
+                        total: Math.round(Number(r.requested_qty_raw) * 1000) / 1000,
                         groups: [],
                         editing: false,
                     };
@@ -474,6 +505,7 @@ document.addEventListener('alpine:init', () => {
                             maxOptions: null,
                             dropdownParent: 'body',
                             onChange: (value) => {
+                                this.form.vendorId = value || '';
                                 this.form.supplierText = value ? (supplierTs.options[value]?.text ?? '') : '';
                             },
                         });
@@ -512,14 +544,13 @@ document.addEventListener('alpine:init', () => {
             onSupplierManualToggle() {
                 supplierTs?.clear(true);
                 this.form.supplierText = '';
+                this.form.vendorId = '';
             },
 
-            // Chỉ CẢNH BÁO khi mọi mặt hàng đã in đủ — không chặn cứng, người dùng vẫn tự quyết định in lại.
             openConfirm() {
                 const rows = window.salesOrderItemsTable?.getData() ?? [];
                 this.errors = {};
                 this.message = '';
-                this.reprintAll = false;
 
                 if (rows.length === 0) {
                     this.confirming = false;
@@ -528,29 +559,12 @@ document.addEventListener('alpine:init', () => {
                     return;
                 }
 
-                const pending = rows.filter(r => Math.round((r.requested_qty_raw - r.printed_qty_raw) * 1000) > 0);
-
-                if (pending.length === 0) {
-                    this.preview = { total: rows.length };
-                    this.stage = 'reprint-confirm';
-                    this.confirming = true;
-                    return;
-                }
-
-                this.buildItems(pending);
-                this.openForm();
-            },
-
-            // Người dùng xác nhận "Tiếp tục in lại" ở bước cảnh báo — mở form cấu hình, áp dụng cho toàn đơn.
-            confirmReprintAll() {
-                this.reprintAll = true;
-                this.buildItems(window.salesOrderItemsTable?.getData() ?? []);
+                this.buildItems(rows);
                 this.openForm();
             },
 
             openForm() {
-                this.stage = 'form';
-                this.form = { template: '', mfg: toYmd(new Date()), exp: '', batchCode: '', supplierManual: false, supplierText: '' };
+                this.form = { template: '', mfg: toYmd(new Date()), exp: '', batchCode: '', supplierManual: false, supplierText: '', vendorId: '' };
                 templateTs?.clear(true);
                 supplierTs?.clear(true);
                 mfgPicker?.setDate(this.form.mfg, false);
@@ -577,11 +591,11 @@ document.addEventListener('alpine:init', () => {
                             'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
                         },
                         body: JSON.stringify({
-                            reprint_all: this.reprintAll,
                             label_template_id: this.form.template || null,
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             supplier_name: this.form.supplierText.trim() || null,
+                            vendor_id: this.form.supplierManual ? null : (this.form.vendorId || null),
                             batch_code: this.form.batchCode || null,
                             items: this.items.map((row) => ({
                                 order_item_id: row.id,
@@ -601,7 +615,6 @@ document.addEventListener('alpine:init', () => {
                     }
                     if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
 
-                    window.salesOrderItemsTable?.updateData(data.items ?? []);
                     this.confirming = false;
                     this.ok = true;
                     this.message = data.message;

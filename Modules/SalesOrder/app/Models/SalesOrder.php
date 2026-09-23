@@ -23,10 +23,18 @@ class SalesOrder extends TenantAwareModel
         'misa_ref_id',
         'customer_name',
         'delivery_address',
+        'delivery_date',
         'status',
         'source_file_name',
         'imported_by',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'delivery_date' => 'date',
+        ];
+    }
 
     protected $attributes = [
         'status' => self::STATUS_PENDING,

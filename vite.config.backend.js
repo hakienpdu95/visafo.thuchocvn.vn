@@ -36,6 +36,7 @@ const JS_OUTPUT = {
   'tracelog':             'assets/modules/tracelog.[hash].js',
   'foodinspection':       'assets/modules/foodinspection.[hash].js',
   'menu':                 'assets/modules/menu.[hash].js',
+  'report':               'assets/modules/report.[hash].js',
 };
 
 /** CSS asset name → output path.
@@ -69,6 +70,7 @@ const CSS_OUTPUT = {
   'tracelog.css':             'assets/modules/tracelog.[hash].css',
   'foodinspection.css':       'assets/modules/foodinspection.[hash].css',
   'menu.css':                 'assets/modules/menu.[hash].css',
+  'report.css':               'assets/modules/report.[hash].css',
 };
 
 // ─── Module input entries ─────────────────────────────────────────────
@@ -122,6 +124,9 @@ const MODULE_ENTRIES = [
   // Menu
   'Modules/Menu/resources/assets/sass/menu.scss',
   'Modules/Menu/resources/assets/js/menu.js',
+  // Report
+  'Modules/Report/resources/assets/sass/report.scss',
+  'Modules/Report/resources/assets/js/report.js',
 ];
 
 // ─────────────────────────────────────────────────────────────────────

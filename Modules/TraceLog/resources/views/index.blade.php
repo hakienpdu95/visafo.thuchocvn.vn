@@ -5,6 +5,7 @@
 <div x-data="traceLogListPage({{ Js::from([
     'apiUrl'    => route('backend.api.trace-logs'),
     'customers' => $customers,
+    'vendors'   => $vendors,
     'statuses'  => $statuses,
 ]) }})">
 
@@ -102,6 +103,30 @@
 
                 </div>
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end mt-3">
+                    <div class="form-control lg:col-span-2">
+                        <label class="label py-0.5"><span class="label-text text-xs font-medium">Nhà cung cấp</span></label>
+                        <select id="ts-vendor" x-model="filters.vendor" @change="onFilterChange()"
+                                data-ts-placeholder="Tất cả nhà cung cấp"
+                                class="select select-sm select-bordered w-full">
+                            <option value="">Tất cả</option>
+                            @foreach($vendors as $vendor)
+                            <option value="{{ $vendor['value'] }}">{{ $vendor['text'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-control lg:col-span-2">
+                        <label class="label py-0.5">
+                            <span class="label-text text-xs font-medium">Mã lô (Recall)</span>
+                            <span class="label-text-alt text-xs text-base-content/40">Lô nhập kho hoặc mã LOT trên tem</span>
+                        </label>
+                        <input type="text" x-model="filters.batch" @input.debounce.400ms="onFilterChange()" autocomplete="off"
+                               placeholder="VD: XK160194-RAU01 hoặc LOT-230926-250926"
+                               class="input input-sm input-bordered w-full font-mono"/>
+                    </div>
+                </div>
+
                 <div class="flex justify-end">
                     <button @click="reset()" x-show="hasFilters" x-transition
                             class="btn btn-ghost btn-sm gap-1.5 text-error mt-1">
@@ -196,6 +221,14 @@
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Khách hàng</dt><dd class="text-right" x-text="detail?.order?.customer_name || '—'"></dd></div>
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Khối lượng</dt><dd class="text-right font-mono" x-text="detail?.weight"></dd></div>
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">NSX / HSD</dt><dd class="text-right" x-text="(detail?.mfg_date || '—') + ' / ' + (detail?.exp_date || '—')"></dd></div>
+                            <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Nguồn cung</dt>
+                                <dd class="text-right">
+                                    <span x-text="detail?.supplier_name || '—'"></span>
+                                    <span class="badge badge-xs badge-warning ml-1" x-show="detail && !detail.vendor_linked">Không truy vết NCC</span>
+                                </dd>
+                            </div>
+                            <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Lô nhập kho</dt><dd class="text-right font-mono" x-text="detail?.receipt_batch || '—'"></dd></div>
+                            <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Mã lô trên tem</dt><dd class="text-right font-mono" x-text="detail?.batch_code || '—'"></dd></div>
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">In lúc</dt><dd class="text-right" x-text="detail ? (detail.printed_at + (detail.printed_by ? ' · ' + detail.printed_by : '')) : ''"></dd></div>
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Mẫu tem</dt><dd class="text-right" x-text="detail?.template || 'Mặc định'"></dd></div>
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Cùng lần in</dt><dd class="text-right" x-text="detail ? detail.session_count + ' tem' : ''"></dd></div>

@@ -3,6 +3,8 @@
 namespace Modules\SalesOrder\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Modules\LabelTemplate\Models\LabelTemplate;
 use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsHandler;
 use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsQuery;
@@ -40,5 +42,21 @@ class SalesOrderController extends Controller
             ->value('id') ?? '';
 
         return view('salesorder::sales-orders.show', compact('salesOrder', 'labelTemplates', 'vendors', 'defaultLabelTemplateId'));
+    }
+
+    public function updateDeliveryDate(Request $request, SalesOrder $salesOrder): RedirectResponse
+    {
+        $this->authorize('print', $salesOrder);
+
+        $data = $request->validate([
+            'delivery_date' => ['required', 'date'],
+        ], [
+            'delivery_date.required' => 'Vui lòng chọn ngày giao hàng.',
+            'delivery_date.date'     => 'Ngày giao hàng không hợp lệ.',
+        ]);
+
+        $salesOrder->update(['delivery_date' => $data['delivery_date']]);
+
+        return back()->with('success', 'Đã cập nhật ngày giao hàng.');
     }
 }

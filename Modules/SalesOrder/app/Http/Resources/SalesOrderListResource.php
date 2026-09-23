@@ -15,6 +15,7 @@ class SalesOrderListResource extends JsonResource
             'misa_ref_id' => $this->misa_ref_id,
             'customer_name' => $this->customer_name,
             'delivery_address' => $this->delivery_address,
+            'delivery_date' => $this->delivery_date?->format('d/m/Y'),
             'status' => $this->status,
             'status_label' => SalesOrder::statusLabels()[$this->status] ?? $this->status,
             'items_count' => $this->items_count,

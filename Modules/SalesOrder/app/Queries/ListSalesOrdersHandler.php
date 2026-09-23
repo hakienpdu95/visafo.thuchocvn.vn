@@ -10,7 +10,7 @@ use Modules\SalesOrder\Models\SalesOrder;
 
 class ListSalesOrdersHandler implements QueryHandlerInterface
 {
-    private const SORTABLE = ['misa_ref_id', 'customer_name', 'status', 'created_at'];
+    private const SORTABLE = ['misa_ref_id', 'customer_name', 'status', 'delivery_date', 'created_at'];
 
     public function handle(QueryInterface $query): LengthAwarePaginator
     {

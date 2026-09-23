@@ -10,6 +10,8 @@ use Modules\SalesOrder\Models\PrintLog;
 
 class ListTraceLogsHandler implements QueryHandlerInterface
 {
+    public const VENDOR_NONE = '__none';
+
     private const SORTABLE = ['created_at', 'trace_code', 'weight_per_label', 'status'];
 
     public function handle(QueryInterface $query): LengthAwarePaginator
@@ -18,7 +20,7 @@ class ListTraceLogsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = PrintLog::query()->with(['orderItem.product', 'orderItem.salesOrder', 'printedBy:id,name']);
+        $q = PrintLog::query()->with(['orderItem.product', 'orderItem.salesOrder', 'printedBy:id,name', 'productBatch:id,batch_code']);
 
         $search = $this->normalizeSearch($query->search);
         if ($search !== null) {
@@ -44,6 +46,20 @@ class ListTraceLogsHandler implements QueryHandlerInterface
 
         if ($query->dateTo !== null && $query->dateTo !== '') {
             $q->whereDate('created_at', '<=', $query->dateTo);
+        }
+
+        if ($query->vendor === self::VENDOR_NONE) {
+            $q->whereNull('vendor_id');
+        } elseif ($query->vendor !== null && $query->vendor !== '') {
+            $q->where('vendor_id', $query->vendor);
+        }
+
+        if ($query->batch !== null && trim($query->batch) !== '') {
+            $batch = trim($query->batch);
+            $q->where(function (Builder $sub) use ($batch): void {
+                $sub->where('batch_code', 'like', $batch . '%')
+                    ->orWhereHas('productBatch', fn (Builder $b) => $b->where('batch_code', 'like', $batch . '%'));
+            });
         }
 
         $q->orderBy($sortField, $sortDir)->orderBy('id', $sortDir);

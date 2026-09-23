@@ -16,5 +16,7 @@ class ListTraceLogsQuery implements QueryInterface
         public readonly ?string $status = null,
         public readonly ?string $dateFrom = null,
         public readonly ?string $dateTo = null,
+        public readonly ?string $vendor = null,
+        public readonly ?string $batch = null,
     ) {}
 }

@@ -19,7 +19,6 @@ class PrintSalesOrderItemLabelAction
         return DB::transaction(function () use ($item, $data, $printedBy) {
             $sessionId = Str::lower((string) Str::ulid());
             $logs = new Collection();
-            $totalWeight = 0.0;
 
             foreach ($data['label_groups'] as $group) {
                 $weight = round((float) $group['weight_per_label'], 3);
@@ -33,6 +32,8 @@ class PrintSalesOrderItemLabelAction
                         'mfg_date'          => $data['mfg_date'] ?? null,
                         'exp_date'          => $data['exp_date'],
                         'supplier_name'     => $data['supplier_name'] ?? null,
+                        'vendor_id'         => $data['vendor_id'] ?? null,
+                        'product_batch_id'  => $data['product_batch_id'] ?? null,
                         'batch_code'        => $data['batch_code'] ?? null,
                         'printed_by'        => $printedBy,
                     ]); // trace_code độc nhất được sinh trong PrintLog::creating
@@ -46,11 +47,8 @@ class PrintSalesOrderItemLabelAction
                     }
 
                     $logs->push($log);
-                    $totalWeight += $weight;
                 }
             }
-
-            $item->increment('printed_qty', round($totalWeight, 3));
 
             return ['session_id' => $sessionId, 'logs' => $logs];
         });

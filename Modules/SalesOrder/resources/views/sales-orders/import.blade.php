@@ -113,6 +113,19 @@
         <form method="POST" action="{{ route('backend.sales-orders.import.store') }}" enctype="multipart/form-data" class="border-t border-gray-200 pt-6">
             @csrf
 
+            <div class="mb-4 max-w-xs">
+                <label for="delivery_date" class="block text-sm font-medium text-gray-800 mb-2">
+                    <span class="text-red-600">*</span> Ngày giao hàng
+                </label>
+                <input type="date" id="delivery_date" name="delivery_date" required
+                       value="{{ old('delivery_date', $defaultDeliveryDate) }}"
+                       class="input input-bordered w-full @error('delivery_date') input-error @enderror">
+                <span class="block text-xs text-gray-500 mt-1">Áp dụng cho mọi phiếu trong lần nhập này.</span>
+                @error('delivery_date')
+                <span class="block text-error text-xs mt-1">{{ $message }}</span>
+                @enderror
+            </div>
+
             <div class="mb-6 max-w-xl">
                 <label for="files" class="block text-sm font-medium text-gray-800 mb-2">
                     <span class="text-red-600">*</span> Chọn tập tin Excel (.xls, .xlsx)

@@ -14,5 +14,6 @@
     "LabelTemplate": true,
     "TraceLog": true,
     "FoodInspection": true,
-    "Menu": true
+    "Menu": true,
+    "Report": true
 }

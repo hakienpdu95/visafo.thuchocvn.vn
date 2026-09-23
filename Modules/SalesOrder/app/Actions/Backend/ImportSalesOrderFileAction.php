@@ -22,7 +22,7 @@ class ImportSalesOrderFileAction
 
     public function __construct(private readonly MisaSalesOrderParser $parser) {}
 
-    public function handle(UploadedFile $file, ?string $importedById): ImportFileResult
+    public function handle(UploadedFile $file, ?string $importedById, ?string $deliveryDate = null): ImportFileResult
     {
         $originalName = $file->getClientOriginalName();
 
@@ -41,7 +41,7 @@ class ImportSalesOrderFileAction
 
         try {
             ['itemsCount' => $itemsCount, 'newProducts' => $newProducts] =
-                DB::transaction(fn () => $this->persist($parsed, $originalName, $importedById));
+                DB::transaction(fn () => $this->persist($parsed, $originalName, $importedById, $deliveryDate));
         } catch (Throwable $e) {
             return ImportFileResult::failed($originalName, $e->getMessage(), $parsed->misaRefId);
         }
@@ -49,7 +49,7 @@ class ImportSalesOrderFileAction
         return ImportFileResult::imported($originalName, $parsed->misaRefId, $itemsCount, $newProducts);
     }
 
-    private function persist(ParsedSalesOrder $parsed, string $originalName, ?string $importedById): array
+    private function persist(ParsedSalesOrder $parsed, string $originalName, ?string $importedById, ?string $deliveryDate): array
     {
         $productIds = [];
         $newProducts = [];
@@ -76,6 +76,7 @@ class ImportSalesOrderFileAction
             'misa_ref_id'      => $parsed->misaRefId,
             'customer_name'    => $parsed->customerName,
             'delivery_address' => $parsed->deliveryAddress,
+            'delivery_date'    => $deliveryDate,
             'status'           => SalesOrder::STATUS_PENDING,
             'source_file_name' => $originalName,
             'imported_by'      => $importedById,

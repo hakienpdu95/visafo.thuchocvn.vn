@@ -49,7 +49,6 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     // categories.*: đã triển khai thật ở Modules/Product/routes/web.php
     Route::get('/orders',           fn () => abort(503, 'Module đang phát triển'))->name('orders.index');
     Route::get('/settings',         fn () => abort(503, 'Module đang phát triển'))->name('settings.index');
-    Route::get('/reports',          fn () => abort(503, 'Module đang phát triển'))->name('reports.index');
 
     // ── Traceability Report (Farm-to-Fork) ─────────────────────────────────
     Route::get('/traceability', [TraceabilityController::class, 'index'])

@@ -41,6 +41,22 @@ const COLUMNS = [
         formatter(cell) { return esc(cell.getValue()) || EMPTY; },
     },
     {
+        title: 'Nguồn cung', field: 'supplier_name', minWidth: 180, headerSort: false,
+        formatter(cell) {
+            const d = cell.getRow().getData();
+            if (!d.supplier_name) return EMPTY;
+            return esc(d.supplier_name) + (d.vendor_linked ? '' : ' <span class="badge badge-xs badge-warning" title="Nguồn cung nhập tay — không truy vết được theo nhà cung cấp">Nhập tay</span>');
+        },
+    },
+    {
+        title: 'Lô nhập / Mã lô', field: 'receipt_batch', minWidth: 170, headerSort: false,
+        formatter(cell) {
+            const d = cell.getRow().getData();
+            return '<div class="font-mono text-xs"><p>' + (esc(d.receipt_batch) || '<span class="text-base-content/30">Chưa gắn lô</span>') + '</p>'
+                + '<p class="text-base-content/50">' + (esc(d.batch_code) || '') + '</p></div>';
+        },
+    },
+    {
         title: 'KL / Tem (kg)', field: 'weight_per_label', width: 130, hozAlign: 'right', sorter: 'number',
         formatter(cell) { return '<span class="font-mono">' + esc(cell.getRow().getData().weight) + '</span>'; },
     },
@@ -76,17 +92,18 @@ document.addEventListener('alpine:init', () => {
 
     // ── Danh sách + bộ lọc ─────────────────────────────────────────────
     Alpine.data('traceLogListPage', (serverData = {}) => {
-        const { apiUrl = '', customers = [], statuses = [] } = serverData;
+        const { apiUrl = '', customers = [], statuses = [], vendors = [] } = serverData;
 
         let tableInst = null;
         let tsCustomer = null;
         let tsStatus = null;
+        let tsVendor = null;
         let fpFrom = null;
         let fpTo = null;
         let openIfSingle = false;
 
         return {
-            filters: { search: '', customer: '', status: '', dateFrom: '', dateTo: '' },
+            filters: { search: '', customer: '', status: '', dateFrom: '', dateTo: '', vendor: '', batch: '' },
             hiddenCols: [],
 
             get toggleableCols() {
@@ -97,7 +114,7 @@ document.addEventListener('alpine:init', () => {
 
             get hasFilters() {
                 const f = this.filters;
-                return !!(f.search || f.customer || f.status || f.dateFrom || f.dateTo);
+                return !!(f.search || f.customer || f.status || f.dateFrom || f.dateTo || f.vendor || f.batch);
             },
 
             get activeChips() {
@@ -108,6 +125,11 @@ document.addEventListener('alpine:init', () => {
                     const st = statuses.find(x => x.value === f.status);
                     chips.push({ key: 'status', label: st ? st.text : f.status });
                 }
+                if (f.vendor) {
+                    const v = vendors.find(x => x.value === f.vendor);
+                    chips.push({ key: 'vendor', label: 'NCC: ' + (v ? v.text : f.vendor) });
+                }
+                if (f.batch) chips.push({ key: 'batch', label: 'Lô: ' + f.batch });
                 if (f.dateFrom || f.dateTo) {
                     chips.push({ key: 'date', label: 'Ngày in: ' + (f.dateFrom || '...') + ' → ' + (f.dateTo || '...') });
                 }
@@ -133,6 +155,14 @@ document.addEventListener('alpine:init', () => {
                         placeholder: 'Tất cả khách hàng',
                         maxOptions: null,
                         onChange() { customerEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                    });
+                }
+                const vendorEl = document.getElementById('ts-vendor');
+                if (vendorEl) {
+                    tsVendor = createTs(vendorEl, {
+                        placeholder: 'Tất cả nhà cung cấp',
+                        maxOptions: null,
+                        onChange() { vendorEl.dispatchEvent(new Event('change', { bubbles: true })); },
                     });
                 }
                 if (statusEl) {
@@ -189,6 +219,8 @@ document.addEventListener('alpine:init', () => {
                         if (f.status) p.status = f.status;
                         if (f.dateFrom) p.date_from = f.dateFrom;
                         if (f.dateTo) p.date_to = f.dateTo;
+                        if (f.vendor) p.vendor = f.vendor;
+                        if (f.batch) p.batch = f.batch;
                         return p;
                     },
                     ajaxResponse: (_u, _p, res) => res,
@@ -239,6 +271,8 @@ document.addEventListener('alpine:init', () => {
                 if (p.has('st')) this.filters.status = p.get('st');
                 if (p.has('from')) this.filters.dateFrom = p.get('from');
                 if (p.has('to')) this.filters.dateTo = p.get('to');
+                if (p.has('vd')) this.filters.vendor = p.get('vd');
+                if (p.has('lot')) this.filters.batch = p.get('lot');
             },
 
             saveState() {
@@ -248,6 +282,8 @@ document.addEventListener('alpine:init', () => {
                 if (f.status) p.set('st', f.status);
                 if (f.dateFrom) p.set('from', f.dateFrom);
                 if (f.dateTo) p.set('to', f.dateTo);
+                if (f.vendor) p.set('vd', f.vendor);
+                if (f.batch) p.set('lot', f.batch);
                 const qs = p.toString();
                 history.replaceState(null, '', qs ? '?' + qs : location.pathname);
             },
@@ -268,14 +304,17 @@ document.addEventListener('alpine:init', () => {
                 if (key === 'search') this.filters.search = '';
                 if (key === 'customer') { this.filters.customer = ''; tsCustomer?.setValue('', true); }
                 if (key === 'status') { this.filters.status = ''; tsStatus?.setValue('', true); }
+                if (key === 'vendor') { this.filters.vendor = ''; tsVendor?.setValue('', true); }
+                if (key === 'batch') this.filters.batch = '';
                 if (key === 'date') this._clearDates();
                 this.saveState();
                 this.refresh();
             },
 
             reset() {
-                this.filters = { search: '', customer: '', status: '', dateFrom: '', dateTo: '' };
+                this.filters = { search: '', customer: '', status: '', dateFrom: '', dateTo: '', vendor: '', batch: '' };
                 this._clearDates();
+                tsVendor?.setValue('', true);
                 tsCustomer?.setValue('', true);
                 tsStatus?.setValue('', true);
                 history.replaceState(null, '', location.pathname);

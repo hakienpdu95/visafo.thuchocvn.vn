@@ -19,11 +19,13 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
     Route::post('sales-orders/items/{item}/print', [PrintLabelController::class, 'store'])->name('sales-orders.items.print');
     Route::get('sales-orders/items/{item}/batch-attributes', [PrintLabelController::class, 'batchAttributes'])->name('sales-orders.items.batch-attributes');
+    Route::get('sales-orders/items/{item}/batches', [PrintLabelController::class, 'batches'])->name('sales-orders.items.batches');
     Route::get('sales-orders/items/{item}/print-logs', [PrintLabelController::class, 'history'])->name('sales-orders.items.print-logs');
     Route::post('sales-orders/{sales_order}/print-all', [PrintLabelController::class, 'storeAll'])->name('sales-orders.print-all');
 
     Route::get('sales-orders', [SalesOrderController::class, 'index'])->name('sales-orders.index');
     Route::get('sales-orders/{sales_order}', [SalesOrderController::class, 'show'])->name('sales-orders.show');
+    Route::patch('sales-orders/{sales_order}/delivery-date', [SalesOrderController::class, 'updateDeliveryDate'])->name('sales-orders.delivery-date');
 });
 
 // Render tem động — print.render (một tem) và print.render_session (cả lần in: mỗi tem một bản ghi/QR riêng).

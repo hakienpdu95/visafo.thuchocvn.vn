@@ -16,10 +16,12 @@ use Modules\SalesOrder\Models\SalesOrderItem;
 use Modules\SalesOrder\Support\BatchAttributeResolver;
 use Modules\SalesOrder\Support\LabelPrintEntryFactory;
 use Modules\SalesOrder\Support\LabelViewResolver;
+use Modules\SalesOrder\Support\PrintSourceResolver;
+use Modules\GoodsReceipt\Models\ProductBatch;
 
 class PrintLabelController extends Controller
 {
-    public function store(Request $request, SalesOrderItem $item, PrintSalesOrderItemLabelAction $action): JsonResponse
+    public function store(Request $request, SalesOrderItem $item, PrintSalesOrderItemLabelAction $action, PrintSourceResolver $sourceResolver): JsonResponse
     {
         $this->authorize('print', $item->order);
 
@@ -39,6 +41,8 @@ class PrintLabelController extends Controller
                 $request->filled('mfg_date') ? 'after_or_equal:mfg_date' : null,
             ]),
             'supplier_name'    => ['nullable', 'string', 'max:255'],
+            'vendor_id'        => ['nullable', 'string', Rule::exists('vendors', 'id')->whereNull('deleted_at')],
+            'product_batch_id' => ['nullable', 'string', Rule::exists('product_batches', 'id')->whereNull('deleted_at')],
             'batch_code'       => ['nullable', 'string', 'max:100'],
             'label_template_id' => ['nullable', 'string', Rule::exists('label_templates', 'id')->whereNull('deleted_at')],
             'extra_attributes'         => ['nullable', 'array', 'max:30'],
@@ -60,6 +64,8 @@ class PrintLabelController extends Controller
             'exp_date.date'             => 'HSD không hợp lệ.',
             'exp_date.after_or_equal'   => 'HSD phải sau hoặc bằng NSX.',
             'supplier_name.max'         => 'Nguồn cung không được vượt quá 255 ký tự.',
+            'vendor_id.exists'          => 'Nhà cung cấp không hợp lệ.',
+            'product_batch_id.exists'   => 'Lô nhập kho không hợp lệ.',
             'batch_code.max'            => 'Mã lô không được vượt quá 100 ký tự.',
             'label_template_id.exists'  => 'Mẫu tem được chọn không hợp lệ.',
             'extra_attributes.max'             => 'Tối đa 30 dòng thông tin bổ sung.',
@@ -73,6 +79,8 @@ class PrintLabelController extends Controller
             throw ValidationException::withMessages(['label_groups' => 'Mỗi lần chỉ in tối đa 200 tem.']);
         }
 
+        $data = array_merge($data, $sourceResolver->resolve($data, $item));
+
         $result = $action->handle($item, $data, $request->user()?->id);
 
         return response()->json([
@@ -80,8 +88,6 @@ class PrintLabelController extends Controller
             'label_count' => $result['logs']->count(),
             // Trang in cả phiên: mỗi tem một bản ghi + một trace_code/QR riêng.
             'print_url'   => route('print.render_session', $result['session_id']),
-            'printed_qty' => number_format((float) $item->fresh()->printed_qty, 3),
-            'printed_qty_raw' => (float) $item->fresh()->printed_qty,
         ]);
     }
 
@@ -91,6 +97,26 @@ class PrintLabelController extends Controller
         $this->authorize('print', $item->order);
 
         return response()->json($resolver->forItem($item));
+    }
+
+    public function batches(SalesOrderItem $item): JsonResponse
+    {
+        $this->authorize('print', $item->order);
+
+        $batches = ProductBatch::query()
+            ->where('product_id', $item->product_id)
+            ->with('goodsReceipt:id,misa_ref_id,receipt_date,vendor_id,supplier_name', 'goodsReceipt.vendor:id,name')
+            ->latest('created_at')->latest('id')
+            ->limit(50)
+            ->get()
+            ->map(fn (ProductBatch $b) => [
+                'value'       => $b->id,
+                'text'        => $b->batch_code . ' · ' . ($b->goodsReceipt?->vendor?->name ?? $b->goodsReceipt?->supplier_name ?? 'Chưa rõ NCC')
+                    . ($b->goodsReceipt?->receipt_date ? ' · nhập ' . $b->goodsReceipt->receipt_date->format('d/m/Y') : ''),
+                'vendor_id'   => $b->goodsReceipt?->vendor_id,
+            ]);
+
+        return response()->json(['data' => $batches]);
     }
 
     /** Lịch sử in của một dòng hàng (mới nhất trước). */
@@ -118,7 +144,7 @@ class PrintLabelController extends Controller
                     'exp_date'         => $first->exp_date?->format('d/m/Y'),
                     'printed_at'       => $first->created_at?->format('d/m/Y H:i'),
                     'printed_by'       => $first->printedBy?->name,
-                    // In lại cả phiên: chỉ mở lại các tem cũ (cùng trace_code), không ghi log mới, không cộng dồn printed_qty.
+                    // In lại cả phiên: chỉ mở lại các tem cũ (cùng trace_code), không ghi log mới.
                     'reprint_url'      => $canPrint ? route('print.render_session', $sessionId) : null,
                 ];
             })->values();
@@ -126,18 +152,11 @@ class PrintLabelController extends Controller
         return response()->json(['data' => $logs]);
     }
 
-    /**
-     * In tem toàn bộ đơn: áp dụng MỘT cấu hình chung (mẫu tem, NSX, HSD, mã lô, nguồn cung) cho mọi
-     * dòng còn thiếu tem trong đơn; khối lượng mỗi tem vẫn lấy tự động theo số lượng còn lại của từng dòng.
-     * `reprint_all`: true khi người dùng chủ động xác nhận in lại dù mọi dòng đã in đủ (tem rách/hỏng) —
-     * khi đó các dòng đã đủ vẫn được in, với khối lượng/tem = số lượng yêu cầu ban đầu của dòng đó.
-     */
-    public function storeAll(Request $request, SalesOrder $salesOrder, BulkPrintSalesOrderLabelsAction $action): JsonResponse
+    public function storeAll(Request $request, SalesOrder $salesOrder, BulkPrintSalesOrderLabelsAction $action, PrintSourceResolver $sourceResolver): JsonResponse
     {
         $this->authorize('print', $salesOrder);
 
         $data = $request->validate([
-            'reprint_all'      => ['nullable', 'boolean'],
             'items'                                  => ['nullable', 'array', 'max:500'],
             'items.*.order_item_id'                  => ['required', 'string', 'distinct'],
             'items.*.label_groups'                   => ['required', 'array', 'min:1', 'max:20'],
@@ -149,6 +168,7 @@ class PrintLabelController extends Controller
                 $request->filled('mfg_date') ? 'after_or_equal:mfg_date' : null,
             ]),
             'supplier_name'    => ['nullable', 'string', 'max:255'],
+            'vendor_id'        => ['nullable', 'string', Rule::exists('vendors', 'id')->whereNull('deleted_at')],
             'batch_code'       => ['nullable', 'string', 'max:100'],
             'label_template_id' => ['required', 'string', Rule::exists('label_templates', 'id')->whereNull('deleted_at')],
         ], [
@@ -157,6 +177,7 @@ class PrintLabelController extends Controller
             'exp_date.date'             => 'HSD không hợp lệ.',
             'exp_date.after_or_equal'   => 'HSD phải sau hoặc bằng NSX.',
             'supplier_name.max'         => 'Nguồn cung không được vượt quá 255 ký tự.',
+            'vendor_id.exists'          => 'Nhà cung cấp không hợp lệ.',
             'batch_code.max'            => 'Mã lô không được vượt quá 100 ký tự.',
             'label_template_id.required' => 'Vui lòng chọn mẫu tem in.',
             'label_template_id.exists'  => 'Mẫu tem được chọn không hợp lệ.',
@@ -176,6 +197,8 @@ class PrintLabelController extends Controller
             throw ValidationException::withMessages(['items' => 'Mỗi lần in toàn bộ đơn tối đa 2000 tem.']);
         }
 
+        $data = array_merge($data, $sourceResolver->resolve($data));
+
         $result = $action->handle($salesOrder, $data, $request->user()?->id);
 
         $message = $result['total'] === 0
@@ -186,7 +209,6 @@ class PrintLabelController extends Controller
             'printed' => $result['printed'],
             'total'   => $result['total'],
             'message' => $message,
-            'items'   => $result['items'],
             'url'     => $result['logs'] === [] ? null : route('print.render_session', $result['session_id']),
         ]);
     }
@@ -194,7 +216,7 @@ class PrintLabelController extends Controller
     /**
      * Render cả phiên in: mọi PrintLog cùng print_session_id (mỗi tem một bản ghi + trace_code/QR riêng).
      * Mỗi tem dùng đúng mẫu của nó; mẫu trỏ tới view không tồn tại thì dùng mẫu mặc định để không hỏng cả lượt in.
-     * Chỉ đọc — không ghi log, không cộng dồn printed_qty.
+     * Chỉ đọc — không ghi log.
      */
     public function renderSession(string $sessionId, LabelViewResolver $resolver)
     {
@@ -221,7 +243,7 @@ class PrintLabelController extends Controller
 
     /**
      * Render một tem đơn lẻ (route name: print.render) — dùng view_path của mẫu tem gán cho sản phẩm.
-     * Chỉ đọc — không ghi log, không cộng dồn printed_qty.
+     * Chỉ đọc — không ghi log.
      */
     public function render(PrintLog $printLog, LabelViewResolver $resolver)
     {

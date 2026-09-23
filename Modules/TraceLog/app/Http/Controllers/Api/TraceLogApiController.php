@@ -28,6 +28,8 @@ class TraceLogApiController extends Controller
             'status'    => ['nullable', Rule::enum(PrintLogStatus::class)],
             'date_from' => ['nullable', 'date'],
             'date_to'   => ['nullable', 'date'],
+            'vendor'    => ['nullable', 'string', 'max:30'],
+            'batch'     => ['nullable', 'string', 'max:100'],
         ]);
 
         $sortRaw = $request->input('sort.0');
@@ -44,6 +46,8 @@ class TraceLogApiController extends Controller
             status: $validated['status'] ?? null,
             dateFrom: $validated['date_from'] ?? null,
             dateTo: $validated['date_to'] ?? null,
+            vendor: $validated['vendor'] ?? null,
+            batch: $validated['batch'] ?? null,
         ));
 
         return response()->json([

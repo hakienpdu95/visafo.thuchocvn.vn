@@ -40,6 +40,9 @@ const COLUMNS = [
         formatter(cell) { return '<span class="text-xs text-base-content/60">' + esc(cell.getValue()) + '</span>'; },
     },
     {
+        title: 'Ngày giao', field: 'delivery_date', width: 120, hozAlign: 'center', sorter: 'string',
+    },
+    {
         title: 'Nhập lúc', field: 'created_at', width: 140, hozAlign: 'center', sorter: 'string',
     },
     {

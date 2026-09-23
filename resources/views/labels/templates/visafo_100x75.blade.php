@@ -5,6 +5,8 @@
 @endphp
 @once
 <style>
+    .tpl-visafo100.label-wrapper { font-family: Arial, Helvetica, "Segoe UI", sans-serif !important; }
+    .tpl-visafo100.label-wrapper * { font-family: inherit !important; -webkit-font-smoothing: none; -moz-osx-font-smoothing: grayscale; }
     .tpl-visafo100 .label {
         width: 100mm; height: 75mm; box-sizing: border-box; overflow: hidden; position: relative;
         background: #fff; color: #000; border: 1px solid #000; border-radius: 5px; padding: 0.5mm 1mm 0.5mm 1.4mm;
@@ -15,7 +17,7 @@
     .tpl-visafo100 .header { flex: none; overflow: hidden; display: flex; align-items: center; gap: 1.2mm; }
     .tpl-visafo100 .h-left { flex: 1; min-width: 0; overflow: hidden; border-bottom: 1px solid #000; padding-bottom: .8mm; }
     .tpl-visafo100 .h-left .co-big { font-size: 11.5pt; font-weight: bold; letter-spacing: 0; font-stretch: condensed; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
-    .tpl-visafo100 .h-left .co-slogan { font-size: 6pt; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; margin-top: 0; }
+    .tpl-visafo100 .h-left .co-slogan { font-size: 7pt; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; margin-top: 0; }
     .tpl-visafo100 .h-right { flex: none; display: flex; align-items: flex-end; gap: .8mm; }
     .tpl-visafo100 .h-right img { width: 10mm; object-fit: contain; flex: none; }
 
@@ -23,14 +25,14 @@
     .tpl-visafo100 .product-block { flex: none; overflow: hidden; display: flex; align-items: center; color: #000; border-radius: 3px; border: 1px solid #000; padding: 1mm 0.5mm 0mm 1mm; gap: 2mm; box-sizing: border-box; }
     .tpl-visafo100 .product-left { flex: 1; min-width: 0; overflow: hidden; }
     .tpl-visafo100 .product-left .label-sm { font-size: 8pt; font-weight: 700;}
-    .tpl-visafo100 .product-left .product-name { font-size: 12pt; font-weight: 900; letter-spacing: -.7px; text-transform: uppercase; line-height: 1.4;white-space: nowrap; overflow: hidden;   text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .tpl-visafo100 .product-left .product-name { font-size: 12pt; font-weight: 700; letter-spacing: -.7px; text-transform: uppercase; line-height: 1.4;white-space: nowrap; overflow: hidden;   text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
     /* C. Thông tin chi tiết + QR — khối duy nhất co giãn, lấp hết phần còn lại — Trái 73% / Phải 27% */
     .tpl-visafo100 .info-qr-row { display: flex; flex: 1; min-height: 0; overflow: hidden; align-items: flex-start;}
     .tpl-visafo100 .info-col { flex: none; width: 78%; min-width: 0; overflow: hidden; box-sizing: border-box; }
     /* 1. Đổi table-layout sang auto để bảng tự co giãn theo nội dung */
     .tpl-visafo100 .info-table { 
-        table-layout: auto; 
+        table-layout: fixed; 
         width: 100%; 
         border-collapse: collapse; 
         font-size: 7.9pt; 
@@ -39,10 +41,10 @@
 
     /* 2. Ép cột Label và Colon thu hẹp hết mức có thể (ôm sát text) */
     .tpl-visafo100 .info-table col.col-label { 
-        width: 1%; 
+        width: 15.5mm; 
     }
     .tpl-visafo100 .info-table col.col-colon { 
-        width: 1%; 
+        width: 2.5mm; 
     }
 
     /* 3. Cột Value sẽ tự động phình to chiếm toàn bộ không gian còn lại */
@@ -59,7 +61,7 @@
         font-weight: 500; 
         white-space: nowrap; /* Bắt buộc để cột ôm sát đoạn text dài nhất */
         padding-right: 0.5mm; /* Tạo khoảng cách nhỏ giữa chữ và dấu hai chấm cho thoáng */
-        font-size: 6.6pt;
+        font-size: 7.5pt;
     }
     .tpl-visafo100 .info-table td.colon { 
         text-align: center; 
@@ -76,27 +78,29 @@
     .tpl-visafo100 .info-table tr.dashed-sep td { border-top: 1px solid #000; padding-top: 1mm; }
     .tpl-visafo100 .info-table tr.batch td { font-weight: 500; }
     .tpl-visafo100 .info-table tr.batch td.val {font-weight: 600; font-size: 7.5pt;}
+    .tpl-visafo100 .truncate-1-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
     .tpl-visafo100 .truncate-2-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; text-transform: uppercase;}
 
     .tpl-visafo100 .qr-col { flex: none; width: 22%; min-width: 0; overflow: hidden; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: .8mm; text-align: center; box-sizing: border-box; }
     .tpl-visafo100 .qr-box { flex: none; border: 1px solid #000; padding: 0.6mm; box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: 90%; max-width: 100%; max-height: 100%; aspect-ratio: 1 / 1; border-radius: 3px; flex-direction: column;}
     .tpl-visafo100 .qr-box svg { width: 100%; height: 100%; display: block; }
     .tpl-visafo100 .qr-box .qr-placeholder { font-size: 6.5pt; }
-    .tpl-visafo100 .qr-box .qr-caption { flex: none; font-size: 5pt; line-height: 1.1; padding-top: 0.6mm;}
+    .tpl-visafo100 .qr-box .qr-caption { flex: none; font-size: 6pt; line-height: 1.1; padding-top: 0.6mm;}
 
     /* D. Footer 1 — bảo quản & sức khỏe — cao tự nhiên theo nội dung */
     .tpl-visafo100 .footer1 { flex: none; overflow: hidden; box-sizing: border-box; display: flex; align-items: center; gap: 1mm; border: 1px solid #000; border-radius: 3px; padding: 0.6mm 0mm 0.6mm 0mm; }
-    .tpl-visafo100 .f1-left { flex: 1.4; min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 1.2mm; font-size: 6.4pt; line-height: 1.2; }
+    .tpl-visafo100 .f1-left { flex: 1.4; min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 1.2mm; font-size: 7pt; line-height: 1.2; }
     .tpl-visafo100 .f1-left svg { width: 4mm; height: 4mm; flex: none; }
     .tpl-visafo100 .f1-divider { flex: none; align-self: stretch; width: 0; border-left: 1px solid #000; }
-    .tpl-visafo100 .f1-right { flex: 1; min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 1.2mm; font-size: 6.4pt; line-height: 1.2; text-align: center; }
+    .tpl-visafo100 .f1-right { flex: 1; min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 1.2mm; font-size: 7pt; line-height: 1.2; text-align: center; }
     .tpl-visafo100 .f1-right svg { width: 4mm; height: 4mm; flex: none; }
 
     /* E. Footer 2 — liên hệ — cao tự nhiên (1 dòng), luôn sát mép dưới cùng của tem */
-    .tpl-visafo100 .footer2 { flex: none; overflow: hidden; display: flex; justify-content: space-between; align-items: center; gap: 1.5mm; font-size: 5.7pt; width: 100%; }
+    .tpl-visafo100 .footer2 { flex: none; overflow: hidden; display: flex; justify-content: space-between; align-items: center; gap: 1.5mm; font-size: 6.8pt; width: 100%; }
     .tpl-visafo100 .footer2 > div { display: flex; align-items: center; gap: .8mm; min-width: 0; overflow: hidden; }
     .tpl-visafo100 .footer2 svg { width: 4mm; height: 4mm; flex: none; }
     .tpl-visafo100 .footer2 span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tpl-visafo100 .footer2 > div:not(:first-child) { flex: none; }
 
     @media screen { .tpl-visafo100 .label { box-shadow: 0 1px 4px rgba(0,0,0,.25); } }
 </style>
@@ -152,7 +156,7 @@
                     @if(!empty($log->supplier_name))
                     <tr>
                         <td class="lbl">Nguồn cung</td><td class="colon">:</td>
-                        <td class="val"><div class="truncate-2-lines">{{ $log->supplier_name }}</div></td>
+                        <td class="val"><div class="truncate-1-line">{{ $log->supplier_name }}</div></td>
                     </tr>
                     @endif
                     <tr class="batch">

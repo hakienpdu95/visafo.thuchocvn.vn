@@ -47,6 +47,8 @@ class PrintLog extends TenantAwareModel
         'mfg_date',
         'exp_date',
         'supplier_name',
+        'vendor_id',
+        'product_batch_id',
         'batch_code',
         'printed_by',
     ];
@@ -89,6 +91,16 @@ class PrintLog extends TenantAwareModel
     public function extraAttributes(): HasMany
     {
         return $this->hasMany(PrintLogAttribute::class, 'print_log_id')->orderBy('created_at')->orderBy('id');
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(\Modules\Vendor\Models\Vendor::class);
+    }
+
+    public function productBatch(): BelongsTo
+    {
+        return $this->belongsTo(\Modules\GoodsReceipt\Models\ProductBatch::class);
     }
 
     public function statusChangedBy(): BelongsTo

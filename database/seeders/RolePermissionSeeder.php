@@ -85,6 +85,8 @@ class RolePermissionSeeder extends Seeder
                 P::TRACE_LOG_VIEW->value,
                 P::TRACE_LOG_MANAGE->value,
 
+                P::REPORT_VIEW->value,
+
                 P::CUSTOMER_VIEW->value,
                 P::CUSTOMER_MANAGE->value,
 
@@ -115,6 +117,7 @@ class RolePermissionSeeder extends Seeder
                 P::SALES_ORDER_VIEW->value,
                 P::LABEL_TEMPLATE_VIEW->value,
                 P::TRACE_LOG_VIEW->value,
+                P::REPORT_VIEW->value,
                 P::CUSTOMER_VIEW->value,
                 P::CONTRACT_VIEW->value,
                 P::COMPLIANCE_VIEW->value,

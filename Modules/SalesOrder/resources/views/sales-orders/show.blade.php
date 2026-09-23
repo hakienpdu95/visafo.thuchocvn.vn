@@ -6,6 +6,21 @@
     <div>
         <h1 class="text-2xl font-bold text-base-content font-mono">{{ $salesOrder->misa_ref_id }}</h1>
         <p class="text-sm text-base-content/50 mt-0.5">{{ $salesOrder->customer_name ?? '—' }}</p>
+        <div x-data="{ editing: false }" class="flex items-center gap-2 mt-1 text-sm">
+            <span class="text-base-content/50">Ngày giao:</span>
+            <span x-show="!editing" class="font-medium">{{ $salesOrder->delivery_date?->format('d/m/Y') ?? '—' }}</span>
+            @can('print', $salesOrder)
+            <button type="button" x-show="!editing" @click="editing = true" class="link link-primary text-xs">Sửa</button>
+            <form x-show="editing" x-cloak method="POST" action="{{ route('backend.sales-orders.delivery-date', $salesOrder) }}" class="flex items-center gap-2">
+                @csrf
+                @method('PATCH')
+                <input type="date" name="delivery_date" required value="{{ $salesOrder->delivery_date?->toDateString() }}" class="input input-bordered input-xs">
+                <button type="submit" class="btn btn-primary btn-xs">Lưu</button>
+                <button type="button" @click="editing = false" class="btn btn-ghost btn-xs">Hủy</button>
+            </form>
+            @endcan
+        </div>
+        @error('delivery_date')<p class="text-xs text-error mt-1">{{ $message }}</p>@enderror
     </div>
     <div class="flex items-center gap-2">
         @can('print', $salesOrder)
@@ -31,10 +46,9 @@
         'requested_qty' => number_format((float) $item->requested_qty, 3),
         'requested_qty_raw' => (float) $item->requested_qty,
         'actual_qty'    => $item->actual_qty !== null ? number_format((float) $item->actual_qty, 3) : null,
-        'printed_qty'   => number_format((float) $item->printed_qty, 3),
-        'printed_qty_raw' => (float) $item->printed_qty,
         'attributes_url' => route('backend.sales-orders.items.batch-attributes', $item),
         'history_url'   => route('backend.sales-orders.items.print-logs', $item),
+        'batches_url'   => route('backend.sales-orders.items.batches', $item),
         'shelf_life_days' => $item->product?->shelf_life_days,
         'print_url'     => $canPrint ? route('backend.sales-orders.items.print', $item) : null,
     ])->values();
@@ -55,28 +69,8 @@
             <div class="modal-box max-w-4xl overflow-visible">
                 <h3 class="font-bold text-lg mb-1">In tem toàn bộ đơn</h3>
 
-                {{--
-                    QUAN TRỌNG: dùng x-show (không dùng <template x-if>) cho khối form bên dưới — các input
-                    #bp-mfg/#bp-exp/#bp-label-template/#bp-supplier phải LUÔN có mặt trong DOM để init() gắn
-                    flatpickr/Tom Select được ngay từ lúc component mount (khi đó preview.total vẫn = 0 mặc
-                    định). Dùng x-if sẽ khiến các phần tử này chưa tồn tại lúc init() chạy — flatpickr('#sel')
-                    trên selector rỗng trả về mảng [] (không phải null), khiến mfgPicker/expPicker không có
-                    .setDate và ném lỗi "... .setDate is not a function" khi openConfirm()/recalcExp() gọi tới.
-                --}}
-                {{-- Chỉ CẢNH BÁO khi mọi mặt hàng đã in đủ — không chặn, kho vẫn được chủ động in lại tem rách/hỏng. --}}
-                <div x-show="stage === 'reprint-confirm'" class="mt-3">
-                    <p class="text-sm text-base-content/80">
-                        Tất cả mặt hàng trong đơn đã được in đủ tem trước đó. Bạn có chắc chắn muốn cấu hình in lại toàn bộ không?
-                    </p>
-                    <div class="modal-action mt-5">
-                        <button type="button" class="btn btn-sm border-0 bg-blue-800 text-white hover:bg-blue-900" @click="confirmReprintAll()">
-                            Tiếp tục in lại
-                        </button>
-                        <button type="button" class="btn btn-ghost btn-sm" @click="confirming = false">Hủy</button>
-                    </div>
-                </div>
 
-                <form x-show="stage === 'form'" @submit.prevent="run()" novalidate>
+                <form @submit.prevent="run()" novalidate>
                         <p class="text-sm text-base-content/60 mb-4" x-text="introText"></p>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -156,6 +150,7 @@
                                     <input type="checkbox" x-model="form.supplierManual" @change="onSupplierManualToggle()" class="checkbox checkbox-xs">
                                     <span class="label-text text-xs">Khác / Nhập tay</span>
                                 </label>
+                                <p class="text-xs text-warning" x-show="form.supplierManual">Nguồn cung nhập tay sẽ không truy vết được theo nhà cung cấp.</p>
                                 <p class="mt-1 text-xs text-error" x-show="errors.supplier_name" x-text="errors.supplier_name"></p>
                             </div>
                         </div>
@@ -401,19 +396,7 @@
                         <p class="mt-1 text-xs text-error" x-show="errors.label_template_id" x-text="errors.label_template_id"></p>
                     </div>
 
-                    {{-- Hàng đã in đủ (remaining ≤ 0): ẩn 2 ô Khối lượng/Số lượng, hướng dẫn dùng "In lại" thay vì in mới. --}}
-                    <div class="form-control sm:col-span-2" x-show="remaining <= 0 && !form.overrideLock" x-cloak>
-                        <div class="alert alert-warning py-2.5 px-3 text-xs items-start gap-2">
-                            <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m0 3.75h.007M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
-                            <span>Mặt hàng này đã được in đủ số lượng yêu cầu. Nếu bạn muốn in lại tem bị hỏng, vui lòng đóng hộp thoại này và bấm vào số ở cột "Đã in tem" để xem Lịch sử và In lại.</span>
-                        </div>
-                        <label class="label cursor-pointer justify-start gap-2 py-1.5">
-                            <input type="checkbox" x-model="form.overrideLock" class="checkbox checkbox-warning checkbox-xs">
-                            <span class="label-text text-xs">Bỏ qua cảnh báo và tiếp tục in thêm (In lố/Chia lại tem)</span>
-                        </label>
-                    </div>
-
-                    <div class="form-control sm:col-span-2" x-show="remaining > 0 || form.overrideLock" x-cloak>
+                    <div class="form-control sm:col-span-2">
                         <div class="flex items-center justify-between pb-1.5">
                             <span class="label-text font-medium">Nhóm tem <span class="text-error">*</span></span>
                         </div>
@@ -497,6 +480,18 @@
                     </div>
 
                     <div class="form-control sm:col-span-2">
+                        <label class="label py-0 pb-1.5" for="ts-batch">
+                            <span class="label-text font-medium">Lô nhập kho</span>
+                            <span class="label-text-alt text-base-content/40 text-xs">Chọn lô để truy vết chính xác khi thu hồi</span>
+                        </label>
+                        <select id="ts-batch" class="select select-bordered select-sm w-full" data-ts-placeholder="— Không chọn lô —">
+                            <option value="">— Không chọn lô —</option>
+                        </select>
+                        <p class="mt-1 text-xs text-base-content/40" x-show="!loadingBatches && batchCount === 0">Chưa có lô nhập kho nào cho mặt hàng này.</p>
+                        <p class="mt-1 text-xs text-error" x-show="errors.product_batch_id" x-text="errors.product_batch_id"></p>
+                    </div>
+
+                    <div class="form-control sm:col-span-2">
                         <label class="label py-0 pb-1.5" for="ts-supplier">
                             <span class="label-text font-medium">Nguồn cung</span>
                             <span class="label-text-alt text-base-content/40 text-xs">Tuỳ chọn</span>
@@ -525,6 +520,7 @@
                                    @change="onSupplierManualToggle()" class="checkbox checkbox-xs">
                             <span class="label-text text-xs">Khác / Nhập tay</span>
                         </label>
+                        <p class="text-xs text-warning" x-show="form.supplierManual">Nguồn cung nhập tay sẽ không truy vết được theo nhà cung cấp.</p>
 
                         <p class="mt-1 text-xs text-error" x-show="errors.supplier_name" x-text="errors.supplier_name"></p>
                     </div>
@@ -563,7 +559,7 @@
                 </div>
 
                 <div class="flex items-center gap-3 pt-4 mt-4 border-t border-base-200">
-                    <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting && !(remaining <= 0 && !form.overrideLock)">
+                    <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting">
                         Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem
                     </p>
                     <div class="ml-auto flex gap-2">

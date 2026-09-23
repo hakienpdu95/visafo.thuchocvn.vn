@@ -45,6 +45,9 @@ enum PermissionEnum: string
     case TRACE_LOG_VIEW   = 'trace_log.view';
     case TRACE_LOG_MANAGE = 'trace_log.manage';
 
+    // ══ REPORT (Thống kê - Báo cáo sản lượng & vận hành) ══
+    case REPORT_VIEW = 'report.view';
+
     // ══ CUSTOMER (Khách hàng B2B F&B) ══
     case CUSTOMER_VIEW   = 'customer.view';
     case CUSTOMER_MANAGE = 'customer.manage';
