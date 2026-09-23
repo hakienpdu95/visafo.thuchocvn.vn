@@ -17,10 +17,10 @@
     }
 
     /* A. Header: tên công ty (trái) + logo (phải) — tối đa 6mm */
-    .tpl-visafo75 .header { flex: none; height: 6mm; max-height: 6mm; overflow: hidden; display: flex; align-items: center; gap: 1mm; }
+    .tpl-visafo75 .header { flex: none; overflow: hidden; display: flex; align-items: center; gap: 1mm; }
     .tpl-visafo75 .co-name { flex: 1; min-width: 0; font-size: 7pt; font-weight: bold; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     /* Logo gốc gần vuông → chặn theo chiều cao header, bề ngang tối đa 12mm */
-    .tpl-visafo75 .logo { flex: none; max-width: 12mm; max-height: 5.5mm; object-fit: contain; }
+    .tpl-visafo75 .logo { flex: none; max-width: 10mm; object-fit: contain; }
 
     /* B. Khối sản phẩm — 1 cột, tên tối đa 2 dòng. Cao ~10.7mm (2 dòng 12pt x 1.2 + viền): line-height thấp hơn sẽ làm dấu chữ hoa tiếng Việt của dòng thứ 3 lọt vào */
     .tpl-visafo75 .product-block { flex: none; overflow: hidden; border: 1px solid #000; padding: 0.5mm 1mm 0mm; box-sizing: border-box; }
@@ -45,7 +45,7 @@
     .tpl-visafo75 .two-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; line-height: 1.2; text-transform: uppercase;}
     .tpl-visafo75 .info-table tr.weight td { vertical-align: middle; }
     .tpl-visafo75 .info-table tr.weight td.val { font-size: 7pt; font-weight: 700; }
-    .tpl-visafo75 .info-table tr.sep td { border-top: 1px solid #000; padding-top: .4mm; }
+    .tpl-visafo75 .info-table tr.sep td { padding-top: .4mm; }
     .tpl-visafo75 .info-table tr.batch td.val { font-weight: 700; }
 
     .tpl-visafo75 .qr-col { flex: none; width: 20%; min-width: 0; overflow: hidden; display: flex; flex-direction: column; align-items: flex-end; gap: .4mm; }
@@ -82,14 +82,6 @@
                     <colgroup>
                         <col class="col-label"><col class="col-colon"><col class="col-value">
                     </colgroup>
-                    <tr>
-                        <td class="lbl">Khách hàng</td><td class="colon">:</td>
-                        <td class="val"><div class="two-lines">{{ $item->salesOrder->customer_name ?? '—' }}</div></td>
-                    </tr>
-                    <tr>
-                        <td class="lbl">Điểm giao</td><td class="colon">:</td>
-                        <td class="val"><div class="two-lines">{{ $item->salesOrder->delivery_address ?? '—' }}</div></td>
-                    </tr>
                     <tr class="weight">
                         <td class="lbl">Khối lượng</td><td class="colon">:</td>
                         <td class="val"><div class="one-line">{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} kg</div></td>
@@ -110,10 +102,20 @@
                             </div>
                         </td>
                     </tr>
+                    @if(!empty($log->batch_code))
                     <tr class="batch">
                         <td class="lbl">Mã lô</td><td class="colon">:</td>
                         <td class="val"><div class="one-line">{{ $log->batch_code ?? '—' }}</div></td>
                     </tr>
+                    @endif
+                    <tr>
+                        <td class="lbl">Khách hàng</td><td class="colon">:</td>
+                        <td class="val"><div class="two-lines">{{ $item->salesOrder->customer_name ?? '—' }}</div></td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Điểm giao</td><td class="colon">:</td>
+                        <td class="val"><div class="two-lines">{{ $item->salesOrder->delivery_address ?? '—' }}</div></td>
+                    </tr>                    
                 </table>
             </div>
             <div class="qr-col">

@@ -19,7 +19,7 @@
     .tpl-visafo100 .h-left .co-big { font-size: 11.5pt; font-weight: bold; letter-spacing: 0; font-stretch: condensed; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
     .tpl-visafo100 .h-left .co-slogan { font-size: 7pt; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; margin-top: 0; }
     .tpl-visafo100 .h-right { flex: none; display: flex; align-items: flex-end; gap: .8mm; }
-    .tpl-visafo100 .h-right img { width: 10mm; object-fit: contain; flex: none; }
+    .tpl-visafo100 .h-right img { width: 13mm; object-fit: contain; flex: none; }
 
     /* B. Khối sản phẩm — nền đen chữ trắng — cao tự nhiên theo nội dung; font vừa phải + line-clamp để không phình to */
     .tpl-visafo100 .product-block { flex: none; overflow: hidden; display: flex; align-items: center; color: #000; border-radius: 3px; border: 1px solid #000; padding: 1mm 0.5mm 0mm 1mm; gap: 2mm; box-sizing: border-box; }
@@ -73,9 +73,8 @@
     }
 
     /* Các thuộc tính đường kẻ và in đậm giữ nguyên */
-    .tpl-visafo100 .info-table tr.weight td { font-weight: 500; padding-bottom: 1mm;}
+    .tpl-visafo100 .info-table tr.weight td { font-weight: 500;}
     .tpl-visafo100 .info-table tr.weight td.val {font-weight: 600; font-size: 8.5pt;}
-    .tpl-visafo100 .info-table tr.dashed-sep td { border-top: 1px solid #000; padding-top: 1mm; }
     .tpl-visafo100 .info-table tr.batch td { font-weight: 500; }
     .tpl-visafo100 .info-table tr.batch td.val {font-weight: 600; font-size: 7.5pt;}
     .tpl-visafo100 .truncate-1-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
@@ -88,12 +87,9 @@
     .tpl-visafo100 .qr-box .qr-caption { flex: none; font-size: 6pt; line-height: 1.1; padding-top: 0.6mm;}
 
     /* D. Footer 1 — bảo quản & sức khỏe — cao tự nhiên theo nội dung */
-    .tpl-visafo100 .footer1 { flex: none; overflow: hidden; box-sizing: border-box; display: flex; align-items: center; gap: 1mm; border: 1px solid #000; border-radius: 3px; padding: 0.6mm 0mm 0.6mm 0mm; }
+    .tpl-visafo100 .footer1 { flex: none; overflow: hidden; box-sizing: border-box; display: flex; align-items: center; gap: 1mm; border: 1px solid #000; border-radius: 3px; padding: 0.6mm 1mm 0.6mm 2mm; }
     .tpl-visafo100 .f1-left { flex: 1.4; min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 1.2mm; font-size: 7pt; line-height: 1.2; }
     .tpl-visafo100 .f1-left svg { width: 4mm; height: 4mm; flex: none; }
-    .tpl-visafo100 .f1-divider { flex: none; align-self: stretch; width: 0; border-left: 1px solid #000; }
-    .tpl-visafo100 .f1-right { flex: 1; min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 1.2mm; font-size: 7pt; line-height: 1.2; text-align: center; }
-    .tpl-visafo100 .f1-right svg { width: 4mm; height: 4mm; flex: none; }
 
     /* E. Footer 2 — liên hệ — cao tự nhiên (1 dòng), luôn sát mép dưới cùng của tem */
     .tpl-visafo100 .footer2 { flex: none; overflow: hidden; display: flex; justify-content: space-between; align-items: center; gap: 1.5mm; font-size: 6.8pt; width: 100%; }
@@ -132,14 +128,6 @@
                     <colgroup>
                         <col class="col-label"><col class="col-colon"><col class="col-value">
                     </colgroup>
-                    <tr>
-                        <td class="lbl">Khách hàng</td><td class="colon">:</td>
-                        <td class="val"><div class="truncate-2-lines">{{ $item->salesOrder->customer_name ?? '—' }}</div></td>
-                    </tr>
-                    <tr>
-                        <td class="lbl">Điểm giao</td><td class="colon">:</td>
-                        <td class="val"><div class="truncate-2-lines">{{ $item->salesOrder->delivery_address ?? '—' }}</div></td>
-                    </tr>
                     <tr class="weight">
                         <td class="lbl">Khối lượng</td><td class="colon">:</td>
                         <td class="val">{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} kg</td>
@@ -162,6 +150,14 @@
                     <tr class="batch">
                         <td class="lbl">Mã lô</td><td class="colon">:</td>
                         <td class="val">{{ $log->batch_code ?? '—' }}</td>
+                    </tr>                    
+                    <tr>
+                        <td class="lbl">Khách hàng</td><td class="colon">:</td>
+                        <td class="val"><div class="truncate-2-lines">{{ $item->salesOrder->customer_name ?? '—' }}</div></td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Điểm giao</td><td class="colon">:</td>
+                        <td class="val"><div class="truncate-2-lines">{{ $item->salesOrder->delivery_address ?? '—' }}</div></td>
                     </tr>
                 </table>
             </div>
@@ -180,15 +176,7 @@
                     <path d="M14 14.5V4a2 2 0 0 0-4 0v10.5a4 4 0 1 0 4 0z"/>
                     <line x1="12" y1="8" x2="12" y2="14"/>
                 </svg>
-                <div>Bảo quản: Giữ ở nhiệt độ 4 - 10°C. Sử dụng khi còn tươi, rửa sạch trước khi chế biến.</div>
-            </div>
-            <div class="f1-divider"></div>
-            <div class="f1-right">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3 21C3 10 11 3 21 3c0 10-8 18-18 18z" fill="#000"/>
-                    <path d="M5 19C10 13 14 9 19 5" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
-                <div>Vì sức khỏe cộng đồng<br>Vì một bữa ăn an toàn</div>
+                <div>HD bảo quản: Giữ ở nhiệt độ 4 - 10°C. Sử dụng khi còn tươi, rửa sạch trước khi chế biến.</div>
             </div>
         </div>
 
