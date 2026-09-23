@@ -33,7 +33,6 @@
         'actual_qty'    => $item->actual_qty !== null ? number_format((float) $item->actual_qty, 3) : null,
         'printed_qty'   => number_format((float) $item->printed_qty, 3),
         'printed_qty_raw' => (float) $item->printed_qty,
-        'label_template_id' => $item->product?->label_template_id,
         'attributes_url' => route('backend.sales-orders.items.batch-attributes', $item),
         'history_url'   => route('backend.sales-orders.items.print-logs', $item),
         'shelf_life_days' => $item->product?->shelf_life_days,
@@ -53,7 +52,7 @@
         </div>
 
         <div class="modal" :class="{ 'modal-open': confirming }" @keydown.escape.window="confirming = false">
-            <div class="modal-box max-w-2xl overflow-visible">
+            <div class="modal-box max-w-4xl overflow-visible">
                 <h3 class="font-bold text-lg mb-1">In tem toàn bộ đơn</h3>
 
                 {{--
@@ -84,13 +83,14 @@
 
                             <div class="form-control sm:col-span-2">
                                 <label class="label py-0 pb-1.5" for="bp-label-template">
-                                    <span class="label-text font-medium">Mẫu tem in</span>
-                                    <span class="label-text-alt text-base-content/40 text-xs">Ưu tiên mẫu gán cho từng sản phẩm, nếu không có thì dùng mặc định</span>
+                                    <span class="label-text font-medium">Mẫu tem in <span class="text-error">*</span></span>
+                                    <span class="label-text-alt text-base-content/40 text-xs">Áp dụng cho toàn bộ tem trong lần in này</span>
                                 </label>
                                 <select id="bp-label-template"
                                         class="select select-bordered select-sm w-full"
-                                        data-ts-placeholder="— Theo từng sản phẩm / mặc định —">
-                                    <option value="">— Theo từng sản phẩm / mặc định —</option>
+                                        :class="{ 'select-error': errors.label_template_id }"
+                                        data-ts-placeholder="— Chọn mẫu tem in —">
+                                    <option value="">— Chọn mẫu tem in —</option>
                                     @foreach($labelTemplates as $labelTemplate)
                                     <option value="{{ $labelTemplate['value'] }}">{{ $labelTemplate['text'] }}</option>
                                     @endforeach
@@ -160,9 +160,87 @@
                             </div>
                         </div>
 
-                        <div class="modal-action mt-5">
+                        <div class="mt-5">
+                            <div class="flex items-center justify-between pb-1.5">
+                                <span class="label-text font-medium">Danh sách mặt hàng</span>
+                                <span class="text-xs text-base-content/50">
+                                    <span x-text="items.length"></span> mặt hàng · <span class="font-mono" x-text="totalLabels"></span> tem
+                                </span>
+                            </div>
+
+                            <div class="rounded-lg border border-base-200 max-h-[42vh] overflow-y-auto">
+                                <template x-for="row in items" :key="row.id">
+                                    <div class="border-b border-base-200 last:border-b-0">
+                                        <div class="grid grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)_auto] gap-3 items-center px-3 py-2"
+                                             :class="{ 'bg-base-200/40': row.editing }">
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium truncate" x-text="row.name" :title="row.name"></p>
+                                                <p class="text-xs text-base-content/50 font-mono">
+                                                    <span x-text="fmtKg(row.total)"></span> <span x-text="row.unit"></span>
+                                                </p>
+                                            </div>
+                                            <div class="flex flex-wrap gap-1 items-center">
+                                                <template x-for="g in row.groups" :key="g.uid">
+                                                    <span class="badge badge-sm badge-outline font-mono whitespace-nowrap"
+                                                          :class="{ 'badge-error': !groupValid(g) }"
+                                                          x-text="fmtKg(g.weight) + 'kg × ' + (g.qty || 0) + ' tem'"></span>
+                                                </template>
+                                                <span class="text-xs text-error" x-show="!rowMatch(row)"
+                                                      x-text="'Lệch: ' + fmtKg(rowTotal(row)) + '/' + fmtKg(row.total)"></span>
+                                            </div>
+                                            <button type="button" class="btn btn-ghost btn-xs btn-square" @click="row.editing = !row.editing"
+                                                    :title="row.editing ? 'Thu gọn' : 'Sửa cách chia tem'">
+                                                <svg x-show="!row.editing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.232-6.232a2.5 2.5 0 113.536 3.536L12.536 16.5 8 18l1.5-4.536z"/></svg>
+                                                <svg x-show="row.editing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                                            </button>
+                                        </div>
+
+                                        <div x-show="row.editing" class="px-3 pb-3 bg-base-200/40">
+                                            <div class="rounded-lg border border-base-200 bg-base-100 overflow-hidden">
+                                                <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-1.5 bg-base-200/50 text-xs font-medium text-base-content/60">
+                                                    <span>Khối lượng/Tem (kg)</span><span></span><span>Số lượng Tem</span><span class="w-14"></span>
+                                                </div>
+                                                <template x-for="(group, index) in row.groups" :key="group.uid">
+                                                    <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-1.5 border-t border-base-200">
+                                                        <input type="number" step="0.001" min="0.001" inputmode="decimal" x-model="group.weight"
+                                                               class="input input-bordered input-sm w-full font-mono"
+                                                               :class="{ 'input-error': !(Number(group.weight) > 0) }">
+                                                        <span class="text-base-content/40">×</span>
+                                                        <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty"
+                                                               class="input input-bordered input-sm w-full font-mono"
+                                                               :class="{ 'input-error': !(Number.isInteger(Number(group.qty)) && Number(group.qty) >= 1) }">
+                                                        <button type="button" class="btn btn-ghost btn-sm text-error w-14" @click="removeGroup(row, index)"
+                                                                :disabled="row.groups.length <= 1">Xóa</button>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+                                                <div class="flex gap-1">
+                                                    <button type="button" class="btn btn-ghost btn-xs gap-1 text-primary" @click="addGroup(row)">
+                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                        Thêm dòng cấu hình
+                                                    </button>
+                                                    <button type="button" class="btn btn-ghost btn-xs text-base-content/60" @click="autoSplit(row)">Đặt lại</button>
+                                                </div>
+                                                <div class="flex items-center gap-3">
+                                                    <p class="text-xs" :class="rowMatch(row) ? 'text-success' : 'text-error font-medium'">
+                                                        Tổng khối lượng tem: <span class="font-mono" x-text="fmtKg(rowTotal(row))"></span> kg
+                                                        / Tổng yêu cầu: <span class="font-mono" x-text="fmtKg(row.total)"></span> kg
+                                                    </p>
+                                                    <button type="button" class="btn btn-primary btn-xs" @click="row.editing = false">Xong</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <p class="mt-1 text-xs text-error" x-show="errors.items" x-text="errors.items"></p>
+                        </div>
+
+                        <div class="modal-action mt-5 items-center">
+                            <p class="text-xs text-base-content/50 mr-auto" x-show="!form.template">Vui lòng chọn mẫu tem in</p>
                             <button type="submit" class="btn btn-sm border-0 bg-blue-800 text-white hover:bg-blue-900"
-                                    :disabled="submitting || preview.total === 0 || !form.exp">
+                                    :disabled="!canRun">
                                 <span class="loading loading-spinner loading-xs" x-show="submitting"></span>
                                 In tem
                             </button>
@@ -309,7 +387,7 @@
                     <div class="form-control sm:col-span-2">
                         <label class="label py-0 pb-1.5" for="ts-label-template">
                             <span class="label-text font-medium">Mẫu tem in</span>
-                            <span class="label-text-alt text-base-content/40 text-xs">Ưu tiên mẫu gán cho sản phẩm, nếu không có thì dùng mặc định</span>
+                            <span class="label-text-alt text-base-content/40 text-xs">Để trống sẽ dùng mẫu mặc định</span>
                         </label>
                         <select id="ts-label-template" name="label_template_id"
                                 class="select select-bordered select-sm w-full"
@@ -335,28 +413,47 @@
                         </label>
                     </div>
 
-                    <div class="form-control" x-show="remaining > 0 || form.overrideLock" x-cloak>
-                        <label class="label py-0 pb-1.5" for="pl-weight">
-                            <span class="label-text font-medium">Khối lượng/Tem (kg) <span class="text-error">*</span></span>
-                            <span class="label-text-alt text-base-content/40 text-xs">Tự động theo số lượng, không thể sửa</span>
-                        </label>
-                        <input id="pl-weight" type="number" name="weight_per_label" step="0.001" min="0.001" inputmode="decimal"
-                               x-model="form.weight" x-ref="weight" readonly disabled
-                               class="input input-bordered input-sm w-full bg-gray-100 text-gray-500 cursor-not-allowed"
-                               :class="{ 'input-error': errors.weight_per_label }">
-                        <p class="mt-1 text-xs text-error" x-show="errors.weight_per_label" x-text="errors.weight_per_label"></p>
-                    </div>
+                    <div class="form-control sm:col-span-2" x-show="remaining > 0 || form.overrideLock" x-cloak>
+                        <div class="flex items-center justify-between pb-1.5">
+                            <span class="label-text font-medium">Nhóm tem <span class="text-error">*</span></span>
+                        </div>
 
-                    <div class="form-control" x-show="remaining > 0 || form.overrideLock" x-cloak>
-                        <label class="label py-0 pb-1.5" for="pl-count">
-                            <span class="label-text font-medium">Số lượng Tem cần in <span class="text-error">*</span></span>
-                            <span class="label-text-alt text-base-content/40 text-xs">Tối đa 200</span>
-                        </label>
-                        <input id="pl-count" type="number" name="label_count" step="1" min="1" max="200" inputmode="numeric"
-                               x-model="form.count" placeholder="VD: 1"
-                               class="input input-bordered input-sm w-full"
-                               :class="{ 'input-error': errors.label_count }">
-                        <p class="mt-1 text-xs text-error" x-show="errors.label_count" x-text="errors.label_count"></p>
+                        <div class="rounded-lg border border-base-200 overflow-hidden">
+                            <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-2 bg-base-200/50 text-xs font-medium text-base-content/60">
+                                <span>Khối lượng/Tem (kg)</span><span></span><span>Số lượng Tem</span><span class="w-14"></span>
+                            </div>
+                            <template x-for="(group, index) in form.groups" :key="group.uid">
+                                <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-2 border-t border-base-200">
+                                    <input type="number" step="0.001" min="0.001" inputmode="decimal" x-model="group.weight"
+                                           class="input input-bordered input-sm w-full font-mono"
+                                           :class="{ 'input-error': !(Number(group.weight) > 0) }">
+                                    <span class="text-base-content/40">×</span>
+                                    <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty"
+                                           class="input input-bordered input-sm w-full font-mono"
+                                           :class="{ 'input-error': !(Number.isInteger(Number(group.qty)) && Number(group.qty) >= 1) }">
+                                    <button type="button" class="btn btn-ghost btn-sm text-error w-14" @click="removeGroup(index)"
+                                            :disabled="form.groups.length <= 1" title="Xóa dòng này">Xóa</button>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+                            <div class="flex gap-1">
+                                <button type="button" class="btn btn-ghost btn-sm gap-1.5 text-primary" @click="addGroup()">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Thêm dòng cấu hình
+                                </button>
+                                <button type="button" class="btn btn-ghost btn-sm text-base-content/60" @click="autoSplit()">Đặt lại</button>
+                            </div>
+                            <p class="text-sm" :class="groupsMatch ? 'text-success' : 'text-error font-medium'">
+                                Tổng khối lượng tem: <span class="font-mono" x-text="fmtKg(groupsTotal)"></span> kg
+                                / Tổng yêu cầu: <span class="font-mono" x-text="fmtKg(requiredTotal)"></span> kg
+                                <span class="text-base-content/50 font-normal" x-text="'(' + labelCount + ' tem)'"></span>
+                            </p>
+                        </div>
+                        <p class="mt-1 text-xs text-error" x-show="!groupsMatch">Tổng khối lượng tem đang lệch so với yêu cầu — vẫn có thể in nếu cố ý (hao hụt, chia lại tem).</p>
+                        <p class="mt-1 text-xs text-error" x-show="labelCount > 200">Mỗi lần chỉ in tối đa 200 tem.</p>
+                        <p class="mt-1 text-xs text-error" x-show="errors.label_groups" x-text="errors.label_groups"></p>
                     </div>
 
                     {{-- NSX/HSD xếp chồng label-trên-input trong từng ô, 2 ô cạnh nhau trên màn hình vừa/lớn. --}}
@@ -467,7 +564,7 @@
 
                 <div class="flex items-center gap-3 pt-4 mt-4 border-t border-base-200">
                     <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting && !(remaining <= 0 && !form.overrideLock)">
-                        Nhập khối lượng &gt; 0 và HSD để in tem
+                        Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem
                     </p>
                     <div class="ml-auto flex gap-2">
                         <button type="button" class="btn btn-ghost btn-sm" @click="close()">Hủy</button>

@@ -94,23 +94,6 @@
                         @error('shelf_life_days')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="label py-0 pb-1.5" for="ts-label_template_id">
-                            <span class="label-text font-medium">Mẫu tem in</span>
-                            <span class="label-text-alt text-base-content/40 text-xs">Tuỳ chọn</span>
-                        </label>
-                        <select id="ts-label_template_id" name="label_template_id"
-                                class="select select-bordered select-sm w-full ts-init @error('label_template_id') select-error @enderror"
-                                data-ts-placeholder="— Mặc định: Tem Rau Củ Quả —">
-                            <option value="">— Mặc định: Tem Rau Củ Quả —</option>
-                            @foreach($labelTemplates as $labelTemplate)
-                            <option value="{{ $labelTemplate['value'] }}" @selected(old('label_template_id', $product->label_template_id) === $labelTemplate['value'])>{{ $labelTemplate['text'] }}</option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-base-content/40">Để trống nếu sản phẩm dùng tem Rau Củ Quả mặc định. Quản lý mẫu tem tại mục "Quản lý Mẫu tem".</p>
-                        @error('label_template_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
-                    </div>
-
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <div class="form-control">

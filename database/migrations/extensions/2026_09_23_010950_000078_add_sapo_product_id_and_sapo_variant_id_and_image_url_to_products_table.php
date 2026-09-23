@@ -29,9 +29,6 @@ return new class extends Migration {
             if (!Schema::hasColumn('products', 'shelf_life_days')) {
                 $table->unsignedInteger('shelf_life_days')->nullable()->after('product_type')->comment('Số ngày bảo quản mặc định để tự động tính HSD');
             }
-            if (!Schema::hasColumn('products', 'label_template_id')) {
-                $table->foreignUlid('label_template_id')->nullable()->constrained('label_templates')->nullOnDelete()->after('shelf_life_days')->comment('Mẫu tem in cho sản phẩm — NULL = dùng tem mặc định của hệ thống');
-            }
         });
     }
 
@@ -39,8 +36,7 @@ return new class extends Migration {
     {
         Schema::table('products', function (Blueprint $table) {
             if (Schema::hasColumn('products', 'category_id')) $table->dropForeign(['category_id']);
-            if (Schema::hasColumn('products', 'label_template_id')) $table->dropForeign(['label_template_id']);
-            $cols = array_filter(['sapo_product_id', 'sapo_variant_id', 'image_url', 'category_id', 'product_type', 'shelf_life_days', 'label_template_id'], fn($c) => Schema::hasColumn('products', $c));
+            $cols = array_filter(['sapo_product_id', 'sapo_variant_id', 'image_url', 'category_id', 'product_type', 'shelf_life_days'], fn($c) => Schema::hasColumn('products', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

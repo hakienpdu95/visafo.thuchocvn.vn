@@ -2,29 +2,16 @@
 
 namespace Modules\SalesOrder\Support;
 
-use Modules\Product\Models\Product;
 use Modules\SalesOrder\Models\PrintLog;
 
-/**
- * Xác định Blade view của tem in: mẫu tem gán cho sản phẩm (Master Data),
- * nếu chưa gán thì dùng mẫu mặc định của hệ thống.
- */
 class LabelViewResolver
 {
-    /** Mặc định toàn hệ thống khi sản phẩm chưa được gán mẫu tem riêng. */
     public const DEFAULT_VIEW = 'labels.templates.visafo_100x75';
 
-    /**
-     * Thứ tự ưu tiên: mẫu đã chọn khi in (lưu trên log) → mẫu gán cho sản phẩm → mẫu mặc định.
-     * Log lưu mẫu đã chọn nên In lại luôn ra đúng giao diện lúc in.
-     */
+    public const DEFAULT_SIZE = '100x75';
+
     public function forLog(PrintLog $log): string
     {
-        return $log->labelTemplate?->view_path ?: $this->forProduct($log->orderItem?->product);
-    }
-
-    public function forProduct(?Product $product): string
-    {
-        return $product?->labelTemplate?->view_path ?: self::DEFAULT_VIEW;
+        return $log->labelTemplate?->view_path ?: self::DEFAULT_VIEW;
     }
 }

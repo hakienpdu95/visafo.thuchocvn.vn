@@ -4,11 +4,21 @@ namespace Modules\LabelTemplate\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\LabelTemplate\Models\LabelTemplate;
+use Illuminate\Support\Facades\Schema; // Thêm thư viện này nếu cần tắt check khóa ngoại
 
 class LabelTemplateSeeder extends Seeder
 {
     public function run(): void
     {
+        // 1. Tạm tắt kiểm tra khóa ngoại của MySQL
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        
+        // 2. Thực hiện xóa trắng bảng an toàn
+        LabelTemplate::truncate();
+        
+        // 3. Bật lại kiểm tra khóa ngoại ngay lập tức để bảo vệ dữ liệu
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+
         $definitions = $this->definitions();
 
         foreach ($definitions as $definition) {

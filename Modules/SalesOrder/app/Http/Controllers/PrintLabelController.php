@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Modules\SalesOrder\Actions\Backend\BulkPrintSalesOrderLabelsAction;
 use Modules\SalesOrder\Actions\Backend\PrintSalesOrderItemLabelAction;
 use Modules\SalesOrder\Models\PrintLog;
@@ -29,8 +30,9 @@ class PrintLabelController extends Controller
             ->values()->all()]);
 
         $data = $request->validate([
-            'weight_per_label' => ['required', 'numeric', 'gt:0', 'max:99999'],
-            'label_count'      => ['required', 'integer', 'min:1', 'max:200'],
+            'label_groups'                    => ['required', 'array', 'min:1', 'max:20'],
+            'label_groups.*.weight_per_label' => ['required', 'numeric', 'gt:0', 'max:99999'],
+            'label_groups.*.label_count'      => ['required', 'integer', 'min:1', 'max:200'],
             'mfg_date'         => ['nullable', 'date'],
             'exp_date'         => array_filter([
                 'required', 'date',
@@ -43,13 +45,16 @@ class PrintLabelController extends Controller
             'extra_attributes.*.key'   => ['required', 'string', 'max:100', 'distinct'],
             'extra_attributes.*.value' => ['nullable', 'string', 'max:1000'],
         ], [
-            'weight_per_label.required' => 'Vui lòng nhập khối lượng trên mỗi tem.',
-            'weight_per_label.numeric'  => 'Khối lượng phải là số.',
-            'weight_per_label.gt'       => 'Khối lượng phải lớn hơn 0.',
-            'label_count.required'      => 'Vui lòng nhập số lượng tem.',
-            'label_count.integer'       => 'Số lượng tem phải là số nguyên.',
-            'label_count.min'           => 'Cần in tối thiểu 1 tem.',
-            'label_count.max'           => 'Mỗi lần chỉ in tối đa 200 tem.',
+            'label_groups.required'                    => 'Vui lòng thêm ít nhất 1 dòng cấu hình tem.',
+            'label_groups.min'                         => 'Vui lòng thêm ít nhất 1 dòng cấu hình tem.',
+            'label_groups.max'                         => 'Tối đa 20 dòng cấu hình tem.',
+            'label_groups.*.weight_per_label.required' => 'Vui lòng nhập khối lượng trên mỗi tem.',
+            'label_groups.*.weight_per_label.numeric'  => 'Khối lượng phải là số.',
+            'label_groups.*.weight_per_label.gt'       => 'Khối lượng phải lớn hơn 0.',
+            'label_groups.*.label_count.required'      => 'Vui lòng nhập số lượng tem.',
+            'label_groups.*.label_count.integer'       => 'Số lượng tem phải là số nguyên.',
+            'label_groups.*.label_count.min'           => 'Mỗi dòng cần in tối thiểu 1 tem.',
+            'label_groups.*.label_count.max'           => 'Mỗi lần chỉ in tối đa 200 tem.',
             'mfg_date.date'             => 'NSX không hợp lệ.',
             'exp_date.required'         => 'HSD là bắt buộc để in tem.',
             'exp_date.date'             => 'HSD không hợp lệ.',
@@ -63,6 +68,10 @@ class PrintLabelController extends Controller
             'extra_attributes.*.key.distinct'  => 'Tên thông tin bổ sung không được trùng nhau.',
             'extra_attributes.*.value.max'     => 'Nội dung thông tin không được vượt quá 1000 ký tự.',
         ]);
+
+        if (collect($data['label_groups'])->sum('label_count') > 200) {
+            throw ValidationException::withMessages(['label_groups' => 'Mỗi lần chỉ in tối đa 200 tem.']);
+        }
 
         $result = $action->handle($item, $data, $request->user()?->id);
 
@@ -100,7 +109,9 @@ class PrintLabelController extends Controller
 
                 return [
                     'id'               => $sessionId,
-                    'weight_per_label' => number_format((float) $first->weight_per_label, 3),
+                    'weight_per_label' => $group->groupBy(fn (PrintLog $log) => number_format((float) $log->weight_per_label, 3))
+                        ->map(fn ($logs, $weight) => $logs->count() > 1 ? "{$weight} × {$logs->count()}" : $weight)
+                        ->implode(' + '),
                     'label_count'      => $group->count(),
                     'total_weight'     => number_format((float) $group->sum('weight_per_label'), 3),
                     'mfg_date'         => $first->mfg_date?->format('d/m/Y'),
@@ -127,6 +138,11 @@ class PrintLabelController extends Controller
 
         $data = $request->validate([
             'reprint_all'      => ['nullable', 'boolean'],
+            'items'                                  => ['nullable', 'array', 'max:500'],
+            'items.*.order_item_id'                  => ['required', 'string', 'distinct'],
+            'items.*.label_groups'                   => ['required', 'array', 'min:1', 'max:20'],
+            'items.*.label_groups.*.weight_per_label' => ['required', 'numeric', 'gt:0', 'max:99999'],
+            'items.*.label_groups.*.label_count'      => ['required', 'integer', 'min:1', 'max:200'],
             'mfg_date'         => ['nullable', 'date'],
             'exp_date'         => array_filter([
                 'required', 'date',
@@ -134,7 +150,7 @@ class PrintLabelController extends Controller
             ]),
             'supplier_name'    => ['nullable', 'string', 'max:255'],
             'batch_code'       => ['nullable', 'string', 'max:100'],
-            'label_template_id' => ['nullable', 'string', Rule::exists('label_templates', 'id')->whereNull('deleted_at')],
+            'label_template_id' => ['required', 'string', Rule::exists('label_templates', 'id')->whereNull('deleted_at')],
         ], [
             'mfg_date.date'             => 'NSX không hợp lệ.',
             'exp_date.required'         => 'HSD là bắt buộc để in tem.',
@@ -142,8 +158,23 @@ class PrintLabelController extends Controller
             'exp_date.after_or_equal'   => 'HSD phải sau hoặc bằng NSX.',
             'supplier_name.max'         => 'Nguồn cung không được vượt quá 255 ký tự.',
             'batch_code.max'            => 'Mã lô không được vượt quá 100 ký tự.',
+            'label_template_id.required' => 'Vui lòng chọn mẫu tem in.',
             'label_template_id.exists'  => 'Mẫu tem được chọn không hợp lệ.',
+            'items.*.label_groups.required'                    => 'Mỗi mặt hàng cần ít nhất 1 dòng cấu hình tem.',
+            'items.*.label_groups.min'                         => 'Mỗi mặt hàng cần ít nhất 1 dòng cấu hình tem.',
+            'items.*.label_groups.max'                         => 'Mỗi mặt hàng tối đa 20 dòng cấu hình tem.',
+            'items.*.label_groups.*.weight_per_label.required' => 'Vui lòng nhập khối lượng trên mỗi tem.',
+            'items.*.label_groups.*.weight_per_label.numeric'  => 'Khối lượng phải là số.',
+            'items.*.label_groups.*.weight_per_label.gt'       => 'Khối lượng phải lớn hơn 0.',
+            'items.*.label_groups.*.label_count.required'      => 'Vui lòng nhập số lượng tem.',
+            'items.*.label_groups.*.label_count.integer'       => 'Số lượng tem phải là số nguyên.',
+            'items.*.label_groups.*.label_count.min'           => 'Mỗi dòng cần in tối thiểu 1 tem.',
+            'items.*.label_groups.*.label_count.max'           => 'Mỗi dòng tối đa 200 tem.',
         ]);
+
+        if (collect($data['items'] ?? [])->flatMap(fn ($i) => $i['label_groups'])->sum('label_count') > 2000) {
+            throw ValidationException::withMessages(['items' => 'Mỗi lần in toàn bộ đơn tối đa 2000 tem.']);
+        }
 
         $result = $action->handle($salesOrder, $data, $request->user()?->id);
 
@@ -169,7 +200,7 @@ class PrintLabelController extends Controller
     {
         $logs = PrintLog::query()
             ->where('print_session_id', $sessionId)
-            ->with(['attributes', 'labelTemplate', 'orderItem.product.labelTemplate', 'orderItem.salesOrder'])
+            ->with(['attributes', 'labelTemplate', 'orderItem.product', 'orderItem.salesOrder'])
             ->orderBy('created_at')->orderBy('id')
             ->get();
 
@@ -194,7 +225,7 @@ class PrintLabelController extends Controller
      */
     public function render(PrintLog $printLog, LabelViewResolver $resolver)
     {
-        $printLog->load(['attributes', 'labelTemplate', 'orderItem.product.labelTemplate', 'orderItem.salesOrder']);
+        $printLog->load(['attributes', 'labelTemplate', 'orderItem.product', 'orderItem.salesOrder']);
 
         $this->authorize('print', $printLog->orderItem->salesOrder);
 

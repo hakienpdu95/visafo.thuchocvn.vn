@@ -32,14 +32,15 @@
     /* C. Thông tin (75%) + QR (25%) — khối co giãn duy nhất */
     .tpl-visafo75 .info-qr-row { flex: 1; min-height: 0; overflow: hidden; display: flex; align-items: flex-start; margin-top: 1mm;}
     .tpl-visafo75 .info-col { flex: none; width: 80%; min-width: 0; overflow: hidden; }
-    .tpl-visafo75 .info-table { table-layout: auto; width: 100%; border-collapse: collapse; font-size: 6pt; line-height: 1.15; }
+    .tpl-visafo75 .info-table { table-layout: auto; width: 100%; border-collapse: collapse; font-size: 6.5pt; line-height: 1.15; }
     .tpl-visafo75 .info-table col.col-label { width: 1%; }
     .tpl-visafo75 .info-table col.col-colon { width: 1%; }
     .tpl-visafo75 .info-table td { padding: .3mm 0; vertical-align: top; overflow: hidden; }
     .tpl-visafo75 .info-table td.lbl { white-space: nowrap; font-weight: 500; font-size: 5pt; padding-right: 0.5mm;}
     .tpl-visafo75 .info-table td.colon { text-align: center; padding-right: 1mm;}
+    .tpl-visafo75 .info-table td.val {font-weight: 600;}
     .tpl-visafo75 .one-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .tpl-visafo75 .two-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; line-height: 1.2; }
+    .tpl-visafo75 .two-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; line-height: 1.2; text-transform: uppercase;}
     .tpl-visafo75 .info-table tr.weight td { vertical-align: middle; }
     .tpl-visafo75 .info-table tr.weight td.val { font-size: 7pt; font-weight: 700; }
     .tpl-visafo75 .info-table tr.sep td { border-top: 1px solid #000; padding-top: .4mm; }

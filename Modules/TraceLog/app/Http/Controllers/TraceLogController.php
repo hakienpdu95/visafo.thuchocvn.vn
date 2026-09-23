@@ -34,7 +34,7 @@ class TraceLogController extends Controller
     {
         $this->authorize('view', $printLog);
 
-        $printLog->load(['attributes', 'labelTemplate', 'orderItem.product.labelTemplate', 'orderItem.salesOrder']);
+        $printLog->load(['attributes', 'labelTemplate', 'orderItem.product', 'orderItem.salesOrder']);
 
         $viewPath = $resolver->forLog($printLog);
         if (! view()->exists($viewPath)) {

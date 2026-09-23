@@ -34,9 +34,6 @@ class StoreProductData extends Data
 
         #[Nullable, IntegerType, Min(1), Max(3650)]
         public readonly ?int $shelf_life_days = null,
-
-        #[Nullable, StringType]
-        public readonly ?string $label_template_id = null,
     ) {}
 
     public static function rules(): array
@@ -48,7 +45,6 @@ class StoreProductData extends Data
             ],
             'category_id'  => ['required', Rule::exists('categories', 'id')],
             'product_type' => ['required', Rule::enum(ProductType::class)],
-            'label_template_id' => ['nullable', 'string', Rule::exists('label_templates', 'id')->whereNull('deleted_at')],
         ];
     }
 
@@ -76,7 +72,6 @@ class StoreProductData extends Data
             'status.required' => 'Vui lòng chọn trạng thái.',
             'status.enum'     => 'Trạng thái không hợp lệ.',
 
-            'label_template_id.exists' => 'Mẫu tem được chọn không hợp lệ.',
 
             'shelf_life_days.integer' => 'Số ngày bảo quản phải là số nguyên.',
             'shelf_life_days.min'     => 'Số ngày bảo quản tối thiểu là 1 ngày.',

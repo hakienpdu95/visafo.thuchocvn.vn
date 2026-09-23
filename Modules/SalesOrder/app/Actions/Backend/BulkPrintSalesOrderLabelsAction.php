@@ -46,48 +46,73 @@ class BulkPrintSalesOrderLabelsAction
             $logs = [];
             $updated = [];
             $total = 0;
+            $printedItems = 0;
+
+            $customGroups = isset($data['items'])
+                ? collect($data['items'])->mapWithKeys(fn ($i) => [$i['order_item_id'] => collect($i['label_groups'])
+                    ->map(fn ($g) => ['weight' => round((float) $g['weight_per_label'], 3), 'qty' => (int) $g['label_count']])
+                    ->all()])
+                : null;
 
             foreach ($items as $item) {
-                $remaining = round((float) $item->requested_qty - (float) $item->printed_qty, 3);
-                $weight = $remaining;
-
-                if ($remaining <= 0) {
-                    if (!$reprintAll) {
+                if ($customGroups !== null) {
+                    if (! $customGroups->has($item->id)) {
                         continue;
                     }
 
-                    // In lại toàn bộ: dùng đúng khối lượng yêu cầu ban đầu của dòng làm khối lượng/tem.
-                    $weight = round((float) $item->requested_qty, 3);
-                    if ($weight <= 0) {
-                        continue;
+                    $groups = $customGroups->get($item->id);
+                } else {
+                    $remaining = round((float) $item->requested_qty - (float) $item->printed_qty, 3);
+                    $weight = $remaining;
+
+                    if ($remaining <= 0) {
+                        if (!$reprintAll) {
+                            continue;
+                        }
+
+                        $weight = round((float) $item->requested_qty, 3);
+                        if ($weight <= 0) {
+                            continue;
+                        }
                     }
+
+                    $groups = [['weight' => $weight, 'qty' => 1]];
                 }
 
                 $total++;
+                $attributes = $resolver->forItem($item)['attributes'];
+                $weight = 0.0;
 
-                $logs[] = PrintLog::create([
-                    'print_session_id'  => $sessionId,
-                    'order_item_id'     => $item->id,
-                    // Mẫu chọn chung ưu tiên; để trống thì mẫu gán riêng cho sản phẩm/mặc định hệ thống
-                    // sẽ được LabelViewResolver tự suy ra lúc render (xem forLog/forProduct).
-                    'label_template_id' => $data['label_template_id'] ?? null,
-                    'weight_per_label'  => $weight,
-                    'mfg_date'          => $data['mfg_date'] ?? null,
-                    'exp_date'          => $data['exp_date'],
-                    'supplier_name'     => $data['supplier_name'] ?? null,
-                    'batch_code'        => $data['batch_code'] ?? null,
-                    'printed_by'        => $printedBy,
-                ]);
+                foreach ($groups as $group) {
+                    for ($i = 0; $i < $group['qty']; $i++) {
+                        $log = PrintLog::create([
+                            'print_session_id'  => $sessionId,
+                            'order_item_id'     => $item->id,
+                            'label_template_id' => $data['label_template_id'] ?? null,
+                            'weight_per_label'  => $group['weight'],
+                            'mfg_date'          => $data['mfg_date'] ?? null,
+                            'exp_date'          => $data['exp_date'],
+                            'supplier_name'     => $data['supplier_name'] ?? null,
+                            'batch_code'        => $data['batch_code'] ?? null,
+                            'printed_by'        => $printedBy,
+                        ]);
 
-                foreach ($resolver->forItem($item)['attributes'] as $attr) {
-                    PrintLogAttribute::create([
-                        'print_log_id'    => end($logs)->id,
-                        'attribute_key'   => $attr['key'],
-                        'attribute_value' => $attr['value'],
-                    ]);
+                        foreach ($attributes as $attr) {
+                            PrintLogAttribute::create([
+                                'print_log_id'    => $log->id,
+                                'attribute_key'   => $attr['key'],
+                                'attribute_value' => $attr['value'],
+                            ]);
+                        }
+
+                        $logs[] = $log;
+                        $weight += $group['weight'];
+                    }
                 }
 
-                $item->increment('printed_qty', $weight);
+                $printedItems++;
+
+                $item->increment('printed_qty', round($weight, 3));
                 $printedQty = (float) $item->fresh()->printed_qty;
 
                 $updated[] = [
@@ -101,7 +126,7 @@ class BulkPrintSalesOrderLabelsAction
                 'session_id' => $sessionId,
                 'logs'    => $logs,
                 'total'   => $total,
-                'printed' => count($logs),
+                'printed' => $printedItems,
                 'items'   => $updated,
             ];
         });

@@ -60,6 +60,9 @@ const pad = (n) => String(n).padStart(2, '0');
 const toYmd = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 const fromYmd = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 // 'Y-m-d' → 'ddMMyy' (dùng để ráp Mã lô LOT-[NSX]-[HSD]).
+const fmtKg = (n) => (Math.round(Number(n) * 1000) / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 3 });
+const groupQty = (g) => (Number.isInteger(Number(g.qty)) ? Number(g.qty) : 0);
+const groupsTotalOf = (groups) => groups.reduce((sum, g) => sum + Math.round((Number(g.weight) || 0) * 1000) * groupQty(g), 0) / 1000;
 const toDdMmYy = (ymd) => {
     if (!ymd) return '';
     const [y, m, d] = ymd.split('-');
@@ -85,14 +88,48 @@ document.addEventListener('alpine:init', () => {
             attributes: [],
             loadingAttributes: false,
             _uid: 0,
-            form: { weight: '', count: 1, mfg: '', exp: '', overrideLock: false, supplierManual: false, supplierText: '', batchCode: '', template: '' },
+            requiredTotal: 0,
+            form: { groups: [], mfg: '', exp: '', overrideLock: false, supplierManual: false, supplierText: '', batchCode: '', template: '' },
 
             get canSubmit() {
                 return !this.submitting
                     && (this.remaining > 0 || this.form.overrideLock)
-                    && Number(this.form.weight) > 0
-                    && Number(this.form.count) >= 1
+                    && this.groupsValid
+                    && this.labelCount <= 200
                     && !!this.form.exp;
+            },
+
+            fmtKg,
+
+            get groupsValid() {
+                return this.form.groups.length > 0 && this.form.groups.every((g) =>
+                    Number(g.weight) > 0 && Number.isInteger(Number(g.qty)) && Number(g.qty) >= 1);
+            },
+
+            get labelCount() {
+                return this.form.groups.reduce((sum, g) => sum + (Number.isInteger(Number(g.qty)) ? Number(g.qty) : 0), 0);
+            },
+
+            get groupsTotal() {
+                const milli = this.form.groups.reduce((sum, g) =>
+                    sum + Math.round((Number(g.weight) || 0) * 1000) * (Number.isInteger(Number(g.qty)) ? Number(g.qty) : 0), 0);
+                return milli / 1000;
+            },
+
+            get groupsMatch() {
+                return Math.round(this.groupsTotal * 1000) === Math.round(this.requiredTotal * 1000);
+            },
+
+            autoSplit() {
+                this.form.groups = [{ uid: ++this._uid, weight: this.requiredTotal > 0 ? this.requiredTotal : '', qty: 1 }];
+            },
+
+            addGroup() {
+                this.form.groups.push({ uid: ++this._uid, weight: '', qty: 1 });
+            },
+
+            removeGroup(index) {
+                if (this.form.groups.length > 1) this.form.groups.splice(index, 1);
             },
 
             init() {
@@ -171,9 +208,9 @@ document.addEventListener('alpine:init', () => {
                 // Khối lượng/tem khoá cứng theo Số lượng của đơn — không bao giờ đổi theo phần còn lại đã in.
                 const remaining = Math.round((Number(row.requested_qty_raw) - Number(row.printed_qty_raw)) * 1000) / 1000;
                 this.remaining = Math.max(remaining, 0);
+                this.requiredTotal = Math.round(Number(row.requested_qty_raw) * 1000) / 1000;
                 this.form = {
-                    weight: Math.round(Number(row.requested_qty_raw) * 1000) / 1000,
-                    count: 1,
+                    groups: [],
                     mfg: toYmd(new Date()),
                     exp: '',
                     overrideLock: false,
@@ -181,17 +218,17 @@ document.addEventListener('alpine:init', () => {
                     supplierText: '',
                     batchCode: '',
                     // Ưu tiên mẫu tem gán riêng cho sản phẩm; nếu chưa có thì dùng mẫu mặc định của đơn.
-                    template: row.label_template_id || defaultTemplateId || '',
+                    template: defaultTemplateId || '',
                 };
                 templateTs?.setValue(this.form.template, true);
                 supplierTs?.clear(true);
                 mfgPicker?.setDate(this.form.mfg, false);
                 expPicker?.clear(false);
+                this.autoSplit();
                 this.recalcExp();
                 this.recalcBatchCode();
                 this.open = true;
                 this.loadBatchAttributes(row);
-                this.$nextTick(() => this.$refs.weight?.focus());
             },
 
             close() { this.open = false; },
@@ -244,8 +281,10 @@ document.addEventListener('alpine:init', () => {
                             'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
                         },
                         body: JSON.stringify({
-                            weight_per_label: this.form.weight,
-                            label_count: this.form.count,
+                            label_groups: this.form.groups.map((g) => ({
+                                weight_per_label: Number(g.weight),
+                                label_count: Number(g.qty),
+                            })),
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             supplier_name: this.form.supplierText.trim() || null,
@@ -262,7 +301,8 @@ document.addEventListener('alpine:init', () => {
                         win?.close();
                         Object.entries(data.errors ?? {}).forEach(([k, v]) => {
                             // extra_attributes.2.key → gom về một thông báo chung của khu vực thông tin bổ sung
-                            const field = k.startsWith('extra_attributes') ? 'extra_attributes' : k;
+                            const field = k.startsWith('extra_attributes') ? 'extra_attributes'
+                                : (k.startsWith('label_groups') ? 'label_groups' : k);
                             this.errors[field] ??= v[0];
                         });
                         return;
@@ -350,12 +390,67 @@ document.addEventListener('alpine:init', () => {
             ok: true,
             errors: {},
             preview: { total: 0 },
+            items: [],
+            _uid: 0,
             form: { template: '', mfg: '', exp: '', batchCode: '', supplierManual: false, supplierText: '' },
+
+            fmtKg,
 
             get introText() {
                 return this.reprintAll
-                    ? `Cấu hình dưới đây sẽ IN LẠI tem cho toàn bộ ${this.preview.total} mặt hàng trong đơn. Khối lượng mỗi tem lấy theo số lượng yêu cầu của từng mặt hàng.`
-                    : `Cấu hình dưới đây áp dụng chung cho ${this.preview.total} mặt hàng còn thiếu tem trong đơn. Khối lượng mỗi tem lấy tự động theo số lượng còn lại của từng mặt hàng.`;
+                    ? `Cấu hình chung bên dưới sẽ IN LẠI tem cho toàn bộ ${this.preview.total} mặt hàng trong đơn. Kiểm tra cách chia tem của từng mặt hàng và bấm biểu tượng bút để sửa nếu cần.`
+                    : `Cấu hình chung bên dưới áp dụng cho ${this.preview.total} mặt hàng còn thiếu tem. Kiểm tra cách chia tem của từng mặt hàng và bấm biểu tượng bút để sửa nếu cần.`;
+            },
+
+            get totalLabels() {
+                return this.items.reduce((sum, row) => sum + row.groups.reduce((s, g) => s + groupQty(g), 0), 0);
+            },
+
+            get canRun() {
+                return !this.submitting && this.items.length > 0 && !!this.form.exp && !!this.form.template
+                    && this.totalLabels <= 2000
+                    && this.items.every((row) => row.groups.length > 0 && row.groups.every((g) => this.groupValid(g)));
+            },
+
+            groupValid(g) {
+                return Number(g.weight) > 0 && Number.isInteger(Number(g.qty)) && Number(g.qty) >= 1 && Number(g.qty) <= 200;
+            },
+
+            rowTotal(row) {
+                return groupsTotalOf(row.groups);
+            },
+
+            rowMatch(row) {
+                return Math.round(this.rowTotal(row) * 1000) === Math.round(row.total * 1000);
+            },
+
+            autoSplit(row) {
+                row.groups = [{ uid: ++this._uid, weight: row.total, qty: 1 }];
+            },
+
+            addGroup(row) {
+                row.groups.push({ uid: ++this._uid, weight: '', qty: 1 });
+            },
+
+            removeGroup(row, index) {
+                if (row.groups.length > 1) row.groups.splice(index, 1);
+            },
+
+            buildItems(rows) {
+                this.items = rows.map((r) => {
+                    const remaining = Math.round((r.requested_qty_raw - r.printed_qty_raw) * 1000) / 1000;
+                    const row = {
+                        id: r.id,
+                        name: r.product_name || r.name,
+                        unit: r.unit,
+                        total: this.reprintAll || remaining <= 0 ? Math.round(r.requested_qty_raw * 1000) / 1000 : remaining,
+                        groups: [],
+                        editing: false,
+                    };
+                    this.autoSplit(row);
+                    return row;
+                }).filter((row) => row.total > 0);
+                this.preview = { total: this.items.length };
             },
 
             get alertClass() { return this.ok ? 'alert-success' : 'alert-warning'; },
@@ -365,7 +460,7 @@ document.addEventListener('alpine:init', () => {
                     const tplEl = document.getElementById('bp-label-template');
                     if (tplEl && !tplEl.tomselect) {
                         templateTs = createTs(tplEl, {
-                            placeholder: '— Theo từng sản phẩm / mặc định —',
+                            placeholder: '— Chọn mẫu tem in —',
                             maxOptions: null,
                             dropdownParent: 'body',
                             onChange: (value) => { this.form.template = value || ''; },
@@ -436,20 +531,20 @@ document.addEventListener('alpine:init', () => {
                 const pending = rows.filter(r => Math.round((r.requested_qty_raw - r.printed_qty_raw) * 1000) > 0);
 
                 if (pending.length === 0) {
-                    // Tất cả đã in đủ — hỏi xác nhận thay vì chặn, kho vẫn cần in lại tem rách/hỏng.
                     this.preview = { total: rows.length };
                     this.stage = 'reprint-confirm';
                     this.confirming = true;
                     return;
                 }
 
-                this.preview = { total: pending.length };
+                this.buildItems(pending);
                 this.openForm();
             },
 
             // Người dùng xác nhận "Tiếp tục in lại" ở bước cảnh báo — mở form cấu hình, áp dụng cho toàn đơn.
             confirmReprintAll() {
                 this.reprintAll = true;
+                this.buildItems(window.salesOrderItemsTable?.getData() ?? []);
                 this.openForm();
             },
 
@@ -465,7 +560,7 @@ document.addEventListener('alpine:init', () => {
             },
 
             async run() {
-                if (this.submitting || this.preview.total === 0 || !this.form.exp) return;
+                if (!this.canRun) return;
 
                 // Mở tab ngay trong sự kiện click để không bị trình duyệt chặn popup.
                 const win = window.open('', '_blank');
@@ -488,13 +583,20 @@ document.addEventListener('alpine:init', () => {
                             exp_date: this.form.exp,
                             supplier_name: this.form.supplierText.trim() || null,
                             batch_code: this.form.batchCode || null,
+                            items: this.items.map((row) => ({
+                                order_item_id: row.id,
+                                label_groups: row.groups.map((g) => ({ weight_per_label: Number(g.weight), label_count: Number(g.qty) })),
+                            })),
                         }),
                     });
                     const data = await res.json().catch(() => ({}));
 
                     if (res.status === 422) {
                         win?.close();
-                        Object.entries(data.errors ?? {}).forEach(([k, v]) => { this.errors[k] ??= v[0]; });
+                        Object.entries(data.errors ?? {}).forEach(([k, v]) => {
+                            const field = k.startsWith('items') ? 'items' : k;
+                            this.errors[field] ??= v[0];
+                        });
                         return;
                     }
                     if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
