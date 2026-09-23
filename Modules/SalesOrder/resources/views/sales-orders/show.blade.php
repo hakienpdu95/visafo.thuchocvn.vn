@@ -313,9 +313,9 @@
                         </label>
                         <select id="ts-label-template" name="label_template_id"
                                 class="select select-bordered select-sm w-full"
-                                data-ts-placeholder="— Mặc định: Tem VISAFO Rau Củ Khổ Lớn (100x75) —"
+                                data-ts-placeholder="— Mặc định: Mẫu tem truy xuất VISAFO - Cỡ lớn (Khổ giấy in nhãn 100x75mm) —"
                                 data-default-template-id="{{ $defaultLabelTemplateId }}">
-                            <option value="">— Mặc định: Tem VISAFO Rau Củ Khổ Lớn (100x75) —</option>
+                            <option value="">— Mặc định: Mẫu tem truy xuất VISAFO - Cỡ lớn (Khổ giấy in nhãn 100x75mm) —</option>
                             @foreach($labelTemplates as $labelTemplate)
                             <option value="{{ $labelTemplate['value'] }}">{{ $labelTemplate['text'] }}</option>
                             @endforeach

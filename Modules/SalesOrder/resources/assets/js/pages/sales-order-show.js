@@ -102,7 +102,7 @@ document.addEventListener('alpine:init', () => {
                     if (tplEl) defaultTemplateId = tplEl.dataset.defaultTemplateId || '';
                     if (tplEl && !tplEl.tomselect) {
                         templateTs = createTs(tplEl, {
-                            placeholder: '— Mặc định: Tem VISAFO Rau Củ Khổ Lớn (100x75) —',
+                            placeholder: '— Mặc định: Mẫu tem truy xuất VISAFO - Cỡ lớn (Khổ giấy in nhãn 100x75mm) —',
                             maxOptions: null,
                             // Gắn danh sách vào <body> (z-index 9999 > modal 999): .modal-box của DaisyUI có transform +
                             // overflow nên gắn vào đó sẽ làm danh sách bị lệch xuống đáy modal.

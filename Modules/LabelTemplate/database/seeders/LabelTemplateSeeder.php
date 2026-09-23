@@ -26,52 +26,16 @@ class LabelTemplateSeeder extends Seeder
     {
         return [
             [
-                'name'         => 'Tem Rau Củ Quả',
-                'view_path'    => 'labels.templates.produce_60x40',
-                'description'  => 'Mẫu cơ bản cho rau củ quả — không có logo chứng nhận hữu cơ/VietGAP (xem thêm Tem Rau Củ Quả Hữu Cơ).',
-                'default_size' => '60x40',
-            ],
-            [
-                'name'         => 'Tem Rau Củ Quả Hữu Cơ (VietGAP/Organic)',
-                'view_path'    => 'labels.templates.produce_organic_60x40',
-                'description'  => 'Mẫu chuẩn cho rau củ, có không gian in logo chứng nhận hữu cơ/VietGAP.',
-                'default_size' => '60x40',
-            ],
-            [
-                'name'         => 'Tem Thịt Tươi Sống (Heo/Bò/Gà)',
-                'view_path'    => 'labels.templates.meat_fresh_60x40',
-                'description'  => 'Bổ sung trường thông tin Ngày giết mổ, điều kiện bảo quản mát và mã kiểm dịch thú y.',
-                'default_size' => '60x40',
-            ],
-            [
-                'name'         => 'Tem Hải Sản Đông Lạnh',
-                'view_path'    => 'labels.templates.seafood_frozen_60x40',
-                'description'  => 'Có cảnh báo bảo quản -18°C và thông tin rã đông.',
-                'default_size' => '60x40',
-            ],
-            [
-                'name'         => 'Tem Trái Cây Nhập Khẩu',
-                'view_path'    => 'labels.templates.fruits_imported_60x40',
-                'description'  => 'Nhấn mạnh thông tin Xuất xứ (Country of Origin) và Đơn vị nhập khẩu.',
-                'default_size' => '60x40',
-            ],
-            [
-                'name'         => 'Tem Thực Phẩm Sơ Chế / Chế Biến Sẵn',
-                'view_path'    => 'labels.templates.pre_cooked_60x40',
-                'description'  => 'Có không gian hiển thị Thành phần chính và Hướng dẫn nấu nướng (HDSD).',
-                'default_size' => '60x40',
-            ],
-            [
-                'name'         => 'Tem Nông Sản Khô / Ngũ Cốc',
-                'view_path'    => 'labels.templates.dried_food_60x40',
-                'description'  => 'Phù hợp hàng lưu kho lâu ngày, cảnh báo độ ẩm.',
-                'default_size' => '60x40',
-            ],
-            [
-                'name'         => 'Tem VISAFO Rau Củ Khổ Lớn (100x75)',
+                'name'         => 'Mẫu tem truy xuất VISAFO - Cỡ lớn (Khổ giấy in nhãn 100x75mm)',
                 'view_path'    => 'labels.templates.visafo_100x75',
                 'description'  => 'Mẫu tem khổ lớn 100x75mm thương hiệu VISAFO — header công ty, khối sản phẩm nền đen, bảng thông tin + QR, footer bảo quản/liên hệ.',
                 'default_size' => '100x75',
+            ],
+            [
+                'name'         => 'Mẫu tem truy xuất VISAFO - Cỡ vừa (Khổ giấy in nhãn 75x50mm)',
+                'view_path'    => 'labels.templates.visafo_75x50',
+                'description'  => 'Bản thu gọn của mẫu 100x75mm cho cuộn nhãn 75x50mm — header 1 dòng, tên sản phẩm tối đa 2 dòng, thông tin 1 dòng/trường + QR 12mm, footer bảo quản/liên hệ gộp 1 dòng.',
+                'default_size' => '75x50',
             ],
         ];
     }
