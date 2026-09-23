@@ -338,7 +338,7 @@
                     <div class="form-control" x-show="remaining > 0 || form.overrideLock" x-cloak>
                         <label class="label py-0 pb-1.5" for="pl-weight">
                             <span class="label-text font-medium">Khối lượng/Tem (kg) <span class="text-error">*</span></span>
-                            <span class="label-text-alt text-base-content/40 text-xs">Tự động theo SL yêu cầu, không thể sửa</span>
+                            <span class="label-text-alt text-base-content/40 text-xs">Tự động theo số lượng, không thể sửa</span>
                         </label>
                         <input id="pl-weight" type="number" name="weight_per_label" step="0.001" min="0.001" inputmode="decimal"
                                x-model="form.weight" x-ref="weight" readonly disabled

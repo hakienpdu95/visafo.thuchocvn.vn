@@ -18,7 +18,7 @@ const COLUMNS = [
     },
     { title: 'ĐVT', field: 'unit', width: 90, headerSort: false },
     {
-        title: 'SL yêu cầu', field: 'requested_qty', width: 150, hozAlign: 'right', headerSort: false,
+        title: 'Số lượng', field: 'requested_qty', width: 150, hozAlign: 'right', headerSort: false,
         formatter: (cell) => '<span class="font-mono">' + esc(cell.getValue()) + '</span>',
     },
     {
@@ -168,7 +168,7 @@ document.addEventListener('alpine:init', () => {
                 this.errors = {};
                 this.message = '';
                 this.blockedUrl = '';
-                // Khối lượng/tem khoá cứng theo SL yêu cầu của đơn — không bao giờ đổi theo phần còn lại đã in.
+                // Khối lượng/tem khoá cứng theo Số lượng của đơn — không bao giờ đổi theo phần còn lại đã in.
                 const remaining = Math.round((Number(row.requested_qty_raw) - Number(row.printed_qty_raw)) * 1000) / 1000;
                 this.remaining = Math.max(remaining, 0);
                 this.form = {
