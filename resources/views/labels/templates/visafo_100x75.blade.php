@@ -137,7 +137,14 @@
                         <td class="val">
                             <div style="display: flex; gap: 3mm; align-items: center;">
                                 <span>{{ $log->mfg_date?->format('d/m/Y') ?? '—' }}</span>
-                                <span><span style="font-weight: 600; font-size: 7pt;">HSD:</span> {{ $log->exp_date?->format('d/m/Y') ?? '—' }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lbl" style="font-weight: 700;">HSD</td><td class="colon">:</td>
+                        <td class="val">
+                            <div class="one-line">
+                                {{ $log->exp_date?->format('d/m/Y') ?? '—' }}
                             </div>
                         </td>
                     </tr>

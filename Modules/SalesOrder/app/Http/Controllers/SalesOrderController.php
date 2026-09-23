@@ -9,7 +9,6 @@ use Modules\LabelTemplate\Models\LabelTemplate;
 use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsHandler;
 use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsQuery;
 use Modules\SalesOrder\Models\SalesOrder;
-use Modules\SalesOrder\Support\LabelViewResolver;
 use Modules\Vendor\Queries\ListVendorOptionsHandler;
 use Modules\Vendor\Queries\ListVendorOptionsQuery;
 
@@ -35,11 +34,11 @@ class SalesOrderController extends Controller
         $salesOrder->load(['importedBy', 'items.product']);
         $labelTemplates = $labelTemplateOptions->handle(new ListLabelTemplateOptionsQuery());
         $vendors = $vendorOptions->handle(new ListVendorOptionsQuery());
-        // Mặc định chọn sẵn mẫu tem này khi sản phẩm chưa được gán mẫu riêng.
-        // Tra theo view_path (ổn định) thay vì theo tên hiển thị — tên mẫu có thể được đổi.
         $defaultLabelTemplateId = LabelTemplate::query()
-            ->where('view_path', LabelViewResolver::DEFAULT_VIEW)
-            ->value('id') ?? '';
+            ->where('view_path', 'labels.templates.visafo_75x50')
+            ->value('id')
+            ?? LabelTemplate::query()->where('default_size', '75x50')->value('id')
+            ?? '';
 
         return view('salesorder::sales-orders.show', compact('salesOrder', 'labelTemplates', 'vendors', 'defaultLabelTemplateId'));
     }

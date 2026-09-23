@@ -17,8 +17,9 @@
     }
 
     /* A. Header: tên công ty (trái) + logo (phải) — tối đa 6mm */
-    .tpl-visafo75 .header { flex: none; overflow: hidden; display: flex; align-items: center; gap: 1mm; }
+    .tpl-visafo75 .header { flex: none; overflow: hidden; display: flex; align-items: center; gap: 1mm; justify-content: space-between;}
     .tpl-visafo75 .co-name { flex: 1; min-width: 0; font-size: 7pt; font-weight: bold; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tpl-visafo75 .co-slogan { flex: 1; min-width: 0; font-size: 7pt; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     /* Logo gốc gần vuông → chặn theo chiều cao header, bề ngang tối đa 12mm */
     .tpl-visafo75 .logo { flex: none; max-width: 10mm; object-fit: contain; }
 
@@ -66,7 +67,10 @@
     <div class="label">
         {{-- A. Header --}}
         <div class="header">
-            <div class="co-name">CÔNG TY CỔ PHẦN THỰC PHẨM VISAFO</div>
+            <div class="h-left">
+                <div class="co-name">CÔNG TY CỔ PHẦN THỰC PHẨM VISAFO</div>
+                <div class="co-slogan">Mang an toàn đến từng bữa ăn</div>
+            </div>
             <img class="logo" src="{{ asset('images/visafo-dark.png') }}" alt="VISAFO">
         </div>
 

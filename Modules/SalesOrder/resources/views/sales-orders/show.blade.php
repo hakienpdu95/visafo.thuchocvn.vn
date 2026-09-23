@@ -48,6 +48,7 @@
         'actual_qty'    => $item->actual_qty !== null ? number_format((float) $item->actual_qty, 3) : null,
         'attributes_url' => route('backend.sales-orders.items.batch-attributes', $item),
         'history_url'   => route('backend.sales-orders.items.print-logs', $item),
+        'label_template_id' => $item->product?->label_template_id,
         'batches_url'   => route('backend.sales-orders.items.batches', $item),
         'shelf_life_days' => $item->product?->shelf_life_days,
         'print_url'     => $canPrint ? route('backend.sales-orders.items.print', $item) : null,
@@ -57,7 +58,7 @@
 <div class="flex flex-col gap-6">
 
     @can('print', $salesOrder)
-    <div x-data="bulkPrintOrder({{ Js::from(['url' => route('backend.sales-orders.print-all', $salesOrder)]) }})"
+    <div x-data="bulkPrintOrder({{ Js::from(['url' => route('backend.sales-orders.print-all', $salesOrder), 'defaultTemplateId' => $defaultLabelTemplateId]) }})"
          @open-bulk-print.window="openConfirm()" class="contents" x-cloak>
 
         <div class="alert py-2.5 px-4 text-sm" :class="alertClass" x-show="message" x-transition>

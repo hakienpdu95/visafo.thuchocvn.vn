@@ -256,7 +256,7 @@ document.addEventListener('alpine:init', () => {
                     batchId: '',
                     batchCode: '',
                     // Ưu tiên mẫu tem gán riêng cho sản phẩm; nếu chưa có thì dùng mẫu mặc định của đơn.
-                    template: defaultTemplateId || '',
+                    template: row.label_template_id || defaultTemplateId || '',
                 };
                 templateTs?.setValue(this.form.template, true);
                 supplierTs?.clear(true);
@@ -411,7 +411,7 @@ document.addEventListener('alpine:init', () => {
     }));
 
     // ── In tem toàn bộ đơn (Bulk Print) — modal cấu hình chung áp dụng cho mọi mặt hàng còn thiếu ──
-    Alpine.data('bulkPrintOrder', ({ url }) => {
+    Alpine.data('bulkPrintOrder', ({ url, defaultTemplateId = '' }) => {
         let templateTs = null;
         let supplierTs = null;
         let mfgPicker = null;
@@ -564,8 +564,8 @@ document.addEventListener('alpine:init', () => {
             },
 
             openForm() {
-                this.form = { template: '', mfg: toYmd(new Date()), exp: '', batchCode: '', supplierManual: false, supplierText: '', vendorId: '' };
-                templateTs?.clear(true);
+                this.form = { template: defaultTemplateId || '', mfg: toYmd(new Date()), exp: '', batchCode: '', supplierManual: false, supplierText: '', vendorId: '' };
+                templateTs?.setValue(this.form.template, true);
                 supplierTs?.clear(true);
                 mfgPicker?.setDate(this.form.mfg, false);
                 expPicker?.clear(false);
