@@ -1,4 +1,5 @@
 @php
+    $unit = ($item->unit_raw ?? null) ?: 'kg';
     $companyAddress = 'Số 120, Xóm Tây, Xã Phúc Thịnh, TP Hà Nội';
     $companyPhone   = '0972 402 619';
     $companyWebsite = 'www.visafo.com.vn';
@@ -129,8 +130,8 @@
                         <col class="col-label"><col class="col-colon"><col class="col-value">
                     </colgroup>
                     <tr class="weight">
-                        <td class="lbl">Khối lượng</td><td class="colon">:</td>
-                        <td class="val">{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} kg</td>
+                        <td class="lbl">SL/KL</td><td class="colon">:</td>
+                        <td class="val">{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} {{ $unit }}</td>
                     </tr>
                     <tr class="dashed-sep">
                         <td class="lbl" style="font-weight: 600;">NSX</td><td class="colon">:</td>

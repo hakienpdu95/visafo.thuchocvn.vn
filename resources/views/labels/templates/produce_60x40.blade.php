@@ -6,6 +6,9 @@
     ngang lẫn 8 dòng dữ liệu bên dưới, nên đặt logo đứng chung cột với QR để tiết kiệm chiều cao.
     Mọi màu (kể cả nền xanh "Quét QR") sẽ được máy in nhiệt chuyển sang đen đặc.
 --}}
+@php
+    $unit = ($item->unit_raw ?? null) ?: 'kg';
+@endphp
 @once
 <style>
     .tpl-produce .label { width: 60mm; height: 40mm; padding: 2mm 2.5mm; display: flex; gap: 1.5mm; overflow: hidden; background: #fff; }
@@ -52,8 +55,8 @@
                     <td><div class="truncate-2-lines">{{ $item->salesOrder->delivery_address ?? '—' }}</div></td>
                 </tr>
                 <tr class="weight">
-                    <th>Khối lượng</th>
-                    <td>{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} kg</td>
+                    <th>SL/KL</th>
+                    <td>{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} {{ $unit }}</td>
                 </tr>
                 <tr class="block-divider">
                     <th>NSX</th>

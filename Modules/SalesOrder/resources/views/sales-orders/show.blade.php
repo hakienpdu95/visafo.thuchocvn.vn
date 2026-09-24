@@ -179,7 +179,7 @@
                                                 <template x-for="g in row.groups" :key="g.uid">
                                                     <span class="badge badge-sm badge-outline font-mono whitespace-nowrap"
                                                           :class="{ 'badge-error': !groupValid(g) }"
-                                                          x-text="fmtKg(g.weight) + 'kg × ' + (g.qty || 0) + ' tem'"></span>
+                                                          x-text="fmtKg(g.weight) + ' ' + row.unit + ' × ' + (g.qty || 0) + ' tem'"></span>
                                                 </template>
                                                 <span class="text-xs text-error" x-show="!rowMatch(row)"
                                                       x-text="'Lệch: ' + fmtKg(rowTotal(row)) + '/' + fmtKg(row.total)"></span>
@@ -194,7 +194,7 @@
                                         <div x-show="row.editing" class="px-3 pb-3 bg-base-200/40">
                                             <div class="rounded-lg border border-base-200 bg-base-100 overflow-hidden">
                                                 <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-1.5 bg-base-200/50 text-xs font-medium text-base-content/60">
-                                                    <span>Khối lượng/Tem (kg)</span><span></span><span>Số lượng Tem</span><span class="w-14"></span>
+                                                    <span x-text="'Số lượng/Tem (' + row.unit + ')'"></span><span></span><span>Số lượng Tem</span><span class="w-14"></span>
                                                 </div>
                                                 <template x-for="(group, index) in row.groups" :key="group.uid">
                                                     <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-1.5 border-t border-base-200">
@@ -220,8 +220,8 @@
                                                 </div>
                                                 <div class="flex items-center gap-3">
                                                     <p class="text-xs" :class="rowMatch(row) ? 'text-success' : 'text-error font-medium'">
-                                                        Tổng khối lượng tem: <span class="font-mono" x-text="fmtKg(rowTotal(row))"></span> kg
-                                                        / Tổng yêu cầu: <span class="font-mono" x-text="fmtKg(row.total)"></span> kg
+                                                        Tổng số lượng tem: <span class="font-mono" x-text="fmtKg(rowTotal(row))"></span> <span x-text="row.unit"></span>
+                                                        / Tổng yêu cầu: <span class="font-mono" x-text="fmtKg(row.total)"></span> <span x-text="row.unit"></span>
                                                     </p>
                                                     <button type="button" class="btn btn-primary btn-xs" @click="row.editing = false">Xong</button>
                                                 </div>
@@ -310,9 +310,9 @@
                     <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Thời gian</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">KL/tem (kg)</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" x-text="'SL/tem (' + (item?.unit || 'kg') + ')'"></th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Số tem</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Tổng (kg)</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" x-text="'Tổng (' + (item?.unit || 'kg') + ')'"></th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">HSD</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Người in</th>
                             <th class="px-4 py-3"></th>
@@ -404,7 +404,7 @@
 
                         <div class="rounded-lg border border-base-200 overflow-hidden">
                             <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-2 bg-base-200/50 text-xs font-medium text-base-content/60">
-                                <span>Khối lượng/Tem (kg)</span><span></span><span>Số lượng Tem</span><span class="w-14"></span>
+                                <span x-text="'Số lượng/Tem (' + (item?.unit || 'kg') + ')'"></span><span></span><span>Số lượng Tem</span><span class="w-14"></span>
                             </div>
                             <template x-for="(group, index) in form.groups" :key="group.uid">
                                 <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-2 border-t border-base-200">
@@ -430,12 +430,12 @@
                                 <button type="button" class="btn btn-ghost btn-sm text-base-content/60" @click="autoSplit()">Đặt lại</button>
                             </div>
                             <p class="text-sm" :class="groupsMatch ? 'text-success' : 'text-error font-medium'">
-                                Tổng khối lượng tem: <span class="font-mono" x-text="fmtKg(groupsTotal)"></span> kg
-                                / Tổng yêu cầu: <span class="font-mono" x-text="fmtKg(requiredTotal)"></span> kg
+                                Tổng số lượng tem: <span class="font-mono" x-text="fmtKg(groupsTotal)"></span> <span x-text="item?.unit || 'kg'"></span>
+                                / Tổng yêu cầu: <span class="font-mono" x-text="fmtKg(requiredTotal)"></span> <span x-text="item?.unit || 'kg'"></span>
                                 <span class="text-base-content/50 font-normal" x-text="'(' + labelCount + ' tem)'"></span>
                             </p>
                         </div>
-                        <p class="mt-1 text-xs text-error" x-show="!groupsMatch">Tổng khối lượng tem đang lệch so với yêu cầu — vẫn có thể in nếu cố ý (hao hụt, chia lại tem).</p>
+                        <p class="mt-1 text-xs text-error" x-show="!groupsMatch">Tổng số lượng tem đang lệch so với yêu cầu — vẫn có thể in nếu cố ý (hao hụt, chia lại tem).</p>
                         <p class="mt-1 text-xs text-error" x-show="labelCount > 200">Mỗi lần chỉ in tối đa 200 tem.</p>
                         <p class="mt-1 text-xs text-error" x-show="errors.label_groups" x-text="errors.label_groups"></p>
                     </div>
