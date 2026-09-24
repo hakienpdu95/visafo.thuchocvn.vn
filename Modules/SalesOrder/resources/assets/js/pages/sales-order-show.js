@@ -33,18 +33,12 @@ const COLUMNS = [
             const d = cell.getRow().getData();
             return '<div class="flex items-center justify-center gap-1">'
                 + (d.print_url
-                    ? '<button type="button" data-action="print" class="btn btn-outline btn-primary btn-xs gap-1">'
+                    ? '<button type="button" data-action="print" data-item-id="' + esc(d.id) + '" class="btn btn-outline btn-primary btn-xs gap-1">'
                         + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>In Tem</button>'
                     : '')
-                + '<button type="button" data-action="history" class="btn btn-ghost btn-xs gap-1" title="Lịch sử in / In lại">'
+                + '<button type="button" data-action="history" data-item-id="' + esc(d.id) + '" class="btn btn-ghost btn-xs gap-1" title="Lịch sử in / In lại">'
                 + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M3.05 11a9 9 0 11.5 4M3 4v5h5"/></svg>Lịch sử</button>'
                 + '</div>';
-        },
-        cellClick(e, cell) {
-            const row = cell.getRow().getData();
-            const action = e.target.closest('[data-action]')?.dataset.action;
-            if (action === 'print' && row.print_url) window.dispatchEvent(new CustomEvent('open-print-label', { detail: row }));
-            if (action === 'history') window.dispatchEvent(new CustomEvent('open-print-history', { detail: row }));
         },
     },
 ];
@@ -644,6 +638,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!el || !window.initTabulator) return;
 
     const rows = JSON.parse(el.dataset.rows || '[]');
+    const rowsById = new Map(rows.map((r) => [String(r.id), r]));
+
+    el.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action][data-item-id]');
+        if (!btn || !el.contains(btn)) return;
+        const row = rowsById.get(btn.dataset.itemId);
+        if (!row) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (btn.dataset.action === 'print' && row.print_url) window.dispatchEvent(new CustomEvent('open-print-label', { detail: row }));
+        if (btn.dataset.action === 'history') window.dispatchEvent(new CustomEvent('open-print-history', { detail: row }));
+    });
 
     window.salesOrderItemsTable = window.initTabulator('#sales-order-items-table', COLUMNS, rows, {
         pagination: true,

@@ -73,8 +73,8 @@ body { margin: 0; padding: 0; background: #fff; font-family: 'Open Sans', sans-s
 .sidebar-overlay.active { display: block; }
 
 @media (max-width: 1023px) {
-    .sidebar { transform: translateX(-100%); }
-    .sidebar.mobile-open { transform: translateX(0); }
+    .sidebar { transform: translateX(-100%); background: #fff; }
+    .sidebar.mobile-open { transform: translateX(0); background: #fff;}
 }
 
 /* ── Main area ────────────────────────────────── */

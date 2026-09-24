@@ -67,11 +67,11 @@
         </div>
 
         <div class="modal" :class="{ 'modal-open': confirming }" @keydown.escape.window="confirming = false">
-            <div class="modal-box max-w-4xl overflow-visible">
-                <h3 class="font-bold text-lg mb-1">In tem toàn bộ đơn</h3>
+            <div class="modal-box max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+                <h3 class="font-bold text-lg mb-1 shrink-0">In tem toàn bộ đơn</h3>
 
-
-                <form @submit.prevent="run()" novalidate>
+                <form @submit.prevent="run()" novalidate class="flex flex-col flex-1 min-h-0">
+                    <div class="flex-1 min-h-0 overflow-y-auto -mx-1 px-1">
                         <p class="text-sm text-base-content/60 mb-4" x-text="introText"></p>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -164,7 +164,7 @@
                                 </span>
                             </div>
 
-                            <div class="rounded-lg border border-base-200 max-h-[42vh] overflow-y-auto">
+                            <div class="rounded-lg border border-base-200">
                                 <template x-for="row in items" :key="row.id">
                                     <div class="border-b border-base-200 last:border-b-0">
                                         <div class="grid grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)_auto] gap-3 items-center px-3 py-2"
@@ -233,7 +233,9 @@
                             <p class="mt-1 text-xs text-error" x-show="errors.items" x-text="errors.items"></p>
                         </div>
 
-                        <div class="modal-action mt-5 items-center">
+                    </div>
+
+                        <div class="modal-action mt-4 items-center shrink-0">
                             <p class="text-xs text-base-content/50 mr-auto" x-show="!form.template">Vui lòng chọn mẫu tem in</p>
                             <button type="submit" class="btn btn-sm border-0 bg-blue-800 text-white hover:bg-blue-900"
                                     :disabled="!canRun">
@@ -365,18 +367,19 @@
 @can('print', $salesOrder)
 <div x-data="printLabelModal()" @open-print-label.window="openFor($event.detail)" x-cloak>
     <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">
-        <div class="modal-box max-w-6xl overflow-visible">
+        <div class="modal-box max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
 
-            <h3 class="card-title text-base mb-5">
+            <h3 class="card-title text-base mb-5 shrink-0">
                 <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>
                 </svg>
                 Cấu hình In Tem
             </h3>
 
-            <div class="divider my-4 text-xs text-base-content/30" x-text="item?.product_name"></div>
+            <div class="divider my-4 text-xs text-base-content/30 shrink-0" x-text="item?.product_name"></div>
 
-            <form @submit.prevent="submit()" novalidate>
+            <form @submit.prevent="submit()" novalidate class="flex flex-col flex-1 min-h-0">
+                <div class="flex-1 min-h-0 overflow-y-auto -mx-1 px-1">
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
@@ -558,8 +561,9 @@
                 <div class="alert alert-warning py-2 px-3 mt-4 text-xs" x-show="blockedUrl">
                     Trình duyệt đã chặn cửa sổ in. <a :href="blockedUrl" target="_blank" class="link font-semibold">Bấm vào đây để mở tem</a>.
                 </div>
+                </div>
 
-                <div class="flex items-center gap-3 pt-4 mt-4 border-t border-base-200">
+                <div class="flex items-center gap-3 pt-4 mt-4 border-t border-base-200 shrink-0">
                     <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting">
                         Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem
                     </p>
