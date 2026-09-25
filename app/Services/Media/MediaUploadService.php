@@ -268,7 +268,7 @@ class MediaUploadService
         $maxKb = $collectionConfig['max_size_kb'] ?? 51200;
         if ($file->getSize() > $maxKb * 1024) {
             throw ValidationException::withMessages([
-                'file' => ["File quá lớn. Tối đa {$maxKb} KB."],
+                'file' => ["File quá lớn. Tối đa " . round($maxKb / 1024) . " MB."],
             ]);
         }
 

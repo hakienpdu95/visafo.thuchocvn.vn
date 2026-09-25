@@ -517,7 +517,7 @@
             </div>
 
             <div class="form-control">
-                <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Tải thêm tệp mới (Sẽ được gộp chung với các tệp hiện tại)</span></label>
+                <label class="label py-0 pb-1.5"><span class="label-text text-xs font-medium">Tải thêm tệp mới (Sẽ được gộp chung với các tệp hiện tại)</span><span class="label-text-alt text-xs text-base-content/40">PDF, JPG, PNG — tối đa 100MB/file</span></label>
                 <input type="file" name="files[]" x-ref="filesInput" multiple
                        accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered w-full rounded-sm"
                        @change="onFilesChange($event)">

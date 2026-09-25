@@ -4,6 +4,7 @@ namespace Modules\Compliance\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
+use App\Services\Media\ChunkedUploadService;
 use App\Services\Media\MediaUrlService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -191,7 +192,7 @@ class ComplianceDocumentController extends Controller
     {
         $this->authorize('update', $internalFacility);
 
-        $data = StoreComplianceDocumentData::validateAndCreate($request->all());
+        $data = StoreComplianceDocumentData::validateAndCreate($this->documentPayload($request));
         $action->handle($internalFacility, $data);
 
         return $this->backToFacility($internalFacility, 'Đã thêm hồ sơ mới.');
@@ -201,7 +202,7 @@ class ComplianceDocumentController extends Controller
     {
         $this->authorize('update', $internalFacility);
 
-        $data = StoreComplianceDocumentData::validateAndCreate($request->all());
+        $data = StoreComplianceDocumentData::validateAndCreate($this->documentPayload($request));
         $action->handle($document, $data);
 
         return $this->backToFacility($internalFacility, 'Đã cập nhật hồ sơ.');
@@ -235,9 +236,31 @@ class ComplianceDocumentController extends Controller
             ->with('success', $message);
     }
 
+    private function documentPayload(Request $request): array
+    {
+        $multiTokens  = (array) $request->input('uploaded_files', []);
+        $singleTokens = array_filter([$request->input('uploaded_file')]);
+        if (empty($multiTokens) && empty($singleTokens)) {
+            return $request->all();
+        }
+
+        $service = app(ChunkedUploadService::class);
+        app()->terminating(fn () => $service->cleanup([...$multiTokens, ...$singleTokens]));
+
+        $payload = $request->except(['uploaded_files', 'uploaded_file']);
+        if (! empty($multiTokens)) {
+            $payload['files'] = [...$request->file('files', []), ...$service->resolve($multiTokens)];
+        }
+        if (! empty($singleTokens)) {
+            $payload['file'] = $service->resolve($singleTokens)[0] ?? null;
+        }
+
+        return $payload;
+    }
+
     private function store(Request $request, Model $documentable, StoreComplianceDocumentAction $action, string $redirectRoute, array $redirectParams = []): RedirectResponse
     {
-        $data = StoreComplianceDocumentData::validateAndCreate($request->all());
+        $data = StoreComplianceDocumentData::validateAndCreate($this->documentPayload($request));
         $action->handle($documentable, $data);
 
         return redirect()->route($redirectRoute, $redirectParams ?: [$documentable])
@@ -246,7 +269,7 @@ class ComplianceDocumentController extends Controller
 
     private function update(Request $request, ComplianceDocument $document, UpdateComplianceDocumentAction $action, string $redirectRoute, Model $documentable, array $redirectParams = []): RedirectResponse
     {
-        $data = StoreComplianceDocumentData::validateAndCreate($request->all());
+        $data = StoreComplianceDocumentData::validateAndCreate($this->documentPayload($request));
         $action->handle($document, $data);
 
         return redirect()->route($redirectRoute, $redirectParams ?: [$documentable])

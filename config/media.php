@@ -82,7 +82,7 @@ return [
             'conversions'  => [],
         ],
         'attachments_private' => [
-            'max_size_kb'  => 51200,
+            'max_size_kb'  => 102400,
             'allowed_mime' => [
                 // Documents
                 'application/pdf',

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ChunkedUploadController;
 use App\Http\Controllers\Api\MediaJoditUploadController;
 use App\Http\Controllers\Api\MediaUploadController;
 use App\Http\Controllers\Backend\DashboardController;
@@ -31,6 +32,8 @@ Route::middleware(['auth'])
         // FilePond form-field upload (avatar, logo, thumbnail, cover, attachments)
         Route::post('upload',         [MediaUploadController::class, 'store'])->name('upload');
         Route::delete('upload/{uuid}',[MediaUploadController::class, 'destroy'])->name('upload.destroy');
+
+        Route::post('chunk-upload',   [ChunkedUploadController::class, 'store'])->name('chunk.upload');
     });
 
 /*

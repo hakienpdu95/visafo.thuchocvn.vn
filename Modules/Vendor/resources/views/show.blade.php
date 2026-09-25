@@ -152,7 +152,7 @@
                              'is_expiring_soon'        => $d->isExpiringWithinDays(30),
                              'status_label'            => $d->status->label(),
                              'status_badge'            => $d->status->badgeClass(),
-                             'file_url'                => $d->getFirstMediaUrl('attachments_private'),
+                             'file_url'                => ($m = $d->getMedia('attachments_private')->last()) ? app(\App\Services\Media\MediaUrlService::class)->url($m) : '',
                          ])->values(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
                 </div>
             </div>
