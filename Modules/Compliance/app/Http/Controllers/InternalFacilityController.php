@@ -42,7 +42,6 @@ class InternalFacilityController extends Controller
         $localFacilities->load(['documents' => fn ($q) => $q->with('documentType')->latest('issue_date')]);
 
         $documentTypes = DocumentMasterType::query()
-            ->applicableTo('internal')
             ->orderBy('name')
             ->get();
 

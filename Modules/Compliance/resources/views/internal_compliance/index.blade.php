@@ -59,6 +59,7 @@
     $employeeSyncedCodes  = ['personnel_training', 'personnel_periodic_health', 'personnel_health'];
 
     $requiredTypeIds = collect($documentTypesByGroup)->collapse()
+        ->filter(fn ($t) => in_array('internal', $t->applicable_to ?? [], true))
         ->reject(fn ($t) => in_array($t->code, $employeeSyncedCodes, true))
         ->pluck('id');
 
