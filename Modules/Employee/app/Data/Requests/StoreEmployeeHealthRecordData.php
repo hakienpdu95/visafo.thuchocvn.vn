@@ -38,7 +38,7 @@ class StoreEmployeeHealthRecordData extends Data
         #[Nullable, StringType, Max(1000)]
         public readonly ?string $notes,
 
-        #[Nullable, File, Mimes(['pdf', 'jpg', 'jpeg', 'png']), Max(10240)]
+        #[Nullable, File, Mimes(['pdf', 'jpg', 'jpeg', 'png']), Max(102400)]
         public readonly ?UploadedFile $file,
     ) {}
 
@@ -74,7 +74,7 @@ class StoreEmployeeHealthRecordData extends Data
 
             'file.file'  => 'Tệp tải lên không hợp lệ.',
             'file.mimes' => 'Chỉ chấp nhận file PDF, JPG hoặc PNG.',
-            'file.max'   => 'Dung lượng file không được vượt quá 10MB.',
+            'file.max'   => 'Dung lượng file không được vượt quá 100MB.',
         ];
     }
 }

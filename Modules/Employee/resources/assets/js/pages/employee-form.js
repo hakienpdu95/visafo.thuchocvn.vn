@@ -1,4 +1,5 @@
 import { createTs, initAllTomSelects } from '@shared/tom-select-factory.js';
+import { bindChunkedSubmit } from '@shared/chunked-upload.js';
 
 const FORM_SEL = '[data-employee-form]';
 
@@ -42,4 +43,5 @@ function _setupHealthRecordForm(root) {
 
     const healthForm = typeEl.closest('form');
     window.initAllDatePickers?.(healthForm);
+    if (healthForm) bindChunkedSubmit(healthForm);
 }

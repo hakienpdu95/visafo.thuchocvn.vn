@@ -238,24 +238,7 @@ class ComplianceDocumentController extends Controller
 
     private function documentPayload(Request $request): array
     {
-        $multiTokens  = (array) $request->input('uploaded_files', []);
-        $singleTokens = array_filter([$request->input('uploaded_file')]);
-        if (empty($multiTokens) && empty($singleTokens)) {
-            return $request->all();
-        }
-
-        $service = app(ChunkedUploadService::class);
-        app()->terminating(fn () => $service->cleanup([...$multiTokens, ...$singleTokens]));
-
-        $payload = $request->except(['uploaded_files', 'uploaded_file']);
-        if (! empty($multiTokens)) {
-            $payload['files'] = [...$request->file('files', []), ...$service->resolve($multiTokens)];
-        }
-        if (! empty($singleTokens)) {
-            $payload['file'] = $service->resolve($singleTokens)[0] ?? null;
-        }
-
-        return $payload;
+        return app(ChunkedUploadService::class)->mergeIntoInput($request, $request->all());
     }
 
     private function store(Request $request, Model $documentable, StoreComplianceDocumentAction $action, string $redirectRoute, array $redirectParams = []): RedirectResponse

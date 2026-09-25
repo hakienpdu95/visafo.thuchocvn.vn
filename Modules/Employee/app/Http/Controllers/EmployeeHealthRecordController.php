@@ -3,6 +3,7 @@
 namespace Modules\Employee\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Services\Media\ChunkedUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Modules\Employee\Actions\Backend\DestroyEmployeeHealthRecordAction;
@@ -15,11 +16,11 @@ class EmployeeHealthRecordController extends Controller
 {
     private const NULLABLE_FIELDS = ['expiry_date', 'result', 'certificate_number', 'issued_by', 'notes'];
 
-    public function store(Request $request, Employee $employee, StoreEmployeeHealthRecordAction $action): RedirectResponse
+    public function store(Request $request, Employee $employee, StoreEmployeeHealthRecordAction $action, ChunkedUploadService $chunkService): RedirectResponse
     {
         $this->authorize('update', $employee);
 
-        $input = $request->all();
+        $input = $chunkService->mergeIntoInput($request, $request->all());
         foreach (self::NULLABLE_FIELDS as $field) {
             if (($input[$field] ?? null) === '') {
                 $input[$field] = null;

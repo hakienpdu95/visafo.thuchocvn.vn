@@ -2,6 +2,7 @@
 
 namespace App\Services\Media;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -59,6 +60,27 @@ class ChunkedUploadService
         File::delete($dir . '/next');
 
         return $uploadId;
+    }
+
+    public function mergeIntoInput(Request $request, array $input): array
+    {
+        $multiTokens  = (array) $request->input('uploaded_files', []);
+        $singleTokens = array_filter([$request->input('uploaded_file')]);
+        if (empty($multiTokens) && empty($singleTokens)) {
+            return $input;
+        }
+
+        app()->terminating(fn () => $this->cleanup([...$multiTokens, ...$singleTokens]));
+
+        unset($input['uploaded_files'], $input['uploaded_file']);
+        if (! empty($multiTokens)) {
+            $input['files'] = [...$request->file('files', []), ...$this->resolve($multiTokens)];
+        }
+        if (! empty($singleTokens)) {
+            $input['file'] = $this->resolve($singleTokens)[0] ?? null;
+        }
+
+        return $input;
     }
 
     /**

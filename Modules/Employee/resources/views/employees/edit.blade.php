@@ -256,7 +256,7 @@
                 </div>
 
                 <div class="form-control">
-                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">File đính kèm (PDF/Ảnh)</span></label>
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">File đính kèm (PDF/Ảnh)</span><span class="label-text-alt text-xs text-base-content/40">tối đa 100MB</span></label>
                     <input type="file" name="file" accept="application/pdf,image/jpeg,image/png" class="file-input file-input-bordered file-input-sm w-full">
                 </div>
 
