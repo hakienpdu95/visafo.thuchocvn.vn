@@ -16,7 +16,6 @@ class UpdateDocumentMasterTypeAction
             'code'                     => $data->code,
             'name'                     => $data->name,
             'document_group'           => $data->document_group->value,
-            'internal_tab_group'       => $data->internal_tab_group?->value,
             'is_required_issue_date'   => $data->is_required_issue_date,
             'is_required_expiry_date'  => $data->is_required_expiry_date,
             'default_validity_months'  => $data->default_validity_months,

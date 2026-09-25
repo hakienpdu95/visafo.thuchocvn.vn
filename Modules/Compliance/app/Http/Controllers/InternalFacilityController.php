@@ -16,7 +16,7 @@ use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\InternalFacility;
 use Modules\Employee\Enums\RecordStatus;
 use Modules\Employee\Models\Employee;
-use Modules\Product\Enums\InternalTabGroup;
+use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Models\DocumentMasterType;
 use ZipArchive;
 
@@ -43,16 +43,14 @@ class InternalFacilityController extends Controller
 
         $documentTypes = DocumentMasterType::query()
             ->applicableTo('internal')
-            ->whereNotNull('internal_tab_group')
-            ->orderBy('internal_tab_group')
             ->orderBy('name')
             ->get();
 
-        $documentTypesByGroup = [
-            InternalTabGroup::Legal->value     => $documentTypes->where('internal_tab_group', InternalTabGroup::Legal)->values(),
-            InternalTabGroup::Operation->value => $documentTypes->where('internal_tab_group', InternalTabGroup::Operation)->values(),
-            InternalTabGroup::Hr->value        => $documentTypes->where('internal_tab_group', InternalTabGroup::Hr)->values(),
-        ];
+        $documentTypesByGroup = collect(DocumentGroupType::cases())
+            ->mapWithKeys(fn (DocumentGroupType $group) => [
+                $group->value => $documentTypes->where('document_group', $group)->values(),
+            ])
+            ->all();
 
         $employees = Employee::query()
             ->with(['latestHealthCheck', 'latestAttpTraining'])

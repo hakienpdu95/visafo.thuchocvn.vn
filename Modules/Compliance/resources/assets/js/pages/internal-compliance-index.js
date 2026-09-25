@@ -9,14 +9,14 @@ const documentModal = createDocumentUploadModal({
     expirationFieldId: 'fp-expiration_date',
 });
 
-window.openAddDocumentModal = function (facilityId, tabGroup) {
+window.openAddDocumentModal = function (facilityId, group) {
     const modal = document.getElementById('addDocumentModal');
     if (!modal) return;
     const form = modal.querySelector('form');
     form.dataset.createUrl = form.dataset.storeUrlTemplate.replace('__FID__', facilityId);
     const targetField = form.querySelector('[name="_target_facility_id"]');
     if (targetField) targetField.value = facilityId;
-    documentModal.openCreate('', tabGroup);
+    documentModal.openCreate('', group);
 };
 
 window.openEditDocumentModal = function (doc) {

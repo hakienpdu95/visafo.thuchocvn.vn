@@ -11,7 +11,6 @@ use Modules\Compliance\Services\Readiness\ReadinessScoreResult;
 use Modules\Employee\Enums\RecordStatus;
 use Modules\Employee\Models\Employee;
 use Modules\Product\Enums\DocumentGroupType;
-use Modules\Product\Enums\InternalTabGroup;
 use Modules\Product\Models\DocumentMasterType;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Vendor\Enums\VendorStatus;
@@ -76,7 +75,7 @@ class ReadinessScoringService
 
         $docTypes = DocumentMasterType::query()
             ->applicableTo('internal')
-            ->where('internal_tab_group', InternalTabGroup::Legal->value)
+            ->where('document_group', DocumentGroupType::LegalFacility->value)
             ->orderBy('name')
             ->get();
 
@@ -94,7 +93,7 @@ class ReadinessScoringService
 
         $docTypes = DocumentMasterType::query()
             ->applicableTo('internal')
-            ->where('document_group', DocumentGroupType::AttpQuality->value)
+            ->whereIn('document_group', [DocumentGroupType::Traceability->value, DocumentGroupType::MonitoringLogs->value])
             ->orderBy('name')
             ->get();
 
@@ -356,12 +355,19 @@ class ReadinessScoringService
 
     private function scoreCommercial(): ReadinessCategoryResult
     {
-        $items = [
-            new ReadinessChecklistItem('Bảng giá / Báo giá tiêu chuẩn', false, 'Chưa cập nhật — đội Sale bổ sung thủ công', self::COMMERCIAL_MAX / 3),
-            new ReadinessChecklistItem('Catalogue / Hồ sơ giới thiệu sản phẩm', false, 'Chưa cập nhật — đội Sale bổ sung thủ công', self::COMMERCIAL_MAX / 3),
-            new ReadinessChecklistItem('Danh sách khách hàng tham chiếu', false, 'Chưa cập nhật — đội Sale bổ sung thủ công', self::COMMERCIAL_MAX / 3),
-        ];
+        $facility = InternalFacility::query()
+            ->where('type', 'headquarter')
+            ->with(['documents' => fn ($q) => $q->with('documentType')])
+            ->first();
 
-        return new ReadinessCategoryResult('commercial', 'Năng lực thương mại', 0, self::COMMERCIAL_MAX, $items);
+        $docTypes = DocumentMasterType::query()
+            ->applicableTo('internal')
+            ->where('document_group', DocumentGroupType::Commercial->value)
+            ->orderBy('name')
+            ->get();
+
+        [$score, $items] = $this->evaluateFacilityChecklist($facility, $docTypes, self::COMMERCIAL_MAX);
+
+        return new ReadinessCategoryResult('commercial', 'Năng lực thương mại', $score, self::COMMERCIAL_MAX, $items);
     }
 }

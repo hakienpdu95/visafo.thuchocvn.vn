@@ -166,15 +166,15 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         _initDateFields(modal);
     }
 
-    function _applyTabGroupFilter(modal, tabGroup) {
-        if (!tabGroup) return;
+    function _applyGroupFilter(modal, group) {
+        if (!group) return;
 
         const form = modal.querySelector('form[x-data]');
         const select = modal.querySelector(selectSel);
         if (!form || !select || !window.Alpine) return;
 
         const data = window.Alpine.$data(form);
-        const types = (data?.types ?? []).filter((t) => t.internal_tab_group === tabGroup);
+        const types = (data?.types ?? []).filter((t) => t.document_group === group);
 
         const ts = select.tomselect;
         if (ts) {
@@ -295,7 +295,7 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         expirationEl._suppressRecalc = false;
     }
 
-    function openCreate(preselectId = '', tabGroup = '') {
+    function openCreate(preselectId = '', group = '') {
         const modal = document.getElementById(modalId);
         if (!modal) return;
         _setModalMode(modal, null);
@@ -303,7 +303,7 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         document.activeElement?.blur();
         requestAnimationFrame(() => {
             _initModalWidgets(modal);
-            _applyTabGroupFilter(modal, tabGroup);
+            _applyGroupFilter(modal, group);
             _resetDocumentForm(modal, preselectId);
         });
     }
@@ -316,7 +316,7 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
         document.activeElement?.blur();
         requestAnimationFrame(() => {
             _initModalWidgets(modal);
-            _applyTabGroupFilter(modal, doc.internal_tab_group);
+            _applyGroupFilter(modal, doc.document_group);
             _fillDocumentForm(modal, doc);
         });
     }
@@ -333,7 +333,14 @@ export function createDocumentUploadModal({ modalId, selectSel, issueFieldId, ex
             document.activeElement?.blur();
         }
 
-        if (modal.open) requestAnimationFrame(() => _initModalWidgets(modal));
+        if (modal.open) {
+            requestAnimationFrame(() => {
+                _initModalWidgets(modal);
+                const form = modal.querySelector('form[x-data]');
+                const selectedGroup = form && window.Alpine ? window.Alpine.$data(form)?.selected?.document_group : null;
+                _applyGroupFilter(modal, selectedGroup);
+            });
+        }
     });
 
     return { openCreate, openEdit };

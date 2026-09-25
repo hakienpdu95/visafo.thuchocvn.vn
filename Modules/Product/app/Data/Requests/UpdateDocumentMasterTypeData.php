@@ -4,7 +4,6 @@ namespace Modules\Product\Data\Requests;
 
 use Illuminate\Validation\Rule;
 use Modules\Product\Enums\DocumentGroupType;
-use Modules\Product\Enums\InternalTabGroup;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
@@ -24,7 +23,6 @@ class UpdateDocumentMasterTypeData extends Data
 
         public readonly DocumentGroupType $document_group,
 
-        public readonly ?InternalTabGroup $internal_tab_group,
 
         public readonly bool $is_required_issue_date,
 

@@ -4,6 +4,7 @@
 @php
     use App\Services\Media\MediaUrlService;
     use Modules\Compliance\Models\InternalFacility;
+    use Modules\Product\Enums\DocumentGroupType;
 
     $mediaUrlService = app(MediaUrlService::class);
 
@@ -23,8 +24,8 @@
                 'facility_id'             => $facility->id,
                 'facility_name'           => $facility->name,
                 'document_master_type_id' => $d->document_master_type_id,
-                'internal_tab_group'      => $d->documentType->internal_tab_group?->value,
-                'group_label'             => $d->documentType->internal_tab_group?->label() ?? '—',
+                'document_group'          => $d->documentType->document_group?->value,
+                'group_label'             => $d->documentType->document_group?->label() ?? '—',
                 'type_name'               => $d->documentType->name,
                 'document_number'         => $d->document_number,
                 'issued_by'               => $d->issued_by,
@@ -49,18 +50,16 @@
 
     $rankRisk = fn ($row) => $row['is_expired'] ? 2 : ($row['is_expiring_soon'] ? 1 : 0);
 
-    $docsByGroup = [
-        'legal'     => $allDocRows->where('internal_tab_group', 'legal')->sortByDesc($rankRisk)->values(),
-        'operation' => $allDocRows->where('internal_tab_group', 'operation')->sortByDesc($rankRisk)->values(),
-        'hr'        => $allDocRows->where('internal_tab_group', 'hr')->sortByDesc($rankRisk)->values(),
-    ];
+    $docsByGroup = collect(DocumentGroupType::cases())
+        ->mapWithKeys(fn (DocumentGroupType $group) => [
+            $group->value => $allDocRows->where('document_group', $group->value)->sortByDesc($rankRisk)->values(),
+        ]);
 
     $hrAggregateTypeNames = ['Giấy xác nhận kiến thức về an toàn thực phẩm', 'Khám sức khỏe định kỳ'];
+    $employeeSyncedCodes  = ['personnel_training', 'personnel_periodic_health', 'personnel_health'];
 
-    $requiredTypeIds = $documentTypesByGroup['legal']
-        ->concat($documentTypesByGroup['operation'])
-        ->concat($documentTypesByGroup['hr'])
-        ->reject(fn ($t) => in_array($t->name, $hrAggregateTypeNames, true))
+    $requiredTypeIds = collect($documentTypesByGroup)->collapse()
+        ->reject(fn ($t) => in_array($t->code, $employeeSyncedCodes, true))
         ->pluck('id');
 
     $validTypeIds = $allDocRows->where('status_value', 'active')->where('is_expired', false)
@@ -75,14 +74,12 @@
     $modalIsEdit     = (bool) old('_document_id');
     $modalFacilityId = old('_target_facility_id', $headquarter->id);
 
-    $allDocumentTypes = $documentTypesByGroup['legal']
-        ->concat($documentTypesByGroup['operation'])
-        ->concat($documentTypesByGroup['hr'])
+    $allDocumentTypes = collect($documentTypesByGroup)->collapse()
         ->map(fn ($t) => [
             'id'                      => $t->id,
             'name'                    => $t->name,
-            'internal_tab_group'      => $t->internal_tab_group->value,
-            'group_label'             => $t->internal_tab_group->label(),
+            'document_group'          => $t->document_group->value,
+            'group_label'             => $t->document_group->label(),
             'has_expiration_date'     => (bool) $t->has_expiration_date,
             'has_issue_place'         => (bool) $t->has_issue_place,
             'default_validity_months' => $t->default_validity_months,
@@ -90,7 +87,7 @@
 @endphp
 
 @section('content')
-<div x-data="{ tab: 'legal' }">
+<div x-data="{ tab: '{{ DocumentGroupType::LegalFacility->value }}' }">
 
     <div class="rounded-md overflow-hidden mb-4" style="background-color:#0F4C3A">
         <div class="p-6 flex flex-wrap items-center justify-between gap-4 text-white">
@@ -135,21 +132,13 @@
     @endif
 
     <div class="flex flex-wrap gap-6 border-b border-gray-200 mb-5">
-        <button type="button" @click="tab = 'legal'"
+        @foreach(DocumentGroupType::cases() as $group)
+        <button type="button" @click="tab = '{{ $group->value }}'"
                 class="pb-3 text-sm font-medium border-b-2 -mb-px transition-colors"
-                :class="tab === 'legal' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
-            Pháp lý & năng lực
+                :class="tab === '{{ $group->value }}' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
+            {{ $group->label() }}
         </button>
-        <button type="button" @click="tab = 'operation'"
-                class="pb-3 text-sm font-medium border-b-2 -mb-px transition-colors"
-                :class="tab === 'operation' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
-            ATTP & vận hành
-        </button>
-        <button type="button" @click="tab = 'hr'"
-                class="pb-3 text-sm font-medium border-b-2 -mb-px transition-colors"
-                :class="tab === 'hr' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
-            Nhân sự
-        </button>
+        @endforeach
         <button type="button" @click="tab = 'history'"
                 class="pb-3 text-sm font-medium border-b-2 -mb-px transition-colors"
                 :class="tab === 'history' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
@@ -168,9 +157,11 @@
         };
     @endphp
 
-    <div x-show="tab === 'legal'" x-cloak>
+    @foreach(DocumentGroupType::cases() as $group)
+    @continue($group === DocumentGroupType::Personnel)
+    <div x-show="tab === '{{ $group->value }}'" x-cloak>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @forelse($docsByGroup['legal'] as $doc)
+            @forelse($docsByGroup[$group->value] as $doc)
                 @php $meta = $documentCard($doc); @endphp
                 <div class="bg-white rounded-sm shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
@@ -212,63 +203,14 @@
                 </div>
             @empty
                 <div class="md:col-span-2 rounded-sm border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
-                    Chưa có hồ sơ nào trong nhóm Pháp lý & năng lực.
+                    Chưa có hồ sơ nào trong nhóm {{ $group->label() }}.
                 </div>
             @endforelse
         </div>
     </div>
+    @endforeach
 
-    <div x-show="tab === 'operation'" x-cloak>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @forelse($docsByGroup['operation'] as $doc)
-                @php $meta = $documentCard($doc); @endphp
-                <div class="bg-white rounded-sm shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-11 h-11 rounded-lg bg-green-50 text-green-700 flex items-center justify-center shrink-0">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="font-semibold text-sm text-gray-800 truncate">{{ $doc['type_name'] }}</p>
-                            <p class="text-xs text-gray-400 truncate">
-                                {{ $doc['document_number'] ?: 'Chưa có số hiệu' }}
-                                @if($doc['issue_date_display']) · Cấp {{ $doc['issue_date_display'] }} @endif
-                            </p>
-                            @if($doc['media_count'] > 0)
-                            <p class="mt-0.5 inline-flex items-center gap-1 text-[11px] text-gray-400">
-                                <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
-                                {{ $doc['media_count'] }} tệp đính kèm
-                            </p>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="badge badge-sm border {{ $meta['statusClass'] }}">{{ $meta['statusText'] }}</span>
-
-                        @if($canManageDocuments)
-                        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-                            <button type="button" @click="open = !open" class="btn btn-ghost btn-xs btn-circle">
-                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
-                            </button>
-                            <ul x-show="open" x-transition x-cloak @click="open = false"
-                                class="absolute right-0 mt-1 menu bg-base-100 rounded-box shadow-lg border border-base-200 w-36 z-20 p-1">
-                                <li><button type="button" onclick="window.openViewFilesModal({{ Js::from($doc) }})">Xem danh sách tệp</button></li>
-                                <li><button type="button" onclick="window.openEditDocumentModal({{ Js::from($doc) }})">Sửa</button></li>
-                                <li><button type="button" class="text-error" onclick="window.internalComplianceDeleteConfirm('{{ $doc['delete_url'] }}', {{ Js::from($doc['type_name']) }})">Xóa</button></li>
-                            </ul>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            @empty
-                <div class="md:col-span-2 rounded-sm border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
-                    Chưa có hồ sơ nào trong nhóm ATTP & vận hành.
-                </div>
-            @endforelse
-        </div>
-    </div>
-
-    <div x-show="tab === 'hr'" x-cloak>
+    <div x-show="tab === '{{ DocumentGroupType::Personnel->value }}'" x-cloak>
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-400">Đồng bộ tự động từ module Nhân sự</p>
             @can('employee.view')
@@ -338,7 +280,7 @@
 
         <p class="text-xs font-medium text-gray-500 mb-2">Hồ sơ nhân sự</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @forelse($docsByGroup['hr'] as $doc)
+            @forelse($docsByGroup[DocumentGroupType::Personnel->value] as $doc)
                 @php $aggregate = $hrAggregateMap[$doc['type_name']] ?? null; @endphp
                 <div class="bg-white rounded-sm shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">

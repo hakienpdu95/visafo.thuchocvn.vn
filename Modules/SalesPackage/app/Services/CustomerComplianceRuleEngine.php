@@ -55,7 +55,11 @@ class CustomerComplianceRuleEngine
      */
     private function internalRequirements(Customer $customer): array
     {
-        $requiredGroups = [DocumentGroupType::LegalFacility->value, DocumentGroupType::AttpQuality->value];
+        $requiredGroups = [
+            DocumentGroupType::LegalFacility->value,
+            DocumentGroupType::Traceability->value,
+            DocumentGroupType::MonitoringLogs->value,
+        ];
 
         if ($customer->meal_model !== MealModel::IngredientSupply) {
             $requiredGroups[] = DocumentGroupType::Personnel->value;
