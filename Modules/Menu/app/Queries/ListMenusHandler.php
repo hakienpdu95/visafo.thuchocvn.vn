@@ -18,7 +18,7 @@ class ListMenusHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'menu_date';
         $sortDir = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = Menu::query()->with('customer:id,name')->withCount('dishes')->withSum('dishes as total_servings', 'servings');
+        $q = Menu::query()->visibleTo()->with('customer:id,name')->withCount('dishes')->withSum('dishes as total_servings', 'servings');
 
         if ($query->search) {
             $term = '%' . $query->search . '%';

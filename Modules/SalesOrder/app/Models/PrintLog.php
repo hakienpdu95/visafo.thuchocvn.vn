@@ -2,6 +2,7 @@
 
 namespace Modules\SalesOrder\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,8 @@ use Modules\SalesOrder\Enums\PrintLogStatus;
 
 class PrintLog extends TenantAwareModel
 {
+    use HasCreator;
+
     /** Chỉ các cột này được phép đổi sau khi in (QC thu hồi / đánh dấu lỗi). */
     private const MUTABLE_COLUMNS = ['status', 'status_reason', 'status_changed_by', 'status_changed_at', 'updated_at'];
 
@@ -111,5 +114,10 @@ class PrintLog extends TenantAwareModel
     public function printedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'printed_by');
+    }
+
+    public function permissionModule(): string
+    {
+        return 'trace_log';
     }
 }

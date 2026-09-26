@@ -143,6 +143,16 @@ class ComplianceDocumentController extends Controller
         return $this->destroy($document, $action, 'backend.vendors.show', $vendor);
     }
 
+    public function destroyMediaForVendor(Vendor $vendor, ComplianceDocument $document, Media $media, DestroyComplianceDocumentMediaAction $action): JsonResponse
+    {
+        $this->authorize('update', $vendor);
+        abort_unless($document->documentable_id === $vendor->id && $document->documentable_type === $vendor->getMorphClass(), 404);
+
+        $action->handle($document, $media);
+
+        return response()->json(['ok' => true]);
+    }
+
     public function storeForProduct(Request $request, Product $product, StoreComplianceDocumentAction $action): RedirectResponse
     {
         $this->authorize('update', $product);

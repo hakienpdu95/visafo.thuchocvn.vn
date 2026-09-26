@@ -21,7 +21,7 @@ class ListFoodInspectionStep3LogsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'inspection_date';
         $sortDir = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = FoodInspectionStep3Log::query()->withCount('details');
+        $q = FoodInspectionStep3Log::query()->visibleTo()->withCount('details');
 
         if ($query->search) {
             $term = '%' . $query->search . '%';

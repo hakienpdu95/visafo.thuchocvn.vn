@@ -24,7 +24,7 @@ class FarmingSourceApiController extends Controller
             'status' => ['nullable', 'string'],
         ]);
 
-        $query = FarmingSource::query()->with('vendor:id,name');
+        $query = FarmingSource::query()->visibleTo()->with('vendor:id,name');
 
         $search = $validated['search'] ?? null;
         if ($search !== null && $search !== '') {

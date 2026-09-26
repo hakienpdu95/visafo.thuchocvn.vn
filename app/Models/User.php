@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasCreator;
 use App\Enums\AccountType;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,6 +21,7 @@ use Modules\Employee\Models\Employee;
 use Modules\Vendor\Models\Vendor;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
+use App\Traits\HasPermissionOverrides;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable([
@@ -31,8 +33,16 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
+    use HasCreator;
+
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasUlids, Notifiable, HasRoles, LogsActivity;
+    use HasFactory, HasUlids, Notifiable, LogsActivity;
+    use HasRoles, HasPermissionOverrides {
+        HasPermissionOverrides::hasPermissionTo insteadof HasRoles;
+        HasPermissionOverrides::getAllPermissions insteadof HasRoles;
+        HasRoles::hasPermissionTo as spatieHasPermissionTo;
+        HasRoles::getAllPermissions as spatieGetAllPermissions;
+    }
 
     protected function casts(): array
     {
@@ -44,6 +54,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'account_type'       => AccountType::class,
             'trust_level'        => 'integer',
             'lifecycle_status'   => \App\Enums\AccountLifecycleStatus::class,
+            'revoked_permissions' => 'array',
         ];
     }
 
@@ -104,5 +115,10 @@ class User extends Authenticatable implements MustVerifyEmail
                 default   => $event,
             })
             ->useLogName('Auth');
+    }
+
+    public function permissionModule(): string
+    {
+        return 'users';
     }
 }

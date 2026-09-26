@@ -19,7 +19,7 @@ class ListSalesOrdersHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = SalesOrder::query()->withCount('items');
+        $q = SalesOrder::query()->visibleTo()->withCount('items');
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

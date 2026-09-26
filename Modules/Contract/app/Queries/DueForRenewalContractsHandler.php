@@ -15,7 +15,7 @@ class DueForRenewalContractsHandler implements QueryHandlerInterface
      */
     public function handle(QueryInterface $query): Collection
     {
-        return Contract::query()
+        return Contract::query()->visibleTo()
             ->where('is_auto_renew', true)
             ->where('status', ContractStatus::Active->value)
             ->whereNotNull('end_date')

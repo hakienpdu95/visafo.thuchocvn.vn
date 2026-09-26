@@ -19,7 +19,7 @@ class ListContractsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir   = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = Contract::query()->with(['vendor', 'contractType']);
+        $q = Contract::query()->visibleTo()->with(['vendor', 'contractType']);
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

@@ -2,6 +2,7 @@
 
 namespace Modules\GoodsReceipt\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Modules\Vendor\Models\Vendor;
 
 class GoodsReceipt extends TenantAwareModel
 {
+    use HasCreator;
+
     protected $fillable = [
         'misa_ref_id',
         'vendor_id',
@@ -44,5 +47,10 @@ class GoodsReceipt extends TenantAwareModel
     public function batches(): HasMany
     {
         return $this->hasMany(ProductBatch::class);
+    }
+
+    public function permissionModule(): string
+    {
+        return 'goods_receipt';
     }
 }

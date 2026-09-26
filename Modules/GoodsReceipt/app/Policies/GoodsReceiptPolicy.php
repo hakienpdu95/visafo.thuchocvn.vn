@@ -3,27 +3,28 @@
 namespace Modules\GoodsReceipt\Policies;
 
 use App\Models\User;
+use App\Support\Permissions\ModuleAccess;
 use Modules\GoodsReceipt\Models\GoodsReceipt;
 
 class GoodsReceiptPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('goods_receipt.view');
+        return ModuleAccess::viewAny($user, 'goods_receipt');
     }
 
     public function view(User $user, GoodsReceipt $goodsReceipt): bool
     {
-        return $user->can('goods_receipt.view');
+        return ModuleAccess::view($user, 'goods_receipt', $goodsReceipt);
     }
 
     public function create(User $user): bool
     {
-        return $user->can('goods_receipt.manage');
+        return ModuleAccess::create($user, 'goods_receipt');
     }
 
     public function update(User $user, GoodsReceipt $goodsReceipt): bool
     {
-        return $user->can('goods_receipt.manage');
+        return ModuleAccess::update($user, 'goods_receipt', $goodsReceipt);
     }
 }

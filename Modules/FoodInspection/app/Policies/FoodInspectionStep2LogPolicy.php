@@ -3,32 +3,33 @@
 namespace Modules\FoodInspection\Policies;
 
 use App\Models\User;
+use App\Support\Permissions\ModuleAccess;
 use Modules\FoodInspection\Models\FoodInspectionStep2Log;
 
 class FoodInspectionStep2LogPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('food_inspection.view');
+        return ModuleAccess::viewAny($user, 'food_inspection');
     }
 
     public function view(User $user, FoodInspectionStep2Log $log): bool
     {
-        return $user->can('food_inspection.view');
+        return ModuleAccess::view($user, 'food_inspection', $log);
     }
 
     public function create(User $user): bool
     {
-        return $user->can('food_inspection.manage');
+        return ModuleAccess::create($user, 'food_inspection');
     }
 
     public function update(User $user, FoodInspectionStep2Log $log): bool
     {
-        return $user->can('food_inspection.manage');
+        return ModuleAccess::update($user, 'food_inspection', $log);
     }
 
     public function delete(User $user, FoodInspectionStep2Log $log): bool
     {
-        return $user->can('food_inspection.manage');
+        return ModuleAccess::delete($user, 'food_inspection', $log);
     }
 }

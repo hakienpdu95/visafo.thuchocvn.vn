@@ -2,6 +2,7 @@
 
 namespace Modules\Vendor\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\Province;
 use App\Models\Ward;
@@ -21,6 +22,8 @@ use Modules\Vendor\Enums\VendorStatus;
 
 class Vendor extends TenantAwareModel
 {
+    use HasCreator;
+
     use HasAutoCode;
 
     public function autoCodeColumn(): string
@@ -113,5 +116,10 @@ class Vendor extends TenantAwareModel
             ->where('document_master_type_id', $documentMasterTypeId)
             ->where(fn ($q) => $q->whereNull('expiration_date')->orWhere('expiration_date', '>=', now()))
             ->exists();
+    }
+
+    public function permissionModule(): string
+    {
+        return 'vendor';
     }
 }

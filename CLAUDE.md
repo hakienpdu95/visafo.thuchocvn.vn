@@ -48,6 +48,8 @@ Base classes enforce tenant isolation:
 
 Five roles matching the F&B Traceability domain: `system_admin` (full), `director` (view-only across all modules), `qa_qc_manager` (Compliance/Traceability/Products), `purchasing_staff` (Vendors/Contracts), `sales_staff` (Customers). Defined in `app/Enums/RoleEnum.php` / `app/Enums/PermissionEnum.php`, seeded by `database/seeders/RolePermissionSeeder.php`. Sidebar and route gating read real Spatie permissions (`vendor.view`, `compliance.manage`, etc.) via `@can`/`permission:` middleware — no separate config file.
 
+Granular permissions (`{module}.view_all|view_own|create|update|delete`, modules in `app/Enums/PermissionModule.php`) sit alongside the legacy `.view`/`.manage`, which stay in the DB as aliases resolved in `app/Traits/HasPermissionOverrides.php` (on `User`). Policies check via `App\Support\Permissions\ModuleAccess`; list queries call `->visibleTo()` from `app/Traits/HasCreator.php` (filters `created_by` for view_own-only users). Per-user overrides = Role base + direct permissions + `users.revoked_permissions`, written by `Modules/User/app/Actions/SyncUserPermissionsAction.php`. After deploy: `php artisan migrate && php artisan permission:upgrade-v2`.
+
 ### Module System (NWIDART)
 
 Feature modules live in `Modules/`. 37 modules are implemented (not stubs — this section used to say otherwise). Generate new modules with `php artisan module:make`.

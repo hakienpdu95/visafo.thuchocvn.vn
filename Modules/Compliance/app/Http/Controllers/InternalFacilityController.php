@@ -18,6 +18,7 @@ use Modules\Employee\Enums\RecordStatus;
 use Modules\Employee\Models\Employee;
 use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Models\DocumentMasterType;
+use App\Support\Permissions\ModuleAccess;
 use ZipArchive;
 
 class InternalFacilityController extends Controller
@@ -33,13 +34,13 @@ class InternalFacilityController extends Controller
             ['name' => 'Trụ sở chính (Công ty)', 'status' => 'active']
         );
 
-        $localFacilities = InternalFacility::query()
+        $localFacilities = InternalFacility::query()->visibleTo()
             ->where('type', '!=', 'headquarter')
             ->orderBy('name')
             ->get();
 
-        $headquarter->load(['documents' => fn ($q) => $q->with('documentType')->latest('issue_date')]);
-        $localFacilities->load(['documents' => fn ($q) => $q->with('documentType')->latest('issue_date')]);
+        $headquarter->load(['documents' => fn ($q) => $q->visibleTo()->with('documentType')->latest('issue_date')]);
+        $localFacilities->load(['documents' => fn ($q) => $q->visibleTo()->with('documentType')->latest('issue_date')]);
 
         $documentTypes = DocumentMasterType::query()
             ->orderBy('name')
@@ -98,7 +99,10 @@ class InternalFacilityController extends Controller
         $this->authorize('viewAny', InternalFacility::class);
 
         $facilities = InternalFacility::query()
-            ->with(['documents' => fn ($q) => $q->where('status', ComplianceDocumentStatus::Active->value)->with('documentType')])
+            ->when(ModuleAccess::onlyOwn(auth()->user(), 'compliance'), fn ($q) => $q->where(
+                fn ($q) => $q->where('type', 'headquarter')->orWhere('created_by', auth()->id())
+            ))
+            ->with(['documents' => fn ($q) => $q->visibleTo()->where('status', ComplianceDocumentStatus::Active->value)->with('documentType')])
             ->get();
 
         $zipPath = tempnam(sys_get_temp_dir(), 'visafo_profile_') . '.zip';

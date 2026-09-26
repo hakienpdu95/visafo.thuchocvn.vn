@@ -19,7 +19,7 @@ class ListDocumentsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'expiration_date';
         $sortDir   = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = ComplianceDocument::query()->with(['documentType', 'documentable', 'media']);
+        $q = ComplianceDocument::query()->visibleTo()->with(['documentType', 'documentable', 'media']);
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

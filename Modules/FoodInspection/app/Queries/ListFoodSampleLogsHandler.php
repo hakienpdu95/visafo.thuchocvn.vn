@@ -25,7 +25,7 @@ class ListFoodSampleLogsHandler implements QueryHandlerInterface
         $threshold = now()->subHours(FoodSampleDetail::MIN_RETENTION_HOURS);
         $due = fn (Builder $d) => $d->whereNull('destroyed_at')->where('sampled_at', '<=', $threshold);
 
-        $q = FoodSampleLog::query()
+        $q = FoodSampleLog::query()->visibleTo()
             ->withCount('details')
             ->withExists(['details as has_pending' => $due])
             ->withMin(['details as first_sampled_at' => fn (Builder $d) => $d->whereNull('destroyed_at')], 'sampled_at');

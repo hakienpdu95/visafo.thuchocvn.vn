@@ -133,7 +133,10 @@
                     @endcan
                 </div>
 
-                @php $canManageDocuments = auth()->user()->can('update', $vendor); @endphp
+                @php
+                    $canManageDocuments = auth()->user()->can('update', $vendor);
+                    $mediaUrlService = app(\App\Services\Media\MediaUrlService::class);
+                @endphp
                 <div class="tabulator-daisy">
                     <div id="vendor-documents-table"
                          data-can-manage="{{ $canManageDocuments ? '1' : '0' }}"
@@ -152,7 +155,15 @@
                              'is_expiring_soon'        => $d->isExpiringWithinDays(30),
                              'status_label'            => $d->status->label(),
                              'status_badge'            => $d->status->badgeClass(),
-                             'file_url'                => ($m = $d->getMedia('attachments_private')->last()) ? app(\App\Services\Media\MediaUrlService::class)->url($m) : '',
+                             'file_url'                => ($m = $d->getMedia('attachments_private')->last()) ? $mediaUrlService->url($m) : '',
+                             'media'                   => $d->getMedia('attachments_private')->map(fn ($m) => [
+                                 'id'         => $m->id,
+                                 'name'       => $m->file_name,
+                                 'size'       => $m->size,
+                                 'is_image'   => str_starts_with($m->mime_type, 'image/'),
+                                 'url'        => $mediaUrlService->url($m),
+                                 'delete_url' => route('backend.vendors.documents.media.destroy', [$vendor, $d->id, $m->id]),
+                             ])->values(),
                          ])->values(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
                 </div>
             </div>
@@ -288,12 +299,49 @@
                 </div>
             </div>
 
+            <div class="form-control" x-show="existingMedia.length > 0" x-cloak>
+                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Các tệp đính kèm hiện tại</span></label>
+                <template x-for="media in existingMedia" :key="media.id">
+                    <div class="flex items-center justify-between p-2.5 mb-2 bg-gray-50 border border-gray-200 rounded-lg">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <svg x-show="media.is_image" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <svg x-show="!media.is_image" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <span class="truncate text-sm text-gray-700" x-text="media.name"></span>
+                            <span class="shrink-0 text-xs text-gray-400" x-text="formatFileSize(media.size)"></span>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <a :href="media.url" target="_blank" class="btn btn-ghost btn-xs">Xem</a>
+                            <button type="button" class="btn btn-ghost btn-xs text-error" :disabled="removingMediaId === media.id"
+                                    @click="removeExistingMedia(media)" title="Xóa file này">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
             <div class="form-control">
-                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">File PDF/Scan</span></label>
-                <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered file-input-sm w-full">
-                <p class="mt-1 text-xs text-base-content/50" id="documentCurrentFileInfo" hidden>
-                    File hiện tại: <a href="#" target="_blank" class="link link-primary" id="documentCurrentFileLink">Xem file</a> — chọn file mới để thay thế
-                </p>
+                <label class="label py-0 pb-1">
+                    <span class="label-text text-xs font-medium" x-text="existingMedia.length > 0 ? 'Tải thêm tệp mới' : 'File PDF/Scan'"></span>
+                    <span class="label-text-alt text-xs text-base-content/40">Chọn 1 hoặc nhiều file — PDF, JPG, PNG, tối đa 100MB/file</span>
+                </label>
+                <input type="file" name="files[]" x-ref="filesInput" multiple accept=".pdf,.jpg,.jpeg,.png"
+                       class="file-input file-input-bordered file-input-sm w-full @error('files') input-error @enderror"
+                       @change="onFilesChange($event)">
+
+                <ul class="mt-2 space-y-1" x-show="files.length > 0" x-cloak>
+                    <template x-for="(file, index) in files" :key="index">
+                        <li class="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <svg x-show="isImageFile(file)" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <svg x-show="!isImageFile(file)" class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <span class="truncate text-xs text-gray-700" x-text="file.name"></span>
+                                <span class="shrink-0 text-xs text-base-content/40" x-text="formatFileSize(file.size)"></span>
+                            </div>
+                            <button type="button" class="btn btn-ghost btn-xs btn-circle shrink-0" @click="removeFile(index)" title="Bỏ chọn file này">✕</button>
+                        </li>
+                    </template>
+                </ul>
             </div>
 
             <div class="modal-action mt-2">

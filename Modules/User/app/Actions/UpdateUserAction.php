@@ -43,6 +43,10 @@ class UpdateUserAction
             $user->fill($updateData)->save();
 
             $user->syncRoles([$data->system_role]);
+
+            if ($data->permissions_submitted) {
+                SyncUserPermissionsAction::run($user, $data->system_role, $data->permissions, auth()->user());
+            }
             app(PermissionRegistrar::class)->forgetCachedPermissions();
 
             if ($previousRole !== $data->system_role) {

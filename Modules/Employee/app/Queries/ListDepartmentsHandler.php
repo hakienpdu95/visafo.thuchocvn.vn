@@ -18,7 +18,7 @@ class ListDepartmentsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'name';
         $sortDir   = $query->sortDir === 'desc' ? 'desc' : 'asc';
 
-        $q = Department::query()->withCount('employees');
+        $q = Department::query()->visibleTo()->withCount('employees');
 
         if ($query->search !== null && $query->search !== '') {
             $q->where('name', 'like', '%' . $query->search . '%');

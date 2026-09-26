@@ -19,7 +19,7 @@ class ListCustomersHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir   = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = Customer::query()->with('pic');
+        $q = Customer::query()->visibleTo()->with('pic');
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

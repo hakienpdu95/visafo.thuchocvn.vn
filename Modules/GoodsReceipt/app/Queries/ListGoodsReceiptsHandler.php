@@ -19,7 +19,7 @@ class ListGoodsReceiptsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = GoodsReceipt::query()->withCount('items')->with('vendor');
+        $q = GoodsReceipt::query()->visibleTo()->withCount('items')->with('vendor');
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

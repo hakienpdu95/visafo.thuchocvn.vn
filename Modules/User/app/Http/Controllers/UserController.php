@@ -2,6 +2,7 @@
 
 namespace Modules\User\Http\Controllers;
 
+use App\Enums\PermissionModule;
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -10,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Modules\User\Actions\DestroyUserAction;
 use Modules\User\Actions\StoreUserAction;
+use Modules\User\Actions\SyncUserPermissionsAction;
 use Modules\User\Actions\UpdateUserAction;
 use Modules\User\Data\StoreUserData;
 use Modules\User\Data\UpdateUserData;
@@ -51,11 +53,11 @@ class UserController extends Controller
         $isAdmin = $request->user()->hasAnyRole(['super-admin', RoleEnum::ADMIN->value]);
 
         $roles     = $this->buildRolesFor($request->user());
-        $matrix    = $this->permissionMatrix();
+        $permGrid  = $this->permissionGrid($request->user(), $roles);
         $vendors   = Vendor::query()->orderBy('name')->get(['id', 'name']);
         $employees = Employee::query()->whereDoesntHave('user')->orderBy('full_name')->get(['id', 'full_name']);
 
-        return view('user::create', compact('roles', 'matrix', 'isAdmin', 'vendors', 'employees'));
+        return view('user::create', compact('roles', 'permGrid', 'isAdmin', 'vendors', 'employees'));
     }
 
     public function store(Request $request, StoreUserAction $action): RedirectResponse
@@ -79,8 +81,9 @@ class UserController extends Controller
         $currentRole = $this->resolveUserRole($user);
 
         $roles     = $this->buildRolesFor($request->user());
-        $matrix    = $this->permissionMatrix();
+        $permGrid  = $this->permissionGrid($request->user(), $roles);
         $vendors   = Vendor::query()->orderBy('name')->get(['id', 'name']);
+        $userPermissions = $user->effectivePermissionNames();
         $employees = Employee::query()
             ->where(function ($q) use ($user) {
                 $q->whereDoesntHave('user')->orWhere('id', $user->employee_id);
@@ -88,7 +91,7 @@ class UserController extends Controller
             ->orderBy('full_name')
             ->get(['id', 'full_name']);
 
-        return view('user::edit', compact('user', 'roles', 'matrix', 'isAdmin', 'currentRole', 'vendors', 'employees'));
+        return view('user::edit', compact('user', 'roles', 'permGrid', 'userPermissions', 'isAdmin', 'currentRole', 'vendors', 'employees'));
     }
 
     public function update(Request $request, User $user, UpdateUserAction $action): RedirectResponse
@@ -150,41 +153,22 @@ class UserController extends Controller
         return $user->getRoleNames()->first() ?? '';
     }
 
-    private function permissionMatrix(): array
+    private function permissionGrid(User $actor, array $roles): array
     {
+        $isAdmin = SyncUserPermissionsAction::isAdmin($actor);
+
         return [
-            'Dashboard (Tổng quan)' => [
-                'system_admin' => 'View', 'director' => 'View', 'qa_qc_manager' => 'View',
-                'purchasing_staff' => 'View', 'sales_staff' => 'View',
-            ],
-            'Products (Sản phẩm & Danh mục)' => [
-                'system_admin' => 'Full', 'director' => 'View', 'qa_qc_manager' => 'Full',
-                'purchasing_staff' => 'View',
-            ],
-            'Vendors (Nhà cung cấp & Hàng hóa NCC)' => [
-                'system_admin' => 'Full', 'director' => 'View', 'qa_qc_manager' => 'View',
-                'purchasing_staff' => 'Full',
-            ],
-            'Customers (Khách hàng)' => [
-                'system_admin' => 'Full', 'director' => 'View', 'qa_qc_manager' => 'View',
-                'sales_staff' => 'Full',
-            ],
-            'Contracts (Hợp đồng)' => [
-                'system_admin' => 'Full', 'director' => 'View',
-                'purchasing_staff' => 'Full', 'sales_staff' => 'View',
-            ],
-            'Compliance (Kho tài liệu & Readiness)' => [
-                'system_admin' => 'Full', 'director' => 'View', 'qa_qc_manager' => 'Full',
-            ],
-            'Traceability (Truy xuất nguồn gốc)' => [
-                'system_admin' => 'View', 'director' => 'View', 'qa_qc_manager' => 'View', 'sales_staff' => 'View',
-            ],
-            'Employees (Nhân sự)' => [
-                'system_admin' => 'Full', 'director' => 'View',
-            ],
-            'System (Tài khoản, Nhật ký)' => [
-                'system_admin' => 'Full', 'director' => 'View',
-            ],
+            'columns' => collect(PermissionModule::ACTION_LABELS)
+                ->map(fn ($label, $key) => ['key' => $key, 'label' => $label])
+                ->values()
+                ->all(),
+            'modules' => collect(PermissionModule::cases())
+                ->map(fn (PermissionModule $m) => ['key' => $m->value, 'label' => $m->label(), 'actions' => $m->actions()])
+                ->all(),
+            'roleDefaults' => collect($roles)
+                ->mapWithKeys(fn ($r) => [$r['value'] => SyncUserPermissionsAction::roleDefaults($r['value'])])
+                ->all(),
+            'grantable' => $isAdmin ? null : $actor->effectivePermissionNames(),
         ];
     }
 }

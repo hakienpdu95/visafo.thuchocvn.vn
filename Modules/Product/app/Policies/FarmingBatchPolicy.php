@@ -4,33 +4,34 @@ namespace Modules\Product\Policies;
 
 use App\Enums\RoleEnum;
 use App\Models\User;
+use App\Support\Permissions\ModuleAccess;
 use Modules\Product\Models\FarmingBatch;
 
 class FarmingBatchPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('compliance.view');
+        return ModuleAccess::viewAny($user, 'compliance');
     }
 
     public function view(User $user, FarmingBatch $farmingBatch): bool
     {
-        return $user->can('compliance.view');
+        return ModuleAccess::view($user, 'compliance', $farmingBatch);
     }
 
     public function create(User $user): bool
     {
-        return $user->can('compliance.manage');
+        return ModuleAccess::create($user, 'compliance');
     }
 
     public function update(User $user, FarmingBatch $farmingBatch): bool
     {
-        return $user->can('compliance.manage');
+        return ModuleAccess::update($user, 'compliance', $farmingBatch);
     }
 
     public function delete(User $user, FarmingBatch $farmingBatch): bool
     {
-        return $user->can('compliance.manage');
+        return ModuleAccess::delete($user, 'compliance', $farmingBatch);
     }
 
     /**

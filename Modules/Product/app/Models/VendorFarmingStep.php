@@ -2,12 +2,15 @@
 
 namespace Modules\Product\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Vendor\Models\Vendor;
 
 class VendorFarmingStep extends TenantAwareModel
 {
+    use HasCreator;
+
     protected $fillable = [
         'vendor_id',
         'partner_product_id',
@@ -31,5 +34,10 @@ class VendorFarmingStep extends TenantAwareModel
     public function partnerProduct(): BelongsTo
     {
         return $this->belongsTo(PartnerProduct::class);
+    }
+
+    public function permissionModule(): string
+    {
+        return 'compliance';
     }
 }

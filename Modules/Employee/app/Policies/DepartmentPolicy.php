@@ -3,32 +3,33 @@
 namespace Modules\Employee\Policies;
 
 use App\Models\User;
+use App\Support\Permissions\ModuleAccess;
 use Modules\Employee\Models\Department;
 
 class DepartmentPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('employee.view');
+        return ModuleAccess::viewAny($user, 'employee');
     }
 
     public function view(User $user, Department $department): bool
     {
-        return $user->can('employee.view');
+        return ModuleAccess::view($user, 'employee', $department);
     }
 
     public function create(User $user): bool
     {
-        return $user->can('employee.manage');
+        return ModuleAccess::create($user, 'employee');
     }
 
     public function update(User $user, Department $department): bool
     {
-        return $user->can('employee.manage');
+        return ModuleAccess::update($user, 'employee', $department);
     }
 
     public function delete(User $user, Department $department): bool
     {
-        return $user->can('employee.manage');
+        return ModuleAccess::delete($user, 'employee', $department);
     }
 }

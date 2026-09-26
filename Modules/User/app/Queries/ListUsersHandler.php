@@ -24,7 +24,7 @@ class ListUsersHandler implements QueryHandlerInterface
 
         $sortDir = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = User::query()->select('users.*');
+        $q = User::query()->visibleTo()->select('users.*');
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

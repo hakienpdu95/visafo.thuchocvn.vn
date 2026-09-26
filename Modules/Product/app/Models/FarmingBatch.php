@@ -2,6 +2,7 @@
 
 namespace Modules\Product\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use App\Traits\HasAutoCode;
@@ -11,6 +12,8 @@ use Modules\Vendor\Models\Vendor;
 
 class FarmingBatch extends TenantAwareModel
 {
+    use HasCreator;
+
     use HasAutoCode;
 
     public function autoCodeColumn(): string
@@ -90,5 +93,10 @@ class FarmingBatch extends TenantAwareModel
     public function isReadyForHarvest(): bool
     {
         return !$this->pendingQuarantineLogs()->exists();
+    }
+
+    public function permissionModule(): string
+    {
+        return 'compliance';
     }
 }

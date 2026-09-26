@@ -2,6 +2,7 @@
 
 namespace Modules\Contract\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,8 @@ use Modules\Vendor\Models\Vendor;
 
 class Contract extends TenantAwareModel
 {
+    use HasCreator;
+
     use HasAutoCode;
 
     public function autoCodeColumn(): string
@@ -73,5 +76,10 @@ class Contract extends TenantAwareModel
             && $this->status === ContractStatus::Active
             && $this->end_date !== null
             && $this->end_date->lte(today());
+    }
+
+    public function permissionModule(): string
+    {
+        return 'contract';
     }
 }

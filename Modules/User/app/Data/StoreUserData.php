@@ -2,6 +2,7 @@
 
 namespace Modules\User\Data;
 
+use App\Enums\PermissionModule;
 use App\Enums\RoleEnum;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -39,6 +40,10 @@ class StoreUserData extends Data
         public readonly bool $is_active = true,
 
         public readonly bool $send_welcome_email = false,
+
+        public readonly bool $permissions_submitted = false,
+
+        public readonly array $permissions = [],
     ) {}
 
     public static function rules(): array
@@ -72,6 +77,8 @@ class StoreUserData extends Data
                 Rule::requiredIf($isEmployeeLinked),
                 'nullable', Rule::exists('employees', 'id'),
             ],
+            'permissions'   => ['nullable', 'array'],
+            'permissions.*' => ['string', Rule::in(PermissionModule::allPermissions())],
         ];
     }
 
@@ -79,6 +86,7 @@ class StoreUserData extends Data
     {
         return [
             'email.unique'          => 'Email này đã được sử dụng.',
+            'permissions.*.in'      => 'Quyền được chọn không hợp lệ.',
             'username.required'     => 'Tên đăng nhập là bắt buộc.',
             'username.regex'        => 'Tên đăng nhập chỉ gồm chữ, số, dấu chấm, gạch ngang, gạch dưới.',
             'username.unique'       => 'Tên đăng nhập này đã được sử dụng.',

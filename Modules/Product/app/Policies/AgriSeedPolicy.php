@@ -3,22 +3,23 @@
 namespace Modules\Product\Policies;
 
 use App\Models\User;
+use App\Support\Permissions\ModuleAccess;
 use Modules\Product\Models\AgriSeed;
 
 class AgriSeedPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('compliance.view');
+        return ModuleAccess::viewAny($user, 'compliance');
     }
 
     public function view(User $user, AgriSeed $agriSeed): bool
     {
-        return $user->can('compliance.view');
+        return ModuleAccess::view($user, 'compliance', $agriSeed);
     }
 
     public function update(User $user, AgriSeed $agriSeed): bool
     {
-        return $user->can('compliance.manage');
+        return ModuleAccess::update($user, 'compliance', $agriSeed);
     }
 }

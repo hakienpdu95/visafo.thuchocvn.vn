@@ -2,6 +2,7 @@
 
 namespace Modules\FoodInspection\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +14,8 @@ use Modules\FoodInspection\Enums\SampleStatus;
 /** Sổ lưu và hủy mẫu thức ăn (Mẫu số 4 & 5, Phụ lục 1 QĐ 1246/QĐ-BYT). */
 class FoodSampleLog extends TenantAwareModel
 {
+    use HasCreator;
+
     protected $table = 'food_sample_logs';
 
     protected $fillable = [
@@ -46,5 +49,10 @@ class FoodSampleLog extends TenantAwareModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function permissionModule(): string
+    {
+        return 'food_inspection';
     }
 }

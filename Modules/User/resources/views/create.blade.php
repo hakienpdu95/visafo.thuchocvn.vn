@@ -5,7 +5,8 @@
 @section('content')
 <div x-data="createUserPage({{ Js::from([
     'roles'         => $roles,
-    'matrix'        => $matrix,
+    'permGrid'      => $permGrid,
+    'oldPermissions'=> old('permissions_submitted') ? old('permissions', []) : null,
     'oldRole'       => old('system_role', ''),
     'oldName'       => old('name', ''),
     'oldEmail'      => old('email', ''),
@@ -360,65 +361,10 @@
                 </div>
             </div>
 
-            {{-- Permission matrix --}}
-            <div class="card bg-base-100 shadow-sm border border-base-200" x-show="selectedRole" x-transition>
-                <div class="card-body">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="card-title text-base">
-                            <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                            </svg>
-                            Quyền hạn sẽ được cấp
-                        </h3>
-                        <span class="badge badge-primary badge-sm" x-text="selectedRoleLabel"></span>
-                    </div>
-
-                    {{-- Sidebar preview --}}
-                    <div class="mb-3 p-2.5 bg-base-200/60 rounded-lg" x-show="sidebarModules.length > 0">
-                        <p class="text-xs text-base-content/50 font-medium mb-1.5">Hiển thị trong sidebar:</p>
-                        <div class="flex flex-wrap gap-1">
-                            <template x-for="mod in sidebarModules" :key="mod">
-                                <span class="badge badge-xs badge-ghost border border-base-300 font-normal" x-text="mod"></span>
-                            </template>
-                        </div>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="table table-xs w-full">
-                            <thead>
-                                <tr class="text-xs uppercase text-base-content/40">
-                                    <th>Module</th>
-                                    <th>Mức quyền</th>
-                                    <th class="hidden sm:table-cell">Mô tả ngắn</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="row in currentMatrix" :key="row.module">
-                                    <tr>
-                                        <td class="font-medium text-sm py-1.5" x-text="row.module"></td>
-                                        <td class="py-1.5"><span :class="row.badgeClass" x-text="row.level"></span></td>
-                                        <td class="text-xs text-base-content/50 hidden sm:table-cell py-1.5" x-text="row.desc"></td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Empty state --}}
-            <div class="card bg-base-100 border border-dashed border-base-300" x-show="!selectedRole">
-                <div class="card-body py-10 text-center text-base-content/25">
-                    <svg class="w-10 h-10 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                    </svg>
-                    <p class="font-medium text-sm">Chọn vai trò để xem quyền hạn</p>
-                    <p class="text-xs mt-1 opacity-70">Ma trận phân quyền sẽ hiển thị theo vai trò đã chọn</p>
-                </div>
-            </div>
-
         </div>
     </div>
+
+    @include('user::partials.permission-grid')
 
     {{-- ── Submit bar ───────────────────────────────────────────────────────── --}}
     <div id="submit-bar" class="flex items-center gap-3 pt-4 mt-4 border-t border-base-200">

@@ -20,7 +20,7 @@ class ListTraceLogsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = PrintLog::query()->with(['orderItem.product', 'orderItem.salesOrder', 'printedBy:id,name', 'productBatch:id,batch_code']);
+        $q = PrintLog::query()->visibleTo()->with(['orderItem.product', 'orderItem.salesOrder', 'printedBy:id,name', 'productBatch:id,batch_code']);
 
         $search = $this->normalizeSearch($query->search);
         if ($search !== null) {

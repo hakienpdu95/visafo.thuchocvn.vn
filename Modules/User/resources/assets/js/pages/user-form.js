@@ -12,17 +12,13 @@ import { createTs } from '@shared/tom-select-factory.js';
 
 // ── Module-level constants (compile once) ───────────────────────────────────
 
-const LEVEL_META = Object.freeze({
-    'Full': { cls: 'badge badge-xs badge-success', desc: 'Toàn quyền xem, tạo, sửa, xóa' },
-    'View': { cls: 'badge badge-xs badge-ghost',   desc: 'Chỉ xem, không chỉnh sửa' },
-});
-
 const SIDEBAR_MODULES = Object.freeze({
     system_admin:      ['Dashboard','Sản phẩm','Nhà cung cấp','Khách hàng','Hợp đồng','Compliance','Truy xuất','Nhân sự','Tài khoản'],
     director:           ['Dashboard','Sản phẩm','Nhà cung cấp','Khách hàng','Hợp đồng','Compliance','Truy xuất','Nhân sự','Tài khoản'],
     qa_qc_manager:      ['Dashboard','Sản phẩm','Nhà cung cấp','Khách hàng','Compliance','Truy xuất'],
     purchasing_staff:   ['Dashboard','Sản phẩm','Nhà cung cấp','Hợp đồng'],
     sales_staff:        ['Dashboard','Khách hàng','Hợp đồng','Truy xuất'],
+    accountant:         ['Dashboard','Sản phẩm','Nhà cung cấp','Nhập hàng','Đơn xuất hàng','Báo cáo','Khách hàng','Hợp đồng','Nhân sự'],
 });
 
 const ALL_PRESETS = Object.freeze([
@@ -31,6 +27,7 @@ const ALL_PRESETS = Object.freeze([
     { role: 'qa_qc_manager',     label: 'QL Chất lượng/ATTP', icon: '🔬' },
     { role: 'purchasing_staff',  label: 'NV Cung ứng',        icon: '📦' },
     { role: 'sales_staff',       label: 'NV Kinh doanh',      icon: '💼' },
+    { role: 'accountant',        label: 'Kế toán',            icon: '🧾' },
     { role: 'farmer',            label: 'Nông hộ',            icon: '🌾' },
 ]);
 
@@ -77,15 +74,49 @@ function _strength(pw) {
     return PW_LEVELS[Math.min(score, 5)];
 }
 
-function _buildMatrix(matrix, role) {
-    if (!role) return [];
-    return Object.entries(matrix)
-        .filter(([, perms]) => perms[role])
-        .map(([mod, perms]) => {
-            const level = perms[role];
-            const meta  = LEVEL_META[level] ?? { cls: 'badge badge-xs badge-ghost', desc: '' };
-            return { module: mod, level, badgeClass: meta.cls, desc: meta.desc };
-        });
+function _permMixin(sd, initial) {
+    const grid = sd.permGrid;
+    const key  = (mod, action) => mod.key + '.' + action;
+
+    return {
+        permColumns:  grid.columns,
+        permModules:  grid.modules,
+        checkedPerms: [...new Set(initial || [])],
+
+        _roleDefaults() { return grid.roleDefaults[this.selectedRole] || []; },
+        hasPerm(p)      { return this.checkedPerms.includes(p); },
+        setPerm(p, on) {
+            if (on && !this.hasPerm(p)) this.checkedPerms.push(p);
+            if (!on) this.checkedPerms = this.checkedPerms.filter(x => x !== p);
+        },
+        canGrant(p) {
+            return grid.grantable === null || grid.grantable.includes(p) || this._roleDefaults().includes(p);
+        },
+        isOverride(p) {
+            return !!this.selectedRole && this.hasPerm(p) !== this._roleDefaults().includes(p);
+        },
+        overrideCount() {
+            return this.permModules.reduce((n, mod) => n + mod.actions.filter(a => this.isOverride(key(mod, a))).length, 0);
+        },
+        applyRoleDefaults(role) {
+            this.checkedPerms = [...(grid.roleDefaults[role] || [])];
+        },
+        isRowFull(mod) {
+            return mod.actions.every(a => this.hasPerm(key(mod, a)));
+        },
+        toggleRow(mod, on) {
+            mod.actions.forEach(a => { if (this.canGrant(key(mod, a))) this.setPerm(key(mod, a), on); });
+        },
+        isColumnFull(action) {
+            const mods = this.permModules.filter(m => m.actions.includes(action));
+            return mods.length > 0 && mods.every(m => this.hasPerm(key(m, action)));
+        },
+        toggleColumn(action, on) {
+            this.permModules
+                .filter(m => m.actions.includes(action))
+                .forEach(m => { if (this.canGrant(key(m, action))) this.setPerm(key(m, action), on); });
+        },
+    };
 }
 
 function _avatarUrl(name) {
@@ -147,11 +178,13 @@ document.addEventListener('alpine:init', () => {
 
     // ── CREATE ───────────────────────────────────────────────────────────────
     Alpine.data('createUserPage', (sd) => {
-        const { roles, matrix } = sd;
+        const { roles } = sd;
         const filteredPresets = ALL_PRESETS.filter(p => roles.some(r => r.value === p.role));
         let roleTsInst = null;
 
         return {
+            ..._permMixin(sd, sd.oldPermissions ?? sd.permGrid.roleDefaults[sd.oldRole] ?? []),
+
             // Fields
             name:             sd.oldName  || '',
             email:            sd.oldEmail || '',
@@ -206,7 +239,6 @@ document.addEventListener('alpine:init', () => {
             },
             get pwChecks()       { return _pwChecks(this.password); },
             get strength()       { return _strength(this.password); },
-            get currentMatrix()  { return _buildMatrix(matrix, this.selectedRole); },
             get sidebarModules() { return SIDEBAR_MODULES[this.selectedRole] || []; },
             get isFarmerRole()   { return this.selectedRole === FARMER_ROLE; },
             get needsEmployeeLink() {
@@ -263,6 +295,7 @@ document.addEventListener('alpine:init', () => {
                 this.selectedRoleLabel = found?.label ?? '';
 
                 if (previousRole !== role) {
+                    this.applyRoleDefaults(this.selectedRole);
                     if (role !== FARMER_ROLE && this.selectedVendorId) {
                         _clearSelectValue('ts-vendor_id');
                         this.selectedVendorId = '';
@@ -316,11 +349,13 @@ document.addEventListener('alpine:init', () => {
 
     // ── EDIT ─────────────────────────────────────────────────────────────────
     Alpine.data('editUserPage', (sd) => {
-        const { roles, matrix } = sd;
+        const { roles } = sd;
         const filteredPresets = ALL_PRESETS.filter(p => roles.some(r => r.value === p.role));
         let roleTsInst = null;
 
         return {
+            ..._permMixin(sd, sd.oldPermissions ?? sd.userPermissions),
+
             // Fields
             password:          '',
             pwConfirm:         '',
@@ -334,7 +369,6 @@ document.addEventListener('alpine:init', () => {
             // Computed
             get pwChecks()       { return _pwChecks(this.password); },
             get strength()       { return _strength(this.password); },
-            get currentMatrix()  { return _buildMatrix(matrix, this.selectedRole); },
             get sidebarModules() { return SIDEBAR_MODULES[this.selectedRole] || []; },
             get isFarmerRole()   { return this.selectedRole === FARMER_ROLE; },
             get needsEmployeeLink() {
@@ -356,6 +390,7 @@ document.addEventListener('alpine:init', () => {
                 this.selectedRoleLabel = found?.label ?? '';
 
                 if (previousRole !== role) {
+                    this.applyRoleDefaults(this.selectedRole);
                     if (role !== FARMER_ROLE && this.selectedVendorId) {
                         _clearSelectValue('ts-vendor_id');
                         this.selectedVendorId = '';

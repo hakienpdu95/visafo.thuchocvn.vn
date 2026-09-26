@@ -2,6 +2,7 @@
 
 namespace Modules\SalesPackage\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,8 @@ use Modules\SalesPackage\Enums\SalesPackageStatus;
 
 class SalesPackage extends TenantAwareModel
 {
+    use HasCreator;
+
     protected $fillable = [
         'customer_id',
         'name',
@@ -45,5 +48,10 @@ class SalesPackage extends TenantAwareModel
     public function items(): HasMany
     {
         return $this->hasMany(SalesPackageItem::class);
+    }
+
+    public function permissionModule(): string
+    {
+        return 'customer';
     }
 }

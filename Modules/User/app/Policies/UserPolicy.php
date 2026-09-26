@@ -3,6 +3,7 @@
 namespace Modules\User\Policies;
 
 use App\Models\User;
+use App\Support\Permissions\ModuleAccess;
 
 class UserPolicy
 {
@@ -10,17 +11,17 @@ class UserPolicy
 
     public function viewAny(User $actor): bool
     {
-        return $actor->can('users.view') || $actor->can('users.manage');
+        return ModuleAccess::viewAny($actor, 'users') || $actor->can('users.manage');
     }
 
     public function view(User $actor, User $target): bool
     {
-        return $this->viewAny($actor);
+        return ModuleAccess::view($actor, 'users', $target);
     }
 
     public function create(User $actor): bool
     {
-        return $actor->can('users.manage');
+        return ModuleAccess::create($actor, 'users');
     }
 
     public function update(User $actor, User $target): bool
@@ -30,7 +31,7 @@ class UserPolicy
             return false;
         }
 
-        return $actor->can('users.manage');
+        return ModuleAccess::update($actor, 'users', $target);
     }
 
     public function delete(User $actor, User $target): bool
@@ -40,6 +41,6 @@ class UserPolicy
             return false;
         }
 
-        return $actor->can('users.manage');
+        return ModuleAccess::delete($actor, 'users', $target);
     }
 }

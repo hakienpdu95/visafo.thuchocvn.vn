@@ -24,7 +24,7 @@ class FarmingBatchApiController extends Controller
             'status' => ['nullable', 'string'],
         ]);
 
-        $query = FarmingBatch::query()->with(['vendor:id,name', 'farmingSource:id,name', 'agriSeed:id,name', 'partnerProduct:id,name']);
+        $query = FarmingBatch::query()->visibleTo()->with(['vendor:id,name', 'farmingSource:id,name', 'agriSeed:id,name', 'partnerProduct:id,name']);
 
         $search = $validated['search'] ?? null;
         if ($search !== null && $search !== '') {

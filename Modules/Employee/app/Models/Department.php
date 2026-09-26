@@ -2,6 +2,7 @@
 
 namespace Modules\Employee\Models;
 
+use App\Traits\HasCreator;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,8 @@ use Spatie\Activitylog\Support\LogOptions;
 
 class Department extends Model
 {
+    use HasCreator;
+
     use HasFactory;
     use HasUlids;
     use SoftDeletes;
@@ -41,5 +44,10 @@ class Department extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
+    }
+
+    public function permissionModule(): string
+    {
+        return 'employee';
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Modules\GoodsReceipt\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +11,8 @@ use Modules\Product\Models\Product;
 
 class ProductBatch extends TenantAwareModel
 {
+    use HasCreator;
+
     protected $fillable = [
         'batch_code',
         'product_id',
@@ -53,5 +56,10 @@ class ProductBatch extends TenantAwareModel
     public function goodsReceipt(): BelongsTo
     {
         return $this->belongsTo(GoodsReceipt::class);
+    }
+
+    public function permissionModule(): string
+    {
+        return 'goods_receipt';
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Modules\FoodInspection\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,8 @@ use Modules\Customer\Models\CustomerDeliveryPoint;
 /** Sổ kiểm thực Bước 3 — kiểm tra trước khi ăn (Mẫu số 3, Phụ lục 1 QĐ 1246/QĐ-BYT). */
 class FoodInspectionStep3Log extends TenantAwareModel
 {
+    use HasCreator;
+
     protected $table = 'food_inspection_step3_logs';
 
     protected $fillable = [
@@ -42,5 +45,10 @@ class FoodInspectionStep3Log extends TenantAwareModel
     public function inspector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'inspected_by');
+    }
+
+    public function permissionModule(): string
+    {
+        return 'food_inspection';
     }
 }

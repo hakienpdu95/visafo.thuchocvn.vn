@@ -2,6 +2,7 @@
 
 namespace Modules\FoodInspection\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,8 @@ use Modules\Customer\Models\Customer;
 /** Sổ kiểm thực Bước 1 — kiểm tra trước khi chế biến (Mẫu số 1, Phụ lục 1 QĐ 1246/QĐ-BYT). */
 class FoodInspectionStep1Log extends TenantAwareModel
 {
+    use HasCreator;
+
     protected $table = 'food_inspection_step1_logs';
 
     protected $fillable = [
@@ -45,5 +48,10 @@ class FoodInspectionStep1Log extends TenantAwareModel
     public function inspector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'inspected_by');
+    }
+
+    public function permissionModule(): string
+    {
+        return 'food_inspection';
     }
 }

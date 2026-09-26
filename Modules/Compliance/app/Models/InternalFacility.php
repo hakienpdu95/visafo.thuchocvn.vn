@@ -2,6 +2,7 @@
 
 namespace Modules\Compliance\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -9,6 +10,8 @@ use Modules\Compliance\Enums\ComplianceDocumentStatus;
 
 class InternalFacility extends TenantAwareModel
 {
+    use HasCreator;
+
     protected $fillable = [
         'name',
         'type',
@@ -40,5 +43,10 @@ class InternalFacility extends TenantAwareModel
             'processing_zone'   => 'Khu sơ chế/chế biến',
             default             => $this->type,
         };
+    }
+
+    public function permissionModule(): string
+    {
+        return 'compliance';
     }
 }

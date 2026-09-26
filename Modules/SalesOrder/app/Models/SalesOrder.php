@@ -2,6 +2,7 @@
 
 namespace Modules\SalesOrder\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SalesOrder extends TenantAwareModel
 {
+    use HasCreator;
+
     public const STATUS_PENDING = 'pending';
 
     /** @return array<string, string> */
@@ -48,5 +51,10 @@ class SalesOrder extends TenantAwareModel
     public function items(): HasMany
     {
         return $this->hasMany(SalesOrderItem::class, 'order_id');
+    }
+
+    public function permissionModule(): string
+    {
+        return 'sales_order';
     }
 }

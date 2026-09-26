@@ -2,6 +2,7 @@
 
 namespace Modules\Product\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use App\Traits\HasAutoCode;
@@ -11,6 +12,8 @@ use Modules\Vendor\Models\Vendor;
 
 class FarmingSource extends TenantAwareModel
 {
+    use HasCreator;
+
     use HasAutoCode;
 
     public function autoCodeColumn(): string
@@ -62,5 +65,10 @@ class FarmingSource extends TenantAwareModel
     public function isPassed(): bool
     {
         return $this->status === 'passed';
+    }
+
+    public function permissionModule(): string
+    {
+        return 'compliance';
     }
 }

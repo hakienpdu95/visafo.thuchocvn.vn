@@ -2,6 +2,7 @@
 
 namespace Modules\Customer\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\Province;
 use App\Models\Ward;
@@ -18,6 +19,8 @@ use Modules\SalesPackage\Models\SalesPackage;
 
 class Customer extends TenantAwareModel
 {
+    use HasCreator;
+
     use HasAutoCode;
 
     public function autoCodeColumn(): string
@@ -98,5 +101,10 @@ class Customer extends TenantAwareModel
     public function salesPackages(): HasMany
     {
         return $this->hasMany(SalesPackage::class);
+    }
+
+    public function permissionModule(): string
+    {
+        return 'customer';
     }
 }

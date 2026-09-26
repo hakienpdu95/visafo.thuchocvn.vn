@@ -19,7 +19,7 @@ class ListPartnerProductsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir   = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = PartnerProduct::query()->with(['vendor', 'product']);
+        $q = PartnerProduct::query()->visibleTo()->with(['vendor', 'product']);
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

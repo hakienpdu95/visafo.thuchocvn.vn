@@ -17,7 +17,7 @@ class ListEmployeesHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'full_name';
         $sortDir   = $query->sortDir === 'desc' ? 'desc' : 'asc';
 
-        $q = Employee::query()
+        $q = Employee::query()->visibleTo()
             ->with(['departments', 'latestHealthCheck', 'latestAttpTraining']);
 
         if ($query->search !== null && $query->search !== '') {

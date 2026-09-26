@@ -2,6 +2,7 @@
 
 namespace Modules\Employee\Models;
 
+use App\Traits\HasCreator;
 use App\Traits\HasTenantMedia;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +20,8 @@ use Spatie\MediaLibrary\HasMedia;
 
 class Employee extends Model implements HasMedia
 {
+    use HasCreator;
+
     use HasFactory;
     use HasUlids;
     use SoftDeletes;
@@ -103,5 +106,10 @@ class Employee extends Model implements HasMedia
             ->logFillable()
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
+    }
+
+    public function permissionModule(): string
+    {
+        return 'employee';
     }
 }

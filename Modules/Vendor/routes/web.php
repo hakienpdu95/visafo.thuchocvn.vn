@@ -15,6 +15,8 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
         ->name('vendors.documents.update');
     Route::delete('vendors/{vendor}/documents/{document}', [ComplianceDocumentController::class, 'destroyForVendor'])
         ->name('vendors.documents.destroy');
+    Route::delete('vendors/{vendor}/documents/{document}/media/{media}', [ComplianceDocumentController::class, 'destroyMediaForVendor'])
+        ->name('vendors.documents.media.destroy');
 
     Route::post('vendors/{vendor}/farming-steps', [VendorFarmingStepController::class, 'store'])
         ->name('vendors.farming-steps.store');

@@ -18,7 +18,7 @@ class ListLabelTemplatesHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'name';
         $sortDir = $query->sortDir === 'desc' ? 'desc' : 'asc';
 
-        $q = LabelTemplate::query();
+        $q = LabelTemplate::query()->visibleTo();
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

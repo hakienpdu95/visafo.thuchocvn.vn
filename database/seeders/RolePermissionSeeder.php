@@ -7,6 +7,7 @@ use App\Enums\RoleEnum;
 use Illuminate\Database\Seeder;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Support\Permissions\PermissionUpgrader;
 use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
@@ -16,7 +17,9 @@ class RolePermissionSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $this->createAllPermissions();
+        app(PermissionUpgrader::class)->ensurePermissionsExist();
         $this->createRolesWithPermissions();
+        app(PermissionUpgrader::class)->upgrade();
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
@@ -189,6 +192,27 @@ class RolePermissionSeeder extends Seeder
 
                 P::TRACEABILITY_VIEW->value,
                 P::CONTRACT_VIEW->value,
+            ],
+
+            // ─────────────────────────────────────────────────────────
+            // Accountant (Kế toán) — ưu tiên Xem + Thêm chứng từ, hạn chế Sửa/Xóa.
+            // Dùng quyền chi tiết vì .manage cũ không tách được Thêm/Sửa/Xóa.
+            // ─────────────────────────────────────────────────────────
+            RoleEnum::ACCOUNTANT->value => [
+                'product.view_all',
+                'vendor.view_all',
+
+                'goods_receipt.view_all',
+                'goods_receipt.create',
+                'goods_receipt.update',
+
+                'sales_order.view_all',
+                'sales_order.create',
+
+                'report.view_all',
+                'customer.view_all',
+                'contract.view_all',
+                'employee.view_all',
             ],
 
             // ─────────────────────────────────────────────────────────

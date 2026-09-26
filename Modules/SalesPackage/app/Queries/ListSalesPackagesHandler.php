@@ -12,7 +12,7 @@ class ListSalesPackagesHandler implements QueryHandlerInterface
     public function handle(QueryInterface $query): LengthAwarePaginator
     {
         /** @var ListSalesPackagesQuery $query */
-        $q = SalesPackage::query()->with('customer')->withCount('items');
+        $q = SalesPackage::query()->visibleTo()->with('customer')->withCount('items');
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';

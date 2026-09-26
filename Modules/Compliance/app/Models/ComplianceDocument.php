@@ -2,6 +2,7 @@
 
 namespace Modules\Compliance\Models;
 
+use App\Traits\HasCreator;
 use App\Traits\HasTenantMedia;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -16,6 +17,8 @@ use Spatie\MediaLibrary\HasMedia;
 
 class ComplianceDocument extends Model implements HasMedia
 {
+    use HasCreator;
+
     use HasUlids;
     use SoftDeletes;
     use HasTenantMedia;
@@ -82,5 +85,10 @@ class ComplianceDocument extends Model implements HasMedia
         return $query->whereNotNull('expiration_date')
             ->where('expiration_date', '>=', now())
             ->where('expiration_date', '<=', now()->addDays($days));
+    }
+
+    public function permissionModule(): string
+    {
+        return 'compliance';
     }
 }

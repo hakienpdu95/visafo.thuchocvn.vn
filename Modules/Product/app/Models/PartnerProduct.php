@@ -2,6 +2,7 @@
 
 namespace Modules\Product\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,8 @@ use Modules\Vendor\Models\Vendor;
 
 class PartnerProduct extends TenantAwareModel
 {
+    use HasCreator;
+
     use HasAutoCode;
 
     public function autoCodeColumn(): string
@@ -66,5 +69,10 @@ class PartnerProduct extends TenantAwareModel
     public function farmingBatches(): HasMany
     {
         return $this->hasMany(FarmingBatch::class);
+    }
+
+    public function permissionModule(): string
+    {
+        return 'product';
     }
 }

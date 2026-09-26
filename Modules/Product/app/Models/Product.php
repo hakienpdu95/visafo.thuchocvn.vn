@@ -2,6 +2,7 @@
 
 namespace Modules\Product\Models;
 
+use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,8 @@ use Modules\Product\Enums\ProductType;
 
 class Product extends TenantAwareModel
 {
+    use HasCreator;
+
     use HasAutoCode;
 
     public function autoCodeColumn(): string
@@ -105,5 +108,10 @@ class Product extends TenantAwareModel
             ->using(CustomerProduct::class)
             ->withPivot('status')
             ->withTimestamps();
+    }
+
+    public function permissionModule(): string
+    {
+        return 'product';
     }
 }
