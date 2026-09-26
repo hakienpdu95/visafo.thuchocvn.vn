@@ -20,13 +20,17 @@ return new class extends Migration {
             if (!Schema::hasColumn('compliance_documents', 'custom_category')) {
                 $table->string('custom_category', 30)->nullable()->after('custom_name')->comment('policy | template | training | other — chỉ dùng khi documentable null');
             }
+            if (!Schema::hasColumn('compliance_documents', 'created_by')) {
+                $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->after('custom_category')->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('compliance_documents', function (Blueprint $table) {
-            $cols = array_filter(['ulid', 'custom_name', 'custom_category'], fn($c) => Schema::hasColumn('compliance_documents', $c));
+            if (Schema::hasColumn('compliance_documents', 'created_by')) $table->dropForeign(['created_by']);
+            $cols = array_filter(['ulid', 'custom_name', 'custom_category', 'created_by'], fn($c) => Schema::hasColumn('compliance_documents', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

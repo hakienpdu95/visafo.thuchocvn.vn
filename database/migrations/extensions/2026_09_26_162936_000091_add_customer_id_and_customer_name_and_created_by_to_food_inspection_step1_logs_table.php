@@ -20,6 +20,9 @@ return new class extends Migration {
             if (!Schema::hasIndex('food_inspection_step1_logs', 'idx_fi_step1_logs_customer')) {
                 $table->index('customer_id', 'idx_fi_step1_logs_customer');
             }
+            if (!Schema::hasColumn('food_inspection_step1_logs', 'created_by')) {
+                $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->after('customer_name')->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
+            }
         });
     }
 
@@ -27,7 +30,8 @@ return new class extends Migration {
     {
         Schema::table('food_inspection_step1_logs', function (Blueprint $table) {
             if (Schema::hasColumn('food_inspection_step1_logs', 'customer_id')) $table->dropForeign(['customer_id']);
-            $cols = array_filter(['customer_id', 'customer_name'], fn($c) => Schema::hasColumn('food_inspection_step1_logs', $c));
+            if (Schema::hasColumn('food_inspection_step1_logs', 'created_by')) $table->dropForeign(['created_by']);
+            $cols = array_filter(['customer_id', 'customer_name', 'created_by'], fn($c) => Schema::hasColumn('food_inspection_step1_logs', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

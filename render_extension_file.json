@@ -53,7 +53,8 @@
         "ward_code///char///5///_NULL///NULL///->references('ward_code')->constrained('wards')->nullOnDelete()///Phường/xã trụ sở — FK tới wards.ward_code",
         "__index///index///__///__///__///province_code,ward_code|idx_vendors_address///__",
         "source_group///string///10///_NULL///NULL///__///n1 = Tự sản xuất | n2 = Thu gom | n3 = Chợ đầu mối / siêu thị | n4 = Doanh nghiệp/ thương mại",
-        "__index///index///__///__///__///source_group|idx_vendors_source_group///__"
+        "__index///index///__///__///__///source_group|idx_vendors_source_group///__",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
     ],
     [
         "products///add///__///",
@@ -62,14 +63,17 @@
         "image_url///string///500///_NULL///NULL///__///Ảnh đại diện — đồng bộ từ Sapo POS",
         "category_id///unsignedBigInteger///__///_NULL///NULL///->constrained('categories')->onDelete('restrict')///NULL = CCDC/vật tư tiêu hao, không thuộc đối tượng quản lý giấy tờ ATTP",
         "product_type///string///20///NOT_NULL///__///__///raw_material | finished_good | trading_good | consumables",
-        "shelf_life_days///unsignedInteger///__///_NULL///NULL///__///Số ngày bảo quản mặc định để tự động tính HSD"
+        "shelf_life_days///unsignedInteger///__///_NULL///NULL///__///Số ngày bảo quản mặc định để tự động tính HSD",
+        "label_template_id///unsignedBigInteger///__///_NULL///NULL///->constrained('label_templates')->onDelete('set null')///Mẫu tem in cho sản phẩm — NULL = dùng tem mặc định của hệ thống",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
     ],
     [
         "contracts///add///__///",
         "type///string///20///NOT_NULL///'input'///__///__",
         "customer_id///unsignedBigInteger///__///_NULL///NULL///->constrained('customers')->onDelete('restrict')///__",
         "__index///index///__///__///__///type|idx_contracts_type///__",
-        "ulid///ulid///__///_NULL///NULL///__///__"
+        "ulid///ulid///__///_NULL///NULL///__///__",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
     ],
     [
         "contracts///change///__///",
@@ -78,7 +82,8 @@
     [
         "customers///add///__///",
         "expected_scale///unsignedInteger///__///_NULL///NULL///__///Quy mô dự kiến — số suất ăn/ngày",
-        "expected_deadline///dateTime///__///_NULL///NULL///__///Hạn nộp hồ sơ/báo giá dự kiến"
+        "expected_deadline///dateTime///__///_NULL///NULL///__///Hạn nộp hồ sơ/báo giá dự kiến",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
     ],
     [
         "document_master_types///add///__///",
@@ -89,7 +94,8 @@
         "compliance_documents///add///__///",
         "ulid///ulid///__///_NULL///NULL///__///__",
         "custom_name///string///255///_NULL///NULL///__///Tên tự do — chỉ dùng khi documentable null (tài liệu nội bộ dùng chung)",
-        "custom_category///string///30///_NULL///NULL///__///policy | template | training | other — chỉ dùng khi documentable null"
+        "custom_category///string///30///_NULL///NULL///__///policy | template | training | other — chỉ dùng khi documentable null",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
     ],
     [
         "sales_packages///add///__///",
@@ -123,7 +129,14 @@
         "status_reason///string///255///_NULL///NULL///__///Lý do thu hồi/lỗi (hiển thị trên trang truy xuất công khai)",
         "status_changed_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người đổi trạng thái gần nhất",
         "status_changed_at///timestamp///__///_NULL///NULL///__///Thời điểm đổi trạng thái gần nhất",
-        "batch_code///string///100///_NULL///NULL///__///Mã lô tự sinh LOT-[NSX]-[HSD] tại thời điểm in"
+        "batch_code///string///100///_NULL///NULL///__///Mã lô tự sinh LOT-[NSX]-[HSD] tại thời điểm in",
+        "vendor_id///ulid///__///_NULL///NULL///__///Nhà cung cấp chọn khi in",
+        "product_batch_id///ulid///__///_NULL///NULL///__///Lô nhập kho chọn khi in",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "__index///index///__///__///__///vendor_id///__",
+        "__index///index///__///__///__///product_batch_id///__",
+        "__index///index///__///__///__///batch_code///__",
+        "__index///index///__///__///__///created_at///__"
     ],
     [
         "food_inspection_step1_details///add///__///",
@@ -135,6 +148,89 @@
         "food_inspection_step1_logs///add///__///",
         "customer_id///unsignedBigInteger///__///_NULL///NULL///->constrained('customers')->onDelete('restrict')///Khách hàng / điểm phục vụ mà lô nguyên liệu này dùng cho",
         "customer_name///string///255///_NULL///NULL///__///Snapshot tên cơ sở tại thời điểm kiểm thực (header của sổ)",
-        "__index///index///__///__///__///customer_id|idx_fi_step1_logs_customer///__"
+        "__index///index///__///__///__///customer_id|idx_fi_step1_logs_customer///__",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "products///drop///__///Đập bỏ hệ danh mục bán lẻ cũ — thay bằng category_id + product_type",
+        "category_type///string///30///NOT_NULL///__///->index()///food | cosmetic | medical_device | toy_plastic | textile"
+    ],
+    [
+        "products///drop///__///Loại bỏ hoàn toàn tính năng Thương hiệu (Brand) — không còn dùng trong nghiệp vụ chuỗi cung ứng thực phẩm",
+        "brand_id///unsignedBigInteger///__///_NULL///NULL///->constrained('brands')->onDelete('set null')///Thương hiệu"
+    ],
+    [
+        "document_master_types///drop///__///Gộp internal_tab_group vào document_group — không còn cần tab riêng cho hồ sơ nội bộ",
+        "internal_tab_group///string///20///_NULL///NULL///__///legal | operation | hr — chỉ dùng khi applicable_to chứa internal, quyết định tab hiển thị ở trang Hồ sơ năng lực VISAFO"
+    ],
+    [
+        "sales_orders///add///delivery_address///",
+        "delivery_date///date///__///_NULL///NULL///__///Ngày giao hàng",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "__index///index///__///__///__///delivery_date///__",
+        "__index///index///__///__///__///created_at///__",
+        "__index///index///__///__///__///customer_name///__"
+    ],
+    [
+        "partner_products///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "goods_receipts///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "product_batches///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "food_inspection_step2_logs///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "food_inspection_step3_logs///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "menus///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "label_templates///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "internal_facilities///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "farming_batches///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "farming_sources///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "vendor_farming_steps///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "employees///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "departments///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+    ],
+    [
+        "users///add///__///",
+        "created_by///unsignedBigInteger///__///_NULL///NULL///__///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "__index///index///__///__///__///created_by|users_created_by_index///__",
+        "revoked_permissions///json///__///_NULL///NULL///__///Quyền của Role gốc bị gỡ riêng cho user này"
+    ],
+    [
+        "vendors///change///__///Cho phép NCC được tạo nhanh từ Sổ kiểm thực (chưa có MST)",
+        "tax_code///string///50///_NULL///NULL///__///__"
     ]
 ]

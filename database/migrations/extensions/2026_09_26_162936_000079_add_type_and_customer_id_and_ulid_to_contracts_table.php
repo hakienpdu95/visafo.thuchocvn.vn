@@ -23,6 +23,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('contracts', 'ulid')) {
                 $table->ulid('ulid')->nullable()->after('customer_id');
             }
+            if (!Schema::hasColumn('contracts', 'created_by')) {
+                $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->after('ulid')->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
+            }
         });
     }
 
@@ -30,7 +33,8 @@ return new class extends Migration {
     {
         Schema::table('contracts', function (Blueprint $table) {
             if (Schema::hasColumn('contracts', 'customer_id')) $table->dropForeign(['customer_id']);
-            $cols = array_filter(['type', 'customer_id', 'ulid'], fn($c) => Schema::hasColumn('contracts', $c));
+            if (Schema::hasColumn('contracts', 'created_by')) $table->dropForeign(['created_by']);
+            $cols = array_filter(['type', 'customer_id', 'ulid', 'created_by'], fn($c) => Schema::hasColumn('contracts', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

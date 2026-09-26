@@ -17,13 +17,17 @@ return new class extends Migration {
             if (!Schema::hasColumn('customers', 'expected_deadline')) {
                 $table->dateTime('expected_deadline')->nullable()->after('expected_scale')->comment('Hạn nộp hồ sơ/báo giá dự kiến');
             }
+            if (!Schema::hasColumn('customers', 'created_by')) {
+                $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->after('expected_deadline')->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('customers', function (Blueprint $table) {
-            $cols = array_filter(['expected_scale', 'expected_deadline'], fn($c) => Schema::hasColumn('customers', $c));
+            if (Schema::hasColumn('customers', 'created_by')) $table->dropForeign(['created_by']);
+            $cols = array_filter(['expected_scale', 'expected_deadline', 'created_by'], fn($c) => Schema::hasColumn('customers', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

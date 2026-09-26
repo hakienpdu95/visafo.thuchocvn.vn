@@ -35,6 +35,27 @@ return new class extends Migration {
             if (!Schema::hasColumn('print_logs', 'batch_code')) {
                 $table->string('batch_code', 100)->nullable()->after('status_changed_at')->comment('Mã lô tự sinh LOT-[NSX]-[HSD] tại thời điểm in');
             }
+            if (!Schema::hasColumn('print_logs', 'vendor_id')) {
+                $table->ulid('vendor_id')->nullable()->after('batch_code')->comment('Nhà cung cấp chọn khi in');
+            }
+            if (!Schema::hasColumn('print_logs', 'product_batch_id')) {
+                $table->ulid('product_batch_id')->nullable()->after('vendor_id')->comment('Lô nhập kho chọn khi in');
+            }
+            if (!Schema::hasColumn('print_logs', 'created_by')) {
+                $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->after('product_batch_id')->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
+            }
+            if (!Schema::hasIndex('print_logs', 'print_logs_vendor_id_index')) {
+                $table->index('vendor_id');
+            }
+            if (!Schema::hasIndex('print_logs', 'print_logs_product_batch_id_index')) {
+                $table->index('product_batch_id');
+            }
+            if (!Schema::hasIndex('print_logs', 'print_logs_batch_code_index')) {
+                $table->index('batch_code');
+            }
+            if (!Schema::hasIndex('print_logs', 'print_logs_created_at_index')) {
+                $table->index('created_at');
+            }
         });
     }
 
@@ -43,7 +64,8 @@ return new class extends Migration {
         Schema::table('print_logs', function (Blueprint $table) {
             if (Schema::hasColumn('print_logs', 'label_template_id')) $table->dropForeign(['label_template_id']);
             if (Schema::hasColumn('print_logs', 'status_changed_by')) $table->dropForeign(['status_changed_by']);
-            $cols = array_filter(['label_template_id', 'trace_code', 'print_session_id', 'status', 'status_reason', 'status_changed_by', 'status_changed_at', 'batch_code'], fn($c) => Schema::hasColumn('print_logs', $c));
+            if (Schema::hasColumn('print_logs', 'created_by')) $table->dropForeign(['created_by']);
+            $cols = array_filter(['label_template_id', 'trace_code', 'print_session_id', 'status', 'status_reason', 'status_changed_by', 'status_changed_at', 'batch_code', 'vendor_id', 'product_batch_id', 'created_by'], fn($c) => Schema::hasColumn('print_logs', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }
