@@ -3,6 +3,9 @@
 namespace Modules\Contract\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Media;
+use App\Services\Media\ChunkedUploadService;
+use App\Services\Media\MediaUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -58,9 +61,9 @@ class ContractController extends Controller
         return view('contract::create', compact('vendors', 'customers', 'contractTypes'));
     }
 
-    public function store(Request $request, StoreContractAction $action): RedirectResponse
+    public function store(Request $request, StoreContractAction $action, ChunkedUploadService $chunkedUpload): RedirectResponse
     {
-        $data     = StoreContractData::validateAndCreate($request->all());
+        $data     = StoreContractData::validateAndCreate($chunkedUpload->mergeIntoInput($request, $request->all()));
         $contract = $action->handle($data);
 
         return redirect()->route('backend.contracts.show', $contract)
@@ -83,13 +86,23 @@ class ContractController extends Controller
         return view('contract::edit', compact('contract', 'vendors', 'customers', 'contractTypes'));
     }
 
-    public function update(Request $request, Contract $contract, UpdateContractAction $action): RedirectResponse
+    public function update(Request $request, Contract $contract, UpdateContractAction $action, ChunkedUploadService $chunkedUpload): RedirectResponse
     {
-        $data = UpdateContractData::validateAndCreate($request->all());
+        $data = UpdateContractData::validateAndCreate($chunkedUpload->mergeIntoInput($request, $request->all()));
         $action->handle($contract, $data);
 
         return redirect()->route('backend.contracts.show', $contract)
             ->with('success', 'Cập nhật hợp đồng thành công.');
+    }
+
+    public function destroyMedia(Contract $contract, Media $media, MediaUploadService $uploadService): JsonResponse
+    {
+        $this->authorize('update', $contract);
+        abort_unless($media->model_type === $contract->getMorphClass() && $media->model_id === $contract->id, 404);
+
+        $uploadService->delete($media);
+
+        return response()->json(['ok' => true]);
     }
 
     public function destroy(Request $request, Contract $contract, DestroyContractAction $action): RedirectResponse|JsonResponse

@@ -2,6 +2,7 @@
 
 namespace Modules\Contract\Actions\Backend;
 
+use App\Services\Media\MediaUploadService;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\Contract\Data\Requests\UpdateContractData;
 use Modules\Contract\Enums\ContractPartyType;
@@ -10,6 +11,10 @@ use Modules\Contract\Models\Contract;
 class UpdateContractAction
 {
     use AsAction;
+
+    public function __construct(
+        private readonly MediaUploadService $uploadService,
+    ) {}
 
     public function handle(Contract $contract, UpdateContractData $data): Contract
     {
@@ -26,6 +31,10 @@ class UpdateContractAction
             'renewal_period_months'  => $data->is_auto_renew ? $data->renewal_period_months : null,
             'status'                 => $data->status->value,
         ]);
+
+        foreach ($data->files ?? [] as $file) {
+            $this->uploadService->upload($file, $contract, 'attachments_private');
+        }
 
         return $contract;
     }

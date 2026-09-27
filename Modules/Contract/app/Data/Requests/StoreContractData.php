@@ -6,6 +6,7 @@ use Illuminate\Validation\Rule;
 use Modules\Contract\Enums\ContractPartyType;
 use Modules\Contract\Enums\ContractStatus;
 use Spatie\LaravelData\Attributes\Validation\AfterOrEqual;
+use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -45,6 +46,9 @@ class StoreContractData extends Data
         public readonly ?int $renewal_period_months = null,
 
         public readonly ContractStatus $status = ContractStatus::Active,
+
+        #[Nullable, ArrayType]
+        public readonly ?array $files = null,
     ) {}
 
     public static function rules(): array
@@ -67,6 +71,9 @@ class StoreContractData extends Data
             'contract_type_id'       => ['required', Rule::exists('contract_types', 'id')],
             'renewal_period_months'  => ['nullable', 'integer', 'min:1', 'max:120', 'required_if:is_auto_renew,1'],
             'status'                 => ['required', Rule::enum(ContractStatus::class)],
+
+            'files'   => ['nullable', 'array'],
+            'files.*' => ['file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx', 'max:102400'],
         ];
     }
 
@@ -105,6 +112,9 @@ class StoreContractData extends Data
 
             'status.required' => 'Vui lòng chọn trạng thái.',
             'status.enum'     => 'Trạng thái không hợp lệ.',
+
+            'files.*.mimes' => 'Tệp đính kèm chỉ chấp nhận PDF, JPG, PNG, DOC, DOCX, XLS, XLSX.',
+            'files.*.max'   => 'Mỗi tệp đính kèm tối đa 100MB.',
         ];
     }
 }

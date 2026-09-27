@@ -2,6 +2,7 @@
 
 namespace Modules\Contract\Actions\Backend;
 
+use App\Services\Media\MediaUploadService;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\Contract\Data\Requests\StoreContractData;
 use Modules\Contract\Enums\ContractPartyType;
@@ -11,9 +12,13 @@ class StoreContractAction
 {
     use AsAction;
 
+    public function __construct(
+        private readonly MediaUploadService $uploadService,
+    ) {}
+
     public function handle(StoreContractData $data): Contract
     {
-        return Contract::create([
+        $contract = Contract::create([
             'type'                   => $data->type->value,
             'vendor_id'              => $data->type === ContractPartyType::Input ? $data->vendor_id : null,
             'customer_id'            => $data->type === ContractPartyType::Output ? $data->customer_id : null,
@@ -26,5 +31,11 @@ class StoreContractAction
             'renewal_period_months'  => $data->is_auto_renew ? $data->renewal_period_months : null,
             'status'                 => $data->status->value,
         ]);
+
+        foreach ($data->files ?? [] as $file) {
+            $this->uploadService->upload($file, $contract, 'attachments_private');
+        }
+
+        return $contract;
     }
 }

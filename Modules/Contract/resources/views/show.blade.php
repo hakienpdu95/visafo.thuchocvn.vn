@@ -71,6 +71,23 @@
             </div>
         </div>
 
+        @php $contractMedia = $contract->getMedia('attachments_private'); @endphp
+        @if($contractMedia->isNotEmpty())
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+            <div class="card-body">
+                <h2 class="text-base font-semibold mb-4">Tài liệu đính kèm</h2>
+                <ul class="space-y-1.5">
+                    @foreach($contractMedia as $media)
+                    <li class="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                        <span class="truncate text-sm text-gray-700">{{ $media->file_name }}</span>
+                        <a href="{{ app(\App\Services\Media\MediaUrlService::class)->url($media) }}" target="_blank" class="btn btn-ghost btn-xs shrink-0">Xem</a>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+        @endif
+
     </div>
 
     <div class="space-y-4">

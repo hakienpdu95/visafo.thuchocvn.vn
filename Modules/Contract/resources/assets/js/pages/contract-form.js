@@ -1,4 +1,5 @@
 import { createTs, initAllTomSelects } from '@shared/tom-select-factory.js';
+import { bindChunkedSubmit } from '@shared/chunked-upload.js';
 
 const FORM_SEL = '[data-contract-form]';
 
@@ -62,4 +63,5 @@ document.addEventListener('DOMContentLoaded', () => {
     window.initAllDatePickers?.(form);
     initAllTomSelects(form);
     _setupContractPartyToggle(form);
+    bindChunkedSubmit(form);
 });

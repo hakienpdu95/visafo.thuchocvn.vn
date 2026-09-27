@@ -5,17 +5,21 @@ namespace Modules\Contract\Models;
 use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Traits\HasAutoCode;
+use App\Traits\HasTenantMedia;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Contract\Enums\ContractPartyType;
 use Modules\Contract\Enums\ContractStatus;
 use Modules\Customer\Models\Customer;
 use Modules\Vendor\Models\Vendor;
+use Spatie\MediaLibrary\HasMedia;
 
-class Contract extends TenantAwareModel
+class Contract extends TenantAwareModel implements HasMedia
 {
     use HasCreator;
 
     use HasAutoCode;
+
+    use HasTenantMedia;
 
     public function autoCodeColumn(): string
     {
