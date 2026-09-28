@@ -2,15 +2,15 @@
 @section('title', 'Hợp đồng')
 
 @section('content')
-<div x-data="contractListPage({{ Js::from([
-    'apiUrl'        => route('backend.api.contracts'),
-    'statuses'      => $statuses,
-    'contractTypes' => $contractTypes,
-    'partyTypes'    => $partyTypes,
-    'vendors'       => $vendors,
-    'customers'     => $customers,
-    'canDelete'     => auth()->user()->can('delete', new \Modules\Contract\Models\Contract),
-]) }})">
+<div x-data="{
+        pageTab: location.hash === '#compliance' ? 'compliance' : 'list',
+        showTab(tab) {
+            this.pageTab = tab;
+            history.replaceState(null, '', location.pathname + location.search + (tab === 'compliance' ? '#compliance' : ''));
+            if (tab === 'compliance') this.$dispatch('vendor-compliance-shown');
+            else this.$nextTick(() => window.contractTable?.redraw(true));
+        },
+    }">
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
@@ -35,6 +35,20 @@
     <div class="alert alert-success py-2.5 px-4 mb-5 text-sm">{{ session('success') }}</div>
     @endif
 
+    <div role="tablist" class="tabs tabs-lift mb-4">
+        <a role="tab" class="tab" :class="pageTab === 'list' ? 'tab-active' : ''" @click.prevent="showTab('list')" href="#">Danh sách hợp đồng</a>
+        <a role="tab" class="tab" :class="pageTab === 'compliance' ? 'tab-active' : ''" @click.prevent="showTab('compliance')" href="#compliance">Tuân thủ theo NCC</a>
+    </div>
+
+<div x-show="pageTab === 'list'" x-data="contractListPage({{ Js::from([
+    'apiUrl'        => route('backend.api.contracts'),
+    'statuses'      => $statuses,
+    'contractTypes' => $contractTypes,
+    'partyTypes'    => $partyTypes,
+    'vendors'       => $vendors,
+    'customers'     => $customers,
+    'canDelete'     => auth()->user()->can('delete', new \Modules\Contract\Models\Contract),
+]) }})">
     <div class="section-page">
         <div class="card bg-base-100 mb-4">
             <div class="card-body py-3 px-4">
@@ -168,6 +182,111 @@
             </div>
         </div>
     </div>
+
+</div>
+
+<div x-show="pageTab === 'compliance'" x-cloak
+     x-data="vendorCompliancePage({{ Js::from([
+        'apiUrl'         => route('backend.api.contracts.vendor-compliance'),
+        'sourceGroups'   => $sourceGroups,
+        'vendorStatuses' => $vendorStatuses,
+     ]) }})"
+     @vendor-compliance-shown.window="activate()">
+
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <p class="text-sm text-base-content/50">Đối chiếu hồ sơ / hợp đồng của từng NCC với danh mục yêu cầu bắt buộc</p>
+        @can('viewAny', \Modules\Contract\Models\VendorComplianceRequirement::class)
+        <a href="{{ route('backend.vendor-compliance-requirements.index') }}" class="btn btn-ghost btn-sm gap-1.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m3-6h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5"/></svg>
+            Cấu hình danh mục bắt buộc
+        </a>
+        @endcan
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <template x-for="tile in tiles" :key="tile.state">
+            <button type="button" @click="toggleState(tile.state)"
+                    class="card bg-base-100 border text-left transition-colors hover:border-base-content/30"
+                    :class="filters.state === tile.state ? tile.activeClass : 'border-base-200'">
+                <div class="card-body p-4 gap-1">
+                    <span class="text-xs font-medium text-base-content/60" x-text="tile.label"></span>
+                    <span class="text-2xl font-bold tabular-nums" :class="tile.textClass" x-text="summary[tile.state] ?? '—'"></span>
+                    <span class="text-xs text-base-content/40">
+                        trên <span x-text="summary.total ?? '—'"></span> NCC
+                    </span>
+                </div>
+            </button>
+        </template>
+    </div>
+
+    <div class="card bg-base-100 mb-4">
+        <div class="card-body py-3 px-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+
+                <div class="form-control sm:col-span-2">
+                    <label class="label mb-2">
+                        <span class="label-text text-xs font-medium">Tìm kiếm</span>
+                        <span class="label-text-alt text-xs text-base-content/40">Tên, mã NCC</span>
+                    </label>
+                    <div class="input input-sm input-bordered flex items-center gap-2 bg-base-100">
+                        <svg class="w-3.5 h-3.5 text-base-content/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" x-model="filters.search" @input.debounce.350ms="refresh()"
+                               placeholder="Nhập từ khóa..." class="grow bg-transparent outline-none text-sm"/>
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label py-0.5"><span class="label-text text-xs font-medium">Nhóm nguồn</span></label>
+                    <select x-model="filters.sourceGroup" @change="refresh()" class="select select-sm select-bordered w-full">
+                        <option value="">Tất cả</option>
+                        <template x-for="g in sourceGroups" :key="g.value">
+                            <option :value="g.value" x-text="g.text"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="label py-0.5"><span class="label-text text-xs font-medium">Tình trạng hợp tác</span></label>
+                    <select x-model="filters.vendorStatus" @change="refresh()" class="select select-sm select-bordered w-full">
+                        <template x-for="s in vendorStatuses" :key="s.value">
+                            <option :value="s.value" x-text="s.text"></option>
+                        </template>
+                        <option value="all">Tất cả</option>
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="label py-0.5"><span class="label-text text-xs font-medium">Cảnh báo sắp hết hạn</span></label>
+                    <select x-model.number="filters.days" @change="refresh()" class="select select-sm select-bordered w-full">
+                        <option value="30">Trong 30 ngày</option>
+                        <option value="60">Trong 60 ngày</option>
+                        <option value="90">Trong 90 ngày</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 pt-3 mt-3 border-t border-base-200">
+                <span class="text-xs text-base-content/40">Lọc nhanh:</span>
+                <button type="button" class="badge badge-sm cursor-pointer" :class="filters.state === '' ? 'badge-neutral' : 'badge-ghost'" @click="setState('')">Tất cả</button>
+                <template x-for="tile in tiles" :key="'chip-' + tile.state">
+                    <button type="button" class="badge badge-sm cursor-pointer"
+                            :class="filters.state === tile.state ? tile.chipClass : 'badge-ghost'"
+                            @click="setState(tile.state)" x-text="tile.label"></button>
+                </template>
+                <button type="button" x-show="hasFilters" x-transition @click="reset()" class="btn btn-ghost btn-xs text-error ml-auto">Đặt lại</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0 overflow-hidden tabulator-daisy">
+            <div id="vendor-compliance-table"></div>
+        </div>
+    </div>
+</div>
 
 </div>
 

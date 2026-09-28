@@ -24,8 +24,16 @@
 <div class="alert alert-success py-2.5 px-4 mb-5 text-sm">{{ session('success') }}</div>
 @endif
 
+@php
+    $canViewContracts = auth()->user()->can('viewAny', \Modules\Contract\Models\Contract::class);
+    $initialTab = match (true) {
+        $errors->has('site_name') || $errors->has('address') => 'delivery',
+        in_array(request('tab'), ['contacts', 'delivery', 'contracts'], true) => request('tab'),
+        default => 'contacts',
+    };
+@endphp
 <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 items-start"
-     x-data="{ tab: '{{ $errors->has('site_name') || $errors->has('address') ? 'delivery' : 'contacts' }}' }">
+     x-data="{ tab: '{{ $initialTab }}' }" data-initial-tab="{{ $initialTab }}">
 
     <div class="card bg-base-100 shadow-sm border border-base-200">
         <div class="card-body">
@@ -37,10 +45,16 @@
                 <a role="tab" class="tab" :class="tab === 'delivery' ? 'tab-active' : ''" @click.prevent="tab = 'delivery'" href="#">
                     Địa điểm giao hàng
                 </a>
+                @if($canViewContracts)
+                <a role="tab" class="tab" :class="tab === 'contracts' ? 'tab-active' : ''" @click.prevent="tab = 'contracts'; window.onCustomerTabShown('contracts')" href="#">
+                    Hợp đồng
+                    <span class="badge badge-neutral badge-xs ml-1.5">{{ $contracts->count() }}</span>
+                </a>
+                @endif
             </div>
 
             {{-- ── Tab: Đầu mối liên hệ ─────────────────────────────────── --}}
-            <div x-show="tab === 'contacts'">
+            <div x-show="tab === 'contacts'" x-cloak>
 
                 @if($customer->contacts->isEmpty())
                 <p class="text-sm text-base-content/50 mb-5">Chưa có đầu mối liên hệ nào được ghi nhận.</p>
@@ -203,6 +217,22 @@
                 @endcan
             </div>
 
+            @if($canViewContracts)
+            {{-- ── Tab: Hợp đồng ────────────────────────────────────────── --}}
+            <div x-show="tab === 'contracts'" x-cloak>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold">Hợp đồng đầu ra</h2>
+                    @can('create', \Modules\Contract\Models\Contract::class)
+                    <a href="{{ route('backend.contracts.create', ['customer_id' => $customer->id]) }}" class="btn btn-primary btn-sm">+ Thêm hợp đồng mới</a>
+                    @endcan
+                </div>
+
+                <div class="tabulator-daisy">
+                    <div id="customer-contracts-table" data-rows="{{ json_encode(\Modules\Contract\Http\Resources\PartyContractRowResource::collection($contracts)->resolve(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
+                </div>
+            </div>
+            @endif
+
         </div>
     </div>
 
@@ -255,5 +285,13 @@
 @endsection
 
 @push('styles')
+    <x-tabulator-theme />
     @vite(['Modules/Customer/resources/assets/sass/customer.scss'], 'build/backend')
+@endpush
+
+@push('scripts')
+    @vite([
+        'resources/js/modules/tabulator.js',
+        'Modules/Customer/resources/assets/js/customer.js',
+    ], 'build/backend')
 @endpush

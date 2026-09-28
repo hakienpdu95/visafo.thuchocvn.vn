@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Modules\ActivityLog\Database\Seeders\ActivityLogPermissionsSeeder;
 use Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
 use Modules\Contract\Database\Seeders\ContractTypeSeeder;
+use Modules\Contract\Database\Seeders\VendorComplianceRequirementSeeder;
 use Modules\Customer\Database\Seeders\CustomerMasterDataSeeder;
 use Modules\Employee\Database\Seeders\DepartmentSeeder;
 use Modules\LabelTemplate\Database\Seeders\LabelTemplateSeeder;
@@ -64,6 +65,9 @@ class SystemDataSeeder extends Seeder
 
             // ── 5b. Từ điển loại hợp đồng (contract_types) ────────────────
             ContractTypeSeeder::class,
+
+            // ── 5b'. Danh mục hồ sơ/hợp đồng bắt buộc với NCC (vendor_compliance_requirements) ─
+            VendorComplianceRequirementSeeder::class,
 
             // ── 5c. 6 mẫu tem in 60x40 chuyên biệt theo ngành hàng (label_templates) ─
             LabelTemplateSeeder::class,

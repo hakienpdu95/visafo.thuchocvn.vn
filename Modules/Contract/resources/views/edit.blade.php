@@ -143,15 +143,10 @@
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Nhà cung cấp <span class="text-error">*</span></span>
                             </label>
-                            <select id="ts-vendor_id" name="vendor_id"
-                                    class="select select-bordered select-sm w-full @if(old('type', $contract->type->value) === 'input') ts-init @endif @error('vendor_id') select-error @enderror"
-                                    data-ts-placeholder="— Chọn nhà cung cấp —"
-                                    data-req="Vui lòng chọn nhà cung cấp">
-                                <option value="">— Chọn nhà cung cấp —</option>
-                                @foreach($vendors as $vendor)
-                                <option value="{{ $vendor->id }}" @selected(old('vendor_id', $contract->vendor_id) === $vendor->id)>{{ $vendor->name }}</option>
-                                @endforeach
-                            </select>
+                            <input type="hidden" name="vendor_id" value="{{ $contract->vendor_id }}">
+                            <input type="text" value="{{ $contract->vendor?->name ?? '—' }}" readonly disabled
+                                   class="input input-bordered input-sm w-full bg-base-200/60">
+                            <p class="mt-1 text-xs text-base-content/40">Không thể thay đổi nhà cung cấp sau khi tạo hợp đồng.</p>
                             @error('vendor_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
@@ -159,15 +154,10 @@
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Khách hàng <span class="text-error">*</span></span>
                             </label>
-                            <select id="ts-customer_id" name="customer_id"
-                                    class="select select-bordered select-sm w-full @if(old('type', $contract->type->value) === 'output') ts-init @endif @error('customer_id') select-error @enderror"
-                                    data-ts-placeholder="— Chọn khách hàng —"
-                                    data-req="Vui lòng chọn khách hàng">
-                                <option value="">— Chọn khách hàng —</option>
-                                @foreach($customers as $customer)
-                                <option value="{{ $customer->id }}" @selected(old('customer_id', $contract->customer_id) === $customer->id)>{{ $customer->name }}</option>
-                                @endforeach
-                            </select>
+                            <input type="hidden" name="customer_id" value="{{ $contract->customer_id }}">
+                            <input type="text" value="{{ $contract->customer?->name ?? '—' }}" readonly disabled
+                                   class="input input-bordered input-sm w-full bg-base-200/60">
+                            <p class="mt-1 text-xs text-base-content/40">Không thể thay đổi khách hàng sau khi tạo hợp đồng.</p>
                             @error('customer_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 

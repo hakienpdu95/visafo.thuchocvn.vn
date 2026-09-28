@@ -7,6 +7,8 @@ use App\Models\Province;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Modules\Contract\Queries\ListPartyContractsHandler;
+use Modules\Contract\Queries\ListPartyContractsQuery;
 use Modules\Product\Models\DocumentMasterType;
 use Modules\Vendor\Actions\Backend\DestroyVendorAction;
 use Modules\Vendor\Actions\Backend\StoreVendorAction;
@@ -60,7 +62,7 @@ class VendorController extends Controller
             ->with('success', 'Nhà cung cấp "' . $vendor->name . '" đã được tạo thành công.');
     }
 
-    public function show(Vendor $vendor, GetVendorHandler $handler)
+    public function show(Vendor $vendor, GetVendorHandler $handler, ListPartyContractsHandler $contractsHandler)
     {
         $vendor = $handler->handle(new GetVendorQuery($vendor));
         $documentTypes = DocumentMasterType::query()
@@ -68,7 +70,9 @@ class VendorController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('vendor::show', compact('vendor', 'documentTypes'));
+        $contracts = $contractsHandler->handle(new ListPartyContractsQuery(vendorId: $vendor->id));
+
+        return view('vendor::show', compact('vendor', 'documentTypes', 'contracts'));
     }
 
     public function edit(Vendor $vendor)

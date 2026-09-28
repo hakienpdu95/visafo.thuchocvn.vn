@@ -1,5 +1,6 @@
 import { registerDocumentUploadFormAlpine, createDocumentUploadModal } from '@shared/document-upload-modal.js';
 import { initComplianceDocumentsTable } from '@shared/compliance-documents-table.js';
+import { initPartyContractsTable } from '@shared/party-contracts-table.js';
 
 registerDocumentUploadFormAlpine();
 
@@ -24,6 +25,7 @@ function _emptyOr(value, html) {
 
 let documentsTable = null;
 let partnerProductsTable = null;
+let contractsTable = null;
 
 function _initPartnerProductsTable() {
     const el = document.getElementById('vendor-partner-products-table');
@@ -84,10 +86,15 @@ window.onVendorTabShown = function (tab) {
         if (!partnerProductsTable) _initPartnerProductsTable();
         else partnerProductsTable.redraw(true);
     }
+    if (tab === 'contracts') {
+        if (!contractsTable) contractsTable = initPartyContractsTable('vendor-contracts-table', 'Chưa có hợp đồng nào với nhà cung cấp này.');
+        else contractsTable.redraw(true);
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     const initialTab = document.querySelector('[data-initial-tab]')?.dataset.initialTab;
     if (initialTab === 'documents') documentsTable = initComplianceDocumentsTable('vendor-documents-table', window.openEditDocumentModal);
     if (initialTab === 'products') _initPartnerProductsTable();
+    if (initialTab === 'contracts') contractsTable = initPartyContractsTable('vendor-contracts-table', 'Chưa có hợp đồng nào với nhà cung cấp này.');
 });

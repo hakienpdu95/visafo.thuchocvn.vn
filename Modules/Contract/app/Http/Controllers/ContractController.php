@@ -21,6 +21,8 @@ use Modules\Contract\Models\ContractType;
 use Modules\Contract\Queries\GetContractHandler;
 use Modules\Contract\Queries\GetContractQuery;
 use Modules\Customer\Models\Customer;
+use Modules\Vendor\Enums\VendorSourceGroup;
+use Modules\Vendor\Enums\VendorStatus;
 use Modules\Vendor\Models\Vendor;
 
 class ContractController extends Controller
@@ -49,22 +51,55 @@ class ContractController extends Controller
         $vendors   = Vendor::query()->orderBy('name')->get(['id', 'name']);
         $customers = Customer::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('contract::index', compact('statuses', 'contractTypes', 'partyTypes', 'vendors', 'customers'));
+        $sourceGroups = collect(VendorSourceGroup::cases())
+            ->map(fn ($g) => ['value' => $g->value, 'text' => $g->label()])
+            ->all();
+
+        $vendorStatuses = collect(VendorStatus::cases())
+            ->map(fn ($s) => ['value' => $s->value, 'text' => $s->label()])
+            ->all();
+
+        return view('contract::index', compact('statuses', 'contractTypes', 'partyTypes', 'vendors', 'customers', 'sourceGroups', 'vendorStatuses'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $vendors       = Vendor::query()->orderBy('name')->get(['id', 'name']);
-        $customers     = Customer::query()->orderBy('name')->get(['id', 'name']);
+        $lockedVendor = $request->filled('vendor_id')
+            ? Vendor::query()->findOrFail($request->input('vendor_id'), ['id', 'name'])
+            : null;
+
+        $lockedCustomer = ! $lockedVendor && $request->filled('customer_id')
+            ? Customer::query()->findOrFail($request->input('customer_id'), ['id', 'name'])
+            : null;
+
+        $isLocked      = $lockedVendor || $lockedCustomer;
+        $vendors       = $isLocked ? collect() : Vendor::query()->orderBy('name')->get(['id', 'name']);
+        $customers     = $isLocked ? collect() : Customer::query()->orderBy('name')->get(['id', 'name']);
         $contractTypes = ContractType::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('contract::create', compact('vendors', 'customers', 'contractTypes'));
+        return view('contract::create', compact('vendors', 'customers', 'contractTypes', 'lockedVendor', 'lockedCustomer'));
     }
 
     public function store(Request $request, StoreContractAction $action, ChunkedUploadService $chunkedUpload): RedirectResponse
     {
+        if ($request->boolean('from_vendor')) {
+            $request->merge(['type' => ContractPartyType::Input->value, 'customer_id' => null]);
+        } elseif ($request->boolean('from_customer')) {
+            $request->merge(['type' => ContractPartyType::Output->value, 'vendor_id' => null]);
+        }
+
         $data     = StoreContractData::validateAndCreate($chunkedUpload->mergeIntoInput($request, $request->all()));
         $contract = $action->handle($data);
+
+        if ($request->boolean('from_vendor') && $contract->vendor_id) {
+            return redirect()->route('backend.vendors.show', ['vendor' => $contract->vendor_id, 'tab' => 'contracts'])
+                ->with('success', 'Hợp đồng "' . $contract->name . '" đã được tạo thành công.');
+        }
+
+        if ($request->boolean('from_customer') && $contract->customer_id) {
+            return redirect()->route('backend.customers.show', ['customer' => $contract->customer_id, 'tab' => 'contracts'])
+                ->with('success', 'Hợp đồng "' . $contract->name . '" đã được tạo thành công.');
+        }
 
         return redirect()->route('backend.contracts.show', $contract)
             ->with('success', 'Hợp đồng "' . $contract->name . '" đã được tạo thành công.');
@@ -79,15 +114,20 @@ class ContractController extends Controller
 
     public function edit(Contract $contract)
     {
-        $vendors       = Vendor::query()->orderBy('name')->get(['id', 'name']);
-        $customers     = Customer::query()->orderBy('name')->get(['id', 'name']);
+        $contract->loadMissing(['vendor', 'customer']);
         $contractTypes = ContractType::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('contract::edit', compact('contract', 'vendors', 'customers', 'contractTypes'));
+        return view('contract::edit', compact('contract', 'contractTypes'));
     }
 
     public function update(Request $request, Contract $contract, UpdateContractAction $action, ChunkedUploadService $chunkedUpload): RedirectResponse
     {
+        $request->merge([
+            'type'        => $contract->type->value,
+            'vendor_id'   => $contract->vendor_id,
+            'customer_id' => $contract->customer_id,
+        ]);
+
         $data = UpdateContractData::validateAndCreate($chunkedUpload->mergeIntoInput($request, $request->all()));
         $action->handle($contract, $data);
 

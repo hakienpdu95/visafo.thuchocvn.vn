@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Modules\Contract\Queries\ListPartyContractsHandler;
+use Modules\Contract\Queries\ListPartyContractsQuery;
 use Modules\Customer\Actions\Backend\DestroyCustomerAction;
 use Modules\Customer\Actions\Backend\StoreCustomerAction;
 use Modules\Customer\Actions\Backend\UpdateCustomerAction;
@@ -59,11 +61,12 @@ class CustomerController extends Controller
             ->with('success', 'Khách hàng "' . $customer->name . '" đã được tạo thành công.');
     }
 
-    public function show(Customer $customer, GetCustomerHandler $handler)
+    public function show(Customer $customer, GetCustomerHandler $handler, ListPartyContractsHandler $contractsHandler)
     {
-        $customer = $handler->handle(new GetCustomerQuery($customer));
+        $customer  = $handler->handle(new GetCustomerQuery($customer));
+        $contracts = $contractsHandler->handle(new ListPartyContractsQuery(customerId: $customer->id));
 
-        return view('customer::show', compact('customer'));
+        return view('customer::show', compact('customer', 'contracts'));
     }
 
     public function edit(Customer $customer)

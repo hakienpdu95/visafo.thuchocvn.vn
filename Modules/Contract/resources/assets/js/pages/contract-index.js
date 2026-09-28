@@ -335,7 +335,7 @@ document.addEventListener('alpine:init', () => {
                 if (f.vendorId)     p.set('vd', f.vendorId);
                 if (f.customerId)   p.set('cu', f.customerId);
                 const qs = p.toString();
-                history.replaceState(null, '', qs ? '?' + qs : location.pathname);
+                history.replaceState(null, '', (qs ? '?' + qs : location.pathname) + location.hash);
             },
 
             refresh()        { tableInst?.replaceData(); },
@@ -367,7 +367,7 @@ document.addEventListener('alpine:init', () => {
                 tsType?.setValue('', true);
                 tsVendor?.setValue('', true);
                 tsCustomer?.setValue('', true);
-                history.replaceState(null, '', location.pathname);
+                history.replaceState(null, '', location.pathname + location.hash);
                 this.refresh();
             },
         };

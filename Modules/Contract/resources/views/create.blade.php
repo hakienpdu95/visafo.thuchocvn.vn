@@ -2,13 +2,27 @@
 @section('title', 'Tạo hợp đồng mới')
 
 @section('content')
+@php
+    $backUrl = match (true) {
+        (bool) $lockedVendor   => route('backend.vendors.show', ['vendor' => $lockedVendor, 'tab' => 'contracts']),
+        (bool) $lockedCustomer => route('backend.customers.show', ['customer' => $lockedCustomer, 'tab' => 'contracts']),
+        default                => route('backend.contracts.index'),
+    };
+    $lockedType = $lockedVendor ? 'input' : ($lockedCustomer ? 'output' : null);
+@endphp
 
 <div class="flex items-center justify-between mb-6">
     <div>
         <h1 class="text-2xl font-bold text-base-content">Tạo hợp đồng mới</h1>
-        <p class="text-sm text-base-content/50 mt-0.5">Khởi tạo hợp đồng với nhà cung cấp</p>
+        <p class="text-sm text-base-content/50 mt-0.5">
+            @if($lockedCustomer)
+            Khởi tạo hợp đồng với khách hàng "{{ $lockedCustomer->name }}"
+            @else
+            Khởi tạo hợp đồng với nhà cung cấp{{ $lockedVendor ? ' "' . $lockedVendor->name . '"' : '' }}
+            @endif
+        </p>
     </div>
-    <a href="{{ route('backend.contracts.index') }}" class="btn btn-ghost btn-sm gap-1.5">
+    <a href="{{ $backUrl }}" class="btn btn-ghost btn-sm gap-1.5">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
@@ -33,7 +47,7 @@
 <form method="POST" action="{{ route('backend.contracts.store') }}" enctype="multipart/form-data" novalidate data-contract-form
       x-data="{
           autoRenew: {{ old('is_auto_renew') ? 'true' : 'false' }},
-          contractType: '{{ old('type', 'input') }}',
+          contractType: '{{ $lockedType ?? old('type', 'input') }}',
           files: [],
           onFilesChange(event) {
               this.files = Array.from(event.target.files ?? []);
@@ -54,6 +68,11 @@
           },
       }">
     @csrf
+    @if($lockedVendor)
+    <input type="hidden" name="from_vendor" value="1">
+    @elseif($lockedCustomer)
+    <input type="hidden" name="from_customer" value="1">
+    @endif
 
     <div class="grid grid-cols-1 xl:grid-cols-[1fr_268px] gap-6 items-start">
 
@@ -76,6 +95,11 @@
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Loại giao dịch <span class="text-error">*</span></span>
                             </label>
+                            @if($lockedType)
+                            <input type="hidden" name="type" value="{{ $lockedType }}">
+                            <input type="text" value="{{ \Modules\Contract\Enums\ContractPartyType::from($lockedType)->label() }}" readonly disabled
+                                   class="input input-bordered input-sm w-full bg-base-200/60">
+                            @else
                             <div class="flex flex-wrap gap-6">
                                 <label class="label cursor-pointer justify-start gap-2 py-0">
                                     <input type="radio" name="type" value="input" x-model="contractType"
@@ -88,13 +112,20 @@
                                     <span class="label-text font-medium">Đầu ra (Khách hàng)</span>
                                 </label>
                             </div>
+                            @endif
                             @error('type')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
+                        @unless($lockedCustomer)
                         <div x-show="contractType === 'input'" x-cloak class="form-control">
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Nhà cung cấp <span class="text-error">*</span></span>
                             </label>
+                            @if($lockedVendor)
+                            <input type="hidden" name="vendor_id" value="{{ $lockedVendor->id }}">
+                            <input type="text" value="{{ $lockedVendor->name }}" readonly disabled
+                                   class="input input-bordered input-sm w-full bg-base-200/60">
+                            @else
                             <select id="ts-vendor_id" name="vendor_id"
                                     class="select select-bordered select-sm w-full @if(old('type', 'input') === 'input') ts-init @endif @error('vendor_id') select-error @enderror"
                                     data-ts-placeholder="— Chọn nhà cung cấp —"
@@ -104,13 +135,22 @@
                                 <option value="{{ $vendor->id }}" @selected(old('vendor_id') === $vendor->id)>{{ $vendor->name }}</option>
                                 @endforeach
                             </select>
+                            @endif
                             @error('vendor_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
 
+                        @endunless
+
+                        @unless($lockedVendor)
                         <div x-show="contractType === 'output'" x-cloak class="form-control">
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Khách hàng <span class="text-error">*</span></span>
                             </label>
+                            @if($lockedCustomer)
+                            <input type="hidden" name="customer_id" value="{{ $lockedCustomer->id }}">
+                            <input type="text" value="{{ $lockedCustomer->name }}" readonly disabled
+                                   class="input input-bordered input-sm w-full bg-base-200/60">
+                            @else
                             <select id="ts-customer_id" name="customer_id"
                                     class="select select-bordered select-sm w-full @if(old('type', 'input') === 'output') ts-init @endif @error('customer_id') select-error @enderror"
                                     data-ts-placeholder="— Chọn khách hàng —"
@@ -120,8 +160,10 @@
                                 <option value="{{ $customer->id }}" @selected(old('customer_id') === $customer->id)>{{ $customer->name }}</option>
                                 @endforeach
                             </select>
+                            @endif
                             @error('customer_id')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                         </div>
+                        @endunless
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
@@ -305,7 +347,7 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <a href="{{ route('backend.contracts.index') }}" class="btn btn-ghost btn-sm flex-1">Hủy</a>
+                        <a href="{{ $backUrl }}" class="btn btn-ghost btn-sm flex-1">Hủy</a>
                         <button type="submit" class="btn btn-primary btn-sm flex-1 gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\ComplianceDocument;
+use Modules\Contract\Models\Contract;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
@@ -93,6 +94,11 @@ class Vendor extends TenantAwareModel
     public function farmingSteps(): HasMany
     {
         return $this->hasMany(VendorFarmingStep::class);
+    }
+
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class);
     }
 
     public function documents(): MorphMany

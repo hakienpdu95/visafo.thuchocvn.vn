@@ -24,7 +24,14 @@
 <div class="alert alert-success py-2.5 px-4 mb-5 text-sm">{{ session('success') }}</div>
 @endif
 
-@php $initialTab = $errors->any() || str_contains((string) session('success'), 'hồ sơ') ? 'documents' : 'general'; @endphp
+@php
+    $initialTab = match (true) {
+        $errors->any() || str_contains((string) session('success'), 'hồ sơ') => 'documents',
+        in_array(request('tab'), ['general', 'products', 'documents', 'farming-steps', 'contracts'], true) => request('tab'),
+        default => 'general',
+    };
+    $canViewContracts = auth()->user()->can('viewAny', \Modules\Contract\Models\Contract::class);
+@endphp
 <div x-data="{ tab: '{{ $initialTab }}' }" data-initial-tab="{{ $initialTab }}">
 
     <div role="tablist" class="tabs tabs-lift mb-6">
@@ -43,6 +50,12 @@
             Cấu hình Nhật ký Canh tác
             <span class="badge badge-neutral badge-xs ml-1.5">{{ $vendor->farmingSteps->count() }}</span>
         </a>
+        @if($canViewContracts)
+        <a role="tab" class="tab" :class="tab === 'contracts' ? 'tab-active' : ''" @click.prevent="tab = 'contracts'; window.onVendorTabShown('contracts')" href="#">
+            Hợp đồng
+            <span class="badge badge-neutral badge-xs ml-1.5">{{ $contracts->count() }}</span>
+        </a>
+        @endif
     </div>
 
     {{-- ── Tab 1: Thông tin chung & Đầu mối liên hệ ────────────────────── --}}
@@ -238,6 +251,26 @@
             </div>
         </div>
     </div>
+
+    @if($canViewContracts)
+    {{-- ── Tab 5: Hợp đồng ───────────────────────────────────────────────── --}}
+    <div x-show="tab === 'contracts'" x-cloak>
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold">Hợp đồng đầu vào</h2>
+                    @can('create', \Modules\Contract\Models\Contract::class)
+                    <a href="{{ route('backend.contracts.create', ['vendor_id' => $vendor->id]) }}" class="btn btn-primary btn-sm">+ Thêm hợp đồng mới</a>
+                    @endcan
+                </div>
+
+                <div class="tabulator-daisy">
+                    <div id="vendor-contracts-table" data-rows="{{ json_encode(\Modules\Contract\Http\Resources\PartyContractRowResource::collection($contracts)->resolve(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) }}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
 </div>
 
