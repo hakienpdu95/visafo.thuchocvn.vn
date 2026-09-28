@@ -56,6 +56,9 @@ return new class extends Migration {
             if (!Schema::hasIndex('print_logs', 'print_logs_created_at_index')) {
                 $table->index('created_at');
             }
+            if (!Schema::hasColumn('print_logs', 'ulid')) {
+                $table->ulid('ulid')->nullable()->after('created_by')->comment('Nhà cung cấp chọn khi in');
+            }
         });
     }
 
@@ -65,7 +68,7 @@ return new class extends Migration {
             if (Schema::hasColumn('print_logs', 'label_template_id')) $table->dropForeign(['label_template_id']);
             if (Schema::hasColumn('print_logs', 'status_changed_by')) $table->dropForeign(['status_changed_by']);
             if (Schema::hasColumn('print_logs', 'created_by')) $table->dropForeign(['created_by']);
-            $cols = array_filter(['label_template_id', 'trace_code', 'print_session_id', 'status', 'status_reason', 'status_changed_by', 'status_changed_at', 'batch_code', 'vendor_id', 'product_batch_id', 'created_by'], fn($c) => Schema::hasColumn('print_logs', $c));
+            $cols = array_filter(['label_template_id', 'trace_code', 'print_session_id', 'status', 'status_reason', 'status_changed_by', 'status_changed_at', 'batch_code', 'vendor_id', 'product_batch_id', 'created_by', 'ulid'], fn($c) => Schema::hasColumn('print_logs', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

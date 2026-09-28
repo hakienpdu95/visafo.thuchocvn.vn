@@ -136,7 +136,8 @@
         "__index///index///__///__///__///vendor_id///__",
         "__index///index///__///__///__///product_batch_id///__",
         "__index///index///__///__///__///batch_code///__",
-        "__index///index///__///__///__///created_at///__"
+        "__index///index///__///__///__///created_at///__",
+        "ulid///ulid///__///_NULL///NULL///__///Nhà cung cấp chọn khi in"
     ],
     [
         "food_inspection_step1_details///add///__///",
