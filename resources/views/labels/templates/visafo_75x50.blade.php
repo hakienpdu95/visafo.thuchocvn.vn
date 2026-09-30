@@ -107,7 +107,7 @@
                     </colgroup>
                     <tr>
                         <td class="lbl">SL/KL</td><td class="colon">:</td>
-                        <td class="val strong"><div class="one-line kl">{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} {{ $unit }}@if(!empty($log->batch_code))<span class="inline-lbl">Mã lô:</span> {{ $log->batch_code }}@endif</div></td>
+                        <td class="val strong"><div class="one-line kl">{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} {{ $unit }}</div></td>
                     </tr>
                     <tr>
                         <td class="lbl strong">NSX</td><td class="colon">:</td>
