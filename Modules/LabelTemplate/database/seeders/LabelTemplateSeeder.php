@@ -4,25 +4,15 @@ namespace Modules\LabelTemplate\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\LabelTemplate\Models\LabelTemplate;
-use Illuminate\Support\Facades\Schema; // Thêm thư viện này nếu cần tắt check khóa ngoại
 
 class LabelTemplateSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Tạm tắt kiểm tra khóa ngoại của MySQL
-        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
-        
-        // 2. Thực hiện xóa trắng bảng an toàn
-        LabelTemplate::truncate();
-        
-        // 3. Bật lại kiểm tra khóa ngoại ngay lập tức để bảo vệ dữ liệu
-        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
-
         $definitions = $this->definitions();
 
         foreach ($definitions as $definition) {
-            LabelTemplate::query()->updateOrCreate(
+            LabelTemplate::query()->firstOrCreate(
                 ['view_path' => $definition['view_path']],
                 $definition,
             );
@@ -46,6 +36,12 @@ class LabelTemplateSeeder extends Seeder
                 'view_path'    => 'labels.templates.visafo_75x50',
                 'description'  => 'Bản thu gọn của mẫu 100x75mm cho cuộn nhãn 75x50mm — header 1 dòng, tên sản phẩm tối đa 2 dòng, thông tin 1 dòng/trường + QR 12mm, footer bảo quản/liên hệ gộp 1 dòng.',
                 'default_size' => '75x50',
+            ],
+            [
+                'name'         => 'Mẫu tem truy xuất VISAFO - Cỡ vừa (Khổ giấy in nhãn 80x60mm)',
+                'view_path'    => 'labels.templates.visafo_80x60',
+                'description'  => 'Mẫu tem truy xuất VISAFO cho rau củ quả, khổ 80x60mm — chữ và QR lớn hơn bản 75x50mm, kèm khối Bảo quản/Hướng dẫn sử dụng cố định cho rau củ quả.',
+                'default_size' => '80x60',
             ],
         ];
     }
