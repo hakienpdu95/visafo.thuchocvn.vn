@@ -46,7 +46,7 @@ class ProductComplianceRuleEngine
                     legalBasis: 'Nghị định 15/2018/NĐ-CP, Điều 4/Điều 6',
                 ),
                 new ComplianceRequirement(
-                    label: 'Phiếu kiểm nghiệm sản phẩm định kỳ',
+                    label: 'Phiếu kiểm nghiệm / Báo cáo kết quả phân tích sản phẩm (định kỳ)',
                     documentTypeCodes: ['product_test_report'],
                     legalBasis: 'Nghị định 15/2018/NĐ-CP, Điều 5/Điều 7',
                 ),

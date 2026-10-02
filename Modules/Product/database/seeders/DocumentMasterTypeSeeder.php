@@ -358,7 +358,7 @@ class DocumentMasterTypeSeeder extends Seeder
             ],
             [
                 'code'                     => 'product_test_report',
-                'name'                     => 'Phiếu kiểm nghiệm sản phẩm',
+                'name'                     => 'Phiếu kiểm nghiệm / Báo cáo kết quả phân tích sản phẩm',
                 'document_group'           => DocumentGroupType::Traceability->value,
                 'applicable_to'            => ['product', 'partner_product'],
                 'is_required_issue_date'   => true,
@@ -367,6 +367,18 @@ class DocumentMasterTypeSeeder extends Seeder
                 'has_issue_place'          => true,
                 'is_transactional'         => false,
                 'default_validity_months'  => 12,
+            ],
+            [
+                'code'                     => 'product_production_process',
+                'name'                     => 'Quy trình sản xuất',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'applicable_to'            => ['product', 'partner_product'],
+                'is_required_issue_date'   => false,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => false,
+                'has_issue_place'          => false,
+                'is_transactional'         => false,
+                'default_validity_months'  => null,
             ],
             [
                 'code'                     => 'supplier_soil_water_test',
