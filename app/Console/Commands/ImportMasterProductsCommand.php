@@ -3,31 +3,36 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Console\ConfirmableTrait;
 use Modules\Product\Enums\ProductType;
 use Modules\Product\Models\Category;
 use Modules\Product\Models\Product;
+use Modules\Product\Services\ProductCategoryClassifier;
 use Rap2hpoutre\FastExcel\FastExcel;
 
 class ImportMasterProductsCommand extends Command
 {
+    use ConfirmableTrait;
+
     protected $signature = 'app:import-master-products
         {--file=spec/Vat_tu__hang_hoa__dich_vu.xlsx : Đường dẫn file Excel (tương đối từ project root hoặc tuyệt đối)}
-        {--dry-run : Chỉ báo cáo, không ghi DB}';
+        {--dry-run : Chỉ báo cáo, không ghi DB}
+        {--force : Bỏ qua bước xác nhận}';
 
     protected $description = 'Import danh mục Vật tư/Hàng hóa/Dịch vụ (Excel) vào bảng products — ánh xạ "Kho ngầm định" sang product_type + category';
 
     private const KHO_MAP = [
-        'KTPTS'  => ['type' => ProductType::RawMaterial, 'category' => 'fresh_food'],
-        'KRCQ'   => ['type' => ProductType::RawMaterial, 'category' => 'fresh_food'],
-        'KRCQSC' => ['type' => ProductType::RawMaterial, 'category' => 'fresh_food'],
-        'KHQ'    => ['type' => ProductType::TradingGood, 'category' => 'fresh_food'],
+        'KTPTS'  => ['type' => ProductType::RawMaterial, 'category' => 'fresh_meat_seafood'],
+        'KTPĐL'  => ['type' => ProductType::RawMaterial, 'category' => 'fresh_meat_seafood'],
+        'KRCQ'   => ['type' => ProductType::RawMaterial, 'category' => 'fresh_produce'],
+        'KRCQSC' => ['type' => ProductType::RawMaterial, 'category' => 'fresh_produce'],
+        'KHLRT'  => ['type' => ProductType::RawMaterial, 'category' => 'fresh_produce'],
+        'KHQ'    => ['type' => ProductType::TradingGood, 'category' => 'fresh_produce'],
         'KĐK'    => ['type' => ProductType::RawMaterial, 'category' => 'processed_food'],
-        'KTPĐL'  => ['type' => ProductType::RawMaterial, 'category' => 'processed_food'],
-        'KHLRT'  => ['type' => ProductType::RawMaterial, 'category' => 'additives_spices'],
         'CCDC'   => ['type' => ProductType::Consumables, 'category' => null],
     ];
 
-    public function handle(): int
+    public function handle(ProductCategoryClassifier $classifier): int
     {
         $path = $this->option('file');
         $fullPath = str_starts_with($path, '/') ? $path : base_path($path);
@@ -44,15 +49,23 @@ class ImportMasterProductsCommand extends Command
                 return self::FAILURE;
             }
         }
+        if (!$categoryIds->has(ProductCategoryClassifier::PROCESSED)) {
+            $this->error("Category '" . ProductCategoryClassifier::PROCESSED . "' chưa tồn tại — chạy CategorySeeder trước.");
+            return self::FAILURE;
+        }
 
         $rows = (new FastExcel())->headerRow(2)->import($fullPath);
+
+        if (!$this->option('dry-run') && !$this->confirmToProceed('Import đầy đủ sẽ GHI ĐÈ tên, ĐVT, nhóm hàng, loại hàng của mọi SKU có trong file và tạo mới SKU chưa có.')) {
+            return self::FAILURE;
+        }
 
         $imported = 0;
         $skipped  = [];
 
         $dryRun = (bool) $this->option('dry-run');
 
-        $this->withProgressBar($rows, function (array $row) use ($categoryIds, $dryRun, &$imported, &$skipped): void {
+        $this->withProgressBar($rows, function (array $row) use ($categoryIds, $classifier, $dryRun, &$imported, &$skipped): void {
             $sku  = trim((string) ($row['Mã'] ?? ''));
             $name = trim((string) ($row['Tên'] ?? ''));
             $unit = trim((string) ($row['ĐVT chính'] ?? ''));
@@ -77,7 +90,8 @@ class ImportMasterProductsCommand extends Command
             }
 
             $rule       = self::KHO_MAP[$kho];
-            $categoryId = $rule['category'] !== null ? $categoryIds->get($rule['category']) : null;
+            $category   = $rule['category'] !== null && $classifier->isProcessed($name) ? ProductCategoryClassifier::PROCESSED : $rule['category'];
+            $categoryId = $category !== null ? $categoryIds->get($category) : null;
 
             if (!$dryRun) {
                 Product::query()->updateOrCreate(

@@ -9,17 +9,26 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
+        $created = 0;
+
         foreach ($this->definitions() as $definition) {
-            Category::query()->updateOrCreate(['code' => $definition['code']], $definition);
+            if (Category::withTrashed()->where('code', $definition['code'])->exists()) {
+                continue;
+            }
+
+            Category::query()->create($definition);
+            $created++;
         }
 
-        $this->command?->info('  ✓ categories seeded: ' . count($this->definitions()) . ' nhóm thực phẩm.');
+        $this->command?->info("  ✓ categories: tạo mới {$created}, giữ nguyên " . (count($this->definitions()) - $created) . '.');
     }
 
     private function definitions(): array
     {
         return [
             ['code' => 'fresh_food',               'name' => 'Thực phẩm tươi sống',                         'description' => null, 'is_active' => true],
+            ['code' => 'fresh_meat_seafood',        'name' => 'Thịt, thủy sản & sản phẩm động vật tươi sống', 'description' => null, 'is_active' => true],
+            ['code' => 'fresh_produce',             'name' => 'Rau củ quả tươi',                              'description' => null, 'is_active' => true],
             ['code' => 'processed_food',            'name' => 'Thực phẩm đã qua chế biến',                    'description' => null, 'is_active' => true],
             ['code' => 'prepackaged_food',          'name' => 'Thực phẩm bao gói sẵn',                        'description' => null, 'is_active' => true],
             ['code' => 'additives_spices',          'name' => 'Phụ gia thực phẩm & Chất hỗ trợ chế biến',     'description' => null, 'is_active' => true],

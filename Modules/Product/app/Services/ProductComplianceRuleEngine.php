@@ -7,45 +7,66 @@ use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
 
 /**
- * Ánh xạ nhóm thực phẩm (categories.code) của sản phẩm -> giấy tờ pháp lý bắt buộc
- * (document_master_types.code).
+ * Ánh xạ nhóm hàng (categories.code) của sản phẩm -> giấy tờ pháp lý bắt buộc
+ * (document_master_types.code). Mỗi nhóm có bộ quy tắc riêng, không dùng chung.
  *
  * Căn cứ pháp lý (hard-code theo văn bản quy phạm — KHÔNG tự suy diễn luật):
- * - Nghị định 15/2018/NĐ-CP, Điều 4: thực phẩm bao gói sẵn, phụ gia thực phẩm phải TỰ CÔNG BỐ.
+ * - Nghị định 15/2018/NĐ-CP, Điều 4: thực phẩm đã qua chế biến bao gói sẵn, phụ gia thực phẩm phải
+ *   TỰ CÔNG BỐ; Điều 5/Điều 7: hồ sơ công bố kèm Phiếu kết quả kiểm nghiệm ATTP trong thời hạn 12 tháng.
  *   Điều 6: thực phẩm bảo vệ sức khỏe/dinh dưỡng y học phải ĐĂNG KÝ BẢN CÔNG BỐ.
- *   => Cả hai đều thể hiện qua hồ sơ `product_declaration` trong document_master_types.
- * - Luật Thú y 2015 + Thông tư 25/2016/TT-BNNPTNT: sản phẩm động vật tươi sống (thịt, trứng...)
- *   vận chuyển/kinh doanh phải có Giấy chứng nhận kiểm dịch thú y (`supplier_vet`).
- * - Hướng dẫn 02/HD-BCĐ (Hà Nội) và tương đương: rau củ quả tươi khuyến nghị truy xuất nguồn gốc
- *   qua chứng nhận VietGAP/GlobalGAP (`supplier_vietgap`) — chấp nhận thay thế cho `supplier_vet`
- *   với nhóm fresh_food (thú y chỉ áp dụng động vật, VietGAP áp dụng rau củ quả).
+ * - Luật Thú y 2015 + Thông tư 25/2016/TT-BNNPTNT, 26/2016/TT-BNNPTNT: động vật, sản phẩm động vật
+ *   và thủy sản tươi sống phải có Giấy chứng nhận kiểm dịch (`supplier_vet`).
+ * - Hướng dẫn 02/HD-BCĐ (Hà Nội) và tương đương: rau củ quả tươi truy xuất nguồn gốc qua chứng nhận
+ *   VietGAP/GlobalGAP (`supplier_vietgap`) hoặc kết quả phân tích đất/nước vùng trồng
+ *   (`supplier_soil_water_test`).
  *
- * Nhóm `processed_food` và `beverages_water` chưa có quy tắc giấy tờ cụ thể — để trống
- * thay vì tự suy diễn, chờ căn cứ pháp lý được xác nhận.
+ * Nhóm `beverages_water` và nhóm cũ `fresh_food` (chưa tách thịt/rau) không có quy tắc.
  */
 class ProductComplianceRuleEngine
 {
+    private const PROCESSED_GROUPS = [
+        'processed_food',
+        'prepackaged_food',
+        'additives_spices',
+        'functional_fortified_food',
+    ];
+
     /**
      * @return ComplianceRequirement[]
      */
     public function requirementsFor(Product $product): array
     {
-        return match ($product->category?->code) {
-            'prepackaged_food',
-            'additives_spices',
-            'functional_fortified_food' => [
+        $code = $product->category?->code;
+
+        if (in_array($code, self::PROCESSED_GROUPS, true)) {
+            return [
                 new ComplianceRequirement(
-                    label: 'Hồ sơ công bố sản phẩm',
+                    label: 'Hồ sơ công bố sản phẩm (Tự công bố / Đăng ký)',
                     documentTypeCodes: ['product_declaration'],
                     legalBasis: 'Nghị định 15/2018/NĐ-CP, Điều 4/Điều 6',
                 ),
+                new ComplianceRequirement(
+                    label: 'Phiếu kiểm nghiệm sản phẩm định kỳ',
+                    documentTypeCodes: ['product_test_report'],
+                    legalBasis: 'Nghị định 15/2018/NĐ-CP, Điều 5/Điều 7',
+                ),
+            ];
+        }
+
+        return match ($code) {
+            'fresh_meat_seafood' => [
+                new ComplianceRequirement(
+                    label: 'Giấy chứng nhận kiểm dịch thú y',
+                    documentTypeCodes: ['supplier_vet'],
+                    legalBasis: 'Luật Thú y 2015; Thông tư 25/2016/TT-BNNPTNT, 26/2016/TT-BNNPTNT',
+                ),
             ],
 
-            'fresh_food' => [
+            'fresh_produce' => [
                 new ComplianceRequirement(
-                    label: 'Giấy kiểm dịch thú y hoặc chứng nhận VietGAP/GlobalGAP',
-                    documentTypeCodes: ['supplier_vet', 'supplier_vietgap'],
-                    legalBasis: 'Luật Thú y 2015; Thông tư 25/2016/TT-BNNPTNT',
+                    label: 'Chứng nhận VietGAP/GlobalGAP hoặc kết quả phân tích đất/nước vùng trồng',
+                    documentTypeCodes: ['supplier_vietgap', 'supplier_soil_water_test'],
+                    legalBasis: 'Hướng dẫn 02/HD-BCĐ',
                 ),
             ],
 

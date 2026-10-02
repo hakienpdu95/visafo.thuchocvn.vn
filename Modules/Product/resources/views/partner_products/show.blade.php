@@ -67,6 +67,8 @@
             <p class="text-sm text-base-content/50">
                 @if(!$partnerProduct->product)
                 Chưa ánh xạ sản phẩm chuẩn — không thể xác định giấy tờ bắt buộc.
+                @elseif($partnerProduct->product->category?->code === 'fresh_food')
+                Sản phẩm đang thuộc nhóm chung "{{ $partnerProduct->product->category->name }}" — cần chuyển sang nhóm Thịt/thủy sản tươi sống, Rau củ quả tươi hoặc Thực phẩm đã qua chế biến để xác định giấy tờ bắt buộc.
                 @else
                 Nhóm hàng của sản phẩm này chưa có quy tắc giấy tờ bắt buộc trong hệ thống.
                 @endif

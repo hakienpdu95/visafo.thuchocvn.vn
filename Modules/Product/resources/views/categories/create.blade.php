@@ -43,7 +43,7 @@
                 </label>
                 <input type="text" name="code" value="{{ old('code') }}"
                        class="input input-bordered input-sm w-full font-mono @error('code') input-error @enderror"
-                       placeholder="VD: fresh_food (Để trống hệ thống sẽ tự tạo DMNH-000001)">
+                       placeholder="VD: fresh_produce (Để trống hệ thống sẽ tự tạo DMNH-000001)">
                 <p class="mt-1 text-xs text-base-content/40">Có thể tự nhập, hoặc để trống để hệ thống tự động sinh mã.</p>
                 @error('code')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
             </div>

@@ -17,11 +17,17 @@ class DocumentMasterTypeSeeder extends Seeder
     {
         $created = 0;
         $synced  = 0;
+        $skipped = 0;
 
         foreach ($this->definitions() as $definition) {
             $existing = DocumentMasterType::withTrashed()->where('code', $definition['code'])->first();
 
             if ($existing === null) {
+                if (DocumentMasterType::withTrashed()->where('name', $definition['name'])->exists()) {
+                    $skipped++;
+                    continue;
+                }
+
                 DocumentMasterType::query()->create($definition);
                 $created++;
                 continue;
@@ -33,7 +39,7 @@ class DocumentMasterTypeSeeder extends Seeder
             }
         }
 
-        $this->command?->info("  ✓ document_master_types: tạo mới {$created}, cập nhật nhóm {$synced}.");
+        $this->command?->info("  ✓ document_master_types: tạo mới {$created}, cập nhật nhóm {$synced}, bỏ qua do trùng tên {$skipped}.");
     }
 
     /**
@@ -347,6 +353,90 @@ class DocumentMasterTypeSeeder extends Seeder
                 'is_required_expiry_date'  => false,
                 'has_expiration_date'      => false,
                 'has_issue_place'          => false,
+                'is_transactional'         => false,
+                'default_validity_months'  => null,
+            ],
+            [
+                'code'                     => 'product_test_report',
+                'name'                     => 'Phiếu kiểm nghiệm sản phẩm',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'applicable_to'            => ['product', 'partner_product'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'has_expiration_date'      => true,
+                'has_issue_place'          => true,
+                'is_transactional'         => false,
+                'default_validity_months'  => 12,
+            ],
+            [
+                'code'                     => 'supplier_soil_water_test',
+                'name'                     => 'Kết quả phân tích mẫu đất / nước vùng trồng (NCC)',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'applicable_to'            => ['vendor', 'product', 'partner_product'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'has_expiration_date'      => true,
+                'has_issue_place'          => true,
+                'is_transactional'         => false,
+                'default_validity_months'  => 12,
+            ],
+            [
+                'code'                     => 'supplier_personnel_health',
+                'name'                     => 'Hồ sơ khám sức khỏe nhân sự (NCC)',
+                'document_group'           => DocumentGroupType::Personnel->value,
+                'applicable_to'            => ['vendor'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'has_expiration_date'      => true,
+                'has_issue_place'          => true,
+                'is_transactional'         => false,
+                'default_validity_months'  => 12,
+            ],
+            [
+                'code'                     => 'supplier_personnel_training',
+                'name'                     => 'Xác nhận kiến thức về ATTP',
+                'document_group'           => DocumentGroupType::Personnel->value,
+                'applicable_to'            => ['vendor'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'has_expiration_date'      => true,
+                'has_issue_place'          => true,
+                'is_transactional'         => false,
+                'default_validity_months'  => 36,
+            ],
+            [
+                'code'                     => 'supplier_input_origin',
+                'name'                     => 'Hồ sơ nguồn gốc đầu vào (NCC)',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'applicable_to'            => ['vendor'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => false,
+                'has_issue_place'          => false,
+                'is_transactional'         => false,
+                'default_validity_months'  => null,
+            ],
+            [
+                'code'                     => 'supplier_test_report',
+                'name'                     => 'Báo cáo kết quả kiểm nghiệm, phân tích mẫu',
+                'document_group'           => DocumentGroupType::Traceability->value,
+                'applicable_to'            => ['vendor'],
+                'is_required_issue_date'   => true,
+                'is_required_expiry_date'  => true,
+                'has_expiration_date'      => true,
+                'has_issue_place'          => true,
+                'is_transactional'         => false,
+                'default_validity_months'  => 12,
+            ],
+            [
+                'code'                     => 'supplier_other',
+                'name'                     => 'Hồ sơ khác',
+                'document_group'           => DocumentGroupType::LegalFacility->value,
+                'applicable_to'            => ['vendor'],
+                'is_required_issue_date'   => false,
+                'is_required_expiry_date'  => false,
+                'has_expiration_date'      => true,
+                'has_issue_place'          => true,
                 'is_transactional'         => false,
                 'default_validity_months'  => null,
             ],
