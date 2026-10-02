@@ -35,9 +35,9 @@ class SalesOrderController extends Controller
         $labelTemplates = $labelTemplateOptions->handle(new ListLabelTemplateOptionsQuery());
         $vendors = $vendorOptions->handle(new ListVendorOptionsQuery());
         $defaultLabelTemplateId = LabelTemplate::query()
-            ->where('view_path', 'labels.templates.visafo_75x50')
+            ->where('view_path', 'labels.templates.visafo_80x60')
             ->value('id')
-            ?? LabelTemplate::query()->where('default_size', '75x50')->value('id')
+            ?? LabelTemplate::query()->where('default_size', '80x60')->value('id')
             ?? '';
 
         return view('salesorder::sales-orders.show', compact('salesOrder', 'labelTemplates', 'vendors', 'defaultLabelTemplateId'));
