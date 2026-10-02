@@ -11,6 +11,16 @@
 @endphp
 @once
 <style>
+    .tpl-visafo-rcq80 {
+        font-family: Arial, Helvetica, "Roboto", sans-serif !important; 
+        color: #000000 !important; 
+        -webkit-font-smoothing: none !important;
+        -moz-osx-font-smoothing: grayscale !important;
+        text-rendering: crispEdges !important;
+    }
+    .tpl-visafo-rcq80 td {
+        font-weight: 600; 
+    }
     .tpl-visafo-rcq80.label-wrapper { font-family: Arial, Roboto, Helvetica, sans-serif !important; width: 80mm; height: 60mm; overflow: hidden; }
     .tpl-visafo-rcq80.label-wrapper * { font-family: inherit !important; color: #000; -webkit-font-smoothing: none; -moz-osx-font-smoothing: grayscale; }
     .tpl-visafo-rcq80 .label {
@@ -22,29 +32,30 @@
 
     .tpl-visafo-rcq80 .header { flex: none; overflow: hidden; display: flex; align-items: center; gap: 1mm; }
     .tpl-visafo-rcq80 .h-left { flex: 1; min-width: 0; overflow: hidden; border-bottom: 1px solid #000; padding-bottom: .3mm; }
-    .tpl-visafo-rcq80 .h-left .co-big { font-size: 8.8pt; font-weight: bold; letter-spacing: 0; font-stretch: condensed; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
+    .tpl-visafo-rcq80 .h-left .co-big { font-size: 9pt; font-weight: bold; letter-spacing: 0; font-stretch: condensed; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; margin-bottom: 0.4mm;}
     .tpl-visafo-rcq80 .h-left .co-slogan { font-size: 6.5pt; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
     .tpl-visafo-rcq80 .h-right { flex: none; display: flex; align-items: flex-end; }
-    .tpl-visafo-rcq80 .h-right img { width: 10mm; max-height: 6.8mm; object-fit: contain; flex: none; }
+    .tpl-visafo-rcq80 .h-right img { width: 10mm; object-fit: contain; flex: none; }
 
-    .tpl-visafo-rcq80 .product-block { flex: none; overflow: hidden; display: flex; align-items: center; border-radius: 3px; border: 1px solid #000; padding: 0.4mm 0.5mm 0mm 1mm; box-sizing: border-box; }
-    .tpl-visafo-rcq80 .product-left { flex: 1; min-width: 0; overflow: hidden; }
-    .tpl-visafo-rcq80 .product-left .label-sm { font-size: 7pt; font-weight: 700; line-height: 1.15; }
-    .tpl-visafo-rcq80 .product-left .product-name { font-size: 10.5pt; font-weight: 700; letter-spacing: -.6px; text-transform: uppercase; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tpl-visafo-rcq80 .product-block { flex: none; overflow: hidden; display: flex; align-items: center; border-radius: 3px; border: 1px solid #000; padding: 0.5mm; box-sizing: border-box; background: #000; }
+    .tpl-visafo-rcq80 .product-left { display: flex; min-width: 0; overflow: hidden; justify-content: center;  align-items: center; width: 100%;}
+    .tpl-visafo-rcq80 .product-left .label-sm { font-size: 7pt; font-weight: 700; line-height: 1.15; white-space: nowrap; flex-shrink: 0; margin-right: 3px; color: #fff;}
+    .tpl-visafo-rcq80 .product-left .product-name { font-size: 10.5pt; font-weight: 700; letter-spacing: -.6px; text-transform: uppercase; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #fff;  border-radius: 0.4mm; padding: 0mm 0.3mm 0mm 0.6mm; flex: 1;}
 
     .tpl-visafo-rcq80 .info-qr-row { display: flex; flex: 1; min-height: 0; overflow: hidden; align-items: flex-start; }
-    .tpl-visafo-rcq80 .info-col { flex: none; width: 78%; min-width: 0; overflow: hidden; box-sizing: border-box; }
-    .tpl-visafo-rcq80 .info-table { table-layout: fixed; width: 100%; border-collapse: collapse; font-size: 6.8pt; line-height: 1.2; }
+    .tpl-visafo-rcq80 .info-col { flex: none; width: 78%; min-width: 0; overflow: hidden; box-sizing: border-box; padding-right: 1.5mm;}
+    .tpl-visafo-rcq80 .info-table { table-layout: fixed; width: 100%; border-collapse: collapse; border-spacing: 0; font-size: 6.8pt; line-height: 1.2; }
+    .tpl-visafo-rcq80 .info-table tbody tr:not(:last-child) { border-bottom: 1px solid #333; }
     .tpl-visafo-rcq80 .info-table col.col-label { width: 13.5mm; }
     .tpl-visafo-rcq80 .info-table col.col-colon { width: 2.2mm; }
     .tpl-visafo-rcq80 .info-table col.col-value { width: auto; }
-    .tpl-visafo-rcq80 .info-table td { padding: .28mm 0; vertical-align: top; }
+    .tpl-visafo-rcq80 .info-table td { padding: .4mm 0; vertical-align: center; }
     .tpl-visafo-rcq80 .info-table td.lbl { font-weight: 500; white-space: nowrap; padding-right: 0.5mm; font-size: 6.5pt; }
     .tpl-visafo-rcq80 .info-table td.lbl.strong { font-weight: 700; }
     .tpl-visafo-rcq80 .info-table td.colon { text-align: center; padding-right: 1.2mm; }
-    .tpl-visafo-rcq80 .info-table td.val { word-wrap: break-word; overflow-wrap: break-word; }
+    .tpl-visafo-rcq80 .info-table td.val { word-wrap: break-word; overflow-wrap: break-word; width: 28mm; font-weight: 600;}
     .tpl-visafo-rcq80 .info-table tr.weight td { font-weight: 500; }
-    .tpl-visafo-rcq80 .info-table tr.weight td.val { font-weight: 600; font-size: 10pt; }
+    .tpl-visafo-rcq80 .info-table tr.weight td.val { font-weight: 600; font-size: 7.5pt; }
     .tpl-visafo-rcq80 .info-table tr.batch td { font-weight: 500; }
     .tpl-visafo-rcq80 .info-table tr.batch td.val { font-weight: 600; font-size: 6.5pt; }
     .tpl-visafo-rcq80 .truncate-2-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.16; text-transform: uppercase; }
@@ -55,7 +66,7 @@
     .tpl-visafo-rcq80 .qr-box .qr-placeholder { font-size: 6.5pt; }
     .tpl-visafo-rcq80 .qr-box .qr-caption { flex: none; font-size: 5pt; line-height: 1.1; padding-top: 0.4mm; }
 
-    .tpl-visafo-rcq80 .instructions-block { flex: none; display: flex; overflow: hidden; max-height: 12.5mm; border-top: 1px solid #000; padding-top: .5mm; font-size: 5pt; line-height: 1.1; color: #000; }
+    .tpl-visafo-rcq80 .instructions-block { flex: none; display: flex; overflow: hidden; max-height: 12.5mm; border-top: 1px solid #000; padding-top: .5mm; font-size: 5pt; line-height: 1.25; color: #000; }
     .tpl-visafo-rcq80 .instructions-block .ins-col { flex: 1 1 50%; min-width: 0; overflow: hidden; }
     .tpl-visafo-rcq80 .instructions-block .ins-col:first-child { border-right: 1px solid #000; padding-right: 1mm; }
     .tpl-visafo-rcq80 .instructions-block .ins-col:last-child { padding-left: 1mm; }
@@ -63,10 +74,6 @@
     .tpl-visafo-rcq80 .ins-title svg { width: 2.8mm; height: 2.8mm; flex: none; }
     .tpl-visafo-rcq80 .ins-text { margin: 0; }
     .tpl-visafo-rcq80 .ins-list { margin: 0; padding-left: 2mm; list-style: disc; }
-
-    .tpl-visafo-rcq80 .footer { flex: none; height: 4.2mm; box-sizing: border-box; overflow: hidden; display: flex; justify-content: center; align-items: center; gap: 1mm; border-top: 1px solid #000; padding-top: .6mm; font-size: 7pt; line-height: 1; white-space: nowrap; }
-    .tpl-visafo-rcq80 .footer > div { display: flex; align-items: center; gap: .6mm; min-width: 0; overflow: hidden; }
-    .tpl-visafo-rcq80 .footer svg { width: 3mm; height: 3mm; flex: none; }
 
     @media screen { .tpl-visafo-rcq80 .label { box-shadow: 0 1px 4px rgba(0,0,0,.25); } }
     @media print {
@@ -100,17 +107,17 @@
                     <colgroup>
                         <col class="col-label"><col class="col-colon"><col class="col-value">
                     </colgroup>
-                    <tr class="weight">
-                        <td class="lbl">SL/KL</td><td class="colon">:</td>
-                        <td class="val">{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} {{ $unit }}</td>
-                    </tr>
                     <tr>
-                        <td class="lbl strong">NSX</td><td class="colon">:</td>
+                        <td class="lbl">Ngày sản xuất: </td><td class="colon">:</td>
                         <td class="val">{{ $log->mfg_date?->format('d/m/Y') ?? '—' }}</td>
                     </tr>
                     <tr>
-                        <td class="lbl strong">HSD</td><td class="colon">:</td>
+                        <td class="lbl">Hạn sử dụng:</td><td class="colon">:</td>
                         <td class="val">{{ $log->exp_date?->format('d/m/Y') ?? '—' }}</td>
+                    </tr>
+                    <tr class="weight">
+                        <td class="lbl">SL/KL</td><td class="colon">:</td>
+                        <td class="val">{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} {{ $unit }}</td>
                     </tr>
                     <tr class="batch">
                         <td class="lbl">Mã lô</td><td class="colon">:</td>
@@ -160,22 +167,6 @@
                     <li>{{ $step }}</li>
                     @endforeach
                 </ul>
-            </div>
-        </div>
-
-        <div class="footer">
-            <div>
-                <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M4 4h4l2 5-2.5 2A12 12 0 0 0 13.5 16.5L15.5 14l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 2 6a2 2 0 0 1 2-2z"/>
-                </svg>
-                <span>{{ $companyPhone }}</span>
-                <span>|</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9"/>
-                    <ellipse cx="12" cy="12" rx="4" ry="9"/>
-                    <line x1="3" y1="12" x2="21" y2="12"/>
-                </svg>
-                <span>{{ $companyWebsite }}</span>
             </div>
         </div>
     </div>
