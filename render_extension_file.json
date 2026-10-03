@@ -73,7 +73,8 @@
         "customer_id///unsignedBigInteger///__///_NULL///NULL///->constrained('customers')->onDelete('restrict')///__",
         "__index///index///__///__///__///type|idx_contracts_type///__",
         "ulid///ulid///__///_NULL///NULL///__///__",
-        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "__index///index///__///__///__///vendor_id,status,end_date|idx_contracts_vendor_status_end///__"
     ],
     [
         "contracts///change///__///",

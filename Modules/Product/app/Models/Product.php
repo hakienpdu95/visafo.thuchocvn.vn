@@ -5,23 +5,33 @@ namespace Modules\Product\Models;
 use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Traits\HasAutoCode;
+use App\Traits\HasTenantMedia;
+use App\Models\Media;
+use App\Services\Media\MediaUrlService;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Collection;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Models\CustomerProduct;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Enums\ProductType;
+use Spatie\MediaLibrary\HasMedia;
 
-class Product extends TenantAwareModel
+class Product extends TenantAwareModel implements HasMedia
 {
     use HasCreator;
 
     use HasAutoCode;
+
+    use HasTenantMedia;
+
+    /** Bộ sưu tập ảnh sản phẩm; ảnh chính luôn nằm ở order_column nhỏ nhất. */
+    public const GALLERY_COLLECTION = 'gallery';
 
     public function autoCodeColumn(): string
     {
@@ -67,6 +77,32 @@ class Product extends TenantAwareModel
         }
 
         return \Illuminate\Support\Carbon::parse($baseDate)->startOfDay()->addDays($this->shelf_life_days);
+    }
+
+    /**
+     * Ảnh sản phẩm theo thứ tự hiển thị — phần tử đầu tiên là ảnh chính.
+     * Thứ tự do SyncProductGalleryAction ghi vào order_column (Spatie tự sort theo cột này).
+     *
+     * @return Collection<int, array{id: string, url: string, thumb_url: string, is_main: bool}>
+     */
+    public function galleryImages(): Collection
+    {
+        $urls = app(MediaUrlService::class);
+
+        return $this->getMedia(self::GALLERY_COLLECTION)
+            ->values()
+            ->map(fn (Media $media, int $i) => [
+                'id'        => $media->id,
+                'url'       => $urls->url($media, 'medium') ?: $urls->url($media),
+                'thumb_url' => $urls->url($media, 'thumb') ?: $urls->url($media),
+                'is_main'   => $i === 0,
+            ]);
+    }
+
+    /** URL ảnh chính; fallback image_url (ảnh đồng bộ từ Sapo) khi chưa upload ảnh nào. */
+    public function mainImageUrl(): ?string
+    {
+        return $this->galleryImages()->first()['url'] ?? ($this->image_url ?: null);
     }
 
     public function category(): BelongsTo

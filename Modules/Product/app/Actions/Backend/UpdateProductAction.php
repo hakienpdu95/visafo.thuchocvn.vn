@@ -10,6 +10,8 @@ class UpdateProductAction
 {
     use AsAction;
 
+    public function __construct(private readonly SyncProductGalleryAction $syncGallery) {}
+
     public function handle(Product $product, UpdateProductData $data): Product
     {
         $product->update([
@@ -21,6 +23,10 @@ class UpdateProductAction
             'shelf_life_days' => $data->shelf_life_days,
             'status'       => $data->status->value,
         ]);
+
+        if ($data->galleryIds() !== null) {
+            $this->syncGallery->handle($product, $data->galleryIds(), $data->main_image);
+        }
 
         return $product;
     }

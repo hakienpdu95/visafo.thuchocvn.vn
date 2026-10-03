@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>Truy xuất nguồn gốc — {{ $trace->productName }}</title>
-    @vite(['resources/css/app.css'], 'build/backend')
+    @vite(array_filter(['resources/css/app.css', count($trace->productImages) > 1 ? 'resources/js/modules/swiper.js' : null]), 'build/backend')
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased">
 @php
@@ -71,12 +71,25 @@
 
         {{-- Block 1: Sản phẩm --}}
         <section class="overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-black/5">
-            <div class="flex h-56 items-center justify-center bg-green-50">
-                @if($trace->productImage)
-                    <img src="{{ $trace->productImage }}" alt="{{ $trace->productName }}" class="h-full w-full object-cover"
-                         onerror="this.remove(); document.getElementById('trace-noimg').classList.remove('hidden')">
+            <div class="relative flex h-56 items-center justify-center bg-green-50">
+                @if($trace->productImages)
+                    {{-- Ảnh chính luôn ở index 0 (slide đầu) — thứ tự đã sắp sẵn ở backend --}}
+                    <div id="trace-product-swiper" class="swiper h-full w-full">
+                        <div class="swiper-wrapper">
+                            @foreach($trace->productImages as $i => $imageUrl)
+                            <div class="swiper-slide">
+                                <img src="{{ $imageUrl }}" alt="{{ $trace->productName }}{{ $i ? ' — ảnh ' . ($i + 1) : '' }}"
+                                     class="h-full w-full object-cover" @if($i) loading="lazy" @endif
+                                     onerror="this.closest('.swiper-slide').remove()">
+                            </div>
+                            @endforeach
+                        </div>
+                        @if(count($trace->productImages) > 1)
+                        <div class="swiper-pagination"></div>
+                        @endif
+                    </div>
                 @endif
-                <div id="trace-noimg" class="{{ $trace->productImage ? 'hidden' : '' }} flex flex-col items-center text-green-300">
+                <div id="trace-noimg" class="{{ $trace->productImages ? 'hidden' : '' }} flex flex-col items-center text-green-300">
                     <svg class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                     <span class="mt-1 text-xs">Chưa có hình ảnh</span>
                 </div>
@@ -189,5 +202,10 @@
     </main>
     @endunless
 </div>
+@if(count($trace->productImages) > 1)
+<script type="module">
+    initSwiper('#trace-product-swiper', { navigation: false, pagination: { el: '#trace-product-swiper .swiper-pagination', clickable: true } });
+</script>
+@endif
 </body>
 </html>

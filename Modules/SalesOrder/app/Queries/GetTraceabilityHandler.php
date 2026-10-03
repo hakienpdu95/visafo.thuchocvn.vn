@@ -17,7 +17,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         /** @var GetTraceabilityQuery $query */
         $log = PrintLog::query()
             ->where('trace_code', $query->traceCode)
-            ->with(['orderItem.product.category', 'orderItem.salesOrder', 'attributes'])
+            ->with(['orderItem.product.category', 'orderItem.product.media', 'orderItem.salesOrder', 'attributes'])
             ->first();
 
         if ($log === null || $log->orderItem === null) {
@@ -64,10 +64,13 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ],
         ];
 
+        // Ảnh chính đã ở đầu nhờ order_column; chưa upload ảnh thì dùng image_url (Sapo)
+        $productImages = $product?->galleryImages()->pluck('url')->all() ?: array_filter([$product?->image_url]);
+
         return new TraceabilityData(
             traceCode: $log->trace_code,
             productName: $product?->name ?? $item->product_name_raw ?? '—',
-            productImage: $product?->image_url ?: null,
+            productImage: $productImages[0] ?? null,
             categoryName: $product?->category?->name,
             weight: $weight,
             mfgDate: $log->mfg_date,
@@ -81,6 +84,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             timeline: $timeline,
             status: $log->status,
             statusReason: $log->status_reason,
+            productImages: array_values($productImages),
         );
     }
 

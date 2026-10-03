@@ -54,6 +54,12 @@ return [
             'is_public'    => true,
             'conversions'  => ['thumb', 'medium'],
         ],
+        'gallery' => [
+            'max_size_kb'  => 10240,
+            'allowed_mime' => ['image/jpeg', 'image/png', 'image/webp'],
+            'is_public'    => true,
+            'conversions'  => ['thumb', 'medium'],
+        ],
         'cover' => [
             'max_size_kb'  => 10240,
             'allowed_mime' => ['image/jpeg', 'image/png', 'image/webp'],

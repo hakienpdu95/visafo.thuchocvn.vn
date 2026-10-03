@@ -35,6 +35,7 @@
 
     <div class="grid grid-cols-1 xl:grid-cols-[1fr_268px] gap-6 items-start">
 
+        <div class="space-y-6">
         <div class="card bg-base-100 shadow-sm border border-base-200">
             <div class="card-body">
 
@@ -134,6 +135,9 @@
             </div>
         </div>
 
+        @include('product::products.partials.gallery')
+        </div>
+
         <div class="xl:sticky xl:top-4 space-y-4">
             <div class="card bg-base-100 shadow-sm border border-base-200">
                 <div class="card-body p-4">
@@ -183,6 +187,7 @@
 @push('scripts')
     @vite([
         'resources/js/modules/tom-select.js',
+        'resources/js/modules/filepond.js',
         'Modules/Product/resources/assets/js/product.js',
     ], 'build/backend')
 @endpush

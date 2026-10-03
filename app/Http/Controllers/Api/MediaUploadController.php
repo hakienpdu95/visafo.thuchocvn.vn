@@ -34,7 +34,7 @@ class MediaUploadController extends Controller
      * jodit_content is exclusively managed by MediaJoditUploadController.
      */
     private const ALLOWED_COLLECTIONS = [
-        'avatar', 'logo', 'thumbnail', 'cover',
+        'avatar', 'logo', 'thumbnail', 'cover', 'gallery',
         'attachments', 'attachments_private',
     ];
 

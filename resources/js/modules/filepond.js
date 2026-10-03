@@ -69,6 +69,7 @@ const COLLECTION_MAX_SIZE = {
     logo:                 '5MB',
     thumbnail:            '5MB',
     cover:                '10MB',
+    gallery:              '10MB',
     jodit_content:        '10MB',
     attachments:          '50MB',
     attachments_private:  '50MB',
@@ -80,6 +81,7 @@ const COLLECTION_MIME = {
     logo:                'image/jpeg, image/png, image/webp',
     thumbnail:           'image/jpeg, image/png, image/webp',
     cover:               'image/jpeg, image/png, image/webp',
+    gallery:             'image/jpeg, image/png, image/webp',
     attachments:         null,  // any
     attachments_private: null,  // any
 };

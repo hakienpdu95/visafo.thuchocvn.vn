@@ -3,11 +3,13 @@
 namespace Modules\Product\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Services\Media\MediaUrlService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Modules\Product\Actions\Backend\DestroyProductAction;
 use Modules\Product\Actions\Backend\StoreProductAction;
+use Modules\Product\Actions\Backend\SyncProductGalleryAction;
 use Modules\Product\Actions\Backend\UpdateProductAction;
 use Modules\Product\Data\Requests\StoreProductData;
 use Modules\Product\Data\Requests\UpdateProductData;
@@ -42,9 +44,10 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
+        $categories   = Category::orderBy('name')->get();
+        $galleryItems = $this->galleryItems(null);
 
-        return view('product::products.create', compact('categories'));
+        return view('product::products.create', compact('categories', 'galleryItems'));
     }
 
     public function store(Request $request, StoreProductAction $action): RedirectResponse
@@ -58,9 +61,10 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        $categories = Category::orderBy('name')->get();
+        $categories   = Category::orderBy('name')->get();
+        $galleryItems = $this->galleryItems($product);
 
-        return view('product::products.edit', compact('product', 'categories'));
+        return view('product::products.edit', compact('product', 'categories', 'galleryItems'));
     }
 
     public function update(Request $request, Product $product, UpdateProductAction $action): RedirectResponse
@@ -82,5 +86,37 @@ class ProductController extends Controller
 
         return redirect()->route('backend.products.index')
             ->with('success', 'Đã xóa sản phẩm "' . $name . '".');
+    }
+
+    /**
+     * Danh sách ảnh ban đầu cho khu vực upload: lần đầu mở form lấy từ DB,
+     * sau lỗi validate thì dựng lại từ old input để không mất ảnh vừa upload (draft) và lựa chọn ảnh chính.
+     *
+     * @return array<int, array{id: string, thumb_url: string, is_main: bool}>
+     */
+    private function galleryItems(?Product $product): array
+    {
+        $oldGallery = old('gallery');
+
+        if ($oldGallery === null) {
+            return $product?->galleryImages()
+                ->map(fn ($img) => ['id' => $img['id'], 'thumb_url' => $img['thumb_url'], 'is_main' => $img['is_main']])
+                ->all() ?? [];
+        }
+
+        $ids     = array_values(array_filter((array) json_decode($oldGallery, true), 'is_string'));
+        $mainId  = old('main_image');
+        $urls    = app(MediaUrlService::class);
+        $allowed = SyncProductGalleryAction::allowedMedia($product, $ids)->keyBy('id');
+
+        return collect($ids)
+            ->filter(fn ($id) => $allowed->has($id))
+            ->map(fn ($id) => [
+                'id'        => $id,
+                'thumb_url' => $urls->url($allowed[$id], 'thumb') ?: $urls->url($allowed[$id]),
+                'is_main'   => $id === $mainId,
+            ])
+            ->values()
+            ->all();
     }
 }

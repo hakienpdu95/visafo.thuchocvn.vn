@@ -34,7 +34,22 @@ class UpdateProductData extends Data
 
         #[Nullable, IntegerType, Min(1), Max(3650)]
         public readonly ?int $shelf_life_days = null,
+
+        /** JSON mảng ID media theo thứ tự hiển thị; null = form không gửi → giữ nguyên ảnh. */
+        public readonly ?string $gallery = null,
+
+        public readonly ?string $main_image = null,
     ) {}
+
+    /** @return string[]|null */
+    public function galleryIds(): ?array
+    {
+        if ($this->gallery === null) {
+            return null;
+        }
+
+        return array_values(array_filter((array) json_decode($this->gallery, true), 'is_string'));
+    }
 
     public static function rules(): array
     {
@@ -48,6 +63,8 @@ class UpdateProductData extends Data
             ],
             'category_id'  => ['required', Rule::exists('categories', 'id')],
             'product_type' => ['required', Rule::enum(ProductType::class)],
+            'gallery'      => ['nullable', 'json'],
+            'main_image'   => ['nullable', 'string', 'max:26'],
         ];
     }
 

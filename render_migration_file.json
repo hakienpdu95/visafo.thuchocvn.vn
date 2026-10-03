@@ -1031,5 +1031,21 @@
         "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
         "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
         "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
+    ],
+    [
+        "vendor_compliance_requirements///__///__///",
+        "kind///string///20///NOT_NULL///__///__///document | contract",
+        "document_master_type_id///unsignedBigInteger///__///_NULL///NULL///->constrained('document_master_types')->onDelete('restrict')///__",
+        "contract_type_id///unsignedBigInteger///__///_NULL///NULL///->constrained('contract_types')->onDelete('restrict')///__",
+        "source_group///string///10///_NULL///NULL///__///NULL = mọi NCC | n1 | n2 | n3 | n4",
+        "group_key///string///60///_NULL///NULL///__///Các dòng cùng group_key: chỉ cần thỏa một",
+        "label///string///255///NOT_NULL///__///__///__",
+        "is_mandatory///boolean///__///NOT_NULL///true///__///__",
+        "warning_days///unsignedSmallInteger///__///NOT_NULL///30///__///__",
+        "legal_basis///string///255///_NULL///NULL///__///__",
+        "__index///index///__///__///__///source_group|idx_vcr_source_group///__",
+        "created_at///timestamp///__///_NULL///NULL///__///Thời gian tạo",
+        "updated_at///timestamp///__///_NULL///NULL///__///Thời gian cập nhật",
+        "deleted_at///timestamp///__///_NULL///NULL///__///Thời gian xóa mềm"
     ]
 ]

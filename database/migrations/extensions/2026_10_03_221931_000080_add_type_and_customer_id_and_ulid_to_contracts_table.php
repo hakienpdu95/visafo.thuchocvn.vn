@@ -26,6 +26,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('contracts', 'created_by')) {
                 $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->after('ulid')->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
             }
+            if (!Schema::hasIndex('contracts', 'idx_contracts_vendor_status_end')) {
+                $table->index(['vendor_id', 'status', 'end_date'], 'idx_contracts_vendor_status_end');
+            }
         });
     }
 

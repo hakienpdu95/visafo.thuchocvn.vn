@@ -15,6 +15,7 @@ readonly class TraceabilityData
      * @param  array<int, array{key: string, value: string}>  $attributes
      * @param  array<int, array{title: string, description: string, at: ?Carbon, done: bool}>  $timeline
      * @param  array{name: string, address: string, hotline: string}  $company
+     * @param  string[]  $productImages  ảnh slider, ảnh chính luôn ở index 0
      */
     public function __construct(
         public string $traceCode,
@@ -31,5 +32,6 @@ readonly class TraceabilityData
         public array $timeline,
         public PrintLogStatus $status = PrintLogStatus::Active,
         public ?string $statusReason = null,
+        public array $productImages = [],
     ) {}
 }
