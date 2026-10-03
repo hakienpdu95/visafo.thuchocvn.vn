@@ -332,14 +332,18 @@
                         </template>
                         <template x-for="log in logs" :key="log.id">
                             <tr class="border-b border-gray-100 last:border-b-0">
-                                <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap" x-text="log.printed_at"></td>
+                                <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                                    <span x-text="log.printed_at"></span>
+                                    <span class="block text-xs text-gray-400" x-show="log.print_count > 1" x-text="'In ' + log.print_count + ' lần · gần nhất ' + log.last_printed_at"></span>
+                                    <span class="block text-xs text-red-500" x-show="log.active_count === 0">Tem đã thu hồi / hủy</span>
+                                </td>
                                 <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap font-mono" x-text="log.weight_per_label"></td>
                                 <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap" x-text="log.label_count"></td>
                                 <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap font-mono" x-text="log.total_weight"></td>
                                 <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap" x-text="log.exp_date"></td>
                                 <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap" x-text="log.printed_by || '—'"></td>
                                 <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap text-right">
-                                    <button type="button" x-show="log.reprint_url" @click="reprint(log)"
+                                    <button type="button" x-show="log.reprint_url && log.active_count > 0" @click="reprint(log)"
                                             class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-nowrap">
                                         <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
                                         In lại

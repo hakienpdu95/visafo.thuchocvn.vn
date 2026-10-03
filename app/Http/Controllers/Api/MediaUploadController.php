@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Spatie\MediaLibrary\HasMedia;
 
 /**
@@ -78,11 +79,18 @@ class MediaUploadController extends Controller
 
         $collectionConfig = config("media.collections.{$collection}", []);
 
-        $request->validate([
-            'file' => ['required', 'file', 'max:' . ($collectionConfig['max_size_kb'] ?? 10240)],
-        ]);
+        // Validate trên $request->file() thay vì $request->all(): từ Laravel 13, all() ưu tiên input text
+        // hơn file cùng tên, mà FilePond mặc định gửi kèm metadata "{}" dưới cùng field "file"
+        // → all()['file'] là chuỗi → lỗi "The file field must be a file." dù file hợp lệ.
+        $file = $request->file('file');
 
-        $file        = $request->file('file');
+        Validator::make(['file' => $file], [
+            'file' => ['required', 'file', 'max:' . ($collectionConfig['max_size_kb'] ?? 10240)],
+        ], [
+            'file.required' => 'Không nhận được file. File có thể vượt quá giới hạn post_max_size của máy chủ (' . ini_get('post_max_size') . ').',
+            'file.uploaded' => 'File vượt quá giới hạn upload của máy chủ (upload_max_filesize = ' . ini_get('upload_max_filesize') . ').',
+        ])->validate();
+
         $allowedMime = $collectionConfig['allowed_mime'] ?? ['*'];
 
         if ($allowedMime !== ['*'] && ! in_array($file->getMimeType(), $allowedMime, true)) {

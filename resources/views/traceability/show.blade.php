@@ -7,36 +7,47 @@
     <title>Truy xuất nguồn gốc — {{ $trace->productName }}</title>
     @vite(array_filter(['resources/css/app.css', count($trace->productImages) > 1 ? 'resources/js/modules/swiper.js' : null]), 'build/backend')
 </head>
-<body class="bg-gray-100 text-gray-800 antialiased">
+<body class="bg-gray-200/60 text-gray-800 antialiased">
 @php
     $fmtAt = fn ($at) => $at ? $at->format($at->format('H:i') === '00:00' ? 'd/m/Y' : 'H:i, d/m/Y') : null;
     $expired = $trace->expDate?->isPast();
+    // Icon (heroicons outline, path "d") dùng chung cho danh sách thông tin và timeline — xem partials/row.blade.php
+    $icon = [
+        'box'       => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+        'qr'        => 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z',
+        'tag'       => 'M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z',
+        'calendar'  => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+        'hourglass' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+        'info'      => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+        'factory'   => 'M3 21h18M5 21V10l5 3V10l5 3V6l4-2v17',
+        'building'  => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+        'pin'       => 'M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z',
+        'map'       => 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7',
+        'phone'     => 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z',
+        'shield'    => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+        'seed'      => 'M12 21v-8m0 0c0-4 3-7 7-7 0 4-3 7-7 7zm0 0C12 9 9 6 5 6c0 4 3 7 7 7z',
+        'farm'      => 'M12 21V11m0 0c-2.5 0-4.5-2-4.5-4.5V5c2.5 0 4.5 2 4.5 4.5M12 11c2.5 0 4.5-2 4.5-4.5V5C14 5 12 7 12 9.5M5 21h14',
+        'harvest'   => 'M5 13l4 4L19 7M4 21h16',
+        'warehouse' => 'M3 21V8l9-5 9 5v13M7 21v-8h10v8M7 17h10',
+        'package'   => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+        'truck'     => 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0',
+    ];
 @endphp
 
-<div class="max-w-md mx-auto bg-gray-50 min-h-screen shadow-sm pb-8">
+<div class="max-w-md mx-auto bg-gray-100 min-h-screen pb-8">
 
-    {{-- Header --}}
-    <header class="bg-gradient-to-b {{ $trace->status->isActive() ? 'from-green-700 to-green-600' : 'from-red-700 to-red-600' }} px-5 pt-5 pb-14 text-white">
-        <div class="flex items-center justify-between">
-            <span class="inline-flex items-center rounded-lg bg-white px-3 py-1.5 shadow-sm">
-                <img src="{{ asset('images/visafo-logo.svg') }}" alt="VISAFO" class="h-6 w-auto">
-            </span>
-            @if($trace->status->isActive())
-            <span class="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
-                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                Đã xác thực
-            </span>
-            @else
-            <span class="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-semibold text-red-600">Không còn hiệu lực</span>
-            @endif
+    {{-- Header: logo + tên pháp nhân --}}
+    <header class="sticky top-0 z-30 flex items-center gap-3 border-b border-gray-200 bg-white/95 px-4 py-2.5 backdrop-blur">
+        <img src="{{ asset('images/visafo-mark.png') }}" alt="{{ $trace->brand }}" class="h-10 w-10 shrink-0 object-contain">
+        <div class="min-w-0">
+            <p class="text-[13px] font-extrabold uppercase leading-tight tracking-wide text-green-800">{{ $trace->company['name'] }}</p>
+            <p class="text-[11px] leading-tight text-gray-500">Truy xuất nguồn gốc · TT 02/2024/TT-BKHCN</p>
         </div>
-        <h1 class="mt-5 text-lg font-semibold tracking-wide uppercase">Truy xuất nguồn gốc</h1>
-        <p class="text-sm text-green-100">Thông tin sản phẩm theo Thông tư 02/2024/TT-BKHCN</p>
     </header>
 
     @unless($trace->status->isActive())
     {{-- Tem bị thu hồi / đánh dấu lỗi: hiện cảnh báo đỏ thay cho thông tin bình thường --}}
-    <main class="-mt-10 space-y-4 px-4">
+    <main class="space-y-4 px-4 pt-4">
         <section class="overflow-hidden rounded-2xl border-2 border-red-500 bg-white shadow-md">
             <div class="bg-red-600 px-4 py-3 text-white">
                 <p class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
@@ -48,11 +59,17 @@
                 <h2 class="text-2xl font-bold leading-snug text-red-600">
                     @if($trace->status === \Modules\SalesOrder\Enums\PrintLogStatus::Recalled)
                         Sản phẩm này đã bị thu hồi
+                    @elseif($trace->status === \Modules\SalesOrder\Enums\PrintLogStatus::Revoked)
+                        Mã truy xuất này đã bị hủy
                     @else
                         Sản phẩm này đang được kiểm tra do phát hiện lỗi
                     @endif
                 </h2>
+                @if($trace->status === \Modules\SalesOrder\Enums\PrintLogStatus::Revoked)
+                <p class="text-sm text-gray-700">Tem mang mã này đã được thay bằng tem mới. Nếu sản phẩm bạn đang cầm vẫn dán tem có mã này, vui lòng liên hệ đơn vị bán hàng để xác minh.</p>
+                @else
                 <p class="text-sm text-gray-700">Vui lòng <strong>không sử dụng</strong> và liên hệ đơn vị bán hàng để được hỗ trợ.</p>
+                @endif
                 @if($trace->statusReason)
                 <p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"><span class="font-semibold">Lý do:</span> {{ $trace->statusReason }}</p>
                 @endif
@@ -67,11 +84,11 @@
         </section>
     </main>
     @else
-    <main class="-mt-10 space-y-4 px-4">
+    <main class="space-y-4 px-4 pt-4">
 
-        {{-- Block 1: Sản phẩm --}}
-        <section class="overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-black/5">
-            <div class="relative flex h-56 items-center justify-center bg-green-50">
+        {{-- 1. Hero: ảnh sản phẩm (slider) + thông tin tổng quan --}}
+        <section class="rounded-3xl bg-white p-3 shadow-sm ring-1 ring-black/5">
+            <div class="relative aspect-square overflow-hidden rounded-2xl bg-gray-100">
                 @if($trace->productImages)
                     {{-- Ảnh chính luôn ở index 0 (slide đầu) — thứ tự đã sắp sẵn ở backend --}}
                     <div id="trace-product-swiper" class="swiper h-full w-full">
@@ -79,124 +96,163 @@
                             @foreach($trace->productImages as $i => $imageUrl)
                             <div class="swiper-slide">
                                 <img src="{{ $imageUrl }}" alt="{{ $trace->productName }}{{ $i ? ' — ảnh ' . ($i + 1) : '' }}"
-                                     class="h-full w-full object-cover" @if($i) loading="lazy" @endif
-                                     onerror="this.closest('.swiper-slide').remove()">
+                                     class="h-full w-full object-cover" @if($i) loading="lazy" @endif>
                             </div>
                             @endforeach
                         </div>
-                        @if(count($trace->productImages) > 1)
-                        <div class="swiper-pagination"></div>
-                        @endif
                     </div>
-                @endif
-                <div id="trace-noimg" class="{{ $trace->productImages ? 'hidden' : '' }} flex flex-col items-center text-green-300">
-                    <svg class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                    <span class="mt-1 text-xs">Chưa có hình ảnh</span>
+                @else
+                <div class="flex h-full flex-col items-center justify-center text-gray-300">
+                    <svg class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="{{ $icon['box'] }}"/></svg>
+                    <span class="mt-1 text-xs text-gray-400">Chưa có hình ảnh</span>
                 </div>
-            </div>
-            <div class="p-4">
-                @if($trace->categoryName)
-                <span class="inline-block rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">{{ $trace->categoryName }}</span>
                 @endif
-                <h2 class="mt-2 text-xl font-bold leading-snug text-gray-900">{{ $trace->productName }}</h2>
+
+                {{-- Nút nổi: Chia sẻ / Yêu thích --}}
+                <div class="absolute right-3 top-3 z-10 flex flex-col gap-2">
+                    <button type="button" data-trace-share aria-label="Chia sẻ"
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md ring-1 ring-black/5 backdrop-blur transition active:scale-95">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                    </button>
+                    <button type="button" data-trace-fav aria-label="Yêu thích" aria-pressed="false"
+                            class="group flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md ring-1 ring-black/5 backdrop-blur transition active:scale-95 aria-pressed:text-red-500">
+                        <svg class="h-5 w-5 group-aria-pressed:fill-current" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    </button>
+                </div>
+
+                {{-- Pill số thứ tự ảnh + chấm (chỉ khi có nhiều ảnh) --}}
+                @if(count($trace->productImages) > 1)
+                <div class="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+                    <span class="tabular-nums"><span data-trace-current>1</span>/{{ count($trace->productImages) }}</span>
+                    <span class="flex items-center gap-1">
+                        @foreach($trace->productImages as $i => $_)
+                        <span data-trace-dot class="h-1.5 rounded-full transition-all {{ $i === 0 ? 'w-3 bg-white' : 'w-1.5 bg-white/50' }}"></span>
+                        @endforeach
+                    </span>
+                </div>
+                @endif
+            </div>
+
+            <div class="px-2 pb-2 pt-4">
+                <span class="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon['shield'] }}"/></svg>
+                    Đã xác thực bởi {{ $trace->company['name'] }}
+                </span>
+                <h1 class="mt-3 text-[26px] font-extrabold leading-tight text-gray-900">{{ $trace->productName }}</h1>
+                <p class="mt-1 text-base font-semibold text-orange-600">{{ $trace->productSubtitle }}</p>
+                <p class="mt-3 text-[15px] leading-relaxed text-gray-600">{{ $trace->productDescription }}</p>
+                <p class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon['package'] }}"/></svg>
+                    Quy cách: {{ $trace->weight }}
+                </p>
             </div>
         </section>
 
-        {{-- Block 2: Thông tin chính --}}
+        {{-- 2. Thông tin sản phẩm --}}
         <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin chính
+            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin sản phẩm
             </h3>
-            <dl class="divide-y divide-gray-100 text-sm">
-                <div class="flex items-start justify-between gap-4 py-2.5">
-                    <dt class="shrink-0 text-gray-500">Mã TXNG</dt>
-                    <dd class="break-all text-right font-mono font-semibold text-green-700">{{ strtoupper($trace->traceCode) }}</dd>
-                </div>
-                <div class="flex items-start justify-between gap-4 py-2.5">
-                    <dt class="shrink-0 text-gray-500">Khối lượng</dt>
-                    <dd class="text-right font-semibold">{{ $trace->weight }}</dd>
-                </div>
-                <div class="flex items-start justify-between gap-4 py-2.5">
-                    <dt class="shrink-0 text-gray-500">Ngày sản xuất (NSX)</dt>
-                    <dd class="text-right font-medium">{{ $trace->mfgDate?->format('d/m/Y') ?? 'Đang cập nhật' }}</dd>
-                </div>
-                <div class="flex items-start justify-between gap-4 py-2.5">
-                    <dt class="shrink-0 text-gray-500">Hạn sử dụng (HSD)</dt>
-                    <dd class="text-right font-medium {{ $expired ? 'text-red-600' : '' }}">
-                        {{ $trace->expDate?->format('d/m/Y') ?? 'Đang cập nhật' }}
-                        @if($expired)<span class="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-600">Hết hạn</span>@endif
-                    </dd>
-                </div>
-                {{-- Thông tin động (EAV): Tiêu chuẩn, Bảo quản, HDSD... --}}
+            <ul class="divide-y divide-gray-100">
+                @include('traceability.partials.row', ['ic' => 'qr', 'label' => 'Mã truy vết sản phẩm',
+                    'value' => strtoupper($trace->traceCode), 'mono' => true, 'accent' => true,
+                    'sub' => $trace->batchCode ? 'Mã lô: ' . $trace->batchCode : null])
+                @include('traceability.partials.row', ['ic' => 'tag', 'label' => 'Thương hiệu / Mã số',
+                    'value' => $trace->brand, 'sub' => $trace->productSku ? 'Mã sản phẩm: ' . $trace->productSku : null])
+                @include('traceability.partials.row', ['ic' => 'calendar', 'label' => 'Thời gian sản xuất (NSX)',
+                    'value' => $trace->mfgDate?->format('d/m/Y')])
+                @include('traceability.partials.row', ['ic' => 'hourglass', 'label' => 'Thời hạn sử dụng (HSD)',
+                    'value' => $trace->expDate?->format('d/m/Y'), 'danger' => $expired, 'badge' => $expired ? 'Hết hạn' : null])
+                {{-- Thông tin động (EAV) nhập lúc in tem: Bảo quản, HDSD... --}}
                 @foreach($trace->attributes as $attr)
-                <div class="flex items-start justify-between gap-4 py-2.5">
-                    <dt class="shrink-0 text-gray-500">{{ $attr['key'] }}</dt>
-                    <dd class="text-right font-medium">{{ $attr['value'] !== '' ? $attr['value'] : '—' }}</dd>
-                </div>
+                @include('traceability.partials.row', ['ic' => 'info', 'label' => $attr['key'], 'value' => $attr['value'] !== '' ? $attr['value'] : '—'])
                 @endforeach
-            </dl>
+            </ul>
         </section>
 
-        {{-- Block 3: Nguồn gốc & Đơn vị SXKD --}}
+        {{-- 3. Đơn vị sản xuất, kinh doanh & địa điểm --}}
+        <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Đơn vị sản xuất, kinh doanh
+            </h3>
+            <ul class="divide-y divide-gray-100">
+                @include('traceability.partials.row', ['ic' => 'factory', 'label' => $trace->producer['isVendor'] ? 'Đơn vị sản xuất / Nguồn cung' : 'Đơn vị sản xuất, kinh doanh',
+                    'value' => $trace->producer['name'], 'sub' => $trace->producer['taxCode'] ? 'MST: ' . $trace->producer['taxCode'] : null])
+                @include('traceability.partials.row', ['ic' => 'pin', 'label' => 'Địa chỉ', 'value' => $trace->producer['address']])
+                @include('traceability.partials.row', ['ic' => 'map', 'label' => 'Mã truy vết địa điểm (vùng trồng)',
+                    'value' => $trace->location['code'] ?? null, 'mono' => true,
+                    'sub' => $trace->location ? implode(' · ', array_filter([$trace->location['name'], $trace->location['address']])) : null])
+                @if($trace->producer['isVendor'])
+                @include('traceability.partials.row', ['ic' => 'building', 'label' => 'Đơn vị đóng gói / phân phối',
+                    'value' => $trace->company['name'], 'sub' => $trace->company['address'] ?: null])
+                @endif
+                @if($trace->company['hotline'] !== '')
+                <li class="flex items-center gap-3 py-3">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['phone'] }}"/></svg>
+                    </span>
+                    <a href="tel:{{ preg_replace('/\s+/', '', $trace->company['hotline']) }}" class="font-semibold text-green-700">Hotline: {{ $trace->company['hotline'] }}</a>
+                </li>
+                @endif
+            </ul>
+        </section>
+
+        {{-- 4. Tiêu chuẩn công bố áp dụng (chỉ hồ sơ đang hiệu lực, thuộc whitelist công khai) --}}
         <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Nguồn gốc &amp; Đơn vị SXKD
+                <span class="h-4 w-1 rounded bg-green-600"></span> Tiêu chuẩn &amp; chứng nhận
             </h3>
-            <div class="space-y-4 text-sm">
-                <div class="flex gap-3">
-                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    </span>
-                    <div>
-                        <p class="text-xs text-gray-500">Đơn vị đóng gói / phân phối</p>
-                        <p class="font-semibold text-gray-900">{{ $trace->company['name'] }}</p>
-                        <p class="text-gray-600">{{ $trace->company['address'] !== '' ? $trace->company['address'] : 'Địa chỉ đang cập nhật' }}</p>
-                        @if($trace->company['hotline'] !== '')
-                        <a href="tel:{{ preg_replace('/\s+/', '', $trace->company['hotline']) }}" class="mt-0.5 inline-block font-medium text-green-700">Hotline: {{ $trace->company['hotline'] }}</a>
-                        @endif
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 21c-4-4-7-7.5-7-11a7 7 0 1114 0c0 3.5-3 7-7 11z"/><circle cx="12" cy="10" r="2.5" stroke-width="1.8"/></svg>
-                    </span>
-                    <div>
-                        <p class="text-xs text-gray-500">Nguồn cung / Vùng trồng</p>
-                        <p class="font-semibold text-gray-900">{{ $trace->supplierName }}</p>
-                        @if($trace->batchCode)
-                        <p class="text-gray-600">Lô hàng: <span class="font-mono">{{ $trace->batchCode }}</span></p>
-                        @endif
-                    </div>
+            @forelse($trace->standards as $doc)
+            <div class="flex gap-3 rounded-xl border border-green-100 bg-green-50/60 p-3 {{ $loop->last ? '' : 'mb-2' }}">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-green-700 ring-1 ring-green-200">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['shield'] }}"/></svg>
+                </span>
+                <div class="min-w-0 text-sm">
+                    <p class="font-semibold leading-snug text-gray-900">{{ $doc['name'] }}</p>
+                    @if($doc['number'])<p class="text-gray-600">Số: <span class="font-mono">{{ $doc['number'] }}</span></p>@endif
+                    @if($doc['issuedBy'])<p class="text-gray-600">Cấp bởi: {{ $doc['issuedBy'] }}</p>@endif
+                    <p class="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                        <span class="rounded-full bg-green-600 px-2 py-0.5 font-medium text-white">Đang hiệu lực</span>
+                        <span class="text-gray-500">{{ $doc['owner'] }}{{ $doc['expiresAt'] ? ' · đến ' . $doc['expiresAt']->format('d/m/Y') : '' }}</span>
+                    </p>
                 </div>
             </div>
+            @empty
+            <p class="text-sm text-gray-500">Đang cập nhật hồ sơ tiêu chuẩn.</p>
+            @endforelse
         </section>
 
-        {{-- Block 4: Nhật ký TXNG (Vertical Timeline) --}}
+        {{-- 5. Các công đoạn sản xuất, kinh doanh (timeline dọc) --}}
         <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Nhật ký truy xuất
+                <span class="h-4 w-1 rounded bg-green-600"></span> Các công đoạn sản xuất, kinh doanh
             </h3>
-            <ol class="relative ml-2 border-l-2 border-green-200">
+            <ol>
                 @foreach($trace->timeline as $step)
-                <li class="relative pb-6 pl-6 last:pb-0">
-                    <span class="absolute -left-[9px] top-0.5 flex h-4 w-4 items-center justify-center rounded-full ring-4 ring-white
-                                 {{ $step['done'] ? 'bg-green-600' : 'border-2 border-green-500 bg-white' }}">
-                        @if($step['done'])
-                        <svg class="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"/></svg>
-                        @endif
+                <li class="relative flex gap-3 pb-5 last:pb-0">
+                    @unless($loop->last)
+                    <span class="absolute left-[17px] top-9 bottom-0 w-0.5 {{ $step['done'] ? 'bg-green-200' : 'bg-gray-200' }}"></span>
+                    @endunless
+                    <span class="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full
+                                 {{ $step['done'] ? 'bg-green-600 text-white shadow-sm' : 'border-2 border-dashed border-gray-300 bg-white text-gray-400' }}">
+                        <svg class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon[$step['icon']] ?? $icon['info'] }}"/></svg>
                     </span>
-                    <p class="text-sm font-semibold {{ $step['done'] ? 'text-gray-900' : 'text-gray-500' }}">{{ $step['title'] }}</p>
-                    @if($step['at'])
-                    <time class="mt-0.5 block text-xs font-medium text-green-700">{{ $fmtAt($step['at']) }}</time>
-                    @endif
-                    <p class="mt-1 text-sm text-gray-600">{{ $step['description'] }}</p>
+                    <div class="min-w-0 pt-1">
+                        <p class="text-sm font-semibold leading-snug {{ $step['done'] ? 'text-gray-900' : 'text-gray-500' }}">{{ $step['title'] }}</p>
+                        @if($step['at'])
+                        <time class="mt-0.5 block text-xs font-medium text-green-700">{{ $fmtAt($step['at']) }}</time>
+                        @endif
+                        @if($step['description'] !== '')
+                        <p class="mt-1 text-sm text-gray-600">{{ $step['description'] }}</p>
+                        @endif
+                    </div>
                 </li>
                 @endforeach
             </ol>
         </section>
 
         <p class="px-2 pt-2 text-center text-xs leading-relaxed text-gray-400">
-            Thông tin được truy xuất từ hệ thống VISAFO theo Thông tư 02/2024/TT-BKHCN.<br>
+            Thông tin được truy xuất từ hệ thống {{ $trace->brand }} theo Thông tư 02/2024/TT-BKHCN.<br>
             Mã TXNG chỉ có giá trị cho đúng lần đóng gói in trên tem.
         </p>
     </main>
@@ -204,8 +260,60 @@
 </div>
 @if(count($trace->productImages) > 1)
 <script type="module">
-    initSwiper('#trace-product-swiper', { navigation: false, pagination: { el: '#trace-product-swiper .swiper-pagination', clickable: true } });
+    // Pagination tự vẽ (pill "1/N" + chấm) thay cho pagination mặc định của Swiper
+    const current = document.querySelector('[data-trace-current]');
+    const dots = document.querySelectorAll('[data-trace-dot]');
+    initSwiper('#trace-product-swiper', {
+        navigation: false,
+        pagination: false,
+        on: {
+            slideChange(sw) {
+                current.textContent = sw.realIndex + 1;
+                dots.forEach((d, i) => {
+                    d.classList.toggle('w-3', i === sw.realIndex);
+                    d.classList.toggle('bg-white', i === sw.realIndex);
+                    d.classList.toggle('w-1.5', i !== sw.realIndex);
+                    d.classList.toggle('bg-white/50', i !== sw.realIndex);
+                });
+            },
+        },
+    });
 </script>
 @endif
+<script>
+    (() => {
+        const toast = (msg) => {
+            const el = document.createElement('div');
+            el.textContent = msg;
+            el.className = 'fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-gray-900/90 px-4 py-2 text-sm text-white shadow-lg';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2000);
+        };
+
+        document.querySelector('[data-trace-share]')?.addEventListener('click', async () => {
+            const data = { title: document.title, text: @js($trace->productName . ' — truy xuất nguồn gốc'), url: location.href };
+            try {
+                if (navigator.share) { await navigator.share(data); return; }
+                await navigator.clipboard.writeText(location.href);
+                toast('Đã sao chép liên kết');
+            } catch (e) {
+                if (e?.name !== 'AbortError') toast('Không chia sẻ được, hãy sao chép địa chỉ trang');
+            }
+        });
+
+        // Yêu thích: chỉ lưu trên trình duyệt của người xem (không cần đăng nhập)
+        const fav = document.querySelector('[data-trace-fav]');
+        const key = 'trace-fav:' + @js($trace->traceCode);
+        const read = () => { try { return localStorage.getItem(key) === '1'; } catch { return false; } };
+        const paint = (on) => fav?.setAttribute('aria-pressed', on ? 'true' : 'false');
+        paint(read());
+        fav?.addEventListener('click', () => {
+            const on = !read();
+            try { on ? localStorage.setItem(key, '1') : localStorage.removeItem(key); } catch {}
+            paint(on);
+            toast(on ? 'Đã thêm vào yêu thích' : 'Đã bỏ yêu thích');
+        });
+    })();
+</script>
 </body>
 </html>

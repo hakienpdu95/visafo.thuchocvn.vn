@@ -8,6 +8,7 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::get('trace-logs', [TraceLogController::class, 'index'])->name('trace-logs.index');
     Route::get('trace-logs/{print_log}/preview', [TraceLogController::class, 'preview'])->name('trace-logs.preview');
     Route::put('trace-logs/{print_log}/status', [TraceLogController::class, 'changeStatus'])->name('trace-logs.status');
+    Route::post('trace-logs/{print_log}/reissue', [TraceLogController::class, 'reissue'])->name('trace-logs.reissue');
 });
 
 Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(function () {

@@ -24,7 +24,8 @@ class ChangeTraceLogStatusData extends Data
     public static function rules(): array
     {
         return [
-            'status' => ['required', Rule::enum(PrintLogStatus::class)],
+            // "revoked" chỉ đặt qua Hủy mã & Cấp lại (ReissueTraceLogAction)
+            'status' => ['required', Rule::enum(PrintLogStatus::class)->except([PrintLogStatus::Revoked])],
             // Thu hồi/lỗi bắt buộc nêu lý do (hiển thị cho người tiêu dùng trên trang truy xuất).
             'reason' => ['nullable', 'string', 'max:255', 'required_unless:status,' . PrintLogStatus::Active->value],
         ];

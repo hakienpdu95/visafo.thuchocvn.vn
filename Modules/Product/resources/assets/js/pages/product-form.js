@@ -20,9 +20,23 @@ document.addEventListener('DOMContentLoaded', () => {
  *
  * Cần @vite('resources/js/modules/filepond.js') trên trang (window.initFilePondUpload).
  */
+// Bề rộng 1 item FilePond theo đúng các breakpoint cột trong .product-gallery (product.scss).
+// List của FilePond cách mép root 1em mỗi bên, mỗi item có margin 0.25em hai bên.
+function previewItemWidth(root) {
+    const cols = matchMedia('(min-width: 1280px)').matches ? 10
+        : matchMedia('(min-width: 1024px)').matches ? 8
+        : matchMedia('(min-width: 640px)').matches ? 5 : 2;
+    const listWidth = (root?.clientWidth ?? 300) - 32;
+
+    return Math.max(listWidth / cols - 8, 1);
+}
+
 document.addEventListener('alpine:init', () => {
     Alpine.data('productGallery', ({ items = [] } = {}) => {
         let pond = null; // giữ ngoài state để Alpine không bọc proxy instance FilePond
+
+        // Ô preview vuông theo bề rộng ô thực tế (lúc khởi tạo) — khớp aspect-square của lưới thumbnail
+        let previewSize = 140;
 
         return {
             items: items.map(i => ({ id: i.id, thumb_url: i.thumb_url, isNew: false })),
@@ -33,10 +47,28 @@ document.addEventListener('alpine:init', () => {
             },
 
             init() {
+                previewSize = Math.round(Math.max(previewItemWidth(this.$refs.pond.parentElement), 64));
+
                 pond = window.initFilePondUpload(this.$refs.pond, {
                     collection: 'gallery',
-                    name: 'file', // MediaUploadController đọc field "file"
                     maxFiles: 20,
+                    // Ô preview cố định chiều cao → các item trong lưới đều nhau (xem .product-gallery trong product.scss)
+                    imagePreviewHeight: previewSize,
+                    itemInsertLocation: 'after',
+                    credits: false,
+                    // Plugin preview vẽ kiểu "contain" theo crop.aspectRatio (cao/rộng) → đặt đúng tỉ lệ ô
+                    // thì ảnh lấp kín khung như object-fit: cover. Chỉ là metadata hiển thị: process tự viết
+                    // trong filepond.js không gửi metadata nên file gốc lên server không bị cắt.
+                    beforeAddFile: (item) => {
+                        item.setMetadata('crop', {
+                            center: { x: 0.5, y: 0.5 },
+                            flip: { horizontal: false, vertical: false },
+                            zoom: 1,
+                            rotation: 0,
+                            aspectRatio: previewSize / previewItemWidth(pond?.element),
+                        }, true);
+                        return true;
+                    },
                     onUploaded: (id, url, thumbUrl) => {
                         this.items.push({ id, thumb_url: thumbUrl, isNew: true });
                         this.mainId ??= id;

@@ -46,6 +46,7 @@ class Product extends TenantAwareModel implements HasMedia
     protected $fillable = [
         'sku',
         'name',
+        'description',
         'category_id',
         'product_type',
         'unit',

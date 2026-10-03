@@ -4,6 +4,7 @@ namespace Modules\TraceLog\Queries;
 
 use App\Shared\Contracts\QueryHandlerInterface;
 use App\Shared\Contracts\QueryInterface;
+use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\SalesOrder;
 
@@ -52,6 +53,8 @@ class GetTraceLogDetailHandler implements QueryHandlerInterface
 
             'printed_at'  => $log->created_at?->format('d/m/Y H:i'),
             'printed_by'  => $log->printedBy?->name,
+            'print_count' => $log->print_count,
+            'last_printed_at' => $log->last_printed_at?->format('d/m/Y H:i'),
             'session_count' => $log->print_session_id
                 ? PrintLog::query()->where('print_session_id', $log->print_session_id)->count()
                 : 1,
@@ -61,6 +64,8 @@ class GetTraceLogDetailHandler implements QueryHandlerInterface
             'preview_url' => route('backend.trace-logs.preview', $log),
             'public_url'  => route('trace.show', $log->trace_code),
             'status_url'  => route('backend.trace-logs.status', $log),
+            'reissue_url' => route('backend.trace-logs.reissue', $log),
+            'can_reissue' => in_array($log->status, [PrintLogStatus::Active, PrintLogStatus::Error], true),
         ];
     }
 

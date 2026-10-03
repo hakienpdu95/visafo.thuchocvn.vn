@@ -17,7 +17,8 @@ class ChangeTraceLogStatusAction
     {
         return DB::transaction(function () use ($printLog, $data, $userId) {
             $logs = $data->apply_to_session && $printLog->print_session_id
-                ? PrintLog::query()->where('print_session_id', $printLog->print_session_id)->get()
+                ? PrintLog::query()->where('print_session_id', $printLog->print_session_id)
+                    ->where('status', '!=', PrintLogStatus::Revoked->value)->get() // mã đã hủy không phục hồi
                 : collect([$printLog]);
 
             foreach ($logs as $log) {

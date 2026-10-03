@@ -22,16 +22,19 @@ class BulkPrintSalesOrderLabelsAction
         $resolver = $this->resolver;
 
         return DB::transaction(function () use ($order, $data, $printedBy, $resolver) {
+            // Khóa các dòng hàng của đơn: 2 lượt in toàn bộ đơn chạy song song không sinh trùng mã
             $items = SalesOrderItem::query()
                 ->where('order_id', $order->id)
                 ->with('product')
                 ->orderBy('line_no')
-                    ->get();
+                ->lockForUpdate()
+                ->get();
 
             $sessionId = Str::lower((string) Str::ulid());
             $logs = [];
             $total = 0;
             $printedItems = 0;
+            $reusedItems = 0;
 
             $customGroups = isset($data['items'])
                 ? collect($data['items'])->mapWithKeys(fn ($i) => [$i['order_item_id'] => collect($i['label_groups'])
@@ -56,6 +59,18 @@ class BulkPrintSalesOrderLabelsAction
                 }
 
                 $total++;
+
+                // Check & Reuse (xem PrintSalesOrderItemLabelAction): đã có tem đang lưu hành → in lại mã cũ
+                $existing = PrintLog::query()->activeForItem($item->id, $data['product_batch_id'] ?? null)->get();
+                if ($existing->isNotEmpty()) {
+                    $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
+                    array_push($logs, ...$existing->all());
+                    $printedItems++;
+                    $reusedItems++;
+
+                    continue;
+                }
+
                 $attributes = $resolver->forItem($item)['attributes'];
 
                 foreach ($groups as $group) {
@@ -93,6 +108,7 @@ class BulkPrintSalesOrderLabelsAction
                 'logs'    => $logs,
                 'total'   => $total,
                 'printed' => $printedItems,
+                'reused'  => $reusedItems,
             ];
         });
     }

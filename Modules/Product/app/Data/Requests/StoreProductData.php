@@ -35,6 +35,9 @@ class StoreProductData extends Data
         #[Nullable, IntegerType, Min(1), Max(3650)]
         public readonly ?int $shelf_life_days = null,
 
+        #[Nullable, StringType, Max(2000)]
+        public readonly ?string $description = null,
+
         /** JSON mảng ID media theo thứ tự hiển thị; null = form không gửi → giữ nguyên ảnh. */
         public readonly ?string $gallery = null,
 
@@ -95,6 +98,9 @@ class StoreProductData extends Data
             'shelf_life_days.max'     => 'Số ngày bảo quản không được vượt quá 3650 ngày.',
 
             'gallery.json' => 'Danh sách ảnh sản phẩm không hợp lệ.',
+
+            'description.string' => 'Mô tả không hợp lệ.',
+            'description.max'    => 'Mô tả không được vượt quá 2000 ký tự.',
         ];
     }
 }

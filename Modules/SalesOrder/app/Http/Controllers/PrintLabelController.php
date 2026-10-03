@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Modules\SalesOrder\Actions\Backend\BulkPrintSalesOrderLabelsAction;
 use Modules\SalesOrder\Actions\Backend\PrintSalesOrderItemLabelAction;
+use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\SalesOrder;
 use Modules\SalesOrder\Models\SalesOrderItem;
@@ -86,6 +87,11 @@ class PrintLabelController extends Controller
         return response()->json([
             'session_id'  => $result['session_id'],
             'label_count' => $result['logs']->count(),
+            'reused'      => $result['reused'],
+            'message'     => $result['reused']
+                ? "Mặt hàng đã có {$result['logs']->count()} tem đang lưu hành — in lại đúng mã TXNG cũ, không tạo mã mới. "
+                    . 'Cần đổi khối lượng / NSX / HSD hoặc thay tem bị mất: dùng "Hủy mã & Cấp lại" ở Nhật ký TXNG.'
+                : null,
             // Trang in cả phiên: mỗi tem một bản ghi + một trace_code/QR riêng.
             'print_url'   => route('print.render_session', $result['session_id']),
         ]);
@@ -144,6 +150,9 @@ class PrintLabelController extends Controller
                     'exp_date'         => $first->exp_date?->format('d/m/Y'),
                     'printed_at'       => $first->created_at?->format('d/m/Y H:i'),
                     'printed_by'       => $first->printedBy?->name,
+                    'print_count'      => (int) $group->max('print_count'),
+                    'last_printed_at'  => $group->max('last_printed_at')?->format('d/m/Y H:i'),
+                    'active_count'     => $group->filter(fn (PrintLog $log) => $log->status->isActive())->count(),
                     // In lại cả phiên: chỉ mở lại các tem cũ (cùng trace_code), không ghi log mới.
                     'reprint_url'      => $canPrint ? route('print.render_session', $sessionId) : null,
                 ];
@@ -203,11 +212,15 @@ class PrintLabelController extends Controller
 
         $message = $result['total'] === 0
             ? 'Không có mặt hàng nào cần in tem.'
-            : "Đã in thành công {$result['printed']}/{$result['total']} mặt hàng.";
+            : "Đã in thành công {$result['printed']}/{$result['total']} mặt hàng."
+                . ($result['reused'] > 0
+                    ? " {$result['reused']} mặt hàng đã có tem đang lưu hành nên được in lại đúng mã TXNG cũ (không tạo mã mới)."
+                    : '');
 
         return response()->json([
             'printed' => $result['printed'],
             'total'   => $result['total'],
+            'reused'  => $result['reused'],
             'message' => $message,
             'url'     => $result['logs'] === [] ? null : route('print.render_session', $result['session_id']),
         ]);
@@ -220,13 +233,20 @@ class PrintLabelController extends Controller
      */
     public function renderSession(string $sessionId, LabelViewResolver $resolver)
     {
+        // Phiên gốc (print_session_id) hoặc phiên in lại gần nhất (last_print_session_id — tem cũ được dùng lại).
+        // Không in tem đã thu hồi / lỗi / đã hủy cấp lại: mã đó không còn hiệu lực.
         $logs = PrintLog::query()
-            ->where('print_session_id', $sessionId)
+            ->where(fn ($q) => $q->where('print_session_id', $sessionId)->orWhere('last_print_session_id', $sessionId))
+            ->where('status', PrintLogStatus::Active->value)
             ->with(['attributes', 'labelTemplate', 'orderItem.product', 'orderItem.salesOrder'])
-            ->orderBy('created_at')->orderBy('id')
-            ->get();
+            ->get()
+            ->sortBy([
+                fn (PrintLog $a, PrintLog $b) => ($a->orderItem?->line_no ?? 0) <=> ($b->orderItem?->line_no ?? 0),
+                fn (PrintLog $a, PrintLog $b) => [$a->created_at, $a->id] <=> [$b->created_at, $b->id],
+            ])
+            ->values();
 
-        abort_if($logs->isEmpty(), 404);
+        abort_if($logs->isEmpty(), 404, 'Không còn tem đang lưu hành trong lần in này (đã thu hồi / hủy cấp lại).');
 
         // Một phiên chỉ thuộc một đơn hàng, nhưng vẫn kiểm quyền theo từng đơn để chắc chắn.
         $logs->map(fn (PrintLog $log) => $log->orderItem->salesOrder)->unique('id')

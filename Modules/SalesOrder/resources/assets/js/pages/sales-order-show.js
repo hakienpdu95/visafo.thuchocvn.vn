@@ -350,9 +350,12 @@ document.addEventListener('alpine:init', () => {
 
                     if (win) {
                         win.location = data.print_url;
-                        this.close();
+                        // In lại mã cũ (Check & Reuse) → giữ modal để báo rõ dữ liệu vừa nhập không được dùng
+                        if (data.reused) this.message = data.message;
+                        else this.close();
                     } else {
                         this.blockedUrl = data.print_url;
+                        if (data.reused) this.message = data.message;
                     }
                 } catch (e) {
                     console.error('[print-label] failed', e);

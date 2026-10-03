@@ -344,6 +344,7 @@ document.addEventListener('alpine:init', () => {
         formError: '',
         detail: null,
         form: { status: 'active', reason: '', applySession: false },
+        reissue: { confirming: false, reason: '', saving: false, error: '' },
 
         get statusOptions() {
             return [
@@ -378,6 +379,57 @@ document.addEventListener('alpine:init', () => {
         _setDetail(d) {
             this.detail = d;
             this.form = { status: d.status, reason: d.status_reason || '', applySession: false };
+            this.reissue = { confirming: false, reason: '', saving: false, error: '' };
+        },
+
+        async doReissue() {
+            if (!this.detail || this.reissue.saving) return;
+            if (!this.reissue.reason.trim()) {
+                this.reissue.error = 'Vui lòng nhập lý do hủy mã.';
+                return;
+            }
+
+            // Mở cửa sổ ngay trong thao tác click để không bị chặn popup, điền URL in sau khi có mã mới
+            const win = window.open('about:blank', '_blank');
+            this.reissue.saving = true;
+            this.reissue.error = '';
+            try {
+                const res = await fetch(this.detail.reissue_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+                    },
+                    body: JSON.stringify({ reason: this.reissue.reason.trim() }),
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (res.status === 422) {
+                    win?.close();
+                    this.reissue.error = Object.values(data.errors ?? {})[0]?.[0] ?? 'Dữ liệu không hợp lệ.';
+                    return;
+                }
+                if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+
+                const keepCan = this.detail.can_manage;
+                this._setDetail({ ...data.detail, can_manage: keepCan }); // modal chuyển sang tem mới
+                this.message = data.message;
+                window.traceLogTable?.replaceData();
+
+                if (win) {
+                    win.location = data.print_url;
+                } else {
+                    this.message += ' Trình duyệt đã chặn cửa sổ in — cho phép popup rồi mở lại.';
+                }
+            } catch (e) {
+                console.error('[trace-log] reissue failed', e);
+                win?.close();
+                this.reissue.error = 'Không cấp lại được mã: ' + e.message;
+            } finally {
+                this.reissue.saving = false;
+            }
         },
 
         close() { this.open = false; },

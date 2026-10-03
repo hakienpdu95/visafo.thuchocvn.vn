@@ -5,6 +5,7 @@ namespace Modules\SalesOrder\Models;
 use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -14,8 +15,11 @@ class PrintLog extends TenantAwareModel
 {
     use HasCreator;
 
-    /** Chỉ các cột này được phép đổi sau khi in (QC thu hồi / đánh dấu lỗi). */
-    private const MUTABLE_COLUMNS = ['status', 'status_reason', 'status_changed_by', 'status_changed_at', 'updated_at'];
+    /** Chỉ các cột này được phép đổi sau khi in (QC thu hồi / đánh dấu lỗi, theo dõi in lại). */
+    private const MUTABLE_COLUMNS = [
+        'status', 'status_reason', 'status_changed_by', 'status_changed_at',
+        'print_count', 'last_printed_at', 'last_print_session_id', 'updated_at',
+    ];
 
     /**
      * Log in tem là bản ghi lịch sử bất biến: chỉ được tạo mới, không được xóa, và chỉ được đổi
@@ -32,6 +36,9 @@ class PrintLog extends TenantAwareModel
 
                 $log->trace_code = $code;
             }
+
+            $log->last_print_session_id ??= $log->print_session_id;
+            $log->last_printed_at ??= now();
         });
         static::updating(fn (PrintLog $log) => array_diff(array_keys($log->getDirty()), self::MUTABLE_COLUMNS) === []);
         static::deleting(fn () => false);
@@ -42,6 +49,9 @@ class PrintLog extends TenantAwareModel
         'label_template_id',
         'trace_code',
         'print_session_id',
+        'print_count',
+        'last_printed_at',
+        'last_print_session_id',
         'status',
         'status_reason',
         'status_changed_by',
@@ -61,6 +71,8 @@ class PrintLog extends TenantAwareModel
         return [
             'status'           => PrintLogStatus::class,
             'status_changed_at' => 'datetime',
+            'last_printed_at'  => 'datetime',
+            'print_count'      => 'integer',
             'weight_per_label' => 'decimal:3',
             'mfg_date'         => 'date',
             'exp_date'         => 'date',
@@ -114,6 +126,29 @@ class PrintLog extends TenantAwareModel
     public function printedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'printed_by');
+    }
+
+    /**
+     * Tem đang lưu hành của một dòng hàng (= đơn + sản phẩm), cùng lô nhập kho nếu có.
+     * Có rồi thì "In tem" phải in lại đúng các mã này thay vì sinh mã mới (Check & Reuse).
+     * Không so batch_code: frontend tự sinh nó từ NSX/HSD (LOT-ddmmyy-ddmmyy) nên đổi theo ngày in.
+     */
+    public function scopeActiveForItem(Builder $query, string $orderItemId, ?string $productBatchId): Builder
+    {
+        return $query->where('order_item_id', $orderItemId)
+            ->where('status', PrintLogStatus::Active->value)
+            ->when($productBatchId, fn (Builder $q) => $q->where('product_batch_id', $productBatchId), fn (Builder $q) => $q->whereNull('product_batch_id'))
+            ->orderBy('created_at')->orderBy('id');
+    }
+
+    /** Ghi nhận một lần in lại (không đổi dữ liệu đã in). */
+    public function markReprinted(string $sessionId): void
+    {
+        $this->update([
+            'print_count'           => $this->print_count + 1,
+            'last_printed_at'       => now(),
+            'last_print_session_id' => $sessionId,
+        ]);
     }
 
     public function permissionModule(): string

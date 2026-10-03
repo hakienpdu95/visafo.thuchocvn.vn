@@ -14,10 +14,28 @@ class PrintSalesOrderItemLabelAction
 {
     use AsAction;
 
+    /**
+     * Check & Reuse: dòng hàng đã có tem đang lưu hành (cùng lô nhập nếu có) → in lại đúng các mã đó,
+     * KHÔNG tạo bản ghi / mã TXNG mới (dữ liệu nhập trên form bị bỏ qua vì tem đã in là bất biến).
+     * Muốn đổi khối lượng/NSX/HSD hoặc thay tem mất → "Hủy mã & Cấp lại" ở Nhật ký TXNG.
+     *
+     * @return array{session_id: string, logs: Collection<int, PrintLog>, reused: bool}
+     */
     public function handle(SalesOrderItem $item, array $data, ?string $printedBy): array
     {
         return DB::transaction(function () use ($item, $data, $printedBy) {
+            // Khóa dòng hàng: bấm "In" 2 lần liên tiếp không sinh 2 bộ mã
+            SalesOrderItem::query()->whereKey($item->id)->lockForUpdate()->first();
+
             $sessionId = Str::lower((string) Str::ulid());
+
+            $existing = PrintLog::query()->activeForItem($item->id, $data['product_batch_id'] ?? null)->get();
+            if ($existing->isNotEmpty()) {
+                $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
+
+                return ['session_id' => $sessionId, 'logs' => $existing, 'reused' => true];
+            }
+
             $logs = new Collection();
 
             foreach ($data['label_groups'] as $group) {
@@ -50,7 +68,7 @@ class PrintSalesOrderItemLabelAction
                 }
             }
 
-            return ['session_id' => $sessionId, 'logs' => $logs];
+            return ['session_id' => $sessionId, 'logs' => $logs, 'reused' => false];
         });
     }
 }

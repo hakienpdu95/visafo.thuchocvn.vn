@@ -89,6 +89,17 @@ const COLLECTION_MIME = {
 // Single-file collections — UI shows 1 file max, replaces on new upload
 const SINGLE_FILE_COLLECTIONS = new Set(['avatar', 'logo', 'thumbnail', 'cover']);
 
+// 422 → message/errors.file từ Laravel; 413 → vượt post_max_size (Nginx/PHP chặn trước khi vào app)
+function parseUploadError(xhr) {
+    if (xhr.status === 413) return 'File quá lớn so với giới hạn của máy chủ';
+    try {
+        const data = JSON.parse(xhr.responseText);
+        return data.errors?.file?.[0] ?? data.message ?? 'Upload thất bại';
+    } catch {
+        return 'Upload thất bại';
+    }
+}
+
 const FilePondInstances = new Map();
 window.FilePondInstances = FilePondInstances;
 
@@ -185,12 +196,26 @@ function initFilePondUpload(selector, options = {}) {
 
         server: {
             // process: upload file → returns JSON {uuid, url, thumb_url, original}
-            process: {
-                url:     '/api/v1/media/upload',
-                method:  'POST',
-                headers: buildHeaders,
-                onload(response) {
-                    const data = JSON.parse(response);
+            // Tự gửi FormData chỉ chứa đúng 1 field "file". Cấu hình process dạng object của FilePond
+            // luôn append thêm metadata "{}" dưới cùng tên field → Laravel 13 $request->all() lấy chuỗi đó
+            // thay cho file ("The file field must be a file.").
+            process: (fieldName, file, metadata, load, error, progress, abort) => {
+                const formData = new FormData();
+                formData.append('file', file, file.name);
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/v1/media/upload');
+                Object.entries(buildHeaders()).forEach(([k, v]) => xhr.setRequestHeader(k, v));
+
+                xhr.upload.onprogress = (e) => progress(e.lengthComputable, e.loaded, e.total);
+
+                xhr.onload = () => {
+                    if (xhr.status < 200 || xhr.status >= 300) {
+                        error(parseUploadError(xhr));
+                        return;
+                    }
+
+                    const data = JSON.parse(xhr.responseText);
                     // ── bindTo: auto-populate hidden input ──────────────
                     if (bindInput) {
                         if (isSingle) {
@@ -202,15 +227,18 @@ function initFilePondUpload(selector, options = {}) {
                     }
                     onUploaded?.(data.uuid, data.url, data.thumb_url);
                     // FilePond stores this as the server file ID (used in revert)
-                    return data.uuid;
-                },
-                onerror(response) {
-                    try {
-                        return JSON.parse(response).message ?? 'Upload thất bại';
-                    } catch {
-                        return 'Upload thất bại';
-                    }
-                },
+                    load(data.uuid);
+                };
+
+                xhr.onerror = () => error('Upload thất bại — mất kết nối máy chủ');
+                xhr.send(formData);
+
+                return {
+                    abort: () => {
+                        xhr.abort();
+                        abort();
+                    },
+                };
             },
 
             // revert: DELETE /api/v1/media/upload/{uuid}

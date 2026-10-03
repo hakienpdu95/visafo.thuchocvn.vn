@@ -4,12 +4,10 @@ namespace Modules\LabelTemplate\Queries;
 
 use App\Shared\Contracts\QueryHandlerInterface;
 use App\Shared\Contracts\QueryInterface;
-use BaconQrCode\Renderer\Image\SvgImageBackEnd;
-use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\RendererStyle\RendererStyle;
-use BaconQrCode\Writer;
 use InvalidArgumentException;
 use Modules\LabelTemplate\Support\LabelTemplatePreview;
+use Modules\SalesOrder\Support\QrSvg;
+use Modules\SalesOrder\Support\TraceUrl;
 use Throwable;
 
 /**
@@ -43,9 +41,8 @@ class PreviewLabelTemplateHandler implements QueryHandlerInterface
             (object) ['attribute_key' => 'Liều dùng', 'attribute_value' => 'Test Liều dùng'],
         ]);
 
-        // QR mẫu để xem trước bố cục (template có thể bỏ qua nếu không dùng).
-        $qrSvg = preg_replace('/^<\?xml.*?\?>\s*/s', '', (new Writer(new ImageRenderer(new RendererStyle(200, 0), new SvgImageBackEnd())))
-            ->writeString(url('/')));
+        // QR mẫu cùng độ dài URL với tem thật (mật độ điểm ảnh giống hệt) để xem trước bố cục.
+        $qrSvg = QrSvg::make(TraceUrl::for('a1b2c3d4e5'));
 
         // @include của master bọc lỗi thiếu view thành ViewException → kiểm tra trước để báo đúng nguyên nhân.
         if (! view()->exists($template->view_path)) {

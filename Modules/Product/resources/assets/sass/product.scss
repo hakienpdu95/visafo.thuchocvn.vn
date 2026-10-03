@@ -1,2 +1,49 @@
 @use 'form-patterns';
 @use 'tom-select';
+
+// ── Ảnh sản phẩm (products/partials/gallery.blade.php) ─────────────────
+// FilePond chỉ hiện item trong lúc đang upload (xong là chuyển sang lưới thumbnail Alpine),
+// nên xếp item thành lưới cùng số cột với lưới thumbnail: 2 → 5 → 8 → 10 cột
+// (đồng bộ với previewItemWidth() trong product-form.js).
+// FilePond tự định vị item bằng JS theo width CSS; mỗi item có margin 0.25em hai bên → trừ 0.5em.
+.product-gallery {
+    .filepond--root {
+        margin-bottom: 0;
+    }
+
+    .filepond--drop-label {
+        min-height: 4rem;
+    }
+
+    .filepond--item {
+        width: calc(50% - 0.5em);
+        container-type: inline-size;
+
+        @media (min-width: 640px)  { width: calc(20% - 0.5em); }
+        @media (min-width: 1024px) { width: calc(12.5% - 0.5em); }
+        @media (min-width: 1280px) { width: calc(10% - 0.5em); }
+    }
+
+    // Ô quá hẹp: bỏ chữ trạng thái, giữ vòng tiến trình + nút hủy
+    @container (max-width: 120px) {
+        .filepond--file-status {
+            display: none;
+        }
+    }
+
+    // Ô nhỏ không đủ chỗ cho tên file → chỉ giữ trạng thái upload (cắt bớt nếu dài)
+    .filepond--file-info {
+        display: none;
+    }
+
+    .filepond--file-status-main {
+        font-size: 0.7rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .filepond--file-status-sub {
+        display: none;
+    }
+}

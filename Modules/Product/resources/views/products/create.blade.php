@@ -94,6 +94,17 @@
                         @error('shelf_life_days')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5">
+                            <span class="label-text font-medium">Mô tả sản phẩm</span>
+                        </label>
+                        <textarea name="description" rows="3" maxlength="2000"
+                                  class="textarea textarea-bordered textarea-sm w-full leading-relaxed @error('description') textarea-error @enderror"
+                                  placeholder="VD: Hành lá trồng tại vùng rau an toàn Mê Linh, thu hoạch trong ngày, sơ chế và đóng gói khép kín...">{{ old('description') }}</textarea>
+                        <p class="mt-1 text-xs text-base-content/40">Hiển thị ở đầu trang truy xuất nguồn gốc khi người tiêu dùng quét QR. Để trống: hệ thống tự ghép mô tả từ nguồn cung, vùng trồng.</p>
+                        @error('description')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <div class="form-control">

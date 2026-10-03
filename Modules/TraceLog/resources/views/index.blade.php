@@ -230,6 +230,10 @@
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Lô nhập kho</dt><dd class="text-right font-mono" x-text="detail?.receipt_batch || '—'"></dd></div>
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Mã lô trên tem</dt><dd class="text-right font-mono" x-text="detail?.batch_code || '—'"></dd></div>
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">In lúc</dt><dd class="text-right" x-text="detail ? (detail.printed_at + (detail.printed_by ? ' · ' + detail.printed_by : '')) : ''"></dd></div>
+                            <div class="flex justify-between gap-4 py-2" x-show="detail?.print_count > 1">
+                                <dt class="text-base-content/50 shrink-0">Số lần in</dt>
+                                <dd class="text-right" x-text="detail ? (detail.print_count + ' lần · gần nhất ' + detail.last_printed_at) : ''"></dd>
+                            </div>
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Mẫu tem</dt><dd class="text-right" x-text="detail?.template || 'Mặc định'"></dd></div>
                             <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/50 shrink-0">Cùng lần in</dt><dd class="text-right" x-text="detail ? detail.session_count + ' tem' : ''"></dd></div>
                         </dl>
@@ -258,7 +262,10 @@
                 </div>
 
                 {{-- Đổi trạng thái (chỉ QC có quyền quản lý) --}}
-                <template x-if="detail && detail.can_manage">
+                <template x-if="detail && detail.can_manage && detail.status === 'revoked'">
+                    <div class="alert alert-soft py-3 text-sm">Tem đã hủy &amp; cấp lại mã mới — không thể đổi trạng thái.</div>
+                </template>
+                <template x-if="detail && detail.can_manage && detail.status !== 'revoked'">
                     <form class="rounded-lg border border-base-200 p-4 space-y-3" @submit.prevent="saveStatus()" novalidate>
                         <p class="text-xs font-semibold uppercase tracking-wide text-base-content/40">Cập nhật trạng thái tem</p>
 
@@ -297,6 +304,36 @@
                             </button>
                         </div>
                     </form>
+                </template>
+
+                {{-- Hủy mã & Cấp lại: cách duy nhất để có mã TXNG mới cho tem đã in (In tem thường luôn dùng lại mã cũ) --}}
+                <template x-if="detail && detail.can_manage && detail.can_reissue">
+                    <div class="rounded-lg border border-warning/40 bg-warning/5 p-4 space-y-3">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-warning">Hủy mã &amp; Cấp lại</p>
+                            <p class="text-xs text-base-content/60 mt-1">Dùng khi tem bị rơi mất / rách / in hỏng. Mã cũ chuyển sang "Đã hủy" (quét sẽ thấy cảnh báo),
+                                hệ thống tạo tem mới cùng khối lượng, NSX/HSD, lô hàng nhưng <strong>mã TXNG mới</strong> và mở trang in.</p>
+                        </div>
+                        <template x-if="!reissue.confirming">
+                            <div class="flex justify-end">
+                                <button type="button" class="btn btn-warning btn-outline btn-sm" @click="reissue.confirming = true">Hủy mã &amp; Cấp lại…</button>
+                            </div>
+                        </template>
+                        <template x-if="reissue.confirming">
+                            <form class="space-y-2" @submit.prevent="doReissue()" novalidate>
+                                <input type="text" maxlength="200" x-model="reissue.reason" x-ref="reissueReason" x-init="$nextTick(() => $refs.reissueReason?.focus())"
+                                       class="input input-bordered input-sm w-full" placeholder="Lý do (bắt buộc) — VD: Tem bị rơi mất khi giao hàng">
+                                <p class="text-xs text-error" x-show="reissue.error" x-text="reissue.error"></p>
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" class="btn btn-ghost btn-sm" @click="reissue.confirming = false; reissue.error = ''" :disabled="reissue.saving">Không</button>
+                                    <button type="submit" class="btn btn-warning btn-sm gap-1.5" :disabled="reissue.saving">
+                                        <span class="loading loading-spinner loading-xs" x-show="reissue.saving"></span>
+                                        <span x-text="reissue.saving ? 'Đang xử lý...' : 'Xác nhận hủy mã ' + (detail.trace_code || '').toUpperCase()"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </template>
+                    </div>
                 </template>
             </div>
 
