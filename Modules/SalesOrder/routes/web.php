@@ -13,8 +13,8 @@ Route::get('trace/{trace_code}', [TraceController::class, 'show'])
     ->middleware('throttle:60,1')
     ->name('trace.show');
 // File hồ sơ doanh nghiệp công khai (tab "Thương hiệu") — controller kiểm tra whitelist trước khi phát.
-Route::get('trace/{trace_code}/documents/{media}', [TraceController::class, 'document'])
-    ->where(['trace_code' => '[A-Za-z0-9]{8,32}', 'media' => '[0-9A-Za-z]{26}'])
+Route::get('trace/{trace_code}/documents/{media}/{variant?}', [TraceController::class, 'document'])
+    ->where(['trace_code' => '[A-Za-z0-9]{8,32}', 'media' => '[0-9A-Za-z]{26}', 'variant' => 'thumb|preview'])
     ->middleware('throttle:60,1')
     ->name('trace.document');
 

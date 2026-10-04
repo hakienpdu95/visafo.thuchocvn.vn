@@ -369,12 +369,30 @@
         const boxBody = box?.querySelector('[data-trace-lightbox-body]');
         const closeBox = () => { box.hidden = true; boxBody.replaceChildren(); document.body.style.overflow = ''; };
         document.querySelectorAll('[data-trace-lightbox]').forEach((btn) => btn.addEventListener('click', () => {
-            boxBody.replaceChildren(...JSON.parse(btn.dataset.traceLightbox).map((src) => {
+            // Mỗi tệp: ảnh lớn (PDF = trang 1 đã render) + nút mở bản PDF đầy đủ nếu là PDF
+            boxBody.replaceChildren(...JSON.parse(btn.dataset.traceLightbox).map(({ img: src, pdf }) => {
+                const fig = document.createElement('figure');
+                fig.className = 'mx-auto w-full max-w-2xl';
                 const img = document.createElement('img');
                 img.src = src;
                 img.alt = btn.getAttribute('aria-label') || '';
-                img.className = 'mx-auto w-full max-w-2xl rounded bg-white';
-                return img;
+                img.className = 'w-full rounded bg-white';
+                // Server không render được ảnh trang 1 của PDF → thay bằng khối icon, vẫn giữ nút mở PDF bên dưới
+                img.onerror = () => {
+                    const ph = document.createElement('div');
+                    ph.className = 'flex h-48 flex-col items-center justify-center gap-2 rounded bg-red-50 text-sm font-semibold text-red-600';
+                    ph.textContent = pdf ? 'Tài liệu PDF — chạm nút bên dưới để xem' : 'Không tải được ảnh';
+                    img.replaceWith(ph);
+                };
+                fig.append(img);
+                if (pdf) {
+                    const a = document.createElement('a');
+                    a.href = pdf; a.target = '_blank'; a.rel = 'noopener';
+                    a.textContent = 'Mở bản PDF đầy đủ';
+                    a.className = 'mt-2 block rounded-full bg-white/15 py-2 text-center text-sm font-semibold text-white';
+                    fig.append(a);
+                }
+                return fig;
             }));
             box.hidden = false;
             document.body.style.overflow = 'hidden';

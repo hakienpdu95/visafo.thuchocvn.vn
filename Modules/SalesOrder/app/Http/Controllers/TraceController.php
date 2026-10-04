@@ -30,7 +30,10 @@ class TraceController extends Controller
      * Phát file hồ sơ doanh nghiệp (disk private) cho tab "Thương hiệu". Chỉ phục vụ file ảnh/PDF thuộc
      * hồ sơ đang nằm trong whitelist công khai — mọi file khác (kể cả của hồ sơ nội bộ) trả 404.
      */
-    public function document(string $traceCode, string $mediaId)
+    /** Ảnh dựng sẵn cho thẻ hồ sơ: thumb (lưới) / preview (lightbox) — chiều rộng px. PDF render trang 1. */
+    private const DOCUMENT_VARIANTS = ['thumb' => 480, 'preview' => 1400];
+
+    public function document(string $traceCode, string $mediaId, ?string $variant = null)
     {
         abort_unless(PrintLog::query()->where('trace_code', $traceCode)->exists(), 404);
 
@@ -45,10 +48,64 @@ class TraceController extends Controller
         $disk = Storage::disk($media->disk);
         abort_unless($disk->exists($media->getPathRelativeToRoot()), 404);
 
+        if ($variant !== null) {
+            return $this->documentImage($media, $variant);
+        }
+
         return $disk->response($media->getPathRelativeToRoot(), $media->file_name, [
             'Content-Type'           => $media->mime_type,
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control'          => 'public, max-age=3600',
+        ], 'inline');
+    }
+
+    /**
+     * JPEG thu nhỏ của file hồ sơ (ảnh scan hoặc trang 1 của PDF) — sinh 1 lần rồi cache trên disk local
+     * (media bất biến: upload lại = media mới). Lỗi render (PDF hỏng/mã hóa) → 404, view tự rơi về icon.
+     */
+    private function documentImage(Media $media, string $variant)
+    {
+        $cache = Storage::disk('local');
+        $cachePath = 'trace-document-thumbs/' . $media->id . '-' . $variant . '.jpg';
+
+        if (! $cache->exists($cachePath)) {
+            try {
+                $source = Storage::disk($media->disk)->path($media->getPathRelativeToRoot());
+                $image = new \Imagick();
+                if ($media->mime_type === 'application/pdf') {
+                    $image->setResolution(150, 150);
+                    $source .= '[0]';
+                }
+                $image->readImage($source);
+                $image->setImageBackgroundColor('white');
+                $image = $image->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN); // nền trong suốt → trắng
+                $image->autoOrient();
+                if ($image->getImageWidth() > self::DOCUMENT_VARIANTS[$variant]) {
+                    $image->thumbnailImage(self::DOCUMENT_VARIANTS[$variant], 0);
+                }
+                $image->setImageFormat('jpeg');
+                $image->setImageCompressionQuality(82);
+                $image->stripImage();
+                $cache->put($cachePath, $image->getImageBlob());
+                $image->clear();
+            } catch (\Throwable $e) {
+                // Server thiếu Imagick/Ghostscript hoặc policy ImageMagick chặn PDF: ảnh scan vẫn hiện được bằng
+                // file gốc; PDF → 404 để view rơi về icon PDF (bấm vẫn mở được bản PDF đầy đủ).
+                report($e);
+                abort_if($media->mime_type === 'application/pdf', 404);
+
+                return Storage::disk($media->disk)->response($media->getPathRelativeToRoot(), $media->file_name, [
+                    'Content-Type'           => $media->mime_type,
+                    'X-Content-Type-Options' => 'nosniff',
+                    'Cache-Control'          => 'public, max-age=3600',
+                ], 'inline');
+            }
+        }
+
+        return $cache->response($cachePath, null, [
+            'Content-Type'           => 'image/jpeg',
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control'          => 'public, max-age=86400',
         ], 'inline');
     }
 }

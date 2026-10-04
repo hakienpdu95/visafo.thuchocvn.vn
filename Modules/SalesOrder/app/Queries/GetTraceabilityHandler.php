@@ -181,10 +181,10 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     }
 
     /**
-     * Hồ sơ doanh nghiệp công khai cho tab "Thương hiệu". Chỉ ảnh/PDF; file nằm ở disk private nên
+     * Hồ sơ doanh nghiệp công khai cho tab "Thương hiệu". Chỉ phát tệp ảnh/PDF; file nằm ở disk private nên
      * phát qua route trace.document (kiểm tra lại whitelist mỗi lần tải), không lộ URL lưu trữ.
      *
-     * @return array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: mixed, expiresAt: mixed, files: array<int, array{url: string, isPdf: bool}>}>
+     * @return array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: mixed, expiresAt: mixed, files: array<int, array{url: string, thumb: string, preview: string, isPdf: bool}>}>
      */
     private function companyDocuments(string $traceCode): array
     {
@@ -202,13 +202,14 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'files'     => $doc->getMedia('attachments_private')
                     ->filter(fn (Media $m) => in_array($m->mime_type, self::PUBLIC_DOCUMENT_MIMES, true))
                     ->map(fn (Media $m) => [
-                        'url'   => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id]),
-                        'isPdf' => $m->mime_type === 'application/pdf',
+                        'url'     => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id]),
+                        'thumb'   => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id, 'variant' => 'thumb']),
+                        'preview' => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id, 'variant' => 'preview']),
+                        'isPdf'   => $m->mime_type === 'application/pdf',
                     ])
                     ->values()->all(),
             ])
-            ->filter(fn (array $doc) => $doc['files'] !== [])
-            ->values()
+            ->values()  // hồ sơ chưa có bản scan (ảnh/PDF) vẫn hiện tên, số hiệu, hiệu lực
             ->all();
     }
 

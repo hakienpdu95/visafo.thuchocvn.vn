@@ -39,53 +39,60 @@
     </div>
 </section>
 
-{{-- 2. Hồ sơ doanh nghiệp: chỉ hồ sơ đang hiệu lực, loại giấy tờ bật "Công khai trên trang truy xuất" --}}
+{{-- 2. Hồ sơ doanh nghiệp: nhóm "Hồ sơ pháp lý cơ sở", đang hiệu lực, loại giấy tờ bật "Công khai trên trang truy xuất" --}}
 <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
     <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
         <span class="h-4 w-1 rounded bg-green-600"></span> Hồ sơ doanh nghiệp
     </h3>
-    <p class="mb-3 text-xs text-gray-500">Giấy tờ pháp lý &amp; chứng nhận chất lượng đang hiệu lực. Chạm để xem bản gốc.</p>
+    <p class="mb-3 text-xs text-gray-500">Giấy tờ pháp lý &amp; chứng nhận đang hiệu lực. Chạm vào ảnh để xem bản scan.</p>
 
     @if($trace->companyDocuments)
     <div class="grid grid-cols-2 gap-3">
         @foreach($trace->companyDocuments as $doc)
         @php
-            $first = $doc['files'][0];
-            $images = array_values(array_map(fn ($f) => $f['url'], array_filter($doc['files'], fn ($f) => ! $f['isPdf'])));
+            $first = $doc['files'][0] ?? null;
+            // Lightbox: mọi tệp của hồ sơ — ảnh lớn (PDF: trang 1 đã render) + link mở PDF đầy đủ
+            $slides = array_map(fn ($f) => ['img' => $f['isPdf'] ? $f['preview'] : $f['url'], 'pdf' => $f['isPdf'] ? $f['url'] : null], $doc['files']);
         @endphp
         <article class="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white">
-            {{-- Ảnh → mở lightbox (mọi trang ảnh của hồ sơ); PDF → mở tab mới bằng trình xem PDF của trình duyệt --}}
-            @if($first['isPdf'])
-            <a href="{{ $first['url'] }}" target="_blank" rel="noopener" class="relative flex aspect-[3/4] flex-col items-center justify-center gap-2 bg-red-50 text-red-600">
-                <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
-                <span class="rounded bg-red-600 px-1.5 py-0.5 text-[11px] font-bold tracking-wider text-white">PDF</span>
-                <span class="text-[11px] font-medium text-red-700/80">Chạm để xem</span>
-            </a>
+            @if($first === null)
+            <div class="flex aspect-[3/4] flex-col items-center justify-center gap-1.5 bg-gray-50 text-gray-300">
+                <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $icon['shield'] }}"/></svg>
+                <span class="text-[11px] text-gray-400">Chưa có bản scan</span>
+            </div>
             @else
-            <button type="button" data-trace-lightbox='@json($images)' aria-label="Xem phóng to {{ $doc['name'] }}"
+            <button type="button" data-trace-lightbox='@json($slides)' aria-label="Xem phóng to {{ $doc['name'] }}"
                     class="relative block aspect-[3/4] overflow-hidden bg-gray-100">
-                <img src="{{ $first['url'] }}" alt="{{ $doc['name'] }}" class="h-full w-full object-cover object-top" loading="lazy">
+                {{-- Icon dự phòng nằm dưới ảnh: ảnh thu nhỏ lỗi (PDF hỏng/mã hóa) thì tự gỡ ảnh, lộ icon --}}
+                @if($first['isPdf'])
+                <span class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-red-50 text-red-600">
+                    <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                    <span class="rounded bg-red-600 px-1.5 py-0.5 text-[11px] font-bold tracking-wider text-white">PDF</span>
+                </span>
+                @else
+                <span class="absolute inset-0 flex items-center justify-center text-gray-300">
+                    <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $icon['shield'] }}"/></svg>
+                </span>
+                @endif
+                <img src="{{ $first['thumb'] }}" alt="{{ $doc['name'] }}" class="relative h-full w-full object-cover object-top" loading="lazy" onerror="this.remove()">
+                @if($first['isPdf'])
+                <span class="absolute left-1.5 top-1.5 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white">PDF</span>
+                @endif
+                @if(count($doc['files']) > 1)
+                <span class="absolute right-1.5 top-1.5 rounded-full bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white">{{ count($doc['files']) }} tệp</span>
+                @endif
                 <span class="absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 8v6m-3-3h6m5 0a8 8 0 11-16 0 8 8 0 0116 0z"/></svg>
                 </span>
             </button>
             @endif
-            @if(count($doc['files']) > 1)
-            <p class="border-t border-gray-100 bg-gray-50 px-2 py-1 text-center text-[11px] text-gray-500">
-                {{ count($doc['files']) }} tệp
-                @foreach(array_slice($doc['files'], 1) as $i => $extra)
-                · <a href="{{ $extra['url'] }}" target="_blank" rel="noopener" class="font-medium text-green-700 underline">{{ $extra['isPdf'] ? 'PDF' : 'Ảnh' }} {{ $i + 2 }}</a>
-                @endforeach
-            </p>
-            @endif
             <div class="flex flex-1 flex-col p-2.5">
                 <p class="line-clamp-3 text-[13px] font-semibold leading-snug text-gray-900">{{ $doc['name'] }}</p>
                 @if($doc['number'])<p class="mt-0.5 truncate text-[11px] text-gray-500">Số: <span class="font-mono">{{ $doc['number'] }}</span></p>@endif
-                @if($doc['issuedBy'])<p class="truncate text-[11px] text-gray-500">{{ $doc['issuedBy'] }}</p>@endif
-                <p class="mt-auto pt-1.5">
-                    <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">
-                        {{ $doc['expiresAt'] ? 'Hiệu lực đến ' . $doc['expiresAt']->format('d/m/Y') : 'Đang hiệu lực' }}
-                    </span>
+                @if($doc['issuedBy'])<p class="line-clamp-2 text-[11px] text-gray-500">Cấp bởi: {{ $doc['issuedBy'] }}</p>@endif
+                <p class="mt-auto flex flex-wrap items-center gap-x-1.5 gap-y-0.5 pt-1.5">
+                    <span class="inline-block rounded-full bg-green-600 px-2 py-0.5 text-[10px] font-semibold text-white">Đang hiệu lực</span>
+                    @if($doc['expiresAt'])<span class="text-[10px] text-gray-500">đến {{ $doc['expiresAt']->format('d/m/Y') }}</span>@endif
                 </p>
             </div>
         </article>
@@ -96,7 +103,7 @@
     @endif
 </section>
 
-{{-- Lightbox xem ảnh hồ sơ (các trang ảnh của một hồ sơ xếp dọc, cuộn được) --}}
+{{-- Lightbox xem bản scan (các tệp của một hồ sơ xếp dọc, cuộn được) --}}
 <div data-trace-lightbox-root hidden class="fixed inset-0 z-50 flex flex-col bg-black/90" role="dialog" aria-modal="true" aria-label="Xem hồ sơ">
     <div class="flex justify-end p-3">
         <button type="button" data-trace-lightbox-close aria-label="Đóng"

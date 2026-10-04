@@ -26,7 +26,7 @@ readonly class TraceabilityData
      * @param  array<int, array{name: string, number: ?string, issuedBy: ?string, expiresAt: ?Carbon, owner: string}>  $standards
      * @param  array{name: string, address: ?string}|null  $supplier  nhà cung cấp của lô nhập (null khi không xác định được)
      * @param  array<int, array{name: string, image: ?string, isCurrent: bool}>  $relatedProducts  SP cùng đơn bán, cùng nguồn cung; SP đang xem ở đầu
-     * @param  array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: ?Carbon, expiresAt: ?Carbon, files: array<int, array{url: string, isPdf: bool}>}>  $companyDocuments  hồ sơ doanh nghiệp công khai (tab "Thương hiệu")
+     * @param  array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: ?Carbon, expiresAt: ?Carbon, files: array<int, array{url: string, thumb: string, preview: string, isPdf: bool}>}>  $companyDocuments  hồ sơ doanh nghiệp công khai (tab "Thương hiệu")
      */
     public function __construct(
         public string $traceCode,

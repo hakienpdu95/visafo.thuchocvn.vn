@@ -28,7 +28,7 @@ class StoreDocumentMasterTypeData extends Data
 
         public readonly bool $is_required_expiry_date = false,
 
-        public readonly bool $is_public = false,
+        public readonly bool $is_public = true,
 
         #[Nullable, Min(1), Max(600)]
         public readonly ?int $default_validity_months = null,

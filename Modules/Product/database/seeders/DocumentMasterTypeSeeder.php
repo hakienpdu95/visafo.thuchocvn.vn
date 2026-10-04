@@ -14,7 +14,7 @@ class DocumentMasterTypeSeeder extends Seeder
      * các chỉnh sửa khác của admin.
      */
     /** Hồ sơ doanh nghiệp công khai mặc định trên tab "Thương hiệu" của trang truy xuất (/trace/{code}). */
-    private const PUBLIC_CODES = ['internal_business_registration', 'facility_attp', 'internal_haccp'];
+    private const PUBLIC_CODES = ['internal_business_registration', 'facility_commitment', 'facility_attp', 'internal_haccp'];
 
     public function run(): void
     {
