@@ -96,6 +96,16 @@
                             <p class="text-xs text-base-content/50 mt-0.5">Yêu cầu nhập ngày hết hạn khi thêm hồ sơ loại giấy tờ này.</p>
                         </div>
                     </label>
+
+                    <label class="flex items-start gap-2.5 cursor-pointer select-none group">
+                        <input type="checkbox" name="is_public" value="1"
+                               class="checkbox checkbox-sm checkbox-primary mt-0.5 shrink-0"
+                               @checked(old('is_public', $documentMasterType->is_public))>
+                        <div>
+                            <span class="text-sm font-medium group-hover:text-primary transition-colors">Công khai trên trang truy xuất</span>
+                            <p class="text-xs text-base-content/50 mt-0.5">Hồ sơ doanh nghiệp loại này (đang hiệu lực) hiện ở tab "Thương hiệu" khi khách quét QR. Không bật cho giấy tờ chứa thông tin cá nhân/nội bộ.</p>
+                        </div>
+                    </label>
                 </div>
 
                 <div class="form-control mt-4 sm:max-w-[calc(50%-0.5rem)]">

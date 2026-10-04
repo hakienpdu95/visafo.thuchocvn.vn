@@ -18,6 +18,7 @@ class StoreDocumentMasterTypeAction
             'document_group'           => $data->document_group->value,
             'is_required_issue_date'   => $data->is_required_issue_date,
             'is_required_expiry_date'  => $data->is_required_expiry_date,
+            'is_public'                => $data->is_public,
             'default_validity_months'  => $data->default_validity_months,
         ]);
     }

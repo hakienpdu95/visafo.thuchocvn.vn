@@ -41,6 +41,7 @@ class DocumentMasterTypeController extends Controller
         $input = $request->all();
         $input['is_required_issue_date']  = $request->boolean('is_required_issue_date');
         $input['is_required_expiry_date'] = $request->boolean('is_required_expiry_date');
+        $input['is_public']               = $request->boolean('is_public');
 
         $data = StoreDocumentMasterTypeData::validateAndCreate($input);
         $action->handle($data);
@@ -61,6 +62,7 @@ class DocumentMasterTypeController extends Controller
         $input = $request->all();
         $input['is_required_issue_date']  = $request->boolean('is_required_issue_date');
         $input['is_required_expiry_date'] = $request->boolean('is_required_expiry_date');
+        $input['is_public']               = $request->boolean('is_public');
 
         $data = UpdateDocumentMasterTypeData::validateAndCreate($input);
         $action->handle($documentMasterType, $data);

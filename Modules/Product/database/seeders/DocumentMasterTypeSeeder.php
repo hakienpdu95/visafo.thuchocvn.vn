@@ -13,6 +13,9 @@ class DocumentMasterTypeSeeder extends Seeder
      * (kể cả đã xóa mềm) thì tạo mới; đã có thì chỉ đồng bộ `document_group`, giữ nguyên
      * các chỉnh sửa khác của admin.
      */
+    /** Hồ sơ doanh nghiệp công khai mặc định trên tab "Thương hiệu" của trang truy xuất (/trace/{code}). */
+    private const PUBLIC_CODES = ['internal_business_registration', 'facility_attp', 'internal_haccp'];
+
     public function run(): void
     {
         $created = 0;
@@ -28,7 +31,8 @@ class DocumentMasterTypeSeeder extends Seeder
                     continue;
                 }
 
-                DocumentMasterType::query()->create($definition);
+                // Chỉ đặt cờ công khai khi tạo mới — không ghi đè lựa chọn của admin trên bản ghi đã có
+                DocumentMasterType::query()->create($definition + ['is_public' => in_array($definition['code'], self::PUBLIC_CODES, true)]);
                 $created++;
                 continue;
             }

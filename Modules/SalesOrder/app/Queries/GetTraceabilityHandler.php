@@ -2,6 +2,7 @@
 
 namespace Modules\SalesOrder\Queries;
 
+use App\Models\Media;
 use App\Shared\Contracts\QueryHandlerInterface;
 use App\Shared\Contracts\QueryInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -9,12 +10,15 @@ use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Compliance\Models\InternalFacility;
 use Modules\GoodsReceipt\Models\ProductBatch;
+use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingLog;
 use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
+use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
+use Modules\SalesOrder\Models\SalesOrderItem;
 use Modules\SalesOrder\Support\TraceabilityData;
 use Modules\Vendor\Models\Vendor;
 
@@ -35,6 +39,9 @@ class GetTraceabilityHandler implements QueryHandlerInterface
 
     /** Hồ sơ chung của chính doanh nghiệp (documentable_type = null) được công khai. */
     private const PUBLIC_COMPANY_STANDARD_CODES = ['facility_attp', 'internal_haccp'];
+
+    /** Định dạng file hồ sơ doanh nghiệp được phát ra trang công khai (xem trực tiếp trên trình duyệt). */
+    public const PUBLIC_DOCUMENT_MIMES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
     private const ACTIVITY_LABELS = [
         'cultivation' => 'Canh tác',
@@ -119,7 +126,90 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             standards: $this->standards($product, $vendor),
             status: $log->status,
             statusReason: $log->status_reason,
+            supplier: $supplierText ? [
+                'name'    => $supplierText,
+                'address' => $vendor ? $this->vendorAddress($vendor) : null,
+            ] : null,
+            relatedProducts: $this->relatedProducts($item, $vendor, $supplierText, $product),
+            brandStory: trim((string) config('trace.brand_story')),
+            companyDocuments: $this->companyDocuments($log->trace_code),
         );
+    }
+
+    /**
+     * Sản phẩm khác trong CÙNG đơn bán hàng có tem in từ CÙNG nguồn cung (NCC chọn lúc in, NCC của lô nhập,
+     * hoặc tên nguồn cung nhập tay); chỉ SP đang kinh doanh, SP đang xem đứng đầu.
+     * Chỉ có đúng SP đang xem → trả rỗng (view ẩn danh sách).
+     *
+     * @return array<int, array{name: string, image: ?string, isCurrent: bool}>
+     */
+    private function relatedProducts(SalesOrderItem $item, ?Vendor $vendor, ?string $supplierText, ?Product $current): array
+    {
+        if ($vendor === null && ! $supplierText) {
+            return [];
+        }
+
+        $sameSupplier = fn (Builder $q) => $q
+            ->where('status', PrintLogStatus::Active->value)
+            ->where(fn (Builder $w) => $vendor
+                ? $w->where('vendor_id', $vendor->id)
+                    ->orWhere(fn (Builder $b) => $b->whereNull('vendor_id')
+                        ->whereHas('productBatch.goodsReceipt', fn (Builder $r) => $r->where('vendor_id', $vendor->id)))
+                : $w->whereNull('vendor_id')->where('supplier_name', $supplierText));
+
+        $products = SalesOrderItem::query()
+            ->where('order_id', $item->order_id)
+            ->whereHas('printLogs', $sameSupplier)
+            ->with('product.media')
+            ->orderBy('line_no')
+            ->get()
+            ->pluck('product')
+            ->filter(fn (?Product $p) => $p?->status === ProductStatus::Active)
+            ->unique('id')
+            ->sortByDesc(fn (Product $p) => $p->id === $current?->id)
+            ->values();
+
+        if ($products->count() < 2) {
+            return [];
+        }
+
+        return $products->map(fn (Product $p) => [
+            'name'      => $p->name,
+            'image'     => $p->galleryImages()->first()['thumb_url'] ?? ($p->image_url ?: null),
+            'isCurrent' => $p->id === $current?->id,
+        ])->all();
+    }
+
+    /**
+     * Hồ sơ doanh nghiệp công khai cho tab "Thương hiệu". Chỉ ảnh/PDF; file nằm ở disk private nên
+     * phát qua route trace.document (kiểm tra lại whitelist mỗi lần tải), không lộ URL lưu trữ.
+     *
+     * @return array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: mixed, expiresAt: mixed, files: array<int, array{url: string, isPdf: bool}>}>
+     */
+    private function companyDocuments(string $traceCode): array
+    {
+        return ComplianceDocument::query()
+            ->publicCompanyProfile()
+            ->with(['documentType', 'media'])
+            ->orderBy('issue_date')
+            ->get()
+            ->map(fn (ComplianceDocument $doc) => [
+                'name'      => $doc->custom_name ?: ($doc->documentType?->name ?? 'Hồ sơ doanh nghiệp'),
+                'number'    => $doc->document_number ?: null,
+                'issuedBy'  => $doc->issued_by ?: null,
+                'issuedAt'  => $doc->issue_date,
+                'expiresAt' => $doc->expiration_date,
+                'files'     => $doc->getMedia('attachments_private')
+                    ->filter(fn (Media $m) => in_array($m->mime_type, self::PUBLIC_DOCUMENT_MIMES, true))
+                    ->map(fn (Media $m) => [
+                        'url'   => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id]),
+                        'isPdf' => $m->mime_type === 'application/pdf',
+                    ])
+                    ->values()->all(),
+            ])
+            ->filter(fn (array $doc) => $doc['files'] !== [])
+            ->values()
+            ->all();
     }
 
     /** Mô tả dự phòng khi sản phẩm chưa nhập mô tả: ghép từ dữ liệu thật (nguồn cung, vùng trồng), không bịa thông tin. */

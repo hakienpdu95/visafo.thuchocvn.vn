@@ -87,6 +87,19 @@ class ComplianceDocument extends Model implements HasMedia
             ->where('expiration_date', '<=', now()->addDays($days));
     }
 
+    /**
+     * Hồ sơ doanh nghiệp (của Trụ sở chính / các cơ sở nội bộ) được phép công bố trên trang truy xuất công khai:
+     * đang hiệu lực, chưa hết hạn, và loại giấy tờ được bật "Công khai trên trang truy xuất" (whitelist).
+     */
+    public function scopePublicCompanyProfile(Builder $query): Builder
+    {
+        return $query
+            ->where('documentable_type', (new InternalFacility())->getMorphClass())
+            ->where('status', ComplianceDocumentStatus::Active->value)
+            ->where(fn (Builder $q) => $q->whereNull('expiration_date')->orWhereDate('expiration_date', '>=', today()))
+            ->whereHas('documentType', fn (Builder $q) => $q->where('is_public', true));
+    }
+
     public function permissionModule(): string
     {
         return 'compliance';

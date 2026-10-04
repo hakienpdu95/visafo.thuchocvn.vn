@@ -17,4 +17,7 @@ return [
     'company_slogan'  => env('TRACE_COMPANY_SLOGAN', 'Mang an toàn đến từng bữa ăn'),
     'company_address' => env('TRACE_COMPANY_ADDRESS', ''),
     'company_hotline' => env('TRACE_COMPANY_HOTLINE', ''),
+
+    // Khối "Câu chuyện thương hiệu" ở tab Thương hiệu (tạm cấu hình tại đây; xuống dòng = tách đoạn).
+    'brand_story' => env('TRACE_BRAND_STORY', "VISAFO ra đời với sứ mệnh mang thực phẩm an toàn, minh bạch nguồn gốc đến từng bữa ăn của người Việt.\nChúng tôi hợp tác trực tiếp với các nông trại, nhà cung cấp đạt chuẩn; mọi lô hàng đều được kiểm soát chất lượng, sơ chế, đóng gói và gắn mã truy xuất riêng.\nTầm nhìn của VISAFO là trở thành đơn vị cung ứng thực phẩm sạch đáng tin cậy hàng đầu cho bếp ăn tập thể, trường học và gia đình."),
 ];

@@ -24,6 +24,9 @@ readonly class TraceabilityData
      * @param  array{code: string, name: ?string, address: ?string}|null  $location  mã vùng trồng / cơ sở sản xuất
      * @param  array<int, array{icon: string, title: string, description: string, at: ?Carbon, done: bool}>  $timeline
      * @param  array<int, array{name: string, number: ?string, issuedBy: ?string, expiresAt: ?Carbon, owner: string}>  $standards
+     * @param  array{name: string, address: ?string}|null  $supplier  nhà cung cấp của lô nhập (null khi không xác định được)
+     * @param  array<int, array{name: string, image: ?string, isCurrent: bool}>  $relatedProducts  SP cùng đơn bán, cùng nguồn cung; SP đang xem ở đầu
+     * @param  array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: ?Carbon, expiresAt: ?Carbon, files: array<int, array{url: string, isPdf: bool}>}>  $companyDocuments  hồ sơ doanh nghiệp công khai (tab "Thương hiệu")
      */
     public function __construct(
         public string $traceCode,
@@ -46,5 +49,9 @@ readonly class TraceabilityData
         public array $standards,
         public PrintLogStatus $status = PrintLogStatus::Active,
         public ?string $statusReason = null,
+        public ?array $supplier = null,
+        public array $relatedProducts = [],
+        public string $brandStory = '',
+        public array $companyDocuments = [],
     ) {}
 }

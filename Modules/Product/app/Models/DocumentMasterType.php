@@ -39,6 +39,7 @@ class DocumentMasterType extends Model
         'has_expiration_date',
         'has_issue_place',
         'is_transactional',
+        'is_public',
         'default_validity_months',
     ];
 
@@ -50,6 +51,7 @@ class DocumentMasterType extends Model
             'is_required_issue_date'  => 'boolean',
             'is_required_expiry_date' => 'boolean',
             'has_expiration_date'     => 'boolean',
+            'is_public'               => 'boolean',
             'has_issue_place'         => 'boolean',
             'is_transactional'        => 'boolean',
             'default_validity_months' => 'integer',

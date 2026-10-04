@@ -84,11 +84,28 @@
         </section>
     </main>
     @else
-    <main class="space-y-4 px-4 pt-4">
+    <main class="px-4">
+
+        {{-- Tabs: Sản phẩm / Thương hiệu (dính dưới header khi cuộn) --}}
+        <nav class="sticky top-[61px] z-20 -mx-4 bg-gray-100/95 px-4 py-3 backdrop-blur">
+            <div role="tablist" aria-label="Nội dung truy xuất" class="grid grid-cols-2 gap-1 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5">
+                @foreach(['product' => ['Sản phẩm', 'box'], 'brand' => ['Thương hiệu', 'shield']] as $tab => [$tabLabel, $tabIcon])
+                <button type="button" role="tab" id="trace-tab-{{ $tab }}" data-trace-tab="{{ $tab }}" aria-controls="trace-panel-{{ $tab }}"
+                        aria-selected="{{ $loop->first ? 'true' : 'false' }}" tabindex="{{ $loop->first ? '0' : '-1' }}"
+                        class="flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-semibold uppercase tracking-wide text-gray-500 transition aria-selected:bg-green-600 aria-selected:text-white aria-selected:shadow">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon[$tabIcon] }}"/></svg>
+                    {{ $tabLabel }}
+                </button>
+                @endforeach
+            </div>
+        </nav>
+
+        {{-- TAB 1: SẢN PHẨM --}}
+        <div id="trace-panel-product" role="tabpanel" aria-labelledby="trace-tab-product" data-trace-panel="product" class="space-y-4">
 
         {{-- 1. Hero: ảnh sản phẩm (slider) + thông tin tổng quan --}}
-        <section class="rounded-3xl bg-white p-3 shadow-sm ring-1 ring-black/5">
-            <div class="relative aspect-square overflow-hidden rounded-2xl bg-gray-100">
+        <section class="rounded-md bg-white p-3 shadow-sm ring-1 ring-black/5">
+            <div class="relative aspect-square overflow-hidden rounded-md bg-gray-100">
                 @if($trace->productImages)
                     {{-- Ảnh chính luôn ở index 0 (slide đầu) — thứ tự đã sắp sẵn ở backend --}}
                     <div id="trace-product-swiper" class="swiper h-full w-full">
@@ -138,9 +155,8 @@
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon['shield'] }}"/></svg>
                     Đã xác thực bởi {{ $trace->company['name'] }}
                 </span>
-                <h1 class="mt-3 text-[26px] font-extrabold leading-tight text-gray-900">{{ $trace->productName }}</h1>
-                <p class="mt-1 text-base font-semibold text-orange-600">{{ $trace->productSubtitle }}</p>
-                <p class="mt-3 text-[15px] leading-relaxed text-gray-600">{{ $trace->productDescription }}</p>
+                <h1 class="mt-3 text-[26px] font-semibold leading-tight text-gray-900">{{ $trace->productName }}</h1>
+                <p class="mt-1 text-sm font-medium text-orange-600">{{ $trace->productSubtitle }}</p>
                 <p class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon['package'] }}"/></svg>
                     Quy cách: {{ $trace->weight }}
@@ -149,7 +165,7 @@
         </section>
 
         {{-- 2. Thông tin sản phẩm --}}
-        <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin sản phẩm
             </h3>
@@ -171,7 +187,7 @@
         </section>
 
         {{-- 3. Đơn vị sản xuất, kinh doanh & địa điểm --}}
-        <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Đơn vị sản xuất, kinh doanh
             </h3>
@@ -197,8 +213,27 @@
             </ul>
         </section>
 
+        {{-- 3b. Nguồn cung cấp + sản phẩm cùng đơn bán, cùng NCC (ẩn danh sách khi chỉ có đúng SP này) --}}
+        @if($trace->supplier)
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin nguồn cung cấp
+            </h3>
+            <ul class="divide-y divide-gray-100">
+                @include('traceability.partials.row', ['ic' => 'farm', 'label' => 'Nhà cung cấp tận gốc', 'value' => $trace->supplier['name']])
+                @include('traceability.partials.row', ['ic' => 'pin', 'label' => 'Địa chỉ', 'value' => $trace->supplier['address']])
+            </ul>
+            @if($trace->relatedProducts)
+            <div class="mt-1 border-t border-gray-100 pt-3">
+                <p class="mb-2 text-sm text-gray-600">Các sản phẩm cùng nhập trong lô hàng này:</p>
+                @include('traceability.partials.product-strip', ['products' => $trace->relatedProducts])
+            </div>
+            @endif
+        </section>
+        @endif
+
         {{-- 4. Tiêu chuẩn công bố áp dụng (chỉ hồ sơ đang hiệu lực, thuộc whitelist công khai) --}}
-        <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Tiêu chuẩn &amp; chứng nhận
             </h3>
@@ -223,7 +258,7 @@
         </section>
 
         {{-- 5. Các công đoạn sản xuất, kinh doanh (timeline dọc) --}}
-        <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Các công đoạn sản xuất, kinh doanh
             </h3>
@@ -251,7 +286,14 @@
             </ol>
         </section>
 
-        <p class="px-2 pt-2 text-center text-xs leading-relaxed text-gray-400">
+        </div>
+
+        {{-- TAB 2: THƯƠNG HIỆU --}}
+        <div id="trace-panel-brand" role="tabpanel" aria-labelledby="trace-tab-brand" data-trace-panel="brand" class="space-y-4" hidden>
+            @include('traceability.partials.brand')
+        </div>
+
+        <p class="px-2 pt-6 text-center text-xs leading-relaxed text-gray-400">
             Thông tin được truy xuất từ hệ thống {{ $trace->brand }} theo Thông tư 02/2024/TT-BKHCN.<br>
             Mã TXNG chỉ có giá trị cho đúng lần đóng gói in trên tem.
         </p>
@@ -300,6 +342,46 @@
                 if (e?.name !== 'AbortError') toast('Không chia sẻ được, hãy sao chép địa chỉ trang');
             }
         });
+
+        // Tabs Sản phẩm / Thương hiệu — nhớ tab qua hash (#thuong-hieu) để chia sẻ link đúng tab
+        const tabs = [...document.querySelectorAll('[data-trace-tab]')];
+        const showTab = (name, focus = false) => {
+            tabs.forEach((t) => {
+                const on = t.dataset.traceTab === name;
+                t.setAttribute('aria-selected', on ? 'true' : 'false');
+                t.tabIndex = on ? 0 : -1;
+                if (on && focus) t.focus();
+                document.querySelector(`[data-trace-panel="${t.dataset.traceTab}"]`).hidden = !on;
+            });
+            history.replaceState(null, '', name === 'brand' ? '#thuong-hieu' : location.pathname + location.search);
+        };
+        tabs.forEach((t, i) => {
+            t.addEventListener('click', () => { showTab(t.dataset.traceTab); window.scrollTo({ top: 0 }); });
+            t.addEventListener('keydown', (e) => {
+                if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+                showTab(tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length].dataset.traceTab, true);
+            });
+        });
+        if (tabs.length && location.hash === '#thuong-hieu') showTab('brand');
+
+        // Lightbox xem ảnh hồ sơ doanh nghiệp
+        const box = document.querySelector('[data-trace-lightbox-root]');
+        const boxBody = box?.querySelector('[data-trace-lightbox-body]');
+        const closeBox = () => { box.hidden = true; boxBody.replaceChildren(); document.body.style.overflow = ''; };
+        document.querySelectorAll('[data-trace-lightbox]').forEach((btn) => btn.addEventListener('click', () => {
+            boxBody.replaceChildren(...JSON.parse(btn.dataset.traceLightbox).map((src) => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = btn.getAttribute('aria-label') || '';
+                img.className = 'mx-auto w-full max-w-2xl rounded bg-white';
+                return img;
+            }));
+            box.hidden = false;
+            document.body.style.overflow = 'hidden';
+        }));
+        box?.querySelector('[data-trace-lightbox-close]').addEventListener('click', closeBox);
+        box?.addEventListener('click', (e) => { if (e.target === box || e.target === boxBody) closeBox(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && box && !box.hidden) closeBox(); });
 
         // Yêu thích: chỉ lưu trên trình duyệt của người xem (không cần đăng nhập)
         const fav = document.querySelector('[data-trace-fav]');
