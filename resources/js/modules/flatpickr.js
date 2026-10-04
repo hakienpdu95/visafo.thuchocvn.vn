@@ -40,6 +40,9 @@ const initTimePicker      = (sel, opts = {}) => flatpickr(sel, { ...BASE, noCale
  * - altInput:    true      → Flatpickr tạo input hiển thị riêng
  * - altFormat:   'd/m/Y'  → format hiển thị cho user
  * - data-fp-mode: 'single' | 'range' | 'datetime'  (mặc định 'single')
+ * - data-fp-static="1": render lịch ngay sau input thay vì cuối <body> — BẮT BUỘC cho input trong <dialog>
+ *   mở bằng showModal(): dialog nằm ở top layer nên mọi thứ gắn vào <body> (kể cả z-index cao) đều bị che.
+ *   Khung chứa (modal-box) cần overflow-visible để lịch không bị cắt.
  *
  * Gọi 1 lần trong page controller:
  *   window.initAllDatePickers?.(form);
@@ -55,6 +58,7 @@ function initAllDatePickers(container = document) {
             altFormat:     'd/m/Y',
             allowInput:    false,
             disableMobile: true,
+            static:        el.dataset.fpStatic === '1',
         };
         if (mode === 'datetime') {
             flatpickr(el, { ...base, enableTime: true, time_24hr: true, altFormat: 'd/m/Y H:i', dateFormat: 'Y-m-d H:i:S' });

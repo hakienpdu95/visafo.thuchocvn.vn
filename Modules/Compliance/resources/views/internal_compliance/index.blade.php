@@ -97,8 +97,21 @@
                     <span class="text-lg font-bold" style="color:#0F4C3A">VF</span>
                 </div>
                 <div class="min-w-0">
-                    <p class="text-lg font-bold leading-tight truncate">Công ty CP Thực phẩm VISAFO</p>
-                    <p class="text-sm text-white/70 mt-0.5">MST: 0312345678 · Doanh nghiệp nhỏ</p>
+                    <p class="text-lg font-bold leading-tight truncate">{{ $headquarter->company_name ?: config('trace.company_legal_name') }}</p>
+                    <p class="text-sm text-white/70 mt-0.5">
+                        {{ $headquarter->tax_code ? 'MST: ' . $headquarter->tax_code : 'Chưa khai báo mã số định danh' }}
+                        @if($headquarter->company_type) · {{ $headquarter->company_type->label() }}@endif
+                    </p>
+                    @if($headquarter->fullAddress())
+                    <p class="text-xs text-white/60 mt-0.5 truncate">{{ $headquarter->fullAddress() }}</p>
+                    @endif
+                    @if($canEditCompany)
+                    <button type="button" onclick="companyProfileModal.showModal()"
+                            class="mt-2 inline-flex items-center gap-1.5 rounded-sm border border-white/30 px-2.5 py-1 text-xs font-medium text-white hover:bg-white/10">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Cập nhật thông tin doanh nghiệp
+                    </button>
+                    @endif
                 </div>
             </div>
 
@@ -365,9 +378,124 @@
 
 </div>
 
+{{-- ── Modal: Cập nhật thông tin doanh nghiệp (lưu trên bản ghi Trụ sở chính) ── --}}
+@if($canEditCompany)
+@php
+    $companyErrors = old('_form') === 'company' ? $errors : new \Illuminate\Support\ViewErrorBag();
+    $companyTabFields = [
+        'basic'   => ['company_name', 'company_type', 'tax_code', 'tax_code_issue_date', 'tax_code_issue_place'],
+        'address' => ['province_code', 'ward_code', 'address'],
+    ];
+    $companyTab = $companyErrors->hasAny($companyTabFields['basic']) || ! $companyErrors->hasAny($companyTabFields['address']) ? 'basic' : 'address';
+@endphp
+<dialog id="companyProfileModal" class="modal" @if($companyErrors->any()) data-autoopen-company="1" @endif>
+    {{-- overflow-visible: lịch Ngày cấp (flatpickr static) và dropdown Tỉnh/Phường tràn ra ngoài khung mà không bị cắt --}}
+    <div class="modal-box max-w-2xl rounded-md p-5 relative overflow-visible [&_.flatpickr-wrapper]:block [&_.flatpickr-wrapper]:w-full" x-data="{ tab: '{{ $companyTab }}' }">
+        <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onclick="companyProfileModal.close()">✕</button>
+        <h3 class="font-bold text-lg mb-4">Cập nhật thông tin doanh nghiệp</h3>
+
+        <div class="flex gap-6 border-b border-gray-200 mb-5">
+            @foreach(['basic' => 'Thông tin cơ bản', 'address' => 'Địa chỉ'] as $key => $label)
+            <button type="button" data-company-tab="{{ $key }}" @click="tab = '{{ $key }}'"
+                    class="pb-2.5 -mb-px border-b-2 text-sm transition-colors"
+                    :class="tab === '{{ $key }}' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
+                {{ $label }}
+                @if($companyErrors->hasAny($companyTabFields[$key]))
+                <span class="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-error align-middle"></span>
+                @endif
+            </button>
+            @endforeach
+        </div>
+
+        <form method="POST" action="{{ route('backend.internal-compliance.company.update') }}" data-company-form novalidate>
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="_form" value="company">
+
+            {{-- Tab 1: Thông tin cơ bản --}}
+            <div x-show="tab === 'basic'" data-company-panel="basic" class="space-y-4">
+                <div class="form-control">
+                    <label class="label py-0 pb-1.5"><span class="label-text font-medium">Tên doanh nghiệp / Hộ kinh doanh</span></label>
+                    <input type="text" value="{{ $lockedCompany['company_name'] ?? '' }}" readonly aria-readonly="true" tabindex="-1"
+                           class="input input-bordered input-sm w-full rounded-sm bg-gray-100 text-gray-500 cursor-not-allowed">
+                </div>
+
+                <div class="form-control sm:max-w-[calc(50%-0.5rem)]">
+                    <label class="label py-0 pb-1.5"><span class="label-text font-medium">Loại hình tổ chức <span class="text-error">*</span></span></label>
+                    <select name="company_type" data-req="Vui lòng chọn loại hình tổ chức"
+                            class="select select-bordered select-sm w-full rounded-sm @if($companyErrors->has('company_type')) select-error @endif">
+                        <option value="">— Chọn loại hình —</option>
+                        @foreach($companyTypes as $type)
+                        <option value="{{ $type->value }}" @selected(old('company_type', $headquarter->company_type?->value) === $type->value)>{{ $type->label() }}</option>
+                        @endforeach
+                    </select>
+                    @if($companyErrors->has('company_type'))<p class="mt-1 text-xs text-error form-val-msg">{{ $companyErrors->first('company_type') }}</p>@endif
+                </div>
+
+                {{-- Mã số – Ngày cấp – Nơi cấp: đủ bộ 3 để sinh hợp đồng / văn bản pháp lý --}}
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5"><span class="label-text font-medium" title="Mã số định danh: MST hoặc CCCD">Mã số (MST/CCCD)</span></label>
+                        <input type="text" value="{{ $lockedCompany['tax_code'] ?? '' }}" readonly aria-readonly="true" tabindex="-1"
+                               class="input input-bordered input-sm w-full rounded-sm bg-gray-100 text-gray-500 cursor-not-allowed font-mono">
+                    </div>
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5"><span class="label-text font-medium">Ngày cấp</span></label>
+                        <input type="text" id="fp-tax_code_issue_date" name="tax_code_issue_date" data-fp-static="1"
+                               value="{{ old('tax_code_issue_date', $headquarter->tax_code_issue_date?->format('Y-m-d')) }}"
+                               class="input input-bordered input-sm w-full rounded-sm fp-init @if($companyErrors->has('tax_code_issue_date')) input-error @endif"
+                               placeholder="dd/mm/yyyy" autocomplete="off">
+                        @if($companyErrors->has('tax_code_issue_date'))<p class="mt-1 text-xs text-error form-val-msg">{{ $companyErrors->first('tax_code_issue_date') }}</p>@endif
+                    </div>
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5"><span class="label-text font-medium">Nơi cấp</span></label>
+                        <input type="text" name="tax_code_issue_place" value="{{ old('tax_code_issue_place', $headquarter->tax_code_issue_place) }}"
+                               data-val-maxlength="255"
+                               class="input input-bordered input-sm w-full rounded-sm @if($companyErrors->has('tax_code_issue_place')) input-error @endif"
+                               placeholder="Cơ quan cấp">
+                        @if($companyErrors->has('tax_code_issue_place'))<p class="mt-1 text-xs text-error form-val-msg">{{ $companyErrors->first('tax_code_issue_place') }}</p>@endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tab 2: Địa chỉ trụ sở — cố định (config/company.php), chỉ xem. Địa giới 2 cấp Tỉnh/TP → Phường/Xã, không có quận/huyện.
+                 Select disabled không được submit → server tự lấy giá trị cấu hình. --}}
+            <div x-show="tab === 'address'" x-cloak data-company-panel="address" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5"><span class="label-text font-medium">Tỉnh / Thành phố</span></label>
+                        <select disabled class="select select-bordered select-sm w-full rounded-sm bg-gray-100 text-gray-500 cursor-not-allowed">
+                            <option value="{{ $lockedCompany['province_code'] ?? '' }}" selected>{{ $lockedAddressNames['province'] ?? ($lockedCompany['province_code'] ?? '') }}</option>
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5"><span class="label-text font-medium">Phường / Xã</span></label>
+                        <select disabled class="select select-bordered select-sm w-full rounded-sm bg-gray-100 text-gray-500 cursor-not-allowed">
+                            <option value="{{ $lockedCompany['ward_code'] ?? '' }}" selected>{{ $lockedAddressNames['ward'] ?? ($lockedCompany['ward_code'] ?? '') }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label class="label py-0 pb-1.5"><span class="label-text font-medium">Số nhà, tên đường (địa chỉ trụ sở)</span></label>
+                    <input type="text" value="{{ $lockedCompany['address'] ?? '' }}" readonly aria-readonly="true" tabindex="-1"
+                           class="input input-bordered input-sm w-full rounded-sm bg-gray-100 text-gray-500 cursor-not-allowed">
+                </div>
+                <p class="text-xs text-gray-400">Địa chỉ trụ sở được cố định theo đăng ký doanh nghiệp, không chỉnh sửa tại đây.</p>
+            </div>
+
+            <div class="modal-action mt-6 pt-4 border-t border-gray-100">
+                <button type="button" class="btn btn-ghost rounded-sm" onclick="companyProfileModal.close()">Hủy</button>
+                <button type="submit" class="btn text-white border-0 rounded-sm" style="background-color:#0F4C3A">Lưu thông tin</button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+@endif
+
 {{-- ── Modal: Tải lên / Sửa hồ sơ năng lực ─────────────────────────────── --}}
 @if($canManageDocuments)
-<dialog id="addDocumentModal" class="modal" @if($errors->any()) data-autoopen="1" @endif>
+<dialog id="addDocumentModal" class="modal" @if($errors->any() && old('_form') !== 'company') data-autoopen="1" @endif>
     <div class="modal-box max-w-5xl rounded-md p-3 relative">
         <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onclick="addDocumentModal.close()">✕</button>
 

@@ -7,11 +7,11 @@
     <div class="min-w-0 flex-1">
         <p class="text-xs text-gray-500">{{ $label }}</p>
         @if(filled($value))
-        <p class="break-words font-semibold leading-snug
+        <p class="break-words font-medium text-sm leading-snug
                   {{ ($mono ?? false) ? 'font-mono' : '' }}
                   {{ ($danger ?? false) ? 'text-red-600' : (($accent ?? false) ? 'text-green-700' : 'text-gray-900') }}">
             {{ $value }}
-            @if(!empty($badge))<span class="ml-1 rounded bg-red-100 px-1.5 py-0.5 align-middle font-sans text-xs font-semibold text-red-600">{{ $badge }}</span>@endif
+            @if(!empty($badge))<span class="ml-1 rounded bg-red-100 px-1.5 py-0.5 align-middle font-sans text-xs font-medium text-sm text-red-600">{{ $badge }}</span>@endif
         </p>
         @else
         <p class="text-sm italic text-gray-400">Đang cập nhật</p>

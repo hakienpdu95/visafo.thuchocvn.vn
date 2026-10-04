@@ -207,6 +207,13 @@ details[open] > .nav-summary .nav-arrow { transform: rotate(90deg); }
     border-color: var(--color-error, oklch(65.5% 0.241 17.6));
 }
 
+/* TomSelect trong <dialog> render dropdown ngay trong .ts-wrapper (xem initOrgAddress) — DaisyUI .select đặt
+   overflow:hidden trên wrapper sẽ cắt mất dropdown → mở ra cho dropdown tràn xuống. */
+dialog .ts-wrapper.select { overflow: visible; }
+/* Wrapper tự tạo stacking context → z-index của dropdown chỉ có tác dụng bên trong; nâng cả wrapper khi đang mở
+   để dropdown đè lên các ô nhập phía dưới. */
+dialog .ts-wrapper.dropdown-active { position: relative; z-index: 30; }
+
 /* ── Rich content (HTML output từ Jodit editor) ── */
 .rich-content p  { margin: 0 0 .5em; }
 .rich-content ul { list-style: disc; padding-left: 1.4em; margin: 0 0 .5em; }

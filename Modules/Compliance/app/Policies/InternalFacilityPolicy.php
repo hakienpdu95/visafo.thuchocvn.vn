@@ -27,4 +27,5 @@ class InternalFacilityPolicy
     {
         return ModuleAccess::update($user, 'compliance', $internalFacility);
     }
+
 }

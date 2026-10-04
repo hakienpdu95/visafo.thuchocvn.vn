@@ -87,3 +87,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Form "Cập nhật thông tin doanh nghiệp": date picker, validate client, và tự chuyển sang tab chứa lỗi
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('companyProfileModal');
+    const form  = modal?.querySelector('[data-company-form]');
+    if (!form) return;
+
+    window.initAllDatePickers?.(form);
+    window.initFormValidation?.(form);
+
+    // Đăng ký sau initFormValidation → chạy sau bước validate; lỗi nằm ở tab đang ẩn thì mở tab đó
+    form.addEventListener('submit', (e) => {
+        if (!e.defaultPrevented) return;
+        const panel = form.querySelector('.form-val-msg')?.closest('[data-company-panel]');
+        if (panel) modal.querySelector(`[data-company-tab="${panel.dataset.companyPanel}"]`)?.click();
+    });
+
+    if (modal.dataset.autoopenCompany === '1') modal.showModal();
+});

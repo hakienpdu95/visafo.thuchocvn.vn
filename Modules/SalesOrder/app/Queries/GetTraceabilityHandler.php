@@ -402,12 +402,12 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     /** @return array{name: string, address: string, hotline: string} */
     private function company(): array
     {
-        $hq = InternalFacility::query()->where('type', 'headquarter')->first();
+        $hq = InternalFacility::query()->where('type', 'headquarter')->with(['province', 'ward'])->first();
 
-        // Trụ sở chính chỉ cung cấp địa chỉ; tên luôn là tên pháp nhân (tên cơ sở là nhãn nội bộ, VD "Trụ sở chính (Công ty)")
+        // Tên pháp nhân lấy từ hồ sơ doanh nghiệp (company_name), không dùng tên cơ sở — đó là nhãn nội bộ, VD "Trụ sở chính (Công ty)"
         return [
-            'name'    => (string) config('trace.company_legal_name') ?: (string) config('trace.company_name', 'VISAFO'),
-            'address' => $hq?->address ?: config('trace.company_address', ''),
+            'name'    => $hq?->company_name ?: ((string) config('trace.company_legal_name') ?: (string) config('trace.company_name', 'VISAFO')),
+            'address' => $hq?->fullAddress() ?: config('trace.company_address', ''),
             'hotline' => (string) config('trace.company_hotline', ''),
         ];
     }

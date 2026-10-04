@@ -8,6 +8,7 @@ use Modules\Compliance\Http\Controllers\InternalFacilityController;
 Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(function () {
     Route::get('internal-compliance', [InternalFacilityController::class, 'index'])->name('internal-compliance.index');
     Route::get('internal-compliance/export', [InternalFacilityController::class, 'export'])->name('internal-compliance.export');
+    Route::put('internal-compliance/company', [InternalFacilityController::class, 'updateCompany'])->name('internal-compliance.company.update');
     Route::post('internal-facilities', [InternalFacilityController::class, 'store'])->name('internal-facilities.store');
     Route::put('internal-facilities/{internal_facility}', [InternalFacilityController::class, 'update'])->name('internal-facilities.update');
 

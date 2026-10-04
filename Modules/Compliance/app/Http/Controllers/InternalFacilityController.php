@@ -3,6 +3,8 @@
 namespace Modules\Compliance\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Province;
+use App\Models\Ward;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -10,8 +12,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Modules\Compliance\Actions\Backend\StoreInternalFacilityAction;
+use Modules\Compliance\Actions\Backend\UpdateCompanyProfileAction;
 use Modules\Compliance\Actions\Backend\UpdateInternalFacilityAction;
+use Modules\Compliance\Data\Requests\CompanyProfileData;
 use Modules\Compliance\Data\Requests\InternalFacilityData;
+use Modules\Compliance\Enums\CompanyType;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\InternalFacility;
 use Modules\Employee\Enums\RecordStatus;
@@ -39,7 +44,7 @@ class InternalFacilityController extends Controller
             ->orderBy('name')
             ->get();
 
-        $headquarter->load(['documents' => fn ($q) => $q->visibleTo()->with('documentType')->latest('issue_date')]);
+        $headquarter->load(['province', 'ward', 'documents' => fn ($q) => $q->visibleTo()->with('documentType')->latest('issue_date')]);
         $localFacilities->load(['documents' => fn ($q) => $q->visibleTo()->with('documentType')->latest('issue_date')]);
 
         $documentTypes = DocumentMasterType::query()
@@ -63,9 +68,32 @@ class InternalFacilityController extends Controller
             'documentTypesByGroup' => $documentTypesByGroup,
             'canManageDocuments'   => auth()->user()->can('compliance.manage'),
             'canManageFacilities'  => auth()->user()->can('create', InternalFacility::class),
+            'canEditCompany'       => auth()->user()->can('update', $headquarter),
+            'lockedCompany'        => $lockedCompany = InternalFacility::lockedCompanyValues(),
+            'lockedAddressNames'   => [
+                'province' => Province::query()->where('province_code', $lockedCompany['province_code'] ?? null)->value('name'),
+                'ward'     => Ward::query()->where('ward_code', $lockedCompany['ward_code'] ?? null)->value('name'),
+            ],
+            'companyTypes'         => CompanyType::cases(),
             'canViewEmployees'     => auth()->user()->can('employee.view'),
             'employeeStats'        => $this->buildEmployeeStats($employees),
         ]);
+    }
+
+    /** Cập nhật hồ sơ pháp nhân (tên, loại hình, mã định danh, địa chỉ) — lưu trên bản ghi Trụ sở chính. */
+    public function updateCompany(Request $request, UpdateCompanyProfileAction $action): RedirectResponse
+    {
+        $headquarter = InternalFacility::query()->where('type', 'headquarter')->firstOrFail();
+        $this->authorize('update', $headquarter);
+
+        // Tên, MST, Tỉnh/Phường, địa chỉ trụ sở là cố định (config/company.php): form gửi readonly/disabled
+        // (select disabled không được submit) → luôn lấy giá trị cấu hình, không tin dữ liệu gửi lên
+        $input = array_merge($request->all(), InternalFacility::lockedCompanyValues());
+
+        $action->handle($headquarter, CompanyProfileData::validateAndCreate($input));
+
+        return redirect()->route('backend.internal-compliance.index')
+            ->with('success', 'Đã cập nhật thông tin doanh nghiệp.');
     }
 
     public function store(Request $request, StoreInternalFacilityAction $action): RedirectResponse

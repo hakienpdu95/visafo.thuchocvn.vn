@@ -68,9 +68,14 @@ function initOrgAddress(provId, wardId, initProv, initWard) {
 
     let pendingWard = initWard || null;
 
+    // Trong <dialog> mở bằng showModal() (top layer): dropdown gắn vào <body> sẽ nằm DƯỚI modal dù z-index cao.
+    // → render dropdown ngay trong .ts-wrapper (null); khung modal cần overflow-visible để không bị cắt.
+    const dropdownParent = provEl.closest('dialog') ? null : DEFAULTS.dropdownParent;
+
     // Ward: starts disabled, populated on province change
     const wardTs = new TomSelect(wardEl, {
         ...DEFAULTS,
+        dropdownParent,
         placeholder: 'Chọn tỉnh / TP trước',
         maxOptions: null,
         plugins: ['clear_button'],
@@ -84,6 +89,7 @@ function initOrgAddress(provId, wardId, initProv, initWard) {
     // Province: full searchable list, triggers ward load on change
     const provTs = new TomSelect(provEl, {
         ...DEFAULTS,
+        dropdownParent,
         placeholder: 'Tìm tỉnh / thành phố...',
         maxOptions: null,
         plugins: ['clear_button'],
