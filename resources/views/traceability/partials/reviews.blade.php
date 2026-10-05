@@ -7,11 +7,11 @@
 @endphp
 
 {{-- 1. Điểm chất lượng tổng (đánh giá đã duyệt của sản phẩm) --}}
+@if($summary['count'] > 0)
 <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
     <h3 class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-green-700">
         <span class="h-4 w-1 rounded bg-green-600"></span> Điểm chất lượng
     </h3>
-    @if($summary['count'] > 0)
     <div class="flex items-center gap-4">
         <div class="shrink-0 text-center">
             <p class="text-4xl font-extrabold leading-none text-green-700">{{ number_format($summary['average'], 1, ',', '') }}<span class="text-base font-semibold text-gray-400"> / 5</span></p>
@@ -27,10 +27,8 @@
             @endforeach
         </dl>
     </div>
-    @else
-    <p class="text-sm text-gray-500">Sản phẩm chưa có đánh giá đã xác minh. Hãy là người đầu tiên đánh giá lô hàng này!</p>
-    @endif
 </section>
+@endif
 
 {{-- 2. Form đánh giá lô hàng --}}
 <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">

@@ -1,17 +1,13 @@
 {{--
     Nút pill mở hồ sơ trên trang truy xuất. Biến: $label, $iconHtml (emoji/svg đã escape sẵn), $files (array{url, preview, isPdf}[]),
     tùy chọn $caption, $pillClass (từ show.blade.php).
-    - Không có tệp  → nút xám, không bấm được (giữ cấu trúc, báo "chưa có hồ sơ").
+    - Không có tệp  → không render gì.
     - Đúng 1 tệp    → <a target="_blank">: trình duyệt tự mở ảnh/PDF ở tab mới, trang truy xuất không phải giữ tài liệu trong bộ nhớ.
     - Nhiều tệp     → nút lightbox: JS tải trước ảnh (spinner, khóa nút), tải xong mới mở; lỗi → toast + trả nút.
 --}}
 @php $caption = $caption ?? $label; @endphp
 @if(! $files)
-<span role="link" aria-disabled="true" title="Chưa có hồ sơ đính kèm"
-      class="inline-flex max-w-full cursor-not-allowed items-center gap-1.5 rounded-full border border-dashed border-gray-200 bg-gray-50 py-1.5 pl-2.5 pr-3 text-[13px] font-medium text-gray-400 opacity-70 grayscale">
-    <span aria-hidden="true">{!! $iconHtml !!}</span>
-    <span class="truncate">{{ $label }}</span>
-</span>
+{{-- không có tệp → không render --}}
 @elseif(count($files) === 1)
 <a href="{{ $files[0]['url'] }}" target="_blank" rel="noopener noreferrer" title="{{ $caption }}" class="{{ $pillClass }}">
     <span aria-hidden="true">{!! $iconHtml !!}</span>

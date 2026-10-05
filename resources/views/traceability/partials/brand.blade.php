@@ -13,16 +13,17 @@
         </div>
     </div>
     <div class="p-4">
+        @php $storyParagraphs = array_filter(array_map('trim', preg_split('/\R/', $trace->brandStory))); @endphp
+        @if($storyParagraphs)
         <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
             <span class="h-4 w-1 rounded bg-green-600"></span> Câu chuyện thương hiệu
         </h3>
-        @forelse(array_filter(array_map('trim', preg_split('/\R/', $trace->brandStory))) as $paragraph)
+        @foreach($storyParagraphs as $paragraph)
         <p class="text-[15px] leading-relaxed text-gray-700 {{ $loop->first ? '' : 'mt-2' }}">{{ $paragraph }}</p>
-        @empty
-        <p class="text-sm text-gray-500">Đang cập nhật.</p>
-        @endforelse
+        @endforeach
+        @endif
         @if($trace->company['address'] || $trace->company['hotline'] !== '')
-        <ul class="mt-3 divide-y divide-gray-100 border-t border-gray-100">
+        <ul class="{{ $storyParagraphs ? 'mt-3 border-t border-gray-100' : '' }} divide-y divide-gray-100">
             @if($trace->company['address'])
             @include('traceability.partials.row', ['ic' => 'building', 'label' => 'Trụ sở', 'value' => $trace->company['address']])
             @endif
@@ -73,20 +74,24 @@
     <p class="mt-3 rounded-lg bg-green-50 px-3 py-2.5 text-center text-sm font-bold uppercase text-green-700 ring-1 ring-green-100">🟢 Lô hàng đủ điều kiện xuất</p>
     @elseif($trace->qcConclusion === 'fail')
     <p class="mt-3 rounded-lg bg-red-50 px-3 py-2.5 text-center text-sm font-bold uppercase text-red-600 ring-1 ring-red-100">🔴 Lô hàng không đạt kiểm tra</p>
-    @else
-    <p class="mt-3 rounded-lg bg-gray-50 px-3 py-2.5 text-center text-sm font-medium text-gray-500">Đang hoàn tất kiểm tra chất lượng</p>
     @endif
 </section>
 
 {{-- 2. Hồ sơ pháp lý & năng lực: mỗi hồ sơ là một nút pill, bấm mở lightbox (tệp phát qua route trace.document).
      Nhóm theo thứ tự các tab ở internal-compliance; nhóm không có hồ sơ công khai đã bị bỏ ở backend. --}}
+@php
+    $docGroups = collect($trace->documentGroups)
+        ->map(fn ($g) => ['label' => $g['label'], 'documents' => array_values(array_filter($g['documents'], fn ($d) => $d['files'] !== []))])
+        ->filter(fn ($g) => $g['documents'] !== [])->values()->all();
+@endphp
+@if($docGroups)
 <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
     <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
         <span class="h-4 w-1 rounded bg-green-600"></span> Hồ sơ pháp lý &amp; năng lực
     </h3>
-    @forelse($trace->documentGroups as $group)
+    @foreach($docGroups as $group)
     <div class="{{ $loop->first ? '' : 'mt-4' }}">
-        @if(count($trace->documentGroups) > 1)
+        @if(count($docGroups) > 1)
         <p class="mb-2 text-xs font-medium text-gray-500">{{ $group['label'] }}</p>
         @endif
         <div class="flex flex-wrap gap-2">
@@ -111,7 +116,6 @@
             @endforeach
         </div>
     </div>
-    @empty
-    <p class="text-sm text-gray-500">Đang cập nhật hồ sơ doanh nghiệp.</p>
-    @endforelse
+    @endforeach
 </section>
+@endif

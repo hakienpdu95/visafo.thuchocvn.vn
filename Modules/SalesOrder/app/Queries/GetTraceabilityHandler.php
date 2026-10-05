@@ -240,7 +240,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
 
     /**
      * Khối "Hành trình hàng hóa": 5 mốc tóm tắt theo vòng đời lô (thu hoạch → tiếp nhận → QC → đóng gói → giao).
-     * Mốc chưa có thời điểm thì bỏ, riêng mốc giao hàng hiện xám "Chờ giao hàng" / "Đang giao hàng" khi chưa giao xong.
+     * Chỉ các mốc đã có dữ liệu (chưa xuất kho thì không có mốc giao hàng).
      *
      * @return array<int, array{title: string, time: ?string, meta: ?string, done: bool, ok: ?bool}>
      */
@@ -299,7 +299,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
 
     /**
      * Khối "VISAFO đã thực hiện với lô này" (tab VISAFO): tổng hợp tự động từ phiếu nhập, QC, tem in và đơn bán.
-     * state: done (✓ + result xanh) | fail (✕ đỏ) | pending (xám, result = trạng thái chờ).
+     * state: done (✓ + result xanh) | fail (✕ đỏ). Bước chưa có dữ liệu bị bỏ (không hiện "Chờ…").
      *
      * @return array<int, array{label: string, time: ?string, state: string, result: string}>
      */
@@ -315,7 +315,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             return ['time' => $at($group->max('checked_at')), 'state' => $failed ? 'fail' : 'done', 'result' => $failed ? 'Không đạt' : 'Đạt'];
         };
 
-        return [
+        $steps = [
             ['label' => 'Tiếp nhận', ...($receivedAt
                 ? ['time' => $at($receivedAt), 'state' => 'done', 'result' => 'Hoàn thành']
                 : ['time' => null, 'state' => 'pending', 'result' => 'Đang cập nhật'])],
@@ -331,6 +331,9 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 default                        => ['time' => null, 'state' => 'pending', 'result' => 'Chờ giao hàng'],
             }],
         ];
+
+        // Chỉ hiện bước đã thực hiện — lô đi tới đâu, danh sách dài tới đó
+        return array_values(array_filter($steps, fn (array $st) => $st['state'] !== 'pending'));
     }
 
     private function journey(PrintLog $log, ?FarmingBatch $farmingBatch, $receivedAt, ?SalesOrder $order, Collection $checks, SalesOrderItem $item): array
@@ -373,11 +376,11 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                     ? $shipped->format('H:i') . '–' . $delivered->format('H:i') . ' • ' . $delivered->format('d/m/Y')
                     : $shipped->format('H:i d/m') . ' – ' . $delivered->format('H:i d/m/Y'),
                 'meta' => 'Đã giao đến điểm nhận', 'done' => true, 'ok' => true],
-            $shipped !== null => ['title' => 'Xuất kho & giao hàng', 'time' => $at($shipped), 'meta' => 'Đang giao hàng', 'done' => false, 'ok' => null],
-            default => ['title' => 'Xuất kho & giao hàng', 'time' => null, 'meta' => 'Chờ giao hàng', 'done' => false, 'ok' => null],
+            $shipped !== null => ['title' => 'Xuất kho & giao hàng', 'time' => $at($shipped), 'meta' => 'Đã xuất kho, đang giao hàng', 'done' => true, 'ok' => null],
+            default => null,
         };
 
-        return $steps;
+        return array_values(array_filter($steps));
     }
 
     /** "0,5 kg" — khối lượng mỗi tem. */
@@ -433,7 +436,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     }
 
     /**
-     * Khối "Kiểm soát chất lượng": 3 khâu QC của doanh nghiệp (chưa ghi → result null = "Đang cập nhật").
+     * Khối "Kiểm soát chất lượng": chỉ các khâu QC đã có kết quả (rỗng → view ẩn cả khối).
      * Chỉ công khai khâu, kết quả, thời điểm — không có ghi chú/người kiểm.
      *
      * @return array<int, array{label: string, result: ?string, at: mixed}>
@@ -448,17 +451,18 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             },
             'result' => $checks->get($stage->value)?->result->value,
             'at'     => $checks->get($stage->value)?->checked_at,
-        ], QualityCheckStage::cases());
+        ], array_values(array_filter(QualityCheckStage::cases(), fn (QualityCheckStage $stage) => $checks->has($stage->value))));
     }
 
-    /** Kết luận lô: có khâu không đạt → fail; QC trước xuất đạt (hoặc cả 3 khâu đạt) → pass; còn lại null (chưa kết luận). */
+    /** Kết luận lô (null = chưa đủ khâu QC, không hiển thị). */
     private function qcConclusion(Collection $checks): ?string
     {
-        if ($checks->contains(fn (BatchQualityCheck $c) => $c->result->value === 'fail')) {
-            return 'fail';
+        // Chỉ kết luận khi đủ mọi khâu QC bắt buộc (tiếp nhận, cảm quan, trước xuất) đã có kết quả
+        if (count(array_filter(QualityCheckStage::cases(), fn (QualityCheckStage $stage) => ! $checks->has($stage->value))) > 0) {
+            return null;
         }
 
-        return $checks->has(QualityCheckStage::PreDispatch->value) || $checks->count() === count(QualityCheckStage::cases()) ? 'pass' : null;
+        return $checks->contains(fn (BatchQualityCheck $c) => $c->result->value === 'fail') ? 'fail' : 'pass';
     }
 
     /**

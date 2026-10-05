@@ -182,23 +182,19 @@
                 <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin sản phẩm &amp; lô
             </h3>
             <dl class="grid grid-cols-1 gap-3 min-[340px]:grid-cols-2">
-                @foreach([
+                @foreach(array_filter([
                     // Ô hẹp thì xuống dòng trước "• H:i" (không tách giữa ngày)
                     ['Ngày đóng gói', $trace->packedAt ? new \Illuminate\Support\HtmlString('<span class="whitespace-nowrap">' . $trace->packedAt->format('d/m/Y') . '</span> <span class="whitespace-nowrap">• ' . $trace->packedAt->format('H:i') . '</span>') : null, false],
                     ['Hạn sử dụng', $trace->expDate?->format('d/m/Y'), $expired],
                     ['Khối lượng lô', $trace->batchQuantity, false],
                     ['Mã sản phẩm', $trace->productSku, false],
-                ] as [$cellLabel, $cellValue, $cellDanger])
+                ], fn ($cell) => filled($cell[1])) as [$cellLabel, $cellValue, $cellDanger])
                 <div class="rounded-lg bg-[#f8f9fa] px-3.5 py-3">
                     <dt class="text-xs text-gray-500">{{ $cellLabel }}</dt>
-                    @if(filled($cellValue))
                     <dd class="mt-1 text-[15px] font-semibold leading-snug {{ $cellDanger ? 'text-red-600' : 'text-slate-900' }}">
                         {{ $cellValue }}
                         @if($cellDanger)<span class="ml-1 whitespace-nowrap rounded bg-red-100 px-1.5 py-0.5 align-middle text-[11px] font-medium">Hết hạn</span>@endif
                     </dd>
-                    @else
-                    <dd class="mt-1 text-sm italic text-gray-400">Đang cập nhật</dd>
-                    @endif
                 </div>
                 @endforeach
             </dl>
@@ -207,7 +203,7 @@
                 @include('traceability.partials.row', ['ic' => 'calendar', 'label' => 'Thời gian sản xuất (NSX)',
                     'value' => $trace->mfgDate?->format('d/m/Y')])
                 @foreach($trace->attributes as $attr)
-                @include('traceability.partials.row', ['ic' => 'info', 'label' => $attr['key'], 'value' => $attr['value'] !== '' ? $attr['value'] : '—'])
+                @include('traceability.partials.row', ['ic' => 'info', 'label' => $attr['key'], 'value' => $attr['value']])
                 @endforeach
             </ul>
         </section>
@@ -286,6 +282,7 @@
         </section>
 
         {{-- 4b. Kiểm soát chất lượng: 3 khâu QC của doanh nghiệp + kết luận lô --}}
+        @if($trace->qualityChecks)
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Kiểm soát chất lượng
@@ -296,25 +293,25 @@
                     <dt class="text-sm text-gray-700">{{ $qc['label'] }}</dt>
                     @if($qc['result'] === 'pass')
                     <dd class="shrink-0 text-sm font-semibold text-green-700" @if($qc['at']) title="{{ $fmtAt($qc['at']) }}" @endif>✓ Đạt</dd>
-                    @elseif($qc['result'] === 'fail')
-                    <dd class="shrink-0 text-sm font-semibold text-red-600" @if($qc['at']) title="{{ $fmtAt($qc['at']) }}" @endif>✕ Không đạt</dd>
                     @else
-                    <dd class="shrink-0 text-sm italic text-gray-400">Đang cập nhật</dd>
+                    <dd class="shrink-0 text-sm font-semibold text-red-600" @if($qc['at']) title="{{ $fmtAt($qc['at']) }}" @endif>✕ Không đạt</dd>
                     @endif
                 </div>
                 @endforeach
+                {{-- Kết luận chỉ khi đủ mọi khâu QC bắt buộc (qcConclusion != null) --}}
+                @if($trace->qcConclusion)
                 <div class="mt-1 flex items-baseline justify-between gap-3 border-t border-gray-200 pt-3">
                     <dt class="text-sm text-gray-700">Kết luận lô hàng</dt>
                     @if($trace->qcConclusion === 'pass')
                     <dd class="shrink-0 text-sm font-medium uppercase text-green-700">Đủ ĐK xuất</dd>
-                    @elseif($trace->qcConclusion === 'fail')
-                    <dd class="shrink-0 text-sm font-medium uppercase text-red-600">Không đạt</dd>
                     @else
-                    <dd class="shrink-0 text-sm italic text-gray-400">Đang cập nhật</dd>
+                    <dd class="shrink-0 text-sm font-medium uppercase text-red-600">Không đạt</dd>
                     @endif
                 </div>
+                @endif
             </dl>
         </section>
+        @endif
 
         {{-- 4c. Giao vận & điểm nhận (chỉ khi đã xuất kho). Tên điểm nhận đã che, địa chỉ chỉ cấp phường/quận + tỉnh — xử lý ở backend --}}
         @if($trace->delivery)
@@ -338,8 +335,6 @@
                     <p class="font-bold text-slate-900">📍 {{ $dl['recipient'] ?? 'Điểm nhận' }}</p>
                     @if($dl['deliveredAt'])
                     <p class="mt-0.5 font-medium text-green-700">✓ Đã nhận hàng • {{ $dl['deliveredAt']->format('H:i • d/m/Y') }}</p>
-                    @else
-                    <p class="mt-0.5 text-gray-500">Chờ nhận hàng</p>
                     @endif
                     @if($dl['area'])
                     <p class="mt-0.5 text-gray-600">Điểm giao: {{ $dl['area'] }}</p>
@@ -385,13 +380,10 @@
                 <span class="h-4 w-1 rounded bg-green-600"></span> Hồ sơ liên quan
             </h3>
             <div class="flex flex-wrap gap-2">
-                {{-- Phiếu QC / phiếu lô / giao nhận chưa có tệp biên bản đính kèm trong hệ thống → nút xám (giữ cấu trúc) --}}
+                {{-- Chỉ nút có tệp thật (doc-pill không render khi rỗng). Phiếu QC / phiếu lô / giao nhận: thêm khi hệ thống có tệp đính kèm --}}
                 @include('traceability.partials.doc-pill', ['label' => 'Hồ sơ nguồn', 'iconHtml' => '🌱',
                     'files' => collect($trace->sourceDocuments)->flatMap(fn ($d) => $d['files'])->values()->all(),
                     'caption' => collect($trace->sourceDocuments)->pluck('caption')->implode(' | ') ?: 'Hồ sơ nguồn'])
-                @include('traceability.partials.doc-pill', ['label' => 'Phiếu QC', 'iconHtml' => '📋', 'files' => []])
-                @include('traceability.partials.doc-pill', ['label' => 'Phiếu lô', 'iconHtml' => '📦', 'files' => []])
-                @include('traceability.partials.doc-pill', ['label' => 'Giao nhận', 'iconHtml' => '🚚', 'files' => []])
                 <button type="button" data-trace-goto-tab="brand" class="{{ $pillClass }}">🏢 Hồ sơ {{ $trace->brand }} <span aria-hidden="true">›</span></button>
             </div>
         </section>
