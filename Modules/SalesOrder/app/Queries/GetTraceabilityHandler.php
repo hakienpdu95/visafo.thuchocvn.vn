@@ -22,6 +22,7 @@ use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\SalesOrder;
 use Modules\SalesOrder\Models\SalesOrderItem;
+use Modules\SalesOrder\Models\TraceReview;
 use Modules\SalesOrder\Support\TraceabilityData;
 use Modules\Vendor\Models\Vendor;
 
@@ -124,6 +125,8 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             qcConclusion: $this->qcConclusion($qualityChecks),
             // Tiếp nhận = ngày nhập trên phiếu (nghiệp vụ); lô tạo cùng ngày thì lấy luôn giờ tạo lô. created_at của lô là lúc
             // import file phiếu nhập — có thể muộn hơn tiếp nhận thực tế (và sau cả QC tiếp nhận).
+            reviewSummary: $this->reviewSummary($product?->id),
+            reviews: $this->publicReviews($product?->id),
             executedSteps: $this->executedSteps($log, $receipt?->receipt_date && $batch?->created_at?->isSameDay($receipt->receipt_date)
                 ? $batch->created_at : ($receipt?->receipt_date ?? $batch?->created_at), $order, $qualityChecks),
             journey: $this->journey($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $order, $qualityChecks, $item),
@@ -241,6 +244,59 @@ class GetTraceabilityHandler implements QueryHandlerInterface
      *
      * @return array<int, array{title: string, time: ?string, meta: ?string, done: bool, ok: ?bool}>
      */
+    /**
+     * Điểm chất lượng tổng của SẢN PHẨM (mọi lô): trung bình từng tiêu chí trên các đánh giá đã duyệt.
+     *
+     * @return array{average: ?float, count: int, criteria: array<string, ?float>}
+     */
+    private function reviewSummary(?string $productId): array
+    {
+        $cols = array_keys(TraceReview::SCORES);
+        $row = $productId
+            ? TraceReview::query()->approvedRatings()->where('product_id', $productId)
+                ->selectRaw('COUNT(*) as total, ' . implode(', ', array_map(fn ($c) => "AVG($c) as $c", $cols)))
+                ->toBase()->first()
+            : null;
+        $count = (int) ($row->total ?? 0);
+        $criteria = [];
+        foreach (TraceReview::SCORES as $col => $label) {
+            $criteria[$label] = $count ? round((float) $row->{$col}, 1) : null;
+        }
+        $values = array_filter($criteria, fn ($v) => $v !== null);
+
+        return ['average' => $values ? round(array_sum($values) / count($values), 1) : null, 'count' => $count, 'criteria' => $criteria];
+    }
+
+    /**
+     * Nhận xét công khai: đánh giá đã duyệt VÀ khách đồng ý công khai, mới nhất trước (tối đa 10).
+     * Tên điểm nhận đã che; có đơn bán liên kết → "Đã xác minh giao dịch".
+     *
+     * @return array<int, array{name: ?string, verified: bool, score: ?float, comment: ?string, at: mixed, lot: ?string}>
+     */
+    private function publicReviews(?string $productId): array
+    {
+        if ($productId === null) {
+            return [];
+        }
+
+        return TraceReview::query()->approvedRatings()
+            ->where('product_id', $productId)
+            ->where('is_public_requested', true)
+            ->with(['salesOrder:id,customer_name', 'printLog:id,batch_code,created_at'])
+            ->latest()->limit(10)->get()
+            ->map(fn (TraceReview $r) => [
+                'name'     => $this->maskName($r->salesOrder?->customer_name),
+                'verified' => $r->sales_order_id !== null,
+                'score'    => $r->averageScore(),
+                'comment'  => $r->comment,
+                'at'       => $r->created_at,
+                'lot'      => implode(' • ', array_filter([
+                    $r->printLog?->batch_code ? 'Lô ' . $r->printLog->batch_code : null,
+                    $r->printLog?->created_at ? 'đóng gói ' . $r->printLog->created_at->format('d/m/Y') : null,
+                ])) ?: null,
+            ])->all();
+    }
+
     /**
      * Khối "VISAFO đã thực hiện với lô này" (tab VISAFO): tổng hợp tự động từ phiếu nhập, QC, tem in và đơn bán.
      * state: done (✓ + result xanh) | fail (✕ đỏ) | pending (xám, result = trạng thái chờ).

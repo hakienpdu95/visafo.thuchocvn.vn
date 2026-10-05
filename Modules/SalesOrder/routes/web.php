@@ -5,6 +5,7 @@ use Modules\SalesOrder\Http\Controllers\Api\SalesOrderApiController;
 use Modules\SalesOrder\Http\Controllers\PrintLabelController;
 use Modules\SalesOrder\Http\Controllers\SalesOrderController;
 use Modules\SalesOrder\Http\Controllers\TraceController;
+use Modules\SalesOrder\Http\Controllers\TraceReviewController;
 use Modules\SalesOrder\Http\Controllers\SalesOrderImportController;
 
 // Truy xuất nguồn gốc CÔNG KHAI — không cần đăng nhập (khách quét QR trên tem). Chỉ nhận mã ngẫu nhiên, có giới hạn tần suất.
@@ -17,6 +18,11 @@ Route::get('trace/{trace_code}/documents/{media}/{variant?}', [TraceController::
     ->where(['trace_code' => '[A-Za-z0-9]{8,32}', 'media' => '[0-9A-Za-z]{26}', 'variant' => 'thumb|preview'])
     ->middleware('throttle:60,1')
     ->name('trace.document');
+
+// Đánh giá / báo sự cố từ tab "Đánh giá" trang truy xuất (công khai, Ajax) — trace_code gửi kèm trong form.
+Route::post('trace/reviews', [TraceReviewController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('trace.reviews.store');
 
 Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(function () {
     Route::get('sales-orders/import', [SalesOrderImportController::class, 'create'])->name('sales-orders.import');

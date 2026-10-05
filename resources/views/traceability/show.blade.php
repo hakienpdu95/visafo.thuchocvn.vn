@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Truy xuất nguồn gốc — {{ $trace->productName }}</title>
     @vite(array_filter(['resources/css/app.css', count($trace->productImages) > 1 ? 'resources/js/modules/swiper.js' : null]), 'build/backend')
 </head>
@@ -402,13 +403,9 @@
             @include('traceability.partials.brand')
         </div>
 
-        {{-- TAB 3: ĐÁNH GIÁ (chưa có tính năng đánh giá — khung chờ) --}}
+        {{-- TAB 3: ĐÁNH GIÁ --}}
         <div id="trace-panel-review" role="tabpanel" aria-labelledby="trace-tab-review" data-trace-panel="review" class="space-y-4" hidden>
-            <section class="rounded-md bg-white p-6 text-center shadow-sm ring-1 ring-black/5">
-                <p class="text-3xl" aria-hidden="true">⭐</p>
-                <h3 class="mt-2 text-base font-semibold text-gray-900">Đánh giá sản phẩm</h3>
-                <p class="mt-1 text-sm text-gray-500">Tính năng đánh giá đang được hoàn thiện. Cảm ơn bạn đã tin dùng sản phẩm của {{ $trace->brand }}!</p>
-            </section>
+            @include('traceability.partials.reviews')
         </div>
 
         <p class="px-2 pt-6 text-center text-xs leading-relaxed text-gray-400">
@@ -465,9 +462,10 @@
         const toast = (msg) => {
             const el = document.createElement('div');
             el.textContent = msg;
-            el.className = 'fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-gray-900/90 px-4 py-2 text-sm text-white shadow-lg';
+            el.className = 'fixed bottom-6 left-1/2 z-50 w-max max-w-[90vw] -translate-x-1/2 rounded-2xl bg-gray-900/90 px-4 py-2 text-center text-sm text-white shadow-lg';
+            el.setAttribute('role', 'status');
             document.body.appendChild(el);
-            setTimeout(() => el.remove(), 2000);
+            setTimeout(() => el.remove(), msg.length > 40 ? 4000 : 2000);
         };
 
         document.querySelector('[data-trace-share]')?.addEventListener('click', async () => {
@@ -564,6 +562,35 @@
         box?.querySelector('[data-trace-lightbox-close]').addEventListener('click', closeBox);
         box?.addEventListener('click', (e) => { if (e.target === box || e.target === boxBody) closeBox(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && box && !box.hidden) closeBox(); });
+
+        // Form đánh giá / báo sự cố (tab Đánh giá): gửi Ajax, không tải lại trang; khóa nút khi đang gửi, toast kết quả
+        document.querySelectorAll('[data-trace-review-form]').forEach((form) => form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const missing = [...form.querySelectorAll('[required]')].find((el) => !el.value.trim());
+            if (missing) { missing.focus(); toast('Vui lòng điền đủ các mục bắt buộc'); return; }
+            const btn = form.querySelector('button[type=submit]');
+            if (btn.disabled) return;
+            btn.disabled = true;
+            const label = btn.textContent;
+            btn.textContent = 'Đang gửi…';
+            try {
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                    body: new FormData(form),
+                });
+                const json = await res.json().catch(() => ({}));
+                if (res.ok) { form.reset(); toast(json.message || 'Đã gửi, cảm ơn bạn!'); }
+                else if (res.status === 429) toast('Bạn gửi quá nhanh, vui lòng thử lại sau ít phút');
+                else if (res.status === 419) toast('Phiên đã hết hạn, vui lòng tải lại trang');
+                else toast(Object.values(json.errors || {})[0]?.[0] || json.message || 'Không gửi được, vui lòng thử lại');
+            } catch {
+                toast('Mất kết nối, vui lòng thử lại');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = label;
+            }
+        }));
 
         // Yêu thích: chỉ lưu trên trình duyệt của người xem (không cần đăng nhập)
         const fav = document.querySelector('[data-trace-fav]');

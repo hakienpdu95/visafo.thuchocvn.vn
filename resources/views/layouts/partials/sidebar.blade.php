@@ -161,6 +161,14 @@
             </a>
             @endcan
 
+            @can('viewAny', \Modules\SalesOrder\Models\TraceReview::class)
+            <a href="{{ route('backend.trace-reviews.index') }}"
+               class="nav-link {{ request()->routeIs('backend.trace-reviews.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11.48 3.5a.56.56 0 011.04 0l2.13 5.11a.56.56 0 00.47.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 00-.18.56l1.28 5.39a.56.56 0 01-.84.61l-4.73-2.89a.56.56 0 00-.59 0l-4.73 2.89a.56.56 0 01-.84-.61l1.28-5.39a.56.56 0 00-.18-.56l-4.2-3.6a.56.56 0 01.32-.99l5.52-.44a.56.56 0 00.47-.35l2.13-5.11z"/></svg>
+                <span class="nav-label">Quản lý Đánh giá &amp; Phản hồi</span>
+            </a>
+            @endcan
+
             @can('report.view')
             <a href="{{ route('backend.reports.index') }}"
                class="nav-link {{ request()->routeIs('backend.reports.*') ? 'active' : '' }}">

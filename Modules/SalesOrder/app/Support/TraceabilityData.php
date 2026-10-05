@@ -54,6 +54,10 @@ readonly class TraceabilityData
         public array $journey = [],
         /** @var array<int, array{label: string, time: ?string, state: string, result: string}> khối "VISAFO đã thực hiện với lô này" (tab VISAFO) */
         public array $executedSteps = [],
+        /** @var array{average: ?float, count: int, criteria: array<string, ?float>} điểm chất lượng tổng (đánh giá đã duyệt của sản phẩm) */
+        public array $reviewSummary = ['average' => null, 'count' => 0, 'criteria' => []],
+        /** @var array<int, array{name: ?string, verified: bool, score: ?float, comment: ?string, at: mixed, lot: ?string}> nhận xét công khai */
+        public array $reviews = [],
         /** @var array<int, array{name: string, caption: string, files: array<int, array{url: string, preview: string, isPdf: bool}>}> chứng nhận của nguồn (nút "Hồ sơ nguồn") */
         public array $sourceDocuments = [],
         public bool $hasBatch = false, // tem gắn lô nhập thật (nút "Phiếu lô")

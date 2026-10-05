@@ -5,6 +5,8 @@ namespace Modules\TraceLog\Providers;
 use Illuminate\Support\Facades\Gate;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\TraceLog\Policies\TraceLogPolicy;
+use Modules\TraceLog\Policies\TraceReviewPolicy;
+use Modules\SalesOrder\Models\TraceReview;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class TraceLogServiceProvider extends ModuleServiceProvider
@@ -27,5 +29,6 @@ class TraceLogServiceProvider extends ModuleServiceProvider
         parent::boot();
 
         Gate::policy(PrintLog::class, TraceLogPolicy::class);
+        Gate::policy(TraceReview::class, TraceReviewPolicy::class);
     }
 }
