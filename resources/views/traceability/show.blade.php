@@ -173,22 +173,36 @@
             </div>
         </section>
 
-        {{-- 2. Thông tin sản phẩm --}}
+        {{-- 2. Thông tin sản phẩm & lô: lưới 2 cột (1 cột khi màn hình < 340px) + NSX / thông tin in bổ sung bên dưới --}}
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin sản phẩm
+            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin sản phẩm &amp; lô
             </h3>
-            <ul class="divide-y divide-gray-100">
-                @include('traceability.partials.row', ['ic' => 'qr', 'label' => 'Mã truy vết sản phẩm',
-                    'value' => strtoupper($trace->traceCode), 'mono' => true, 'accent' => true,
-                    'sub' => $trace->batchCode ? 'Mã lô: ' . $trace->batchCode : null])
-                @include('traceability.partials.row', ['ic' => 'tag', 'label' => 'Thương hiệu / Mã số',
-                    'value' => $trace->brand, 'sub' => $trace->productSku ? 'Mã sản phẩm: ' . $trace->productSku : null])
+            <dl class="grid grid-cols-1 gap-3 min-[340px]:grid-cols-2">
+                @foreach([
+                    // Ô hẹp thì xuống dòng trước "• H:i" (không tách giữa ngày)
+                    ['Ngày đóng gói', $trace->packedAt ? new \Illuminate\Support\HtmlString('<span class="whitespace-nowrap">' . $trace->packedAt->format('d/m/Y') . '</span> <span class="whitespace-nowrap">• ' . $trace->packedAt->format('H:i') . '</span>') : null, false],
+                    ['Hạn sử dụng', $trace->expDate?->format('d/m/Y'), $expired],
+                    ['Khối lượng lô', $trace->batchQuantity, false],
+                    ['Mã sản phẩm', $trace->productSku, false],
+                ] as [$cellLabel, $cellValue, $cellDanger])
+                <div class="rounded-lg bg-[#f8f9fa] px-3.5 py-3">
+                    <dt class="text-xs text-gray-500">{{ $cellLabel }}</dt>
+                    @if(filled($cellValue))
+                    <dd class="mt-1 text-[15px] font-semibold leading-snug {{ $cellDanger ? 'text-red-600' : 'text-slate-900' }}">
+                        {{ $cellValue }}
+                        @if($cellDanger)<span class="ml-1 whitespace-nowrap rounded bg-red-100 px-1.5 py-0.5 align-middle text-[11px] font-medium">Hết hạn</span>@endif
+                    </dd>
+                    @else
+                    <dd class="mt-1 text-sm italic text-gray-400">Đang cập nhật</dd>
+                    @endif
+                </div>
+                @endforeach
+            </dl>
+            {{-- NSX (bắt buộc theo TT 02/2024) + thông tin động (EAV) nhập lúc in tem: Bảo quản, HDSD... --}}
+            <ul class="mt-2 divide-y divide-gray-100">
                 @include('traceability.partials.row', ['ic' => 'calendar', 'label' => 'Thời gian sản xuất (NSX)',
                     'value' => $trace->mfgDate?->format('d/m/Y')])
-                @include('traceability.partials.row', ['ic' => 'hourglass', 'label' => 'Thời hạn sử dụng (HSD)',
-                    'value' => $trace->expDate?->format('d/m/Y'), 'danger' => $expired, 'badge' => $expired ? 'Hết hạn' : null])
-                {{-- Thông tin động (EAV) nhập lúc in tem: Bảo quản, HDSD... --}}
                 @foreach($trace->attributes as $attr)
                 @include('traceability.partials.row', ['ic' => 'info', 'label' => $attr['key'], 'value' => $attr['value'] !== '' ? $attr['value'] : '—'])
                 @endforeach

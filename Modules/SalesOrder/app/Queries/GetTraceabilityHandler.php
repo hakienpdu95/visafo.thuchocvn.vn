@@ -118,6 +118,8 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             weight: str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) . ' kg',
             mfgDate: $log->mfg_date ?? $batch?->mfg_date,
             expDate: $log->exp_date ?? $batch?->exp_date,
+            packedAt: $log->created_at,
+            batchQuantity: $this->batchQuantity($log->productBatch, $item),
             attributes: $log->attributes
                 ->map(fn ($a) => ['key' => $a->attribute_key, 'value' => (string) $a->attribute_value])
                 ->values()->all(),
@@ -252,6 +254,26 @@ class GetTraceabilityHandler implements QueryHandlerInterface
 
         return $productName . $origin . ', sơ chế, đóng gói và kiểm soát chất lượng bởi ' . $brand
             . '. Mỗi sản phẩm mang một mã truy xuất riêng để bạn kiểm tra nguồn gốc, hạn sử dụng và các công đoạn sản xuất.';
+    }
+
+    /**
+     * Khối lượng lô: số lượng nhập ban đầu của lô đã chọn khi in (đơn vị theo dòng phiếu nhập); tem không gắn lô
+     * thì lấy số lượng thực xuất (hoặc yêu cầu) của dòng đơn bán. Không dùng lô đoán ở guessBatch().
+     */
+    private function batchQuantity(?ProductBatch $batch, SalesOrderItem $item): ?string
+    {
+        $fmt = fn ($qty) => rtrim(rtrim(number_format((float) $qty, 3, ',', '.'), '0'), ',');
+
+        if ($batch !== null) {
+            $unit = $batch->goodsReceipt?->items()->where('product_id', $batch->product_id)->value('unit_raw')
+                ?: ($item->product?->unit ?: 'kg');
+
+            return $fmt($batch->initial_qty) . ' ' . $unit;
+        }
+
+        $qty = $item->actual_qty ?? $item->requested_qty;
+
+        return $qty !== null ? $fmt($qty) . ' ' . ($item->unit_raw ?: 'kg') : null;
     }
 
     private function guessBatch(PrintLog $log, ?string $productId): ?ProductBatch

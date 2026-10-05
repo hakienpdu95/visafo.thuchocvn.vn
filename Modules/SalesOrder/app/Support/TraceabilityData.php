@@ -38,6 +38,8 @@ readonly class TraceabilityData
         public string $weight,
         public ?Carbon $mfgDate,
         public ?Carbon $expDate,
+        public ?Carbon $packedAt, // thời điểm in tem = đóng gói
+        public ?string $batchQuantity, // "120 kg" — khối lượng lô nhập, hoặc của dòng đơn khi tem không gắn lô
         public array $attributes,
         public array $company,
         public array $producer,
