@@ -6,6 +6,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsAction;
+use Modules\SalesOrder\Enums\PrintLogStatus;
+use Modules\SalesOrder\Models\LabelPrintEvent;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\PrintLogAttribute;
 use Modules\SalesOrder\Models\SalesOrderItem;
@@ -29,9 +31,15 @@ class PrintSalesOrderItemLabelAction
 
             $sessionId = Str::lower((string) Str::ulid());
 
-            $existing = PrintLog::query()->activeForItem($item->id, $data['product_batch_id'] ?? null)->get();
+            $vendorScope = ($data['vendor_selected'] ?? false)
+                ? $data['vendor_id']
+                : PrintLog::query()->activeForItem($item->id, $data['product_batch_id'] ?? null)
+                    ->reorder()->latest('last_printed_at')->latest('id')->value('vendor_id');
+
+            $existing = PrintLog::query()->activeForItem($item->id, $data['product_batch_id'] ?? null, $vendorScope)->get();
             if ($existing->isNotEmpty()) {
-                $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
+                $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId, $data['vendor_id'] ?? null, $data['supplier_name'] ?? null));
+                LabelPrintEvent::record($existing, $sessionId, $printedBy, true);
 
                 return ['session_id' => $sessionId, 'logs' => $existing, 'reused' => true];
             }
@@ -54,6 +62,7 @@ class PrintSalesOrderItemLabelAction
                         'product_batch_id'  => $data['product_batch_id'] ?? null,
                         'batch_code'        => $data['batch_code'] ?? null,
                         'printed_by'        => $printedBy,
+                        'status'            => PrintLogStatus::Active,
                     ]); // trace_code độc nhất được sinh trong PrintLog::creating
 
                     foreach ($data['extra_attributes'] ?? [] as $attr) {
@@ -67,6 +76,8 @@ class PrintSalesOrderItemLabelAction
                     $logs->push($log);
                 }
             }
+
+            LabelPrintEvent::record($logs, $sessionId, $printedBy, false);
 
             return ['session_id' => $sessionId, 'logs' => $logs, 'reused' => false];
         });

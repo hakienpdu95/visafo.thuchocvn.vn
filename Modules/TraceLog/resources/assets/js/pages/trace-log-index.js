@@ -61,10 +61,13 @@ const COLUMNS = [
         formatter(cell) { return '<span class="font-mono">' + esc(cell.getRow().getData().weight) + '</span>'; },
     },
     {
-        title: 'Ngày in / Người in', field: 'created_at', minWidth: 160, sorter: 'string',
+        title: 'Ngày in / Người in', field: 'last_printed_at', minWidth: 160, sorter: 'string',
         formatter(cell) {
             const d = cell.getRow().getData();
-            return '<div><p class="text-sm">' + esc(d.printed_at) + '</p>'
+            const reprinted = d.print_count > 1
+                ? '<p class="text-xs text-base-content/50">In ' + d.print_count + ' lần · gần nhất ' + esc(d.last_printed_at) + '</p>'
+                : '';
+            return '<div><p class="text-sm">' + esc(d.printed_at) + '</p>' + reprinted
                 + '<p class="text-xs text-base-content/50">' + (esc(d.printed_by) || '—') + '</p></div>';
         },
     },
@@ -232,7 +235,7 @@ document.addEventListener('alpine:init', () => {
                     paginationSizeSelector: [10, 25, 50, 100],
                     paginationCounter: 'rows',
                     sortMode: 'remote',
-                    initialSort: [{ column: 'created_at', dir: 'desc' }],
+                    initialSort: [{ column: 'last_printed_at', dir: 'desc' }],
 
                     layout: 'fitColumns',
                     responsiveLayout: 'collapse',

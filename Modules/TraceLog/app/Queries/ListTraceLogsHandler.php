@@ -6,18 +6,19 @@ use App\Shared\Contracts\QueryHandlerInterface;
 use App\Shared\Contracts\QueryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Modules\SalesOrder\Models\PrintLog;
 
 class ListTraceLogsHandler implements QueryHandlerInterface
 {
     public const VENDOR_NONE = '__none';
 
-    private const SORTABLE = ['created_at', 'trace_code', 'weight_per_label', 'status'];
+    private const SORTABLE = ['created_at', 'last_printed_at', 'trace_code', 'weight_per_label', 'status'];
 
     public function handle(QueryInterface $query): LengthAwarePaginator
     {
         /** @var ListTraceLogsQuery $query */
-        $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
+        $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'last_printed_at';
         $sortDir = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
         $q = PrintLog::query()->visibleTo()->with(['orderItem.product', 'orderItem.salesOrder', 'printedBy:id,name', 'productBatch:id,batch_code']);
@@ -40,12 +41,14 @@ class ListTraceLogsHandler implements QueryHandlerInterface
             $q->where('status', $query->status);
         }
 
-        if ($query->dateFrom !== null && $query->dateFrom !== '') {
-            $q->whereDate('created_at', '>=', $query->dateFrom);
-        }
+        $dateFrom = ($query->dateFrom ?? '') !== '' ? Carbon::parse($query->dateFrom)->startOfDay() : null;
+        $dateTo = ($query->dateTo ?? '') !== '' ? Carbon::parse($query->dateTo)->endOfDay() : null;
 
-        if ($query->dateTo !== null && $query->dateTo !== '') {
-            $q->whereDate('created_at', '<=', $query->dateTo);
+        if ($dateFrom !== null || $dateTo !== null) {
+            $q->whereHas('printEvents', function (Builder $e) use ($dateFrom, $dateTo): void {
+                $e->when($dateFrom, fn (Builder $b) => $b->where('printed_at', '>=', $dateFrom))
+                    ->when($dateTo, fn (Builder $b) => $b->where('printed_at', '<=', $dateTo));
+            });
         }
 
         if ($query->vendor === self::VENDOR_NONE) {

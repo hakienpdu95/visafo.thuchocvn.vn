@@ -40,7 +40,12 @@ class PrintLog extends TenantAwareModel
             $log->last_print_session_id ??= $log->print_session_id;
             $log->last_printed_at ??= now();
         });
-        static::updating(fn (PrintLog $log) => array_diff(array_keys($log->getDirty()), self::MUTABLE_COLUMNS) === []);
+        static::updating(function (PrintLog $log): bool {
+            $dirty = array_diff(array_keys($log->getDirty()), self::MUTABLE_COLUMNS);
+            $fillingSource = array_filter($dirty, fn (string $col) => in_array($col, ['vendor_id', 'supplier_name'], true) && $log->getOriginal($col) === null);
+
+            return array_diff($dirty, $fillingSource) === [];
+        });
         static::deleting(fn () => false);
     }
 
@@ -133,22 +138,31 @@ class PrintLog extends TenantAwareModel
      * Có rồi thì "In tem" phải in lại đúng các mã này thay vì sinh mã mới (Check & Reuse).
      * Không so batch_code: frontend tự sinh nó từ NSX/HSD (LOT-ddmmyy-ddmmyy) nên đổi theo ngày in.
      */
-    public function scopeActiveForItem(Builder $query, string $orderItemId, ?string $productBatchId): Builder
+    public function scopeActiveForItem(Builder $query, string $orderItemId, ?string $productBatchId, ?string $vendorId = null): Builder
     {
         return $query->where('order_item_id', $orderItemId)
             ->where('status', PrintLogStatus::Active->value)
             ->when($productBatchId, fn (Builder $q) => $q->where('product_batch_id', $productBatchId), fn (Builder $q) => $q->whereNull('product_batch_id'))
+            ->when($vendorId, fn (Builder $q) => $q->where(fn (Builder $v) => $v->where('vendor_id', $vendorId)
+                ->orWhere(fn (Builder $n) => $n->whereNull('vendor_id')->whereNull('supplier_name'))))
             ->orderBy('created_at')->orderBy('id');
     }
 
     /** Ghi nhận một lần in lại (không đổi dữ liệu đã in). */
-    public function markReprinted(string $sessionId): void
+    public function markReprinted(string $sessionId, ?string $vendorId = null, ?string $supplierName = null): void
     {
-        $this->update([
+        $this->update(array_filter([
             'print_count'           => $this->print_count + 1,
             'last_printed_at'       => now(),
             'last_print_session_id' => $sessionId,
-        ]);
+            'vendor_id'             => $this->vendor_id === null && $this->supplier_name === null ? $vendorId : null,
+            'supplier_name'         => $this->supplier_name === null ? $supplierName : null,
+        ], fn ($v) => $v !== null));
+    }
+
+    public function printEvents(): HasMany
+    {
+        return $this->hasMany(LabelPrintEvent::class, 'print_log_id');
     }
 
     public function permissionModule(): string

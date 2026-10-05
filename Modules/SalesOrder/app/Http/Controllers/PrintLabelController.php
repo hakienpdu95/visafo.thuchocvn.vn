@@ -4,13 +4,16 @@ namespace Modules\SalesOrder\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Modules\SalesOrder\Actions\Backend\BulkPrintSalesOrderLabelsAction;
 use Modules\SalesOrder\Actions\Backend\PrintSalesOrderItemLabelAction;
 use Modules\SalesOrder\Enums\PrintLogStatus;
+use Modules\SalesOrder\Models\LabelPrintEvent;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\SalesOrder;
 use Modules\SalesOrder\Models\SalesOrderItem;
@@ -132,33 +135,62 @@ class PrintLabelController extends Controller
         $this->authorize('view', $order);
         $canPrint = Gate::allows('print', $order);
 
-        // Mỗi tem là một bản ghi → gom theo print_session_id để hiển thị mỗi lần in một dòng.
-        $logs = $item->printLogs()->with('printedBy:id,name')->latest()->latest('id')->get()
-            ->groupBy(fn (PrintLog $log) => $log->print_session_id ?? $log->id)
-            ->map(function ($group, $sessionId) use ($canPrint) {
-                /** @var PrintLog $first */
+        $events = $item->printEvents()->with(['user:id,name', 'printLog'])
+            ->orderByDesc('printed_at')->orderByDesc('id')->get();
+
+        $logs = $events->groupBy('print_session_id')
+            ->map(function ($group, $sessionId) use ($canPrint, $item) {
+                /** @var LabelPrintEvent $first */
                 $first = $group->first();
+                $codes = $group->pluck('printLog')->filter();
+                $firstCode = $codes->first();
 
                 return [
                     'id'               => $sessionId,
-                    'weight_per_label' => $group->groupBy(fn (PrintLog $log) => number_format((float) $log->weight_per_label, 3))
+                    'is_reprint'       => $first->is_reprint,
+                    'weight_per_label' => $codes->groupBy(fn (PrintLog $log) => number_format((float) $log->weight_per_label, 3))
                         ->map(fn ($logs, $weight) => $logs->count() > 1 ? "{$weight} × {$logs->count()}" : $weight)
                         ->implode(' + '),
-                    'label_count'      => $group->count(),
-                    'total_weight'     => number_format((float) $group->sum('weight_per_label'), 3),
-                    'mfg_date'         => $first->mfg_date?->format('d/m/Y'),
-                    'exp_date'         => $first->exp_date?->format('d/m/Y'),
-                    'printed_at'       => $first->created_at?->format('d/m/Y H:i'),
-                    'printed_by'       => $first->printedBy?->name,
-                    'print_count'      => (int) $group->max('print_count'),
-                    'last_printed_at'  => $group->max('last_printed_at')?->format('d/m/Y H:i'),
-                    'active_count'     => $group->filter(fn (PrintLog $log) => $log->status->isActive())->count(),
-                    // In lại cả phiên: chỉ mở lại các tem cũ (cùng trace_code), không ghi log mới.
-                    'reprint_url'      => $canPrint ? route('print.render_session', $sessionId) : null,
+                    'label_count'      => (int) $group->sum('quantity'),
+                    'total_weight'     => number_format((float) $codes->sum('weight_per_label'), 3),
+                    'mfg_date'         => $firstCode?->mfg_date?->format('d/m/Y'),
+                    'exp_date'         => $firstCode?->exp_date?->format('d/m/Y'),
+                    'printed_at'       => $first->printed_at?->format('d/m/Y H:i'),
+                    'printed_by'       => $first->user?->name,
+                    'active_count'     => $codes->filter(fn (PrintLog $log) => $log->status->isActive())->count(),
+                    'reprint_url'      => $canPrint ? route('backend.sales-orders.items.reprint', [$item, $sessionId]) : null,
                 ];
             })->values();
 
-        return response()->json(['data' => $logs]);
+        return response()->json(['data' => $logs, 'print_count' => $logs->count()]);
+    }
+
+    public function reprint(Request $request, SalesOrderItem $item, string $sessionId): JsonResponse
+    {
+        $this->authorize('print', $item->order);
+
+        $newSessionId = DB::transaction(function () use ($item, $sessionId, $request) {
+            $codes = PrintLog::query()
+                ->where('order_item_id', $item->id)
+                ->where('status', PrintLogStatus::Active->value)
+                ->whereIn('id', LabelPrintEvent::query()->where('order_item_id', $item->id)->where('print_session_id', $sessionId)->select('print_log_id'))
+                ->lockForUpdate()
+                ->get();
+
+            if ($codes->isEmpty()) {
+                return null;
+            }
+
+            $newSessionId = Str::lower((string) Str::ulid());
+            $codes->each(fn (PrintLog $log) => $log->markReprinted($newSessionId));
+            LabelPrintEvent::record($codes, $newSessionId, $request->user()?->id, true);
+
+            return $newSessionId;
+        });
+
+        abort_if($newSessionId === null, 404, 'Không còn tem đang lưu hành trong lần in này (đã thu hồi / hủy cấp lại).');
+
+        return response()->json(['print_url' => route('print.render_session', $newSessionId)]);
     }
 
     public function storeAll(Request $request, SalesOrder $salesOrder, BulkPrintSalesOrderLabelsAction $action, PrintSourceResolver $sourceResolver): JsonResponse

@@ -305,7 +305,10 @@
     <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">
         <div class="modal-box max-w-5xl">
             <h3 class="font-bold text-lg">Lịch sử in tem của mặt hàng này</h3>
-            <p class="text-sm text-base-content/60 mt-1" x-text="item?.product_name"></p>
+            <p class="text-sm text-base-content/60 mt-1">
+                <span x-text="item?.product_name"></span>
+                <span x-show="!loading && logs.length > 0" x-text="'· Đã in ' + logs.length + ' lần'"></span>
+            </p>
 
             <div class="mt-4 overflow-x-auto rounded-md border border-gray-200">
                 <table class="min-w-full border-collapse">
@@ -334,7 +337,7 @@
                             <tr class="border-b border-gray-100 last:border-b-0">
                                 <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                                     <span x-text="log.printed_at"></span>
-                                    <span class="block text-xs text-gray-400" x-show="log.print_count > 1" x-text="'In ' + log.print_count + ' lần · gần nhất ' + log.last_printed_at"></span>
+                                    <span class="badge badge-ghost badge-xs ml-1" x-show="log.is_reprint">In lại</span>
                                     <span class="block text-xs text-red-500" x-show="log.active_count === 0">Tem đã thu hồi / hủy</span>
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap font-mono" x-text="log.weight_per_label"></td>

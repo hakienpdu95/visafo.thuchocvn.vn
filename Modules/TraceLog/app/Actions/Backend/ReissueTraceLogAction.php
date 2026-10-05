@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\SalesOrder\Enums\PrintLogStatus;
+use Modules\SalesOrder\Models\LabelPrintEvent;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\PrintLogAttribute;
 
@@ -54,6 +55,8 @@ class ReissueTraceLogAction
                     'attribute_value' => $attr->attribute_value,
                 ]);
             }
+
+            LabelPrintEvent::record([$new], $new->print_session_id, $userId, false);
 
             // Lý do hiển thị cho người quét mã cũ → ghi rõ đã có mã thay thế
             $old->update([

@@ -376,6 +376,7 @@ document.addEventListener('alpine:init', () => {
         item: null,
         logs: [],
         loading: false,
+        reprinting: false,
         error: '',
 
         async openFor(row) {
@@ -401,9 +402,31 @@ document.addEventListener('alpine:init', () => {
 
         close() { this.open = false; },
 
-        // Chỉ mở lại tem đã có — server không ghi log mới.
-        reprint(log) {
-            if (log.reprint_url) window.open(log.reprint_url, '_blank');
+        async reprint(log) {
+            if (!log.reprint_url || this.reprinting) return;
+            const win = window.open('', '_blank');
+            this.reprinting = true;
+            try {
+                const res = await fetch(log.reprint_url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+                    },
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+                if (win) win.location = data.print_url;
+                else window.open(data.print_url, '_blank');
+                await this.openFor(this.item);
+            } catch (e) {
+                console.error('[print-history] reprint failed', e);
+                win?.close();
+                this.error = 'In lại thất bại: ' + e.message;
+            } finally {
+                this.reprinting = false;
+            }
         },
     }));
 

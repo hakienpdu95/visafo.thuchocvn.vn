@@ -26,6 +26,8 @@ class TraceLogListResource extends JsonResource
             'receipt_batch' => $this->productBatch?->batch_code,
             'printed_at'    => $this->created_at?->format('d/m/Y H:i'),
             'printed_by'    => $this->printedBy?->name,
+            'print_count'   => (int) ($this->print_count ?? 1),
+            'last_printed_at' => $this->last_printed_at?->format('d/m/Y H:i'),
             'status'        => $this->status->value,
             'status_label'  => $this->status->label(),
             'status_badge'  => $this->status->badgeClass(),

@@ -5,23 +5,30 @@ namespace Modules\SalesOrder\Actions\Backend;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsAction;
+use Modules\SalesOrder\Enums\PrintLogStatus;
+use Modules\SalesOrder\Models\LabelPrintEvent;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\PrintLogAttribute;
 use Modules\SalesOrder\Models\SalesOrder;
 use Modules\SalesOrder\Models\SalesOrderItem;
 use Modules\SalesOrder\Support\BatchAttributeResolver;
+use Modules\SalesOrder\Support\PrintSourceResolver;
 
 class BulkPrintSalesOrderLabelsAction
 {
     use AsAction;
 
-    public function __construct(private readonly BatchAttributeResolver $resolver) {}
+    public function __construct(
+        private readonly BatchAttributeResolver $resolver,
+        private readonly PrintSourceResolver $sourceResolver,
+    ) {}
 
     public function handle(SalesOrder $order, array $data, ?string $printedBy): array
     {
         $resolver = $this->resolver;
+        $sourceResolver = $this->sourceResolver;
 
-        return DB::transaction(function () use ($order, $data, $printedBy, $resolver) {
+        return DB::transaction(function () use ($order, $data, $printedBy, $resolver, $sourceResolver) {
             // Khóa các dòng hàng của đơn: 2 lượt in toàn bộ đơn chạy song song không sinh trùng mã
             $items = SalesOrderItem::query()
                 ->where('order_id', $order->id)
@@ -59,11 +66,13 @@ class BulkPrintSalesOrderLabelsAction
                 }
 
                 $total++;
+                $source = $sourceResolver->forItem($item, $data);
 
                 // Check & Reuse (xem PrintSalesOrderItemLabelAction): đã có tem đang lưu hành → in lại mã cũ
                 $existing = PrintLog::query()->activeForItem($item->id, $data['product_batch_id'] ?? null)->get();
                 if ($existing->isNotEmpty()) {
-                    $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
+                    $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId, $source['vendor_id'], $source['supplier_name']));
+                    LabelPrintEvent::record($existing, $sessionId, $printedBy, true);
                     array_push($logs, ...$existing->all());
                     $printedItems++;
                     $reusedItems++;
@@ -72,6 +81,7 @@ class BulkPrintSalesOrderLabelsAction
                 }
 
                 $attributes = $resolver->forItem($item)['attributes'];
+                $created = [];
 
                 foreach ($groups as $group) {
                     for ($i = 0; $i < $group['qty']; $i++) {
@@ -82,10 +92,11 @@ class BulkPrintSalesOrderLabelsAction
                             'weight_per_label'  => $group['weight'],
                             'mfg_date'          => $data['mfg_date'] ?? null,
                             'exp_date'          => $data['exp_date'],
-                            'supplier_name'     => $data['supplier_name'] ?? null,
-                            'vendor_id'         => $data['vendor_id'] ?? null,
+                            'supplier_name'     => $source['supplier_name'],
+                            'vendor_id'         => $source['vendor_id'],
                             'batch_code'        => $data['batch_code'] ?? null,
                             'printed_by'        => $printedBy,
+                            'status'            => PrintLogStatus::Active,
                         ]);
 
                         foreach ($attributes as $attr) {
@@ -97,8 +108,11 @@ class BulkPrintSalesOrderLabelsAction
                         }
 
                         $logs[] = $log;
+                        $created[] = $log;
                     }
                 }
+
+                LabelPrintEvent::record($created, $sessionId, $printedBy, false);
 
                 $printedItems++;
             }

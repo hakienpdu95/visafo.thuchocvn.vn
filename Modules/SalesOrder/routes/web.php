@@ -26,6 +26,9 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::get('sales-orders/items/{item}/batch-attributes', [PrintLabelController::class, 'batchAttributes'])->name('sales-orders.items.batch-attributes');
     Route::get('sales-orders/items/{item}/batches', [PrintLabelController::class, 'batches'])->name('sales-orders.items.batches');
     Route::get('sales-orders/items/{item}/print-logs', [PrintLabelController::class, 'history'])->name('sales-orders.items.print-logs');
+    Route::post('sales-orders/items/{item}/print-logs/{session_id}/reprint', [PrintLabelController::class, 'reprint'])
+        ->where('session_id', '[A-Za-z0-9]{26}')
+        ->name('sales-orders.items.reprint');
     Route::post('sales-orders/{sales_order}/print-all', [PrintLabelController::class, 'storeAll'])->name('sales-orders.print-all');
 
     Route::get('sales-orders', [SalesOrderController::class, 'index'])->name('sales-orders.index');

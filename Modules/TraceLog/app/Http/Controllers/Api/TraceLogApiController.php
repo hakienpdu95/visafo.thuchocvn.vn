@@ -33,7 +33,7 @@ class TraceLogApiController extends Controller
         ]);
 
         $sortRaw = $request->input('sort.0');
-        $sortField = is_array($sortRaw) ? (string) ($sortRaw['field'] ?? 'created_at') : 'created_at';
+        $sortField = is_array($sortRaw) ? (string) ($sortRaw['field'] ?? 'last_printed_at') : 'last_printed_at';
         $sortDir = is_array($sortRaw) && ($sortRaw['dir'] ?? '') === 'asc' ? 'asc' : 'desc';
 
         $paginator = $handler->handle(new ListTraceLogsQuery(
