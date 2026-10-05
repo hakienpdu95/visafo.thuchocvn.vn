@@ -52,6 +52,8 @@ readonly class TraceabilityData
         public ?array $delivery = null,
         /** @var array<int, array{title: string, time: ?string, meta: ?string, done: bool, ok: ?bool}> khối "Hành trình hàng hóa" (5 mốc tóm tắt) */
         public array $journey = [],
+        /** @var array<int, array{label: string, time: ?string, state: string, result: string}> khối "VISAFO đã thực hiện với lô này" (tab VISAFO) */
+        public array $executedSteps = [],
         /** @var array<int, array{name: string, caption: string, files: array<int, array{url: string, preview: string, isPdf: bool}>}> chứng nhận của nguồn (nút "Hồ sơ nguồn") */
         public array $sourceDocuments = [],
         public bool $hasBatch = false, // tem gắn lô nhập thật (nút "Phiếu lô")

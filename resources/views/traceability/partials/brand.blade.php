@@ -46,9 +46,37 @@
     <h3 class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-green-700">
         <span class="h-4 w-1 rounded bg-green-600"></span> Vai trò trong chuỗi cung ứng
     </h3>
-    <div class="wysiwyg-content rounded-lg bg-[#f8f9fa] p-4 text-[15px] leading-relaxed">{!! $trace->company['supplyChainRole'] !!}</div>
+    <div class="wysiwyg-content text-[15px] leading-relaxed">{!! $trace->company['supplyChainRole'] !!}</div>
 </section>
 @endif
+
+{{-- 1c. VISAFO đã thực hiện với lô này: tổng hợp tự động (phiếu nhập, QC, tem in, đơn bán) — xem GetTraceabilityHandler::executedSteps().
+     Kết luận dùng chung logic khối "Kiểm soát chất lượng" tab Sản phẩm (qcConclusion). --}}
+<section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+    <h3 class="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-green-700">
+        <span class="h-4 w-1 rounded bg-green-600"></span> {{ $trace->brand }} đã thực hiện với lô này
+    </h3>
+    <ul>
+        @foreach($trace->executedSteps as $step)
+        <li class="flex items-center justify-between gap-3 border-b border-gray-100 py-2.5 last:border-b-0">
+            <div class="min-w-0">
+                <p class="text-sm font-medium {{ $step['state'] === 'pending' ? 'text-gray-400' : 'text-gray-800' }}">{{ $step['label'] }}</p>
+                @if($step['time'])<p class="text-xs text-gray-500">{{ $step['time'] }}</p>@endif
+            </div>
+            <span class="shrink-0 text-sm {{ ['done' => 'font-semibold text-green-700', 'fail' => 'font-semibold text-red-600', 'pending' => 'italic text-gray-400'][$step['state']] }}">
+                {{ ['done' => '✓ ', 'fail' => '✕ ', 'pending' => ''][$step['state']] }}{{ $step['result'] }}
+            </span>
+        </li>
+        @endforeach
+    </ul>
+    @if($trace->qcConclusion === 'pass')
+    <p class="mt-3 rounded-lg bg-green-50 px-3 py-2.5 text-center text-sm font-bold uppercase text-green-700 ring-1 ring-green-100">🟢 Lô hàng đủ điều kiện xuất</p>
+    @elseif($trace->qcConclusion === 'fail')
+    <p class="mt-3 rounded-lg bg-red-50 px-3 py-2.5 text-center text-sm font-bold uppercase text-red-600 ring-1 ring-red-100">🔴 Lô hàng không đạt kiểm tra</p>
+    @else
+    <p class="mt-3 rounded-lg bg-gray-50 px-3 py-2.5 text-center text-sm font-medium text-gray-500">Đang hoàn tất kiểm tra chất lượng</p>
+    @endif
+</section>
 
 {{-- 2. Hồ sơ pháp lý & năng lực: mỗi hồ sơ là một nút pill, bấm mở lightbox (tệp phát qua route trace.document).
      Nhóm theo thứ tự các tab ở internal-compliance; nhóm không có hồ sơ công khai đã bị bỏ ở backend. --}}

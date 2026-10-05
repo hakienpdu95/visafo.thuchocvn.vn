@@ -122,6 +122,10 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             hasBatch: $log->productBatch !== null,
             qualityChecks: $this->qualityCheckRows($qualityChecks),
             qcConclusion: $this->qcConclusion($qualityChecks),
+            // Tiếp nhận = ngày nhập trên phiếu (nghiệp vụ); lô tạo cùng ngày thì lấy luôn giờ tạo lô. created_at của lô là lúc
+            // import file phiếu nhập — có thể muộn hơn tiếp nhận thực tế (và sau cả QC tiếp nhận).
+            executedSteps: $this->executedSteps($log, $receipt?->receipt_date && $batch?->created_at?->isSameDay($receipt->receipt_date)
+                ? $batch->created_at : ($receipt?->receipt_date ?? $batch?->created_at), $order, $qualityChecks),
             journey: $this->journey($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $order, $qualityChecks, $item),
             delivery: $this->delivery($order, $company),
         );
@@ -237,6 +241,42 @@ class GetTraceabilityHandler implements QueryHandlerInterface
      *
      * @return array<int, array{title: string, time: ?string, meta: ?string, done: bool, ok: ?bool}>
      */
+    /**
+     * Khối "VISAFO đã thực hiện với lô này" (tab VISAFO): tổng hợp tự động từ phiếu nhập, QC, tem in và đơn bán.
+     * state: done (✓ + result xanh) | fail (✕ đỏ) | pending (xám, result = trạng thái chờ).
+     *
+     * @return array<int, array{label: string, time: ?string, state: string, result: string}>
+     */
+    private function executedSteps(PrintLog $log, $receivedAt, ?SalesOrder $order, Collection $checks): array
+    {
+        $at = fn ($t) => $t ? $t->format($t->format('H:i') === '00:00' ? 'd/m/Y' : 'd/m/Y H:i') : null;
+        $qc = function (Collection $group, string $waiting) use ($at): array {
+            if ($group->isEmpty()) {
+                return ['time' => null, 'state' => 'pending', 'result' => $waiting];
+            }
+            $failed = $group->contains(fn (BatchQualityCheck $c) => $c->result->value === 'fail');
+
+            return ['time' => $at($group->max('checked_at')), 'state' => $failed ? 'fail' : 'done', 'result' => $failed ? 'Không đạt' : 'Đạt'];
+        };
+
+        return [
+            ['label' => 'Tiếp nhận', ...($receivedAt
+                ? ['time' => $at($receivedAt), 'state' => 'done', 'result' => 'Hoàn thành']
+                : ['time' => null, 'state' => 'pending', 'result' => 'Đang cập nhật'])],
+            ['label' => 'Kiểm tra đầu vào', ...$qc($checks->filter(fn (BatchQualityCheck $c) => $c->stage->isBatchStage()), 'Đang cập nhật')],
+            ['label' => 'Sơ chế / đóng gói', 'time' => $at($log->created_at), 'state' => 'done', 'result' => 'Hoàn thành'],
+            ['label' => 'Kiểm tra trước xuất', ...$qc($checks->filter(fn (BatchQualityCheck $c) => $c->stage === QualityCheckStage::PreDispatch), 'Chờ kiểm tra')],
+            ['label' => 'Xuất kho', ...($order?->shipped_at
+                ? ['time' => $at($order->shipped_at), 'state' => 'done', 'result' => 'Hoàn thành']
+                : ['time' => null, 'state' => 'pending', 'result' => 'Chờ xuất kho'])],
+            ['label' => 'Giao khách hàng', ...match (true) {
+                $order?->delivered_at !== null => ['time' => $at($order->delivered_at), 'state' => 'done', 'result' => 'Hoàn thành'],
+                $order?->shipped_at !== null   => ['time' => null, 'state' => 'pending', 'result' => 'Đang giao'],
+                default                        => ['time' => null, 'state' => 'pending', 'result' => 'Chờ giao hàng'],
+            }],
+        ];
+    }
+
     private function journey(PrintLog $log, ?FarmingBatch $farmingBatch, $receivedAt, ?SalesOrder $order, Collection $checks, SalesOrderItem $item): array
     {
         $at = fn ($t) => $t ? $t->format($t->format('H:i') === '00:00' ? 'd/m/Y' : 'H:i • d/m/Y') : null;
