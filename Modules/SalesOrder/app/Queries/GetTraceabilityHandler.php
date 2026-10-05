@@ -7,7 +7,6 @@ use App\Shared\Contracts\QueryHandlerInterface;
 use App\Shared\Contracts\QueryInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Compliance\Models\InternalFacility;
@@ -17,7 +16,6 @@ use Modules\GoodsReceipt\Models\ProductBatch;
 use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Models\FarmingBatch;
-use Modules\Product\Models\FarmingLog;
 use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
@@ -49,15 +47,6 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     /** Định dạng file hồ sơ doanh nghiệp được phát ra trang công khai (xem trực tiếp trên trình duyệt). */
     public const PUBLIC_DOCUMENT_MIMES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-    private const ACTIVITY_LABELS = [
-        'cultivation' => 'Canh tác',
-        'water'       => 'Tưới nước',
-        'fertilizer'  => 'Bón phân',
-        'pesticide'   => 'Phun thuốc BVTV',
-        'harvest'     => 'Thu hoạch',
-        'other'       => 'Chăm sóc',
-    ];
-
     /** @return TraceabilityData|null null khi mã truy xuất không tồn tại */
     public function handle(QueryInterface $query): ?TraceabilityData
     {
@@ -69,7 +58,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'vendor.province', 'vendor.ward', 'productBatch.goodsReceipt.vendor.province', 'productBatch.goodsReceipt.vendor.ward',
                 'productBatch.qualityChecks', 'orderItem.qualityChecks',
                 'productBatch.farmingBatch.farmingSource', 'productBatch.farmingBatch.vendor',
-                'productBatch.farmingBatch.logs.vendorFarmingStep', 'productBatch.farmingBatch.logs.agriFertilizer', 'productBatch.farmingBatch.logs.agriPesticide',
+                'productBatch.farmingBatch.logs',
             ])
             ->first();
 
@@ -144,7 +133,6 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'isOwn'       => $farmingBatch->vendor !== null && $this->isOwnVendor($farmingBatch->vendor, $company),
             ] : null,
             batchCode: $batchCode,
-            timeline: $this->timeline($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $supplierText, $batchCode, $order, $qualityChecks, (string) config('trace.company_name', 'VISAFO')),
             standards: $this->standards($product, $vendor),
             status: $log->status,
             statusReason: $log->status_reason,
@@ -457,139 +445,6 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     {
         return in_array($vendor->id, (array) config('trace.own_vendor_ids', []), true)
             || ($company['taxCode'] !== '' && $vendor->tax_code !== null && trim($vendor->tax_code) === $company['taxCode']);
-    }
-
-    /** @return array<int, array{icon: string, title: string, description: string, at: mixed, done: bool, image?: ?string}> */
-    private function timeline(PrintLog $log, ?FarmingBatch $farmingBatch, $receivedAt, ?string $supplier, ?string $batchCode, ?SalesOrder $order, Collection $checks, string $brand): array
-    {
-        $farmSteps = [];
-
-        if ($farmingBatch !== null) {
-            $source = $farmingBatch->farmingSource;
-
-            if ($source?->pre_season_checked_at && in_array($source->status, ['passed', 'failed'], true)) {
-                $farmSteps[] = [
-                    'icon'        => 'shield',
-                    'title'       => 'Kiểm tra vùng trồng trước vụ',
-                    'description' => ($source->status === 'passed' ? 'Đạt' : 'Không đạt') . ' — vùng trồng ' . $source->name . '.',
-                    'at'          => $source->pre_season_checked_at,
-                    'done'        => $source->status === 'passed',
-                ];
-            }
-
-            $farmSteps[] = [
-                'icon'        => 'seed',
-                'title'       => 'Gieo trồng',
-                'description' => 'Lô canh tác ' . $farmingBatch->batch_code . ($source ? ' tại vùng trồng ' . $source->name : '') . '.',
-                'at'          => $farmingBatch->sowing_date,
-                'done'        => $farmingBatch->sowing_date !== null,
-            ];
-
-            $hasHarvestLog = false;
-            foreach ($farmingBatch->logs as $farmingLog) {
-                $hasHarvestLog = $hasHarvestLog || $farmingLog->activity_type === 'harvest';
-                $farmSteps[] = [
-                    'icon'        => $farmingLog->activity_type === 'harvest' ? 'harvest' : 'farm',
-                    'title'       => $farmingLog->vendorFarmingStep?->step_name
-                        ?? self::ACTIVITY_LABELS[$farmingLog->activity_type] ?? 'Chăm sóc',
-                    'description' => $this->farmingLogDetail($farmingLog),
-                    'at'          => $farmingLog->activity_date,
-                    'done'        => true,
-                    'image'       => $farmingLog->image_path ? Storage::disk('public')->url($farmingLog->image_path) : null,
-                ];
-            }
-
-            if ($farmingBatch->pre_harvest_checked_at && $farmingBatch->pre_harvest_status === 'passed') {
-                $farmSteps[] = [
-                    'icon'        => 'shield',
-                    'title'       => 'Phê duyệt thu hoạch',
-                    'description' => 'QC xác nhận đã hết thời gian cách ly thuốc BVTV, đủ điều kiện thu hoạch.',
-                    'at'          => $farmingBatch->pre_harvest_checked_at,
-                    'done'        => true,
-                ];
-            }
-
-            if (! $hasHarvestLog && $farmingBatch->actual_harvest_date) {
-                $farmSteps[] = [
-                    'icon'        => 'harvest',
-                    'title'       => 'Thu hoạch',
-                    'description' => 'Thu hoạch lô ' . $farmingBatch->batch_code . '.',
-                    'at'          => $farmingBatch->actual_harvest_date,
-                    'done'        => true,
-                ];
-            }
-
-            // Xếp theo thời gian (bước chưa có ngày đứng đầu, giữ thứ tự khai báo khi trùng)
-            $farmSteps = collect($farmSteps)->sortBy(fn ($st) => $st['at']?->getTimestamp() ?? PHP_INT_MIN)->values()->all();
-        }
-
-        $qcStep = fn (QualityCheckStage $stage, string $icon) => ($check = $checks->get($stage->value)) ? [[
-            'icon'        => $icon,
-            'title'       => $stage->label(),
-            'description' => $check->result->label() . ' — ' . $brand . ' kiểm soát.',
-            'at'          => $check->checked_at,
-            'done'        => true,
-        ]] : [];
-
-        $steps = [
-            ...$farmSteps,
-            [
-                'icon'        => 'warehouse',
-                'title'       => 'Tiếp nhận nguyên liệu / Nhập kho',
-                'description' => $batchCode
-                    ? 'Lô ' . $batchCode . ' nhập kho' . ($supplier ? ' từ ' . $supplier : '') . '.'
-                    : ($supplier ? 'Tiếp nhận hàng từ ' . $supplier . '.' : 'Đang cập nhật thông tin lô hàng.'),
-                'at'          => $receivedAt,
-                'done'        => $receivedAt !== null || $batchCode !== null,
-            ],
-            ...$qcStep(QualityCheckStage::Receiving, 'shield'),
-            ...$qcStep(QualityCheckStage::Sensory, 'shield'),
-            [
-                'icon'        => 'package',
-                'title'       => 'Sơ chế / Đóng gói',
-                'description' => 'Đóng gói và gắn mã truy xuất ' . strtoupper($log->trace_code) . '.',
-                'at'          => $log->created_at,
-                'done'        => true,
-            ],
-            ...$qcStep(QualityCheckStage::PreDispatch, 'shield'),
-            [
-                'icon'        => 'truck',
-                'title'       => 'Xuất kho / Vận chuyển',
-                'description' => $order?->shipped_at
-                    ? 'Đã xuất kho' . ($order->delivery_code ? ', vận đơn ' . $order->delivery_code : '') . '.'
-                    : 'Đã lập lệnh xuất kho, chờ giao hàng.',
-                'at'          => $order?->shipped_at,
-                'done'        => $order?->shipped_at !== null,
-            ],
-        ];
-
-        if ($order?->shipped_at !== null) {
-            $recipient = $this->maskName($order->customer_name);
-            $steps[] = [
-                'icon'        => 'pin',
-                'title'       => 'Giao hàng thành công',
-                'description' => $order->delivered_at ? 'Đã giao đến ' . ($recipient ?? 'khách hàng') . '.' : 'Đang giao hàng.',
-                'at'          => $order->delivered_at,
-                'done'        => $order->delivered_at !== null,
-            ];
-        }
-
-        return $steps;
-    }
-
-    private function farmingLogDetail(FarmingLog $log): string
-    {
-        $qty = $log->quantity ? ' — ' . rtrim(rtrim((string) $log->quantity, '0'), '.') . ' ' . $log->unit : '';
-
-        $detail = match ($log->activity_type) {
-            'fertilizer' => ($log->agriFertilizer?->name ?? 'Phân bón') . $qty,
-            'pesticide'  => ($log->agriPesticide?->trade_name ?? 'Thuốc BVTV') . $qty
-                . ($log->safe_harvest_date ? ' · Cách ly đến ' . $log->safe_harvest_date->format('d/m/Y') : ''),
-            'harvest'    => $log->quantity ? 'Sản lượng' . $qty : '',
-            default      => '',
-        };
-
-        return trim(implode(' · ', array_filter([$detail, $log->method_or_target, $log->notes])));
     }
 
     private function vendorAddress(Vendor $vendor): ?string

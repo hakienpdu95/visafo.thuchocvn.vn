@@ -11,7 +11,7 @@
 @php
     $fmtAt = fn ($at) => $at ? $at->format($at->format('H:i') === '00:00' ? 'd/m/Y' : 'H:i, d/m/Y') : null;
     $expired = $trace->expDate?->isPast();
-    // Icon (heroicons outline, path "d") dùng chung cho danh sách thông tin và timeline — xem partials/row.blade.php
+    // Icon (heroicons outline, path "d") dùng chung cho các dòng thông tin — xem partials/row.blade.php
     $icon = [
         'box'       => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
         'qr'        => 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z',
@@ -382,41 +382,6 @@
             </ul>
         </section>
         @endif
-
-        {{-- 5. Các công đoạn sản xuất, kinh doanh (timeline dọc) --}}
-        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Các công đoạn sản xuất, kinh doanh
-            </h3>
-            <ol>
-                @foreach($trace->timeline as $step)
-                <li class="relative flex gap-3 pb-5 last:pb-0">
-                    @unless($loop->last)
-                    <span class="absolute left-[17px] top-9 bottom-0 w-0.5 {{ $step['done'] ? 'bg-green-200' : 'bg-gray-200' }}"></span>
-                    @endunless
-                    <span class="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full
-                                 {{ $step['done'] ? 'bg-green-600 text-white shadow-sm' : 'border-2 border-dashed border-gray-300 bg-white text-gray-400' }}">
-                        <svg class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon[$step['icon']] ?? $icon['info'] }}"/></svg>
-                    </span>
-                    <div class="min-w-0 pt-1">
-                        <p class="text-sm font-semibold leading-snug {{ $step['done'] ? 'text-gray-900' : 'text-gray-500' }}">{{ $step['title'] }}</p>
-                        @if($step['at'])
-                        <time class="mt-0.5 block text-xs font-medium text-green-700">{{ $fmtAt($step['at']) }}</time>
-                        @endif
-                        @if($step['description'] !== '')
-                        <p class="mt-1 text-sm text-gray-600">{{ $step['description'] }}</p>
-                        @endif
-                        @if(!empty($step['image']))
-                        {{-- Ảnh minh chứng nhật ký canh tác (vỏ thuốc, bao phân, hiện trường) --}}
-                        <a href="{{ $step['image'] }}" target="_blank" rel="noopener" class="mt-2 block w-28 overflow-hidden rounded-md ring-1 ring-black/10">
-                            <img src="{{ $step['image'] }}" alt="Ảnh minh chứng: {{ $step['title'] }}" class="aspect-square w-full object-cover" loading="lazy">
-                        </a>
-                        @endif
-                    </div>
-                </li>
-                @endforeach
-            </ol>
-        </section>
 
         </div>
 
