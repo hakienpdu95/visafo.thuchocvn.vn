@@ -37,6 +37,10 @@ class CompanyProfileData extends Data
 
         #[Nullable, StringType, Max(500)]
         public readonly ?string $address,
+
+        // HTML từ Jodit (đã có ảnh nhúng dạng URL, không base64) — làm sạch ở UpdateCompanyProfileAction
+        #[Nullable, StringType, Max(100000)]
+        public readonly ?string $supply_chain_role = null,
     ) {}
 
     /** Lưu ý: rules() THAY THẾ rule từ attribute của các field khai báo ở đây — nên khai báo đủ. */
@@ -67,6 +71,7 @@ class CompanyProfileData extends Data
             'ward_code.required'                  => 'Vui lòng chọn phường / xã.',
             'ward_code.exists'                    => 'Phường / xã không thuộc tỉnh / thành phố đã chọn.',
             'address.max'                         => 'Địa chỉ không được vượt quá 500 ký tự.',
+            'supply_chain_role.max'               => 'Nội dung "Vai trò trong chuỗi cung ứng" quá dài.',
         ];
     }
 }

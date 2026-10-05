@@ -385,17 +385,18 @@
     $companyTabFields = [
         'basic'   => ['company_name', 'company_type', 'tax_code', 'tax_code_issue_date', 'tax_code_issue_place'],
         'address' => ['province_code', 'ward_code', 'address'],
+        'role'    => ['supply_chain_role'],
     ];
-    $companyTab = $companyErrors->hasAny($companyTabFields['basic']) || ! $companyErrors->hasAny($companyTabFields['address']) ? 'basic' : 'address';
+    $companyTab = collect(['address', 'role'])->first(fn ($t) => $companyErrors->hasAny($companyTabFields[$t]) && ! $companyErrors->hasAny($companyTabFields['basic'])) ?? 'basic';
 @endphp
 <dialog id="companyProfileModal" class="modal" @if($companyErrors->any()) data-autoopen-company="1" @endif>
     {{-- overflow-visible: lịch Ngày cấp (flatpickr static) và dropdown Tỉnh/Phường tràn ra ngoài khung mà không bị cắt --}}
-    <div class="modal-box max-w-2xl rounded-md p-5 relative overflow-visible [&_.flatpickr-wrapper]:block [&_.flatpickr-wrapper]:w-full" x-data="{ tab: '{{ $companyTab }}' }">
+    <div class="modal-box max-w-3xl rounded-md p-5 relative overflow-visible [&_.flatpickr-wrapper]:block [&_.flatpickr-wrapper]:w-full" x-data="{ tab: '{{ $companyTab }}' }" x-effect="tab === 'role' && $nextTick(() => window.initSupplyChainEditor?.())">
         <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onclick="companyProfileModal.close()">✕</button>
         <h3 class="font-bold text-lg mb-4">Cập nhật thông tin doanh nghiệp</h3>
 
         <div class="flex gap-6 border-b border-gray-200 mb-5">
-            @foreach(['basic' => 'Thông tin cơ bản', 'address' => 'Địa chỉ'] as $key => $label)
+            @foreach(['basic' => 'Thông tin cơ bản', 'address' => 'Địa chỉ', 'role' => 'Vai trò trong chuỗi cung ứng'] as $key => $label)
             <button type="button" data-company-tab="{{ $key }}" @click="tab = '{{ $key }}'"
                     class="pb-2.5 -mb-px border-b-2 text-sm transition-colors"
                     :class="tab === '{{ $key }}' ? 'border-green-800 text-green-800 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'">
@@ -481,6 +482,17 @@
                            class="input input-bordered input-sm w-full rounded-sm bg-gray-100 text-gray-500 cursor-not-allowed">
                 </div>
                 <p class="text-xs text-gray-400">Địa chỉ trụ sở được cố định theo đăng ký doanh nghiệp, không chỉnh sửa tại đây.</p>
+            </div>
+
+            {{-- Tab 3: Vai trò trong chuỗi cung ứng — Jodit (chữ + ảnh), khởi tạo lần đầu mở tab (x-effect ở modal-box).
+                 Hiển thị công khai ở khối "Đơn vị cung ứng" trang truy xuất; để trống thì trang dùng câu mặc định. --}}
+            <div x-show="tab === 'role'" x-cloak data-company-panel="role" class="space-y-2">
+                <label class="label py-0 pb-1.5" for="supply_chain_role"><span class="label-text font-medium">Vai trò trong chuỗi cung ứng</span></label>
+                <textarea id="supply_chain_role" name="supply_chain_role" data-jodit-preset="standard" data-jodit-height="360"
+                          data-jodit-context-type="internal_facility" data-jodit-context-id="{{ $headquarter->id }}"
+                          class="textarea textarea-bordered w-full">{{ old('supply_chain_role', $headquarter->supply_chain_role) }}</textarea>
+                @if($companyErrors->has('supply_chain_role'))<p class="mt-1 text-xs text-error form-val-msg">{{ $companyErrors->first('supply_chain_role') }}</p>@endif
+                <p class="text-xs text-gray-400">Hiển thị công khai ở mục "Đơn vị cung ứng" trên trang truy xuất nguồn gốc. Không nhập số điện thoại cá nhân, thông tin nội bộ.</p>
             </div>
 
             <div class="modal-action mt-6 pt-4 border-t border-gray-100">
@@ -672,6 +684,7 @@
     @vite([
         'resources/js/modules/flatpickr.js',
         'resources/js/modules/tom-select.js',
+        'resources/js/modules/jodit.js',
         'Modules/Compliance/resources/assets/js/compliance.js',
     ], 'build/backend')
 @endpush

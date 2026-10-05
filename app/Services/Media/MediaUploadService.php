@@ -128,19 +128,22 @@ class MediaUploadService
      */
     public function reassociateOrphans(HasMedia&Model $model, array $uuids): void
     {
-        if (empty($uuids)) {
-            return;
+        // Không return sớm khi $uuids rỗng: nội dung không còn ảnh nào thì mọi media cũ của entity đều là rác (bước xóa bên dưới).
+        if (! empty($uuids)) {
+            Media::withoutTenant()
+                ->whereIn('id', $uuids)
+                ->where('collection_name', 'jodit_content')
+                ->get()
+                ->each(function (Media $media) use ($model) {
+                    // Đường dẫn file phụ thuộc model (MediaPathGenerator) → đổi chủ thì phải chuyển file theo,
+                    // nếu không URL cũ (thư mục JoditDraft) và URL mới đều hỏng.
+                    $oldBasePath = rtrim(dirname($media->getPathRelativeToRoot()), '/');
+                    $media->model_type = get_class($model);
+                    $media->model_id   = $model->getKey();
+                    $media->save();
+                    $this->moveMediaFiles($media, $oldBasePath);
+                });
         }
-
-        Media::withoutTenant()
-            ->whereIn('id', $uuids)
-            ->where('collection_name', 'jodit_content')
-            ->get()
-            ->each(function (Media $media) use ($model) {
-                $media->model_type = get_class($model);
-                $media->model_id   = $model->getKey();
-                $media->save();
-            });
 
         // Delete stale jodit_content media for this entity not referenced by current content
         Media::withoutTenant()
@@ -150,6 +153,24 @@ class MediaUploadService
             ->whereNotIn('id', $uuids)
             ->get()
             ->each(fn (Media $m) => $this->delete($m));
+    }
+
+    /** Chuyển toàn bộ file (gốc + conversion) của media từ thư mục cũ sang thư mục theo chủ sở hữu mới. */
+    private function moveMediaFiles(Media $media, string $oldBasePath): void
+    {
+        $disk        = $media->disk;
+        $newBasePath = rtrim(dirname($media->getPathRelativeToRoot()), '/');
+
+        if ($newBasePath === $oldBasePath || ! Storage::disk($disk)->exists($oldBasePath)) {
+            return;
+        }
+
+        foreach (Storage::disk($disk)->allFiles($oldBasePath) as $oldFile) {
+            $relative = ltrim(substr($oldFile, strlen($oldBasePath)), '/');
+            Storage::disk($disk)->move($oldFile, $newBasePath . '/' . $relative);
+        }
+
+        $this->pruneEmptyAncestors($disk, $oldBasePath);
     }
 
     /**

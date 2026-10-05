@@ -4,6 +4,7 @@ namespace Modules\SalesOrder\Queries;
 
 use App\Models\Media;
 use App\Shared\Contracts\QueryHandlerInterface;
+use App\Support\Html\RichHtmlSanitizer;
 use App\Shared\Contracts\QueryInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -453,7 +454,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             || ($company['taxCode'] !== '' && $vendor->tax_code !== null && trim($vendor->tax_code) === $company['taxCode']);
     }
 
-    /** @return array{name: string, address: string, hotline: string, taxCode: string, area: string} */
+    /** @return array{name: string, address: string, hotline: string, taxCode: string, area: string, supplyChainRole: ?string} */
     private function company(): array
     {
         $hq = InternalFacility::query()->where('type', 'headquarter')->with(['province', 'ward'])->first();
@@ -465,6 +466,8 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             'hotline' => (string) config('trace.company_hotline', ''),
             'taxCode' => trim((string) $hq?->tax_code),
             'area'    => $this->publicArea($hq?->fullAddress() ?: (string) config('trace.company_address', '')) ?? '',
+            // "Vai trò trong chuỗi cung ứng" (HTML Jodit) — làm sạch lại khi xuất ra trang công khai
+            'supplyChainRole' => RichHtmlSanitizer::clean($hq?->supply_chain_role),
         ];
     }
 }

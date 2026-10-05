@@ -97,9 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
     window.initAllDatePickers?.(form);
     window.initFormValidation?.(form);
 
+    // Editor "Vai trò trong chuỗi cung ứng": khởi tạo 1 lần khi tab được mở (trong tab ẩn Jodit đo sai kích thước)
+    window.initSupplyChainEditor = () => {
+        const el = form.querySelector('#supply_chain_role');
+        if (!el || el.dataset.joditReady || !window.initJodit) return;
+        el.dataset.joditReady = '1';
+        window.initJodit(el);
+    };
+
     // Đăng ký sau initFormValidation → chạy sau bước validate; lỗi nằm ở tab đang ẩn thì mở tab đó
     form.addEventListener('submit', (e) => {
-        if (!e.defaultPrevented) return;
+        // Form hợp lệ, sắp lưu: ngừng dọn ảnh Jodit lúc rời trang (pagehide) — server sẽ nhận ảnh về trụ sở chính
+        if (!e.defaultPrevented) { window.clearJoditDraftTracking?.('supply_chain_role'); return; }
         const panel = form.querySelector('.form-val-msg')?.closest('[data-company-panel]');
         if (panel) modal.querySelector(`[data-company-tab="${panel.dataset.companyPanel}"]`)?.click();
     });

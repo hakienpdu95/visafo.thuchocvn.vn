@@ -19,7 +19,7 @@ readonly class TraceabilityData
     /**
      * @param  string[]  $productImages  ảnh slider, ảnh chính luôn ở index 0
      * @param  array<int, array{key: string, value: string}>  $attributes
-     * @param  array{name: string, address: string, hotline: string, taxCode: string, area: string}  $company  đơn vị đóng gói / phân phối (tên pháp nhân chủ hệ thống)
+     * @param  array{name: string, address: string, hotline: string, taxCode: string, area: string, supplyChainRole: ?string}  $company  đơn vị đóng gói / phân phối (tên pháp nhân chủ hệ thống)
      * @param  array{code: string, name: ?string, address: ?string, area: ?float, waterSource: ?string, harvestedAt: ?Carbon, batchCode: string, vendorName: ?string, isOwn: bool, preSeason: ?bool, harvestApprovedAt: ?Carbon}|null  $location  vùng trồng của lô canh tác gắn với lô nhập (null = lô nhập chưa liên kết lô canh tác)
      * @param  array<int, array{label: string, documents: array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: ?Carbon, expiresAt: ?Carbon, files: array<int, array{url: string, thumb: string, preview: string, isPdf: bool}>}>}>  $documentGroups  hồ sơ doanh nghiệp công khai theo nhóm (tab "Thương hiệu")
      * @param  array<int, array{label: string, result: ?string, at: ?Carbon}>  $qualityChecks  3 khâu QC của doanh nghiệp (result null = chưa ghi nhận)

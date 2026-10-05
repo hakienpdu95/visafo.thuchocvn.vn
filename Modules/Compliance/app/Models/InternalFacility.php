@@ -11,10 +11,14 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Modules\Compliance\Enums\CompanyType;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class InternalFacility extends TenantAwareModel
+/** HasMedia: ảnh chèn qua Jodit trong "Vai trò trong chuỗi cung ứng" (collection jodit_content) gắn vào trụ sở chính. */
+class InternalFacility extends TenantAwareModel implements HasMedia
 {
     use HasCreator;
+    use InteractsWithMedia;
 
     protected $fillable = [
         'name',
@@ -28,6 +32,7 @@ class InternalFacility extends TenantAwareModel
         'tax_code_issue_place',
         'province_code',
         'ward_code',
+        'supply_chain_role',
     ];
 
     protected function casts(): array

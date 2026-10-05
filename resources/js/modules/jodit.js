@@ -147,9 +147,16 @@ const BASE = {
     showCharsCounter:     false,
     showWordsCounter:     false,
     showXPathInStatusbar: false,
+    // Jodit mặc định co toolbar theo bề rộng editor (< 900px → bộ buttonsMD riêng kèm nút "⋮"), bỏ qua
+    // `buttons` của preset — editor trong modal/cột hẹp mất nút. Tắt để luôn dùng đúng preset; màn hẹp thì xuống dòng.
+    toolbarAdaptive:      false,
     spellcheck:           false,
     imageDefaultWidth:    800,
     removeButtons:        ['about', 'classSpan'],
+    // Nút "source" mặc định tải Ace editor + js-beautify từ cdnjs.cloudflare.com — phụ thuộc mạng ngoài
+    // không cần thiết (và dễ bị CSP chặn). 'area' = <textarea> thường.
+    sourceEditor:         'area',
+    beautifyHTML:         false,
     uploader:             BASE_UPLOADER,
     popup: {
         img: [
@@ -250,6 +257,10 @@ function _buildOptions(el, overrides, editorKey) {
     const opts   = { ...BASE, ...preset, ...overrides };
 
     if (el.dataset.joditHeight) opts.height = Number(el.dataset.joditHeight);
+
+    // `popup` lồng theo selector (img, ...) — merge theo key thay vì spread nông, tránh mất popup.img
+    // mặc định (xóa/sửa/căn ảnh) khi trang gọi initJodit(el, { popup: {...} }).
+    opts.popup = { ...BASE.popup, ...preset.popup, ...overrides.popup };
 
     // Context headers cho orphan tracking (data-jodit-context-type, data-jodit-context-id)
     const ctxHeaders = {};
