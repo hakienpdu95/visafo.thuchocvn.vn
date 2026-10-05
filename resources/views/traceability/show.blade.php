@@ -89,12 +89,12 @@
 
         {{-- Tabs: Sản phẩm / Thương hiệu (dính dưới header khi cuộn) --}}
         <nav class="sticky top-[61px] z-20 -mx-4 bg-gray-100/95 px-4 py-3 backdrop-blur">
-            <div role="tablist" aria-label="Nội dung truy xuất" class="grid grid-cols-2 gap-1 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5">
-                @foreach(['product' => ['Sản phẩm', 'box'], 'brand' => ['Thương hiệu', 'shield']] as $tab => [$tabLabel, $tabIcon])
+            <div role="tablist" aria-label="Nội dung truy xuất" class="grid grid-cols-3 gap-1 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5">
+                @foreach(['product' => ['📦', 'Sản phẩm'], 'brand' => ['🏢', 'VISAFO'], 'review' => ['⭐', 'Đánh giá']] as $tab => [$tabEmoji, $tabLabel])
                 <button type="button" role="tab" id="trace-tab-{{ $tab }}" data-trace-tab="{{ $tab }}" aria-controls="trace-panel-{{ $tab }}"
                         aria-selected="{{ $loop->first ? 'true' : 'false' }}" tabindex="{{ $loop->first ? '0' : '-1' }}"
-                        class="flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-semibold uppercase tracking-wide text-gray-500 transition aria-selected:bg-green-600 aria-selected:text-white aria-selected:shadow">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon[$tabIcon] }}"/></svg>
+                        class="flex items-center justify-center gap-1 whitespace-nowrap rounded-full py-2 text-sm font-semibold text-gray-500 transition aria-selected:bg-green-600 aria-selected:text-white aria-selected:shadow">
+                    <span aria-hidden="true">{{ $tabEmoji }}</span>
                     {{ $tabLabel }}
                 </button>
                 @endforeach
@@ -349,6 +349,15 @@
             @include('traceability.partials.brand')
         </div>
 
+        {{-- TAB 3: ĐÁNH GIÁ (chưa có tính năng đánh giá — khung chờ) --}}
+        <div id="trace-panel-review" role="tabpanel" aria-labelledby="trace-tab-review" data-trace-panel="review" class="space-y-4" hidden>
+            <section class="rounded-md bg-white p-6 text-center shadow-sm ring-1 ring-black/5">
+                <p class="text-3xl" aria-hidden="true">⭐</p>
+                <h3 class="mt-2 text-base font-semibold text-gray-900">Đánh giá sản phẩm</h3>
+                <p class="mt-1 text-sm text-gray-500">Tính năng đánh giá đang được hoàn thiện. Cảm ơn bạn đã tin dùng sản phẩm của {{ $trace->brand }}!</p>
+            </section>
+        </div>
+
         <p class="px-2 pt-6 text-center text-xs leading-relaxed text-gray-400">
             Thông tin được truy xuất từ hệ thống {{ $trace->brand }} theo Thông tư 02/2024/TT-BKHCN.<br>
             Mã TXNG chỉ có giá trị cho đúng lần đóng gói in trên tem.
@@ -408,7 +417,8 @@
             }
         });
 
-        // Tabs Sản phẩm / Thương hiệu — nhớ tab qua hash (#thuong-hieu) để chia sẻ link đúng tab
+        // Tabs Sản phẩm / VISAFO / Đánh giá — nhớ tab qua hash (#thuong-hieu, #danh-gia) để chia sẻ link đúng tab
+        const tabHash = { brand: '#thuong-hieu', review: '#danh-gia' };
         const tabs = [...document.querySelectorAll('[data-trace-tab]')];
         const showTab = (name, focus = false) => {
             tabs.forEach((t) => {
@@ -418,7 +428,7 @@
                 if (on && focus) t.focus();
                 document.querySelector(`[data-trace-panel="${t.dataset.traceTab}"]`).hidden = !on;
             });
-            history.replaceState(null, '', name === 'brand' ? '#thuong-hieu' : location.pathname + location.search);
+            history.replaceState(null, '', tabHash[name] ?? location.pathname + location.search);
         };
         tabs.forEach((t, i) => {
             t.addEventListener('click', () => { showTab(t.dataset.traceTab); window.scrollTo({ top: 0 }); });
@@ -427,7 +437,8 @@
                 showTab(tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length].dataset.traceTab, true);
             });
         });
-        if (tabs.length && location.hash === '#thuong-hieu') showTab('brand');
+        const hashTab = Object.keys(tabHash).find((k) => tabHash[k] === location.hash);
+        if (tabs.length && hashTab) showTab(hashTab);
 
         // Lightbox xem ảnh hồ sơ doanh nghiệp
         const box = document.querySelector('[data-trace-lightbox-root]');
