@@ -16,6 +16,9 @@ class UpdateProductBatchData extends Data
         #[Nullable, Date]
         public readonly ?string $exp_date,
 
+        #[Nullable]
+        public readonly ?string $farming_batch_id = null,
+
         /** @var array<int, array{key: string, value: ?string}>|null */
         #[Nullable, ArrayType]
         public readonly ?array $extra_attributes = null,

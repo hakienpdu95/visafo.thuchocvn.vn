@@ -44,6 +44,12 @@ class SalesOrderItem extends TenantAwareModel
         return $this->hasMany(LabelPrintEvent::class, 'order_item_id');
     }
 
+    /** QC trước xuất của dòng hàng này. */
+    public function qualityChecks(): HasMany
+    {
+        return $this->hasMany(\Modules\GoodsReceipt\Models\BatchQualityCheck::class)->orderBy('checked_at');
+    }
+
     /** Alias của order() — template tem dùng $item->salesOrder. */
     public function salesOrder(): BelongsTo
     {

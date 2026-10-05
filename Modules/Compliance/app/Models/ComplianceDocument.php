@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Enums\SharedDocumentCategory;
-use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Models\DocumentMasterType;
 use Spatie\MediaLibrary\HasMedia;
 
@@ -90,8 +89,8 @@ class ComplianceDocument extends Model implements HasMedia
 
     /**
      * Hồ sơ doanh nghiệp (của Trụ sở chính / các cơ sở nội bộ) được phép công bố trên trang truy xuất công khai:
-     * thuộc nhóm "Hồ sơ pháp lý cơ sở", đang hiệu lực, chưa hết hạn, và loại giấy tờ được bật
-     * "Công khai trên trang truy xuất" (is_public — cờ kiểm duyệt, chặn giấy tờ chứa thông tin cá nhân như giấy ủy quyền).
+     * mọi nhóm hồ sơ, đang hiệu lực, chưa hết hạn, và loại giấy tờ được bật "Công khai trên trang truy xuất"
+     * (is_public — cờ kiểm duyệt, chặn sổ sách/hợp đồng/hồ sơ nhân sự và giấy tờ chứa thông tin cá nhân).
      */
     public function scopePublicCompanyProfile(Builder $query): Builder
     {
@@ -99,9 +98,7 @@ class ComplianceDocument extends Model implements HasMedia
             ->where('documentable_type', (new InternalFacility())->getMorphClass())
             ->where('status', ComplianceDocumentStatus::Active->value)
             ->where(fn (Builder $q) => $q->whereNull('expiration_date')->orWhereDate('expiration_date', '>=', today()))
-            ->whereHas('documentType', fn (Builder $q) => $q
-                ->where('document_group', DocumentGroupType::LegalFacility->value)
-                ->where('is_public', true));
+            ->whereHas('documentType', fn (Builder $q) => $q->where('is_public', true));
     }
 
     public function permissionModule(): string

@@ -58,9 +58,30 @@ window.openBatchDateModal = function (row) {
         hint.classList.toggle('hidden', !shelfLifeDays);
     }
 
+    // Lô canh tác nguồn: chỉ hiện khi NCC có lô canh tác cho mặt hàng này (khi đó bắt buộc chọn)
+    const options = row.farming_batch_options ?? [];
+    const farmingWrap = document.getElementById('batchFarmingWrap');
+    const farmingSelect = document.getElementById('batch-farming');
+    farmingWrap.classList.toggle('hidden', options.length === 0);
+    farmingSelect.required = options.length > 0;
+    farmingSelect.disabled = options.length === 0;
+    farmingSelect.replaceChildren(new Option('— Chọn lô canh tác —', ''), ...options.map((o) => new Option(o.text, o.value)));
+    farmingSelect.value = row.farming_batch_id || '';
+
     window.dispatchEvent(new CustomEvent('set-batch-attributes', { detail: row.attributes ?? [] }));
 
     document.getElementById('batchDateModal')?.showModal();
+};
+
+window.openBatchQcModal = function (row) {
+    const form = document.getElementById('batchQcForm');
+    form.action = row.qc_url;
+    form.reset();
+    document.getElementById('batchQcModalCode').textContent = row.batch_code || '';
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('qc-checked-at').value = now.toISOString().slice(0, 16);
+    document.getElementById('batchQcModal')?.showModal();
 };
 
 const COLUMNS = [
@@ -89,15 +110,39 @@ const COLUMNS = [
         formatter: (cell) => cell.getValue() ? esc(fmtDate(cell.getValue())) : EMPTY,
     },
     {
-        title: 'Thao tác', field: 'update_url', width: 90, hozAlign: 'center', headerSort: false, frozen: true,
+        title: 'Lô canh tác', field: 'farming_batch_code', minWidth: 140, headerSort: false,
+        formatter: (cell) => {
+            const d = cell.getRow().getData();
+            if (cell.getValue()) return '<span class="font-mono text-xs">' + esc(cell.getValue()) + '</span>';
+            return (d.farming_batch_options ?? []).length
+                ? '<span class="badge badge-warning badge-sm">Chưa chọn</span>' : EMPTY;
+        },
+    },
+    {
+        title: 'QC', field: 'qc', minWidth: 170, headerSort: false,
+        formatter: (cell) => {
+            const list = cell.getValue() ?? [];
+            if (!list.length) return EMPTY;
+            return '<div class="flex flex-wrap gap-1">' + list.map((q) =>
+                '<span class="badge badge-sm ' + (q.result === 'pass' ? 'badge-success' : 'badge-error') + '" title="' + esc(q.at) + '">' + esc(q.label) + '</span>',
+            ).join('') + '</div>';
+        },
+    },
+    {
+        title: 'Thao tác', field: 'update_url', width: 110, hozAlign: 'center', headerSort: false, frozen: true,
         formatter: (cell) => cell.getValue()
-            ? '<button type="button" class="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-warning" title="Sửa NSX/HSD">'
-                + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'
+            ? '<div class="flex items-center justify-center gap-1">'
+                + '<button type="button" data-action="edit" class="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-warning" title="Sửa lô (NSX/HSD, lô canh tác)">'
+                + '<svg class="w-3.5 h-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'
                 + '</button>'
+                + '<button type="button" data-action="qc" class="btn btn-ghost btn-xs text-base-content/50 hover:text-success" title="Ghi kết quả QC tiếp nhận / cảm quan">QC</button>'
+                + '</div>'
             : '',
-        cellClick(_e, cell) {
+        cellClick(e, cell) {
             const row = cell.getRow().getData();
-            if (row.update_url) window.openBatchDateModal(row);
+            const action = e.target.closest('[data-action]')?.dataset.action;
+            if (action === 'edit' && row.update_url) window.openBatchDateModal(row);
+            if (action === 'qc' && row.qc_url) window.openBatchQcModal(row);
         },
     },
 ];

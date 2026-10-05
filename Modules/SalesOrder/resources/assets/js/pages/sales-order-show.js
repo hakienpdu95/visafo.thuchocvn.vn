@@ -28,13 +28,25 @@ const COLUMNS = [
             ? '<span class="font-mono">' + esc(cell.getValue()) + '</span>' : EMPTY,
     },
     {
-        title: 'Thao tác', field: 'print_url', width: 190, hozAlign: 'center', headerSort: false, frozen: true,
+        title: 'QC trước xuất', field: 'qc', width: 140, hozAlign: 'center', headerSort: false,
+        formatter: (cell) => {
+            const q = cell.getValue();
+            return q
+                ? '<span class="badge badge-sm ' + (q.result === 'pass' ? 'badge-success' : 'badge-error') + '" title="' + esc(q.at) + '">' + esc(q.label) + '</span>'
+                : EMPTY;
+        },
+    },
+    {
+        title: 'Thao tác', field: 'print_url', width: 240, hozAlign: 'center', headerSort: false, frozen: true,
         formatter: (cell) => {
             const d = cell.getRow().getData();
             return '<div class="flex items-center justify-center gap-1">'
                 + (d.print_url
                     ? '<button type="button" data-action="print" data-item-id="' + esc(d.id) + '" class="btn btn-outline btn-primary btn-xs gap-1">'
                         + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>In Tem</button>'
+                    : '')
+                + (d.qc_url
+                    ? '<button type="button" data-action="qc" data-item-id="' + esc(d.id) + '" class="btn btn-ghost btn-xs" title="Ghi QC trước xuất">QC</button>'
                     : '')
                 + '<button type="button" data-action="history" data-item-id="' + esc(d.id) + '" class="btn btn-ghost btn-xs gap-1" title="Lịch sử in / In lại">'
                 + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M3.05 11a9 9 0 11.5 4M3 4v5h5"/></svg>Lịch sử</button>'
@@ -659,6 +671,18 @@ document.addEventListener('alpine:init', () => {
     });
 });
 
+function openItemQcModal(row) {
+    const form = document.getElementById('itemQcForm');
+    if (!form) return;
+    form.action = row.qc_url;
+    form.reset();
+    document.getElementById('itemQcModalName').textContent = row.product_name || row.name || '';
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('iqc-checked-at').value = now.toISOString().slice(0, 16);
+    document.getElementById('itemQcModal').showModal();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById('sales-order-items-table');
     if (!el || !window.initTabulator) return;
@@ -674,6 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         e.stopPropagation();
         if (btn.dataset.action === 'print' && row.print_url) window.dispatchEvent(new CustomEvent('open-print-label', { detail: row }));
+        if (btn.dataset.action === 'qc' && row.qc_url) openItemQcModal(row);
         if (btn.dataset.action === 'history') window.dispatchEvent(new CustomEvent('open-print-history', { detail: row }));
     });
 

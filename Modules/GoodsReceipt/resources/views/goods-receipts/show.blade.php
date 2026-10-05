@@ -4,7 +4,7 @@
 @section('content')
 @php
     $batchesByProduct = $goodsReceipt->batches->keyBy('product_id');
-    $itemRows = $goodsReceipt->items->map(function ($item) use ($batchesByProduct) {
+    $itemRows = $goodsReceipt->items->map(function ($item) use ($batchesByProduct, $farmingBatchOptions) {
         $batch = $batchesByProduct->get($item->product_id);
         $canEdit = $batch && auth()->user()->can('update', $batch);
 
@@ -20,6 +20,14 @@
             'shelf_life_days' => $item->product?->shelf_life_days,
             'attributes' => $batch?->extraAttributes->map(fn ($a) => ['key' => $a->attribute_key, 'value' => (string) $a->attribute_value])->values() ?? [],
             'update_url' => $canEdit ? route('backend.product-batches.update', $batch) : null,
+            'farming_batch_id'      => $batch?->farming_batch_id,
+            'farming_batch_code'    => $batch?->farmingBatch?->batch_code,
+            'farming_batch_options' => $farmingBatchOptions->get($item->product_id, []),
+            // Kết quả QC mới nhất của mỗi khâu (tiếp nhận / cảm quan)
+            'qc' => $batch?->qualityChecks->groupBy(fn ($c) => $c->stage->value)
+                ->map(fn ($checks) => ['result' => $checks->last()->result->value, 'label' => $checks->last()->stage->label() . ': ' . $checks->last()->result->label(), 'at' => $checks->last()->checked_at->format('d/m/Y H:i')])
+                ->values() ?? [],
+            'qc_url' => $canEdit ? route('backend.product-batches.quality-checks.store', $batch) : null,
         ];
     })->values();
 @endphp
@@ -33,6 +41,9 @@
 
 @if(session('success'))
 <div class="alert alert-success py-2.5 px-4 mb-5 text-sm">{{ session('success') }}</div>
+@endif
+@if($errors->any())
+<div class="alert alert-error py-2.5 px-4 mb-5 text-sm">{{ $errors->first() }}</div>
 @endif
 
 <div class="flex flex-col gap-6">
@@ -109,6 +120,12 @@
                 </div>
             </div>
 
+            <div id="batchFarmingWrap" class="form-control mt-4 hidden">
+                <label class="label py-0.5" for="batch-farming"><span class="label-text text-xs font-medium">Lô canh tác nguồn <span class="text-error">*</span></span></label>
+                <select id="batch-farming" name="farming_batch_id" class="select select-bordered select-sm w-full"></select>
+                <p class="mt-1 text-xs text-base-content/40">Trang truy xuất lấy vùng trồng, nhật ký canh tác và ngày thu hoạch theo đúng lô này.</p>
+            </div>
+
             <div class="divider my-4 text-xs text-base-content/30">Thông tin in bổ sung</div>
 
             <div x-data="batchAttributeEditor()" @set-batch-attributes.window="setRows($event.detail)" class="space-y-2" x-cloak>
@@ -133,6 +150,50 @@
             <div class="modal-action mt-6">
                 <button type="submit" class="btn btn-primary btn-sm">Lưu</button>
                 <button type="button" class="btn btn-ghost btn-sm" onclick="batchDateModal.close()">Hủy</button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+<dialog id="batchQcModal" class="modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg">Ghi kết quả QC</h3>
+        <p class="text-sm text-base-content/60 mt-1">Lô <strong id="batchQcModalCode" class="font-mono text-base-content"></strong></p>
+
+        <form id="batchQcForm" method="POST" class="mt-4 space-y-4">
+            @csrf
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="form-control">
+                    <label class="label py-0.5" for="qc-stage"><span class="label-text text-xs font-medium">Khâu kiểm tra</span></label>
+                    <select id="qc-stage" name="stage" required class="select select-bordered select-sm w-full">
+                        @foreach(\Modules\GoodsReceipt\Enums\QualityCheckStage::batchStages() as $stage)
+                        <option value="{{ $stage->value }}">{{ $stage->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label py-0.5" for="qc-checked-at"><span class="label-text text-xs font-medium">Thời điểm kiểm tra</span></label>
+                    <input id="qc-checked-at" name="checked_at" type="datetime-local" class="input input-sm input-bordered w-full">
+                </div>
+            </div>
+            <div class="form-control">
+                <span class="label-text text-xs font-medium mb-1">Kết quả</span>
+                <div class="flex gap-4">
+                    @foreach(\Modules\GoodsReceipt\Enums\QualityCheckResult::cases() as $result)
+                    <label class="label cursor-pointer gap-2 py-0">
+                        <input type="radio" name="result" value="{{ $result->value }}" class="radio radio-sm {{ $result === \Modules\GoodsReceipt\Enums\QualityCheckResult::Pass ? 'radio-success' : 'radio-error' }}" @checked($loop->first) required>
+                        <span class="label-text text-sm">{{ $result->label() }}</span>
+                    </label>
+                    @endforeach
+                </div>
+            </div>
+            <div class="form-control">
+                <label class="label py-0.5" for="qc-note"><span class="label-text text-xs font-medium">Ghi chú (nội bộ, không công khai)</span></label>
+                <textarea id="qc-note" name="note" maxlength="500" rows="2" class="textarea textarea-bordered textarea-sm w-full"></textarea>
+            </div>
+            <div class="modal-action mt-6">
+                <button type="submit" class="btn btn-primary btn-sm">Lưu</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="batchQcModal.close()">Hủy</button>
             </div>
         </form>
     </div>

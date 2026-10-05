@@ -4,9 +4,11 @@ namespace Modules\GoodsReceipt\Models;
 
 use App\Traits\HasCreator;
 use App\Foundation\Models\TenantAwareModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\Product;
 
 class ProductBatch extends TenantAwareModel
@@ -17,6 +19,7 @@ class ProductBatch extends TenantAwareModel
         'batch_code',
         'product_id',
         'goods_receipt_id',
+        'farming_batch_id',
         'initial_qty',
         'current_qty',
         'mfg_date',
@@ -56,6 +59,34 @@ class ProductBatch extends TenantAwareModel
     public function goodsReceipt(): BelongsTo
     {
         return $this->belongsTo(GoodsReceipt::class);
+    }
+
+    /** Lô canh tác nguồn — chọn ở phiếu nhập kho; trang truy xuất chỉ đi theo khóa này. */
+    public function farmingBatch(): BelongsTo
+    {
+        return $this->belongsTo(FarmingBatch::class);
+    }
+
+    /**
+     * Lô canh tác hợp lệ để gắn: cùng NCC của phiếu nhập, mặt hàng NCC trỏ đúng sản phẩm này, chưa hủy.
+     *
+     * @param  string[]  $productIds
+     * @return Builder<FarmingBatch>
+     */
+    public static function farmingBatchCandidates(?string $vendorId, array $productIds): Builder
+    {
+        return FarmingBatch::query()
+            ->where('vendor_id', $vendorId ?? '')
+            ->where('status', '!=', 'cancelled')
+            ->whereHas('partnerProduct', fn (Builder $q) => $q->whereIn('product_id', $productIds))
+            ->with(['partnerProduct:id,product_id', 'farmingSource:id,source_code,name'])
+            ->orderByDesc('actual_harvest_date')
+            ->orderByDesc('created_at');
+    }
+
+    public function qualityChecks(): HasMany
+    {
+        return $this->hasMany(BatchQualityCheck::class)->orderBy('checked_at');
     }
 
     public function permissionModule(): string

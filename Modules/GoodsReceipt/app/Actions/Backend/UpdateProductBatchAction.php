@@ -19,6 +19,7 @@ class UpdateProductBatchAction
         $productBatch->update([
             'mfg_date' => $data->mfg_date,
             'exp_date' => $expDate,
+            'farming_batch_id' => $data->farming_batch_id,
         ]);
 
         // Thay toàn bộ thông tin bổ sung của lô bằng danh sách vừa gửi lên (xóa thật, không xóa mềm,

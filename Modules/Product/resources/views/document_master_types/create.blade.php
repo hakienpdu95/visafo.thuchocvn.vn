@@ -101,9 +101,9 @@
                     </label>
 
                     <label class="flex items-start gap-2.5 cursor-pointer select-none group">
-                        <input type="checkbox" name="is_public" value="1"
+                        <input type="checkbox" name="is_public" value="1" data-public-default
                                class="checkbox checkbox-sm checkbox-primary mt-0.5 shrink-0"
-                               @checked(old('_token') ? old('is_public') : true)>
+                               @checked(old('_token') ? old('is_public') : old('document_group', 'legal_facility') === 'legal_facility')>
                         <div>
                             <span class="text-sm font-medium group-hover:text-primary transition-colors">Công khai trên trang truy xuất</span>
                             <p class="text-xs text-base-content/50 mt-0.5">Hồ sơ doanh nghiệp loại này (đang hiệu lực) hiện ở tab "Thương hiệu" khi khách quét QR. Không bật cho giấy tờ chứa thông tin cá nhân/nội bộ.</p>
@@ -144,4 +144,19 @@
         'resources/js/modules/tom-select.js',
         'Modules/Product/resources/assets/js/product.js',
     ], 'build/backend')
+@endpush
+
+@push('scripts')
+<script>
+    // Mặc định "Công khai trên trang truy xuất" theo nhóm: bật cho Pháp lý cơ sở, tắt cho nhóm khác (nhân sự, sổ sách,
+    // thương mại… dễ chứa dữ liệu nội bộ) — chỉ tự đổi khi người dùng chưa tự tick/bỏ tick.
+    document.addEventListener('DOMContentLoaded', () => {
+        const group = document.getElementById('ts-document_group');
+        const box = document.querySelector('[data-public-default]');
+        if (!group || !box) return;
+        let touched = false;
+        box.addEventListener('change', () => { touched = true; });
+        group.addEventListener('change', () => { if (!touched) box.checked = group.value === 'legal_facility'; });
+    });
+</script>
 @endpush

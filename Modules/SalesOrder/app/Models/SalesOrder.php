@@ -13,12 +13,16 @@ class SalesOrder extends TenantAwareModel
     use HasCreator;
 
     public const STATUS_PENDING = 'pending';
+    public const STATUS_SHIPPING = 'shipping';
+    public const STATUS_DELIVERED = 'delivered';
 
     /** @return array<string, string> */
     public static function statusLabels(): array
     {
         return [
-            self::STATUS_PENDING => 'Chờ xử lý',
+            self::STATUS_PENDING   => 'Chờ xử lý',
+            self::STATUS_SHIPPING  => 'Đã xuất kho',
+            self::STATUS_DELIVERED => 'Đã giao',
         ];
     }
 
@@ -27,6 +31,9 @@ class SalesOrder extends TenantAwareModel
         'customer_name',
         'delivery_address',
         'delivery_date',
+        'delivery_code',
+        'shipped_at',
+        'delivered_at',
         'status',
         'source_file_name',
         'imported_by',
@@ -36,6 +43,8 @@ class SalesOrder extends TenantAwareModel
     {
         return [
             'delivery_date' => 'date',
+            'shipped_at'    => 'datetime',
+            'delivered_at'  => 'datetime',
         ];
     }
 

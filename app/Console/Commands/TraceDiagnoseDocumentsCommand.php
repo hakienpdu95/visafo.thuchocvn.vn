@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Compliance\Models\InternalFacility;
-use Modules\Product\Enums\DocumentGroupType;
 use Modules\SalesOrder\Queries\GetTraceabilityHandler;
 
 /**
@@ -64,7 +63,6 @@ class TraceDiagnoseDocumentsCommand extends Command
             $shown = $files->filter(fn (Media $m) => in_array($m->mime_type, GetTraceabilityHandler::PUBLIC_DOCUMENT_MIMES, true));
 
             $reasons = array_filter([
-                $type?->document_group !== DocumentGroupType::LegalFacility ? 'không thuộc nhóm Pháp lý cơ sở' : null,
                 $type && ! $type->is_public ? 'loại giấy tờ chưa bật "Công khai trên trang truy xuất"' : null,
                 $doc->status !== ComplianceDocumentStatus::Active ? 'trạng thái ' . $doc->status->label() : null,
                 $doc->isExpired() ? 'đã hết hạn ' . $doc->expiration_date->format('d/m/Y') : null,

@@ -6,10 +6,15 @@ use App\Models\Media;
 use App\Shared\Contracts\QueryHandlerInterface;
 use App\Shared\Contracts\QueryInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Compliance\Models\InternalFacility;
+use Modules\GoodsReceipt\Enums\QualityCheckStage;
+use Modules\GoodsReceipt\Models\BatchQualityCheck;
 use Modules\GoodsReceipt\Models\ProductBatch;
+use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingLog;
@@ -18,6 +23,7 @@ use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
+use Modules\SalesOrder\Models\SalesOrder;
 use Modules\SalesOrder\Models\SalesOrderItem;
 use Modules\SalesOrder\Support\TraceabilityData;
 use Modules\Vendor\Models\Vendor;
@@ -61,6 +67,9 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ->with([
                 'orderItem.product.category', 'orderItem.product.media', 'orderItem.salesOrder', 'attributes',
                 'vendor.province', 'vendor.ward', 'productBatch.goodsReceipt.vendor.province', 'productBatch.goodsReceipt.vendor.ward',
+                'productBatch.qualityChecks', 'orderItem.qualityChecks',
+                'productBatch.farmingBatch.farmingSource',
+                'productBatch.farmingBatch.logs.vendorFarmingStep', 'productBatch.farmingBatch.logs.agriFertilizer', 'productBatch.farmingBatch.logs.agriPesticide',
             ])
             ->first();
 
@@ -82,13 +91,18 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         }
 
         $company = $this->company();
-        $farmingBatch = ($vendor && $product) ? $this->farmingBatch($log, $vendor, $product) : null;
+        // Lô canh tác chỉ lấy theo khóa product_batches.farming_batch_id của lô đã chọn khi in — không đoán theo mã lô / ngày
+        // (đoán sai khi một NCC có nhiều vụ chồng nhau), cũng không đi qua lô nhập đoán ở guessBatch().
+        $farmingBatch = $log->productBatch?->farmingBatch;
         $source = $farmingBatch?->farmingSource;
+        $isOwnFarm = $vendor !== null && $this->isOwnVendor($vendor, $company);
+        $qualityChecks = $this->qualityChecks($log->productBatch?->qualityChecks ?? collect(), $item->qualityChecks);
 
         // Ảnh chính đã ở đầu nhờ order_column; chưa upload ảnh thì dùng image_url (Sapo)
         $productImages = $product?->galleryImages()->pluck('url')->all() ?: array_filter([$product?->image_url]);
 
-        $supplierText = $vendor?->name ?: ($receipt?->supplier_name ?: $log->supplier_name);
+        // Vendor đại diện vùng trồng tự quản của VISAFO → không coi là nguồn cung bên ngoài
+        $supplierText = $isOwnFarm ? null : ($vendor?->name ?: ($receipt?->supplier_name ?: $log->supplier_name));
         $batchCode = $log->batch_code ?: ($batch?->batch_code ?: $farmingBatch?->batch_code);
 
         $productName = $product?->name ?? $item->product_name_raw ?? '—';
@@ -110,19 +124,23 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 ->values()->all(),
             company: $company,
             producer: [
-                // Không có NCC → chính doanh nghiệp là đơn vị sản xuất / kinh doanh
-                'name'     => $supplierText ?: $company['name'],
-                'address'  => $vendor ? $this->vendorAddress($vendor) : ($supplierText ? null : ($company['address'] ?: null)),
-                'taxCode'  => $vendor?->tax_code ?: null,
-                'isVendor' => (bool) $supplierText,
+                // Không có NCC / vùng trồng tự quản → chính doanh nghiệp là đơn vị sản xuất / kinh doanh
+                'name'      => $supplierText ?: $company['name'],
+                'address'   => ($vendor && ! $isOwnFarm) ? $this->vendorAddress($vendor) : ($supplierText ? null : ($company['address'] ?: null)),
+                'taxCode'   => $isOwnFarm ? ($company['taxCode'] ?: null) : ($vendor?->tax_code ?: null),
+                'isVendor'  => (bool) $supplierText,
+                'isOwnFarm' => $isOwnFarm,
             ],
             location: $source ? [
-                'code'    => $source->source_code,
-                'name'    => $source->name,
-                'address' => $source->address,
+                'code'        => $source->source_code,
+                'name'        => $source->name,
+                'address'     => $source->address,
+                'area'        => $source->area_hectare !== null ? (float) $source->area_hectare : null,
+                'waterSource' => $source->water_source ?: null,
+                'harvestedAt' => $farmingBatch->actual_harvest_date,
             ] : null,
             batchCode: $batchCode,
-            timeline: $this->timeline($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $supplierText, $batchCode, $order),
+            timeline: $this->timeline($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $supplierText, $batchCode, $order, $qualityChecks, $company['name']),
             standards: $this->standards($product, $vendor),
             status: $log->status,
             statusReason: $log->status_reason,
@@ -132,7 +150,9 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ] : null,
             relatedProducts: $this->relatedProducts($item, $vendor, $supplierText, $product),
             brandStory: trim((string) config('trace.brand_story')),
-            companyDocuments: $this->companyDocuments($log->trace_code),
+            documentGroups: $this->documentGroups($log->trace_code),
+            qualityChecks: $this->qualityCheckRows($farmingBatch, $qualityChecks),
+            delivery: $this->delivery($order),
         );
     }
 
@@ -181,35 +201,43 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     }
 
     /**
-     * Hồ sơ doanh nghiệp công khai cho tab "Thương hiệu". Chỉ phát tệp ảnh/PDF; file nằm ở disk private nên
-     * phát qua route trace.document (kiểm tra lại whitelist mỗi lần tải), không lộ URL lưu trữ.
+     * Hồ sơ doanh nghiệp công khai cho tab "Thương hiệu", gom theo nhóm hồ sơ (thứ tự như các tab ở internal-compliance);
+     * nhóm không có hồ sơ công khai nào bị bỏ. Chỉ phát tệp ảnh/PDF; file nằm ở disk private nên phát qua route
+     * trace.document (kiểm tra lại whitelist mỗi lần tải), không lộ URL lưu trữ.
      *
-     * @return array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: mixed, expiresAt: mixed, files: array<int, array{url: string, thumb: string, preview: string, isPdf: bool}>}>
+     * @return array<int, array{label: string, documents: array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: mixed, expiresAt: mixed, files: array<int, array{url: string, thumb: string, preview: string, isPdf: bool}>}>}>
      */
-    private function companyDocuments(string $traceCode): array
+    private function documentGroups(string $traceCode): array
     {
-        return ComplianceDocument::query()
+        $byGroup = ComplianceDocument::query()
             ->publicCompanyProfile()
             ->with(['documentType', 'media'])
             ->orderBy('issue_date')
             ->get()
-            ->map(fn (ComplianceDocument $doc) => [
-                'name'      => $doc->custom_name ?: ($doc->documentType?->name ?? 'Hồ sơ doanh nghiệp'),
-                'number'    => $doc->document_number ?: null,
-                'issuedBy'  => $doc->issued_by ?: null,
-                'issuedAt'  => $doc->issue_date,
-                'expiresAt' => $doc->expiration_date,
-                'files'     => $doc->getMedia('attachments_private')
-                    ->filter(fn (Media $m) => in_array($m->mime_type, self::PUBLIC_DOCUMENT_MIMES, true))
-                    ->map(fn (Media $m) => [
-                        'url'     => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id]),
-                        'thumb'   => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id, 'variant' => 'thumb']),
-                        'preview' => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id, 'variant' => 'preview']),
-                        'isPdf'   => $m->mime_type === 'application/pdf',
-                    ])
-                    ->values()->all(),
+            ->groupBy(fn (ComplianceDocument $doc) => $doc->documentType?->document_group?->value);
+
+        return collect(DocumentGroupType::cases())
+            ->filter(fn (DocumentGroupType $group) => $byGroup->has($group->value))
+            ->map(fn (DocumentGroupType $group) => [
+                'label'     => $group->label(),
+                'documents' => $byGroup[$group->value]->map(fn (ComplianceDocument $doc) => [
+                    'name'      => $doc->custom_name ?: ($doc->documentType?->name ?? 'Hồ sơ doanh nghiệp'),
+                    'number'    => $doc->document_number ?: null,
+                    'issuedBy'  => $doc->issued_by ?: null,
+                    'issuedAt'  => $doc->issue_date,
+                    'expiresAt' => $doc->expiration_date,
+                    'files'     => $doc->getMedia('attachments_private')
+                        ->filter(fn (Media $m) => in_array($m->mime_type, self::PUBLIC_DOCUMENT_MIMES, true))
+                        ->map(fn (Media $m) => [
+                            'url'     => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id]),
+                            'thumb'   => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id, 'variant' => 'thumb']),
+                            'preview' => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id, 'variant' => 'preview']),
+                            'isPdf'   => $m->mime_type === 'application/pdf',
+                        ])
+                        ->values()->all(),
+                ])->values()->all(),
             ])
-            ->values()  // hồ sơ chưa có bản scan (ảnh/PDF) vẫn hiện tên, số hiệu, hiệu lực
+            ->values()
             ->all();
     }
 
@@ -241,35 +269,107 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     }
 
     /**
-     * Lô canh tác (nhật ký đồng ruộng) của NCC cho sản phẩm này: khớp đúng mã lô nếu có,
-     * không thì lấy lô đã thu hoạch gần nhất trước thời điểm in tem.
+     * QC nội bộ của VISAFO: kết quả mới nhất của mỗi khâu (tiếp nhận/cảm quan theo lô nhập, trước xuất theo dòng đơn).
+     *
+     * @return Collection<string, BatchQualityCheck> key = stage
      */
-    private function farmingBatch(PrintLog $log, Vendor $vendor, Product $product): ?FarmingBatch
+    private function qualityChecks(Collection $batchChecks, Collection $itemChecks): Collection
     {
-        $base = FarmingBatch::query()
-            ->where('vendor_id', $vendor->id)
-            ->whereHas('partnerProduct', fn (Builder $q) => $q->where('product_id', $product->id))
-            ->with(['farmingSource', 'logs.vendorFarmingStep', 'logs.agriFertilizer', 'logs.agriPesticide']);
-
-        if ($log->batch_code && ($exact = (clone $base)->where('batch_code', $log->batch_code)->first())) {
-            return $exact;
-        }
-
-        return (clone $base)
-            ->whereNotNull('actual_harvest_date')
-            ->whereDate('actual_harvest_date', '<=', $log->created_at)
-            ->latest('actual_harvest_date')
-            ->first();
+        return $batchChecks->filter(fn (BatchQualityCheck $c) => $c->stage->isBatchStage())
+            ->merge($itemChecks->filter(fn (BatchQualityCheck $c) => $c->stage === QualityCheckStage::PreDispatch))
+            ->sortBy('checked_at')
+            ->keyBy(fn (BatchQualityCheck $c) => $c->stage->value);
     }
 
-    /** @return array<int, array{icon: string, title: string, description: string, at: mixed, done: bool}> */
-    private function timeline(PrintLog $log, ?FarmingBatch $farmingBatch, $receivedAt, ?string $supplier, ?string $batchCode, $order): array
+    /**
+     * Khối "Kiểm soát chất lượng": QC phía nông hộ (nếu có lô canh tác) + 3 khâu của VISAFO (chưa ghi → result null).
+     * Chỉ công khai khâu, kết quả, thời điểm — không có ghi chú/người kiểm.
+     *
+     * @return array<int, array{label: string, owner: string, result: ?string, at: mixed}>
+     */
+    private function qualityCheckRows(?FarmingBatch $farmingBatch, Collection $checks): array
     {
-        $steps = [];
+        $rows = [];
+        $source = $farmingBatch?->farmingSource;
+
+        if ($source?->pre_season_checked_at && in_array($source->status, ['passed', 'failed'], true)) {
+            $rows[] = ['label' => 'Kiểm tra vùng trồng trước vụ', 'owner' => 'Vùng trồng', 'result' => $source->status === 'passed' ? 'pass' : 'fail', 'at' => $source->pre_season_checked_at];
+        }
+        if ($farmingBatch?->pre_harvest_checked_at && $farmingBatch->pre_harvest_status === 'passed') {
+            $rows[] = ['label' => 'Phê duyệt thu hoạch (hết cách ly BVTV)', 'owner' => 'Vùng trồng', 'result' => 'pass', 'at' => $farmingBatch->pre_harvest_checked_at];
+        }
+
+        foreach (QualityCheckStage::cases() as $stage) {
+            $check = $checks->get($stage->value);
+            $rows[] = ['label' => $stage->label(), 'owner' => 'VISAFO', 'result' => $check?->result->value, 'at' => $check?->checked_at];
+        }
+
+        return $rows;
+    }
+
+    /** @return array{code: string, shippedAt: mixed, deliveredAt: mixed, recipient: ?string}|null */
+    private function delivery(?SalesOrder $order): ?array
+    {
+        if ($order?->shipped_at === null) {
+            return null;
+        }
+
+        return [
+            'code'        => (string) $order->delivery_code,
+            'shippedAt'   => $order->shipped_at,
+            'deliveredAt' => $order->delivered_at,
+            'recipient'   => $this->maskName($order->customer_name),
+        ];
+    }
+
+    /** Che tên khách hàng trên trang công khai: giữ từ đầu, các từ sau chỉ giữ chữ cái đầu. VD "Trường MN Hoa Sen" → "Trường M*** H*** S***". */
+    private function maskName(?string $name): ?string
+    {
+        // Bỏ dấu câu rời ("-", ","); từ có chữ số (số nhà, SĐT) che toàn bộ
+        $words = array_values(array_filter(
+            preg_split('/\s+/u', trim((string) $name), -1, PREG_SPLIT_NO_EMPTY),
+            fn (string $w) => preg_match('/[\p{L}\p{N}]/u', $w),
+        ));
+        if (! $words) {
+            return null;
+        }
+
+        return implode(' ', array_map(
+            fn (string $w, int $i) => match (true) {
+                (bool) preg_match('/\p{N}/u', $w) => '***',
+                $i === 0                         => $w,
+                default                          => mb_substr($w, 0, 1) . '***',
+            },
+            $words, array_keys($words),
+        ));
+    }
+
+    /** Vendor đại diện vùng trồng tự quản: khai báo ID ở TRACE_OWN_VENDOR_IDS, hoặc trùng MST với hồ sơ trụ sở chính. */
+    private function isOwnVendor(Vendor $vendor, array $company): bool
+    {
+        return in_array($vendor->id, (array) config('trace.own_vendor_ids', []), true)
+            || ($company['taxCode'] !== '' && $vendor->tax_code !== null && trim($vendor->tax_code) === $company['taxCode']);
+    }
+
+    /** @return array<int, array{icon: string, title: string, description: string, at: mixed, done: bool, image?: ?string}> */
+    private function timeline(PrintLog $log, ?FarmingBatch $farmingBatch, $receivedAt, ?string $supplier, ?string $batchCode, ?SalesOrder $order, Collection $checks, string $companyName): array
+    {
+        $farmSteps = [];
 
         if ($farmingBatch !== null) {
             $source = $farmingBatch->farmingSource;
-            $steps[] = [
+
+            if ($source?->pre_season_checked_at && in_array($source->status, ['passed', 'failed'], true)) {
+                $farmSteps[] = [
+                    'icon'        => 'shield',
+                    'title'       => 'Kiểm tra vùng trồng trước vụ',
+                    'description' => ($source->status === 'passed' ? 'Đạt' : 'Không đạt') . ' — vùng trồng ' . $source->name . '.',
+                    'at'          => $source->pre_season_checked_at,
+                    'done'        => $source->status === 'passed',
+                ];
+            }
+
+            $farmSteps[] = [
                 'icon'        => 'seed',
                 'title'       => 'Gieo trồng',
                 'description' => 'Lô canh tác ' . $farmingBatch->batch_code . ($source ? ' tại vùng trồng ' . $source->name : '') . '.',
@@ -278,20 +378,31 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ];
 
             $hasHarvestLog = false;
-            foreach ($farmingBatch->logs->sortBy('activity_date') as $farmingLog) {
+            foreach ($farmingBatch->logs as $farmingLog) {
                 $hasHarvestLog = $hasHarvestLog || $farmingLog->activity_type === 'harvest';
-                $steps[] = [
+                $farmSteps[] = [
                     'icon'        => $farmingLog->activity_type === 'harvest' ? 'harvest' : 'farm',
                     'title'       => $farmingLog->vendorFarmingStep?->step_name
                         ?? self::ACTIVITY_LABELS[$farmingLog->activity_type] ?? 'Chăm sóc',
                     'description' => $this->farmingLogDetail($farmingLog),
                     'at'          => $farmingLog->activity_date,
                     'done'        => true,
+                    'image'       => $farmingLog->image_path ? Storage::disk('public')->url($farmingLog->image_path) : null,
+                ];
+            }
+
+            if ($farmingBatch->pre_harvest_checked_at && $farmingBatch->pre_harvest_status === 'passed') {
+                $farmSteps[] = [
+                    'icon'        => 'shield',
+                    'title'       => 'Phê duyệt thu hoạch',
+                    'description' => 'QC xác nhận đã hết thời gian cách ly thuốc BVTV, đủ điều kiện thu hoạch.',
+                    'at'          => $farmingBatch->pre_harvest_checked_at,
+                    'done'        => true,
                 ];
             }
 
             if (! $hasHarvestLog && $farmingBatch->actual_harvest_date) {
-                $steps[] = [
+                $farmSteps[] = [
                     'icon'        => 'harvest',
                     'title'       => 'Thu hoạch',
                     'description' => 'Thu hoạch lô ' . $farmingBatch->batch_code . '.',
@@ -299,33 +410,61 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                     'done'        => true,
                 ];
             }
+
+            // Xếp theo thời gian (bước chưa có ngày đứng đầu, giữ thứ tự khai báo khi trùng)
+            $farmSteps = collect($farmSteps)->sortBy(fn ($st) => $st['at']?->getTimestamp() ?? PHP_INT_MIN)->values()->all();
         }
 
-        $orderShipped = $order !== null && $order->status !== 'pending';
-
-        $steps[] = [
-            'icon'        => 'warehouse',
-            'title'       => 'Tiếp nhận nguyên liệu / Nhập kho',
-            'description' => $batchCode
-                ? 'Lô ' . $batchCode . ' nhập kho' . ($supplier ? ' từ ' . $supplier : '') . '.'
-                : ($supplier ? 'Tiếp nhận hàng từ ' . $supplier . '.' : 'Đang cập nhật thông tin lô hàng.'),
-            'at'          => $receivedAt,
-            'done'        => $receivedAt !== null || $batchCode !== null,
-        ];
-        $steps[] = [
-            'icon'        => 'package',
-            'title'       => 'Sơ chế / Đóng gói / Kiểm định chất lượng',
-            'description' => 'Đóng gói và gắn mã truy xuất ' . strtoupper($log->trace_code) . '.',
-            'at'          => $log->created_at,
+        $qcStep = fn (QualityCheckStage $stage, string $icon) => ($check = $checks->get($stage->value)) ? [[
+            'icon'        => $icon,
+            'title'       => $stage->label(),
+            'description' => $check->result->label() . ' — ' . $companyName . ' kiểm soát.',
+            'at'          => $check->checked_at,
             'done'        => true,
+        ]] : [];
+
+        $steps = [
+            ...$farmSteps,
+            [
+                'icon'        => 'warehouse',
+                'title'       => 'Tiếp nhận nguyên liệu / Nhập kho',
+                'description' => $batchCode
+                    ? 'Lô ' . $batchCode . ' nhập kho' . ($supplier ? ' từ ' . $supplier : '') . '.'
+                    : ($supplier ? 'Tiếp nhận hàng từ ' . $supplier . '.' : 'Đang cập nhật thông tin lô hàng.'),
+                'at'          => $receivedAt,
+                'done'        => $receivedAt !== null || $batchCode !== null,
+            ],
+            ...$qcStep(QualityCheckStage::Receiving, 'shield'),
+            ...$qcStep(QualityCheckStage::Sensory, 'shield'),
+            [
+                'icon'        => 'package',
+                'title'       => 'Sơ chế / Đóng gói',
+                'description' => 'Đóng gói và gắn mã truy xuất ' . strtoupper($log->trace_code) . '.',
+                'at'          => $log->created_at,
+                'done'        => true,
+            ],
+            ...$qcStep(QualityCheckStage::PreDispatch, 'shield'),
+            [
+                'icon'        => 'truck',
+                'title'       => 'Xuất kho / Vận chuyển',
+                'description' => $order?->shipped_at
+                    ? 'Đã xuất kho' . ($order->delivery_code ? ', vận đơn ' . $order->delivery_code : '') . '.'
+                    : 'Đã lập lệnh xuất kho, chờ giao hàng.',
+                'at'          => $order?->shipped_at,
+                'done'        => $order?->shipped_at !== null,
+            ],
         ];
-        $steps[] = [
-            'icon'        => 'truck',
-            'title'       => 'Vận chuyển / Giao hàng',
-            'description' => $orderShipped ? 'Đã xuất kho giao đến khách hàng.' : 'Đã lập lệnh xuất kho, chờ giao hàng.',
-            'at'          => $orderShipped ? $order->updated_at : null,
-            'done'        => $orderShipped,
-        ];
+
+        if ($order?->shipped_at !== null) {
+            $recipient = $this->maskName($order->customer_name);
+            $steps[] = [
+                'icon'        => 'pin',
+                'title'       => 'Giao hàng thành công',
+                'description' => $order->delivered_at ? 'Đã giao đến ' . ($recipient ?? 'khách hàng') . '.' : 'Đang giao hàng.',
+                'at'          => $order->delivered_at,
+                'done'        => $order->delivered_at !== null,
+            ];
+        }
 
         return $steps;
     }
@@ -400,7 +539,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ->all();
     }
 
-    /** @return array{name: string, address: string, hotline: string} */
+    /** @return array{name: string, address: string, hotline: string, taxCode: string} */
     private function company(): array
     {
         $hq = InternalFacility::query()->where('type', 'headquarter')->with(['province', 'ward'])->first();
@@ -410,6 +549,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             'name'    => $hq?->company_name ?: ((string) config('trace.company_legal_name') ?: (string) config('trace.company_name', 'VISAFO')),
             'address' => $hq?->fullAddress() ?: config('trace.company_address', ''),
             'hotline' => (string) config('trace.company_hotline', ''),
+            'taxCode' => trim((string) $hq?->tax_code),
         ];
     }
 }

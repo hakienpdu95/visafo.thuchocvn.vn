@@ -30,6 +30,7 @@
         'harvest'   => 'M5 13l4 4L19 7M4 21h16',
         'warehouse' => 'M3 21V8l9-5 9 5v13M7 21v-8h10v8M7 17h10',
         'package'   => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+        'water'     => 'M12 3c-3 4.5-6 7.6-6 11a6 6 0 0012 0c0-3.4-3-6.5-6-11z',
         'truck'     => 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0',
     ];
 @endphp
@@ -192,12 +193,22 @@
                 <span class="h-4 w-1 rounded bg-green-600"></span> Đơn vị sản xuất, kinh doanh
             </h3>
             <ul class="divide-y divide-gray-100">
-                @include('traceability.partials.row', ['ic' => 'factory', 'label' => $trace->producer['isVendor'] ? 'Đơn vị sản xuất / Nguồn cung' : 'Đơn vị sản xuất, kinh doanh',
+                @include('traceability.partials.row', ['ic' => 'factory', 'label' => $trace->producer['isOwnFarm'] ? 'Vùng trồng của ' . $trace->brand . ' (tự sản xuất)' : ($trace->producer['isVendor'] ? 'Đơn vị sản xuất / Nguồn cung' : 'Đơn vị sản xuất, kinh doanh'),
                     'value' => $trace->producer['name'], 'sub' => $trace->producer['taxCode'] ? 'MST: ' . $trace->producer['taxCode'] : null])
                 @include('traceability.partials.row', ['ic' => 'pin', 'label' => 'Địa chỉ', 'value' => $trace->producer['address']])
                 @include('traceability.partials.row', ['ic' => 'map', 'label' => 'Mã truy vết địa điểm (vùng trồng)',
                     'value' => $trace->location['code'] ?? null, 'mono' => true,
                     'sub' => $trace->location ? implode(' · ', array_filter([$trace->location['name'], $trace->location['address']])) : null])
+                @if($trace->location)
+                @if($trace->location['area'] !== null || $trace->location['waterSource'])
+                @include('traceability.partials.row', ['ic' => 'water', 'label' => 'Điều kiện canh tác',
+                    'value' => implode(' · ', array_filter([
+                        $trace->location['area'] !== null ? 'Diện tích ' . rtrim(rtrim(number_format($trace->location['area'], 2, ',', '.'), '0'), ',') . ' ha' : null,
+                        $trace->location['waterSource'] ? 'Nguồn nước: ' . $trace->location['waterSource'] : null,
+                    ]))])
+                @endif
+                @include('traceability.partials.row', ['ic' => 'harvest', 'label' => 'Ngày thu hoạch', 'value' => $trace->location['harvestedAt']?->format('d/m/Y')])
+                @endif
                 @if($trace->producer['isVendor'])
                 @include('traceability.partials.row', ['ic' => 'building', 'label' => 'Đơn vị đóng gói / phân phối',
                     'value' => $trace->company['name'], 'sub' => $trace->company['address'] ?: null])
@@ -257,6 +268,48 @@
             @endforelse
         </section>
 
+        {{-- 4b. Kiểm soát chất lượng: QC vùng trồng (nếu có lô canh tác) + 3 khâu QC của doanh nghiệp --}}
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Kiểm soát chất lượng
+            </h3>
+            <ul class="divide-y divide-gray-100">
+                @foreach($trace->qualityChecks as $qc)
+                <li class="flex items-center gap-3 py-3">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full {{ $qc['result'] === 'fail' ? 'bg-red-100 text-red-600' : ($qc['result'] ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400') }}">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['shield'] }}"/></svg>
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-medium leading-snug text-gray-900">{{ $qc['label'] }}</p>
+                        <p class="text-xs text-gray-500">{{ $qc['owner'] === 'VISAFO' ? $trace->brand : $qc['owner'] }}{{ $qc['at'] ? ' · ' . $fmtAt($qc['at']) : '' }}</p>
+                    </div>
+                    @if($qc['result'] === 'pass')
+                    <span class="shrink-0 rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-semibold text-white">Đạt</span>
+                    @elseif($qc['result'] === 'fail')
+                    <span class="shrink-0 rounded-full bg-red-600 px-2.5 py-0.5 text-xs font-semibold text-white">Không đạt</span>
+                    @else
+                    <span class="shrink-0 text-xs italic text-gray-400">Đang cập nhật</span>
+                    @endif
+                </li>
+                @endforeach
+            </ul>
+        </section>
+
+        {{-- 4c. Giao vận (chỉ khi đã xuất kho; tên điểm nhận đã che ở backend) --}}
+        @if($trace->delivery)
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Giao vận
+            </h3>
+            <ul class="divide-y divide-gray-100">
+                @include('traceability.partials.row', ['ic' => 'qr', 'label' => 'Mã vận đơn', 'value' => $trace->delivery['code'], 'mono' => true])
+                @include('traceability.partials.row', ['ic' => 'truck', 'label' => 'Thời gian xuất kho', 'value' => $fmtAt($trace->delivery['shippedAt'])])
+                @include('traceability.partials.row', ['ic' => 'harvest', 'label' => 'Giao thành công', 'value' => $fmtAt($trace->delivery['deliveredAt'])])
+                @include('traceability.partials.row', ['ic' => 'pin', 'label' => 'Điểm nhận', 'value' => $trace->delivery['recipient']])
+            </ul>
+        </section>
+        @endif
+
         {{-- 5. Các công đoạn sản xuất, kinh doanh (timeline dọc) --}}
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
@@ -279,6 +332,12 @@
                         @endif
                         @if($step['description'] !== '')
                         <p class="mt-1 text-sm text-gray-600">{{ $step['description'] }}</p>
+                        @endif
+                        @if(!empty($step['image']))
+                        {{-- Ảnh minh chứng nhật ký canh tác (vỏ thuốc, bao phân, hiện trường) --}}
+                        <a href="{{ $step['image'] }}" target="_blank" rel="noopener" class="mt-2 block w-28 overflow-hidden rounded-md ring-1 ring-black/10">
+                            <img src="{{ $step['image'] }}" alt="Ảnh minh chứng: {{ $step['title'] }}" class="aspect-square w-full object-cover" loading="lazy">
+                        </a>
                         @endif
                     </div>
                 </li>

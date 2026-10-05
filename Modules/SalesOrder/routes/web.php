@@ -33,6 +33,9 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
     Route::get('sales-orders', [SalesOrderController::class, 'index'])->name('sales-orders.index');
     Route::get('sales-orders/{sales_order}', [SalesOrderController::class, 'show'])->name('sales-orders.show');
+    Route::post('sales-orders/{sales_order}/ship', [SalesOrderController::class, 'ship'])->name('sales-orders.ship');
+    Route::post('sales-orders/{sales_order}/deliver', [SalesOrderController::class, 'deliver'])->name('sales-orders.deliver');
+    Route::post('sales-orders/items/{item}/quality-checks', [SalesOrderController::class, 'storeItemQualityCheck'])->name('sales-orders.items.quality-checks.store');
     Route::patch('sales-orders/{sales_order}/delivery-date', [SalesOrderController::class, 'updateDeliveryDate'])->name('sales-orders.delivery-date');
 });
 

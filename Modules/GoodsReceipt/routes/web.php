@@ -14,6 +14,7 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::get('goods-receipts/{goods_receipt}', [GoodsReceiptController::class, 'show'])->name('goods-receipts.show');
 
     Route::put('product-batches/{product_batch}', [ProductBatchController::class, 'update'])->name('product-batches.update');
+    Route::post('product-batches/{product_batch}/quality-checks', [ProductBatchController::class, 'storeQualityCheck'])->name('product-batches.quality-checks.store');
 });
 
 Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(function () {

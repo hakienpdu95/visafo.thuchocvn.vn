@@ -18,6 +18,8 @@ class GetGoodsReceiptHandler implements QueryHandlerInterface
             'importedBy',
             'items.product',
             'batches.extraAttributes',
+            'batches.farmingBatch.farmingSource',
+            'batches.qualityChecks',
         ]);
 
         return $goodsReceipt;

@@ -19,14 +19,13 @@ readonly class TraceabilityData
     /**
      * @param  string[]  $productImages  ảnh slider, ảnh chính luôn ở index 0
      * @param  array<int, array{key: string, value: string}>  $attributes
-     * @param  array{name: string, address: string, hotline: string}  $company  đơn vị đóng gói / phân phối (tên pháp nhân chủ hệ thống)
-     * @param  array{name: string, address: ?string, taxCode: ?string, isVendor: bool}  $producer  đơn vị sản xuất / nguồn cung
-     * @param  array{code: string, name: ?string, address: ?string}|null  $location  mã vùng trồng / cơ sở sản xuất
-     * @param  array<int, array{icon: string, title: string, description: string, at: ?Carbon, done: bool}>  $timeline
-     * @param  array<int, array{name: string, number: ?string, issuedBy: ?string, expiresAt: ?Carbon, owner: string}>  $standards
-     * @param  array{name: string, address: ?string}|null  $supplier  nhà cung cấp của lô nhập (null khi không xác định được)
-     * @param  array<int, array{name: string, image: ?string, isCurrent: bool}>  $relatedProducts  SP cùng đơn bán, cùng nguồn cung; SP đang xem ở đầu
-     * @param  array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: ?Carbon, expiresAt: ?Carbon, files: array<int, array{url: string, thumb: string, preview: string, isPdf: bool}>}>  $companyDocuments  hồ sơ doanh nghiệp công khai (tab "Thương hiệu")
+     * @param  array{name: string, address: string, hotline: string, taxCode: string}  $company  đơn vị đóng gói / phân phối (tên pháp nhân chủ hệ thống)
+     * @param  array{name: string, address: ?string, taxCode: ?string, isVendor: bool, isOwnFarm: bool}  $producer  đơn vị sản xuất / nguồn cung (isOwnFarm = vùng trồng tự quản của doanh nghiệp)
+     * @param  array{code: string, name: ?string, address: ?string, area: ?float, waterSource: ?string, harvestedAt: ?Carbon}|null  $location  vùng trồng của lô canh tác gắn với lô nhập
+     * @param  array<int, array{icon: string, title: string, description: string, at: ?Carbon, done: bool, image?: ?string}>  $timeline
+     * @param  array<int, array{label: string, documents: array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: ?Carbon, expiresAt: ?Carbon, files: array<int, array{url: string, thumb: string, preview: string, isPdf: bool}>}>}>  $documentGroups  hồ sơ doanh nghiệp công khai theo nhóm (tab "Thương hiệu")
+     * @param  array<int, array{label: string, owner: string, result: ?string, at: ?Carbon}>  $qualityChecks  khối "Kiểm soát chất lượng" (result null = chưa ghi nhận)
+     * @param  array{code: string, shippedAt: Carbon, deliveredAt: ?Carbon, recipient: ?string}|null  $delivery  giao vận (null = chưa xuất kho); recipient đã che tên
      */
     public function __construct(
         public string $traceCode,
@@ -52,6 +51,8 @@ readonly class TraceabilityData
         public ?array $supplier = null,
         public array $relatedProducts = [],
         public string $brandStory = '',
-        public array $companyDocuments = [],
+        public array $documentGroups = [],
+        public array $qualityChecks = [],
+        public ?array $delivery = null,
     ) {}
 }

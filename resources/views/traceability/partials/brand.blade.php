@@ -39,16 +39,14 @@
     </div>
 </section>
 
-{{-- 2. Hồ sơ doanh nghiệp: nhóm "Hồ sơ pháp lý cơ sở", đang hiệu lực, loại giấy tờ bật "Công khai trên trang truy xuất" --}}
+{{-- 2. Hồ sơ doanh nghiệp theo nhóm (thứ tự như các tab ở internal-compliance); nhóm không có hồ sơ đã bị bỏ ở backend --}}
+@forelse($trace->documentGroups as $group)
 <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-    <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-        <span class="h-4 w-1 rounded bg-green-600"></span> Hồ sơ doanh nghiệp
+    <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+        <span class="h-4 w-1 rounded bg-green-600"></span> {{ $group['label'] }}
     </h3>
-    <p class="mb-3 text-xs text-gray-500">Giấy tờ pháp lý &amp; chứng nhận đang hiệu lực. Chạm vào ảnh để xem bản scan.</p>
-
-    @if($trace->companyDocuments)
     <div class="grid grid-cols-2 gap-3">
-        @foreach($trace->companyDocuments as $doc)
+        @foreach($group['documents'] as $doc)
         @php
             $first = $doc['files'][0] ?? null;
             // Lightbox: mọi tệp của hồ sơ — ảnh lớn (PDF: trang 1 đã render) + link mở PDF đầy đủ
@@ -98,10 +96,15 @@
         </article>
         @endforeach
     </div>
-    @else
-    <p class="text-sm text-gray-500">Đang cập nhật hồ sơ doanh nghiệp.</p>
-    @endif
 </section>
+@empty
+<section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+    <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+        <span class="h-4 w-1 rounded bg-green-600"></span> Hồ sơ doanh nghiệp
+    </h3>
+    <p class="text-sm text-gray-500">Đang cập nhật hồ sơ doanh nghiệp.</p>
+</section>
+@endforelse
 
 {{-- Lightbox xem bản scan (các tệp của một hồ sơ xếp dọc, cuộn được) --}}
 <div data-trace-lightbox-root hidden class="fixed inset-0 z-50 flex flex-col bg-black/90" role="dialog" aria-modal="true" aria-label="Xem hồ sơ">

@@ -21,9 +21,38 @@
             @endcan
         </div>
         @error('delivery_date')<p class="text-xs text-error mt-1">{{ $message }}</p>@enderror
+        {{-- Giao vận: mốc xuất kho / giao thành công hiện lên timeline trang truy xuất --}}
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm">
+            <span class="badge badge-sm {{ ['pending' => 'badge-ghost', 'shipping' => 'badge-info', 'delivered' => 'badge-success'][$salesOrder->status] ?? 'badge-ghost' }}">{{ \Modules\SalesOrder\Models\SalesOrder::statusLabels()[$salesOrder->status] ?? $salesOrder->status }}</span>
+            @if($salesOrder->delivery_code)
+            <span class="text-base-content/50">Vận đơn: <span class="font-mono font-medium text-base-content">{{ $salesOrder->delivery_code }}</span></span>
+            @endif
+            @if($salesOrder->shipped_at)
+            <span class="text-base-content/50">Xuất kho: <span class="font-medium text-base-content">{{ $salesOrder->shipped_at->format('H:i d/m/Y') }}</span></span>
+            @endif
+            @if($salesOrder->delivered_at)
+            <span class="text-base-content/50">Đã giao: <span class="font-medium text-base-content">{{ $salesOrder->delivered_at->format('H:i d/m/Y') }}</span></span>
+            @endif
+        </div>
+        @if($errors->hasAny(['result', 'checked_at', 'note']))
+        <p class="text-xs text-error mt-1">{{ $errors->first() }}</p>
+        @endif
     </div>
     <div class="flex items-center gap-2">
         @can('print', $salesOrder)
+        @if(! $salesOrder->shipped_at)
+        <form method="POST" action="{{ route('backend.sales-orders.ship', $salesOrder) }}"
+              onsubmit="return confirm('Xác nhận xuất kho đơn này? Hệ thống sẽ ghi thời điểm xuất và sinh mã vận đơn.')">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-outline gap-1.5">Xuất kho</button>
+        </form>
+        @elseif(! $salesOrder->delivered_at)
+        <form method="POST" action="{{ route('backend.sales-orders.deliver', $salesOrder) }}"
+              onsubmit="return confirm('Xác nhận đơn đã giao thành công?')">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-success gap-1.5">Đã giao</button>
+        </form>
+        @endif
         <button type="button" class="btn btn-sm gap-1.5 border-0 bg-blue-800 text-white hover:bg-blue-900"
                 onclick="window.dispatchEvent(new CustomEvent('open-bulk-print'))">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
@@ -52,6 +81,9 @@
         'batches_url'   => route('backend.sales-orders.items.batches', $item),
         'shelf_life_days' => $item->product?->shelf_life_days,
         'print_url'     => $canPrint ? route('backend.sales-orders.items.print', $item) : null,
+        'qc_url'        => $canPrint ? route('backend.sales-orders.items.quality-checks.store', $item) : null,
+        'qc'            => ($last = $item->qualityChecks->last())
+            ? ['result' => $last->result->value, 'label' => $last->result->label(), 'at' => $last->checked_at->format('d/m/Y H:i')] : null,
     ])->values();
 @endphp
 
@@ -587,6 +619,41 @@
         <div class="modal-backdrop" @click="close()"></div>
     </div>
 </div>
+@endcan
+@can('print', $salesOrder)
+<dialog id="itemQcModal" class="modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg">QC trước xuất</h3>
+        <p class="text-sm text-base-content/60 mt-1" id="itemQcModalName"></p>
+        <form id="itemQcForm" method="POST" class="mt-4 space-y-4">
+            @csrf
+            <div class="form-control">
+                <label class="label py-0.5" for="iqc-checked-at"><span class="label-text text-xs font-medium">Thời điểm kiểm tra</span></label>
+                <input id="iqc-checked-at" name="checked_at" type="datetime-local" class="input input-sm input-bordered w-full">
+            </div>
+            <div class="form-control">
+                <span class="label-text text-xs font-medium mb-1">Kết quả</span>
+                <div class="flex gap-4">
+                    @foreach(\Modules\GoodsReceipt\Enums\QualityCheckResult::cases() as $result)
+                    <label class="label cursor-pointer gap-2 py-0">
+                        <input type="radio" name="result" value="{{ $result->value }}" class="radio radio-sm {{ $result === \Modules\GoodsReceipt\Enums\QualityCheckResult::Pass ? 'radio-success' : 'radio-error' }}" @checked($loop->first) required>
+                        <span class="label-text text-sm">{{ $result->label() }}</span>
+                    </label>
+                    @endforeach
+                </div>
+            </div>
+            <div class="form-control">
+                <label class="label py-0.5" for="iqc-note"><span class="label-text text-xs font-medium">Ghi chú (nội bộ, không công khai)</span></label>
+                <textarea id="iqc-note" name="note" maxlength="500" rows="2" class="textarea textarea-bordered textarea-sm w-full"></textarea>
+            </div>
+            <div class="modal-action mt-6">
+                <button type="submit" class="btn btn-primary btn-sm">Lưu</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="itemQcModal.close()">Hủy</button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
 @endcan
 @endsection
 
