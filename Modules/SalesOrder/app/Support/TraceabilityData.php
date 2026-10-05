@@ -55,5 +55,7 @@ readonly class TraceabilityData
         public array $documentGroups = [],
         public array $qualityChecks = [],
         public ?array $delivery = null,
+        /** @var array<int, array{title: string, time: ?string, meta: ?string, done: bool, ok: ?bool}> khối "Hành trình hàng hóa" (5 mốc tóm tắt) */
+        public array $journey = [],
     ) {}
 }

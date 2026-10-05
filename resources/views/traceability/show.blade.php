@@ -217,11 +217,11 @@
                 <span class="h-4 w-1 rounded bg-green-600"></span> Nguồn gốc sản phẩm
             </h3>
             <div class="ml-1.5 border-l-2 border-green-200 pl-4">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 ring-1 ring-green-200">
+                <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs text-green-700 ring-1 ring-green-200">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                     Đã liên kết nguồn
                 </span>
-                <p class="mt-2 text-lg font-bold leading-snug text-green-700">{{ $loc['isOwn'] ? 'Vùng trồng của ' . $trace->brand : $loc['name'] }}</p>
+                <p class="mt-2 text-md font-medium leading-snug text-green-700">{{ $loc['isOwn'] ? 'Vùng trồng của ' . $trace->brand : $loc['name'] }}</p>
                 <dl class="mt-2 space-y-1.5 text-sm leading-snug">
                     @foreach(array_filter([
                         $loc['isOwn'] ? ['Khu trồng', $loc['name']] : null,
@@ -240,9 +240,34 @@
                     </div>
                 </dl>
             </div>
-            <p class="mt-3 text-xs italic text-gray-400">Hệ thống chỉ hiển thị cơ sở sản xuất/vùng sản xuất khi có dữ liệu nguồn tương ứng.</p>
         </section>
         @endif
+
+        {{-- 2c. Hành trình hàng hóa: 5 mốc tóm tắt; trục + chấm vẽ bằng ::before/::after của <li> --}}
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Hành trình hàng hóa
+            </h3>
+            <ul>
+                @foreach($trace->journey as $step)
+                <li class="relative pb-5 pl-7 last:pb-0
+                           before:absolute before:left-[5px] before:top-3 before:bottom-0 before:w-0.5 before:bg-green-200 last:before:hidden
+                           after:absolute after:left-0 after:top-1 after:h-3 after:w-3 after:rounded-full after:ring-4
+                           {{ $step['done'] ? 'after:bg-green-600 after:ring-green-100' : 'after:bg-gray-300 after:ring-gray-100' }}">
+                    <p class="text-[15px] font-bold leading-snug {{ $step['done'] ? 'text-slate-900' : 'text-gray-400' }}">{{ $step['title'] }}</p>
+                    @if($step['time'])
+                    <p class="mt-0.5 text-xs font-medium text-gray-500">{{ $step['time'] }}</p>
+                    @endif
+                    @if($step['meta'])
+                    <p class="mt-0.5 text-[13px] leading-snug {{ $step['ok'] === false ? 'text-red-600' : 'text-gray-400' }}">
+                        @if($step['ok'] === true)<span class="font-semibold text-green-600">✓</span>@elseif($step['ok'] === false)<span class="font-semibold">✕</span>@endif
+                        {{ $step['meta'] }}
+                    </p>
+                    @endif
+                </li>
+                @endforeach
+            </ul>
+        </section>
 
         {{-- 3. Đơn vị sản xuất, kinh doanh & địa điểm --}}
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">

@@ -115,7 +115,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             categoryName: $product?->category?->name,
             productSku: $product?->sku,
             brand: (string) config('trace.company_name', 'VISAFO'),
-            weight: str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) . ' kg',
+            weight: $this->weightText($log),
             mfgDate: $log->mfg_date ?? $batch?->mfg_date,
             expDate: $log->exp_date ?? $batch?->exp_date,
             packedAt: $log->created_at,
@@ -156,6 +156,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             brandStory: trim((string) config('trace.brand_story')),
             documentGroups: $this->documentGroups($log->trace_code),
             qualityChecks: $this->qualityCheckRows($farmingBatch, $qualityChecks),
+            journey: $this->journey($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $order, $qualityChecks, $item),
             delivery: $this->delivery($order),
         );
     }
@@ -257,6 +258,65 @@ class GetTraceabilityHandler implements QueryHandlerInterface
 
         return $productName . $origin . ', sơ chế, đóng gói và kiểm soát chất lượng bởi ' . $brand
             . '. Mỗi sản phẩm mang một mã truy xuất riêng để bạn kiểm tra nguồn gốc, hạn sử dụng và các công đoạn sản xuất.';
+    }
+
+    /**
+     * Khối "Hành trình hàng hóa": 5 mốc tóm tắt theo vòng đời lô (thu hoạch → tiếp nhận → QC → đóng gói → giao).
+     * Mốc chưa có thời điểm thì bỏ, riêng mốc giao hàng hiện xám "Chờ giao hàng" / "Đang giao hàng" khi chưa giao xong.
+     *
+     * @return array<int, array{title: string, time: ?string, meta: ?string, done: bool, ok: ?bool}>
+     */
+    private function journey(PrintLog $log, ?FarmingBatch $farmingBatch, $receivedAt, ?SalesOrder $order, Collection $checks, SalesOrderItem $item): array
+    {
+        $at = fn ($t) => $t ? $t->format($t->format('H:i') === '00:00' ? 'd/m/Y' : 'H:i • d/m/Y') : null;
+        $brand = (string) config('trace.company_name', 'VISAFO');
+        $steps = [];
+
+        if ($farmingBatch !== null) {
+            $source = $farmingBatch->farmingSource;
+            $harvestedAt = $farmingBatch->logs->where('activity_type', 'harvest')->max('activity_date') ?? $farmingBatch->actual_harvest_date;
+            if ($harvestedAt) {
+                $steps[] = ['title' => 'Thu hoạch tại nguồn', 'time' => $at($harvestedAt),
+                    'meta' => implode(' • ', array_filter([$source?->address ?: $source?->name, $source?->source_code])) ?: null, 'done' => true, 'ok' => null];
+            }
+        }
+
+        if ($receivedAt) {
+            $steps[] = ['title' => $brand . ' tiếp nhận', 'time' => $at($receivedAt),
+                'meta' => implode(' • ', array_filter([$log->productBatch ? $this->batchQuantity($log->productBatch, $item) : null, 'Kho ' . $brand])), 'done' => true, 'ok' => null];
+        }
+
+        // QC gom nhóm: thời điểm = khâu kiểm tại kho mới nhất (tiếp nhận/cảm quan), chưa có thì lấy khâu trước xuất
+        if ($checks->isNotEmpty()) {
+            $batchChecks = $checks->filter(fn (BatchQualityCheck $c) => $c->stage->isBatchStage());
+            $passed = $checks->every(fn (BatchQualityCheck $c) => $c->result->value === 'pass');
+            $steps[] = ['title' => 'Kiểm tra chất lượng', 'time' => $at(($batchChecks->isNotEmpty() ? $batchChecks : $checks)->max('checked_at')),
+                'meta' => 'Kết quả: ' . ($passed ? 'Đạt' : 'Không đạt') . ' (' . $checks->map(fn (BatchQualityCheck $c) => mb_strtolower(str_replace('Kiểm tra ', '', $c->stage->label())))->implode(', ') . ')',
+                'done' => true, 'ok' => $passed];
+        }
+
+        $steps[] = ['title' => 'Sơ chế & đóng gói', 'time' => $at($log->created_at),
+            'meta' => 'Quy cách ' . $this->weightText($log) . ' • Gắn mã ' . strtoupper($log->trace_code), 'done' => true, 'ok' => null];
+
+        $shipped = $order?->shipped_at;
+        $delivered = $order?->delivered_at;
+        $steps[] = match (true) {
+            $delivered !== null => ['title' => 'Xuất kho & giao hàng',
+                'time' => $shipped->isSameDay($delivered)
+                    ? $shipped->format('H:i') . '–' . $delivered->format('H:i') . ' • ' . $delivered->format('d/m/Y')
+                    : $shipped->format('H:i d/m') . ' – ' . $delivered->format('H:i d/m/Y'),
+                'meta' => 'Đã giao đến điểm nhận', 'done' => true, 'ok' => true],
+            $shipped !== null => ['title' => 'Xuất kho & giao hàng', 'time' => $at($shipped), 'meta' => 'Đang giao hàng', 'done' => false, 'ok' => null],
+            default => ['title' => 'Xuất kho & giao hàng', 'time' => null, 'meta' => 'Chờ giao hàng', 'done' => false, 'ok' => null],
+        };
+
+        return $steps;
+    }
+
+    /** "0,5 kg" — khối lượng mỗi tem. */
+    private function weightText(PrintLog $log): string
+    {
+        return str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) . ' kg';
     }
 
     /**
