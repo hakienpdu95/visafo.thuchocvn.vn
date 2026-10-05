@@ -282,6 +282,74 @@
             </ul>
         </section>
 
+        {{-- 4b. Kiểm soát chất lượng: 3 khâu QC của doanh nghiệp + kết luận lô --}}
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Kiểm soát chất lượng
+            </h3>
+            <dl>
+                @foreach($trace->qualityChecks as $qc)
+                <div class="flex items-baseline justify-between gap-3 py-2">
+                    <dt class="text-sm text-gray-700">{{ $qc['label'] }}</dt>
+                    @if($qc['result'] === 'pass')
+                    <dd class="shrink-0 text-sm font-semibold text-green-700" @if($qc['at']) title="{{ $fmtAt($qc['at']) }}" @endif>✓ Đạt</dd>
+                    @elseif($qc['result'] === 'fail')
+                    <dd class="shrink-0 text-sm font-semibold text-red-600" @if($qc['at']) title="{{ $fmtAt($qc['at']) }}" @endif>✕ Không đạt</dd>
+                    @else
+                    <dd class="shrink-0 text-sm italic text-gray-400">Đang cập nhật</dd>
+                    @endif
+                </div>
+                @endforeach
+                <div class="mt-1 flex items-baseline justify-between gap-3 border-t border-gray-200 pt-3">
+                    <dt class="text-sm text-gray-700">Kết luận lô hàng</dt>
+                    @if($trace->qcConclusion === 'pass')
+                    <dd class="shrink-0 text-sm font-bold uppercase text-green-700">Đủ ĐK xuất</dd>
+                    @elseif($trace->qcConclusion === 'fail')
+                    <dd class="shrink-0 text-sm font-bold uppercase text-red-600">Không đạt</dd>
+                    @else
+                    <dd class="shrink-0 text-sm italic text-gray-400">Đang cập nhật</dd>
+                    @endif
+                </div>
+            </dl>
+        </section>
+
+        {{-- 4c. Giao vận & điểm nhận (chỉ khi đã xuất kho). Tên điểm nhận đã che, địa chỉ chỉ cấp phường/quận + tỉnh — xử lý ở backend --}}
+        @if($trace->delivery)
+        @php $dl = $trace->delivery; @endphp
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Giao vận &amp; điểm nhận
+            </h3>
+            <div class="rounded-lg bg-[#f8f9fa] p-3.5 text-sm">
+                <p class="font-bold text-slate-900">🏢 Kho {{ $trace->brand }}</p>
+                <p class="mt-0.5 text-gray-600">{{ implode(' • ', array_filter([$dl['warehouse'], 'Xuất ' . $dl['shippedAt']->format('H:i • d/m/Y')])) }}</p>
+
+                <p class="my-1.5 pl-2 text-lg leading-none text-green-600" aria-hidden="true">↓</p>
+
+                <p class="font-bold text-slate-900">🚚 Đơn giao: <span class="font-mono">{{ $dl['code'] }}</span></p>
+                <p class="mt-0.5 {{ $dl['deliveredAt'] ? 'text-green-700' : 'text-amber-600' }}">{{ $dl['status'] }}</p>
+
+                <p class="my-1.5 pl-2 text-lg leading-none text-green-600" aria-hidden="true">↓</p>
+
+                <div class="rounded-lg border border-green-200 bg-white p-3">
+                    <p class="font-bold text-slate-900">📍 {{ $dl['recipient'] ?? 'Điểm nhận' }}</p>
+                    @if($dl['deliveredAt'])
+                    <p class="mt-0.5 font-medium text-green-700">✓ Đã nhận hàng • {{ $dl['deliveredAt']->format('H:i • d/m/Y') }}</p>
+                    @else
+                    <p class="mt-0.5 text-gray-500">Chờ nhận hàng</p>
+                    @endif
+                    @if($dl['area'])
+                    <p class="mt-0.5 text-gray-600">Điểm giao: {{ $dl['area'] }}</p>
+                    @endif
+                </div>
+            </div>
+            <p class="mt-3 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+                <span aria-hidden="true">🔒</span>
+                <span>Trang công khai chỉ hiển thị tên tổ chức/điểm giao được phép công bố. SĐT, người liên hệ… không hiển thị công khai.</span>
+            </p>
+        </section>
+        @endif
+
         {{-- 3. Đơn vị sản xuất, kinh doanh & địa điểm --}}
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
@@ -353,74 +421,6 @@
             <p class="text-sm text-gray-500">Đang cập nhật hồ sơ tiêu chuẩn.</p>
             @endforelse
         </section>
-
-        {{-- 4b. Kiểm soát chất lượng: 3 khâu QC của doanh nghiệp + kết luận lô --}}
-        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Kiểm soát chất lượng
-            </h3>
-            <dl>
-                @foreach($trace->qualityChecks as $qc)
-                <div class="flex items-baseline justify-between gap-3 py-2">
-                    <dt class="text-sm text-gray-700">{{ $qc['label'] }}</dt>
-                    @if($qc['result'] === 'pass')
-                    <dd class="shrink-0 text-sm font-semibold text-green-700" @if($qc['at']) title="{{ $fmtAt($qc['at']) }}" @endif>✓ Đạt</dd>
-                    @elseif($qc['result'] === 'fail')
-                    <dd class="shrink-0 text-sm font-semibold text-red-600" @if($qc['at']) title="{{ $fmtAt($qc['at']) }}" @endif>✕ Không đạt</dd>
-                    @else
-                    <dd class="shrink-0 text-sm italic text-gray-400">Đang cập nhật</dd>
-                    @endif
-                </div>
-                @endforeach
-                <div class="mt-1 flex items-baseline justify-between gap-3 border-t border-gray-200 pt-3">
-                    <dt class="text-sm text-gray-700">Kết luận lô hàng</dt>
-                    @if($trace->qcConclusion === 'pass')
-                    <dd class="shrink-0 text-sm font-bold uppercase text-green-700">Đủ ĐK xuất</dd>
-                    @elseif($trace->qcConclusion === 'fail')
-                    <dd class="shrink-0 text-sm font-bold uppercase text-red-600">Không đạt</dd>
-                    @else
-                    <dd class="shrink-0 text-sm italic text-gray-400">Đang cập nhật</dd>
-                    @endif
-                </div>
-            </dl>
-        </section>
-
-        {{-- 4c. Giao vận & điểm nhận (chỉ khi đã xuất kho). Tên điểm nhận đã che, địa chỉ chỉ cấp phường/quận + tỉnh — xử lý ở backend --}}
-        @if($trace->delivery)
-        @php $dl = $trace->delivery; @endphp
-        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Giao vận &amp; điểm nhận
-            </h3>
-            <div class="rounded-lg bg-[#f8f9fa] p-3.5 text-sm">
-                <p class="font-bold text-slate-900">🏢 Kho {{ $trace->brand }}</p>
-                <p class="mt-0.5 text-gray-600">{{ implode(' • ', array_filter([$dl['warehouse'], 'Xuất ' . $dl['shippedAt']->format('H:i • d/m/Y')])) }}</p>
-
-                <p class="my-1.5 pl-2 text-lg leading-none text-green-600" aria-hidden="true">↓</p>
-
-                <p class="font-bold text-slate-900">🚚 Đơn giao: <span class="font-mono">{{ $dl['code'] }}</span></p>
-                <p class="mt-0.5 {{ $dl['deliveredAt'] ? 'text-green-700' : 'text-amber-600' }}">{{ $dl['status'] }}</p>
-
-                <p class="my-1.5 pl-2 text-lg leading-none text-green-600" aria-hidden="true">↓</p>
-
-                <div class="rounded-lg border border-green-200 bg-white p-3">
-                    <p class="font-bold text-slate-900">📍 {{ $dl['recipient'] ?? 'Điểm nhận' }}</p>
-                    @if($dl['deliveredAt'])
-                    <p class="mt-0.5 font-medium text-green-700">✓ Đã nhận hàng • {{ $dl['deliveredAt']->format('H:i • d/m/Y') }}</p>
-                    @else
-                    <p class="mt-0.5 text-gray-500">Chờ nhận hàng</p>
-                    @endif
-                    @if($dl['area'])
-                    <p class="mt-0.5 text-gray-600">Điểm giao: {{ $dl['area'] }}</p>
-                    @endif
-                </div>
-            </div>
-            <p class="mt-3 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
-                <span aria-hidden="true">🔒</span>
-                <span>Trang công khai chỉ hiển thị tên tổ chức/điểm giao được phép công bố. SĐT, người liên hệ… không hiển thị công khai.</span>
-            </p>
-        </section>
-        @endif
 
         </div>
 
