@@ -54,8 +54,6 @@
             @foreach($group['documents'] as $doc)
             @php
                 $hasPdf = collect($doc['files'])->contains('isPdf', true);
-                // Lightbox: mọi tệp của hồ sơ — ảnh lớn (PDF: trang 1 đã render) + link mở PDF đầy đủ
-                $slides = array_map(fn ($f) => ['img' => $f['isPdf'] ? $f['preview'] : $f['url'], 'pdf' => $f['isPdf'] ? $f['url'] : null], $doc['files']);
                 $caption = implode(' · ', array_filter([
                     $doc['name'],
                     $doc['number'] ? 'Số ' . $doc['number'] : null,
@@ -63,26 +61,14 @@
                     $doc['expiresAt'] ? 'Hiệu lực đến ' . $doc['expiresAt']->format('d/m/Y') : 'Đang hiệu lực',
                 ]));
             @endphp
-            @if($doc['files'])
-            <button type="button" data-trace-lightbox='@json($slides)' data-trace-caption="{{ $caption }}" aria-label="Xem {{ $doc['name'] }}" title="{{ $caption }}"
-                    class="{{ $pillClass }}">
-                @if($hasPdf)
-                <svg class="h-4 w-4 shrink-0 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
-                @else
-                <svg class="h-4 w-4 shrink-0 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['shield'] }}"/></svg>
-                @endif
-                <span class="truncate">Xem {{ $doc['name'] }}</span>
-                @if(count($doc['files']) > 1)
-                <span class="shrink-0 rounded-full bg-white px-1.5 text-[10px] font-semibold text-gray-500">{{ count($doc['files']) }}</span>
-                @endif
-            </button>
-            @else
-            {{-- Hồ sơ đang hiệu lực nhưng chưa có bản scan công khai: hiện tên, không bấm được --}}
-            <span title="{{ $caption }}" class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-gray-200 bg-gray-50 py-1.5 pl-2.5 pr-3 text-[13px] text-gray-400">
-                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['shield'] }}"/></svg>
-                <span class="truncate">{{ $doc['name'] }}</span>
-            </span>
-            @endif
+            @include('traceability.partials.doc-pill', [
+                'label'    => 'Xem ' . $doc['name'],
+                'files'    => $doc['files'],
+                'caption'  => $caption,
+                'iconHtml' => $hasPdf
+                    ? '<svg class="h-4 w-4 shrink-0 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>'
+                    : '<svg class="h-4 w-4 shrink-0 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="' . $icon['shield'] . '"/></svg>',
+            ])
             @endforeach
         </div>
     </div>

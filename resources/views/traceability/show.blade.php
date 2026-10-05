@@ -176,7 +176,7 @@
         </section>
 
         {{-- 2. Thông tin sản phẩm & lô: lưới 2 cột (1 cột khi màn hình < 340px) + NSX / thông tin in bổ sung bên dưới --}}
-        <section id="trace-lot" class="scroll-mt-32 rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin sản phẩm &amp; lô
             </h3>
@@ -285,7 +285,7 @@
         </section>
 
         {{-- 4b. Kiểm soát chất lượng: 3 khâu QC của doanh nghiệp + kết luận lô --}}
-        <section id="trace-qc" class="scroll-mt-32 rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Kiểm soát chất lượng
             </h3>
@@ -318,7 +318,7 @@
         {{-- 4c. Giao vận & điểm nhận (chỉ khi đã xuất kho). Tên điểm nhận đã che, địa chỉ chỉ cấp phường/quận + tỉnh — xử lý ở backend --}}
         @if($trace->delivery)
         @php $dl = $trace->delivery; @endphp
-        <section id="trace-delivery" class="scroll-mt-32 rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Giao vận &amp; điểm nhận
             </h3>
@@ -370,27 +370,19 @@
             </div>
         </section>
 
-        {{-- 7. Hồ sơ liên quan: chỉ nút có dữ liệu thật — Hồ sơ nguồn mở file (lightbox, route trace.document), các nút khác cuộn tới khối tương ứng --}}
+        {{-- 7. Hồ sơ liên quan: nút mở tệp hồ sơ (partials/doc-pill: 1 tệp → tab mới, nhiều tệp → lightbox, chưa có → xám) + nút sang tab VISAFO --}}
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Hồ sơ liên quan
             </h3>
             <div class="flex flex-wrap gap-2">
-                @if($trace->sourceDocuments)
-                @php
-                    $sourceSlides = collect($trace->sourceDocuments)->flatMap(fn ($d) => array_map(fn ($f) => ['img' => $f['isPdf'] ? $f['preview'] : $f['url'], 'pdf' => $f['isPdf'] ? $f['url'] : null], $d['files']))->values()->all();
-                @endphp
-                <button type="button" data-trace-lightbox='@json($sourceSlides)' data-trace-caption="{{ collect($trace->sourceDocuments)->pluck('caption')->implode(' | ') }}" class="{{ $pillClass }}">🌱 Hồ sơ nguồn <span aria-hidden="true">›</span></button>
-                @endif
-                @if(collect($trace->qualityChecks)->contains(fn ($q) => $q['result'] !== null))
-                <button type="button" data-trace-scroll="trace-qc" class="{{ $pillClass }}">📋 Phiếu QC <span aria-hidden="true">›</span></button>
-                @endif
-                @if($trace->hasBatch)
-                <button type="button" data-trace-scroll="trace-lot" class="{{ $pillClass }}">📦 Phiếu lô <span aria-hidden="true">›</span></button>
-                @endif
-                @if($trace->delivery)
-                <button type="button" data-trace-scroll="trace-delivery" class="{{ $pillClass }}">🚚 Giao nhận <span aria-hidden="true">›</span></button>
-                @endif
+                {{-- Phiếu QC / phiếu lô / giao nhận chưa có tệp biên bản đính kèm trong hệ thống → nút xám (giữ cấu trúc) --}}
+                @include('traceability.partials.doc-pill', ['label' => 'Hồ sơ nguồn', 'iconHtml' => '🌱',
+                    'files' => collect($trace->sourceDocuments)->flatMap(fn ($d) => $d['files'])->values()->all(),
+                    'caption' => collect($trace->sourceDocuments)->pluck('caption')->implode(' | ') ?: 'Hồ sơ nguồn'])
+                @include('traceability.partials.doc-pill', ['label' => 'Phiếu QC', 'iconHtml' => '📋', 'files' => []])
+                @include('traceability.partials.doc-pill', ['label' => 'Phiếu lô', 'iconHtml' => '📦', 'files' => []])
+                @include('traceability.partials.doc-pill', ['label' => 'Giao nhận', 'iconHtml' => '🚚', 'files' => []])
                 <button type="button" data-trace-goto-tab="brand" class="{{ $pillClass }}">🏢 Hồ sơ {{ $trace->brand }} <span aria-hidden="true">›</span></button>
             </div>
         </section>
@@ -492,9 +484,7 @@
         });
         const hashTab = Object.keys(tabHash).find((k) => tabHash[k] === location.hash);
         if (tabs.length && hashTab) showTab(hashTab);
-        // Nút "Hồ sơ liên quan": cuộn tới khối trong tab Sản phẩm, hoặc chuyển sang tab VISAFO
-        document.querySelectorAll('[data-trace-scroll]').forEach((b) => b.addEventListener('click', () =>
-            document.getElementById(b.dataset.traceScroll)?.scrollIntoView({ behavior: 'smooth', block: 'start' })));
+        // Nút "Hồ sơ VISAFO" (khối Hồ sơ liên quan): chuyển sang tab VISAFO
         document.querySelectorAll('[data-trace-goto-tab]').forEach((b) => b.addEventListener('click', () => {
             showTab(b.dataset.traceGotoTab);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -504,38 +494,53 @@
         const box = document.querySelector('[data-trace-lightbox-root]');
         const boxBody = box?.querySelector('[data-trace-lightbox-body]');
         const closeBox = () => { box.hidden = true; boxBody.replaceChildren(); document.body.style.overflow = ''; };
-        document.querySelectorAll('[data-trace-lightbox]').forEach((btn) => btn.addEventListener('click', () => {
-            // Mỗi tệp: ảnh lớn (PDF = trang 1 đã render) + nút mở bản PDF đầy đủ nếu là PDF
-            // Chú thích hồ sơ (tên · số · cơ quan cấp · hiệu lực) đứng đầu lightbox
-            const caption = document.createElement('p');
-            caption.className = 'mx-auto w-full max-w-2xl text-center text-sm font-medium text-white';
-            caption.textContent = btn.dataset.traceCaption || '';
-            boxBody.replaceChildren(...(caption.textContent ? [caption] : []), ...JSON.parse(btn.dataset.traceLightbox).map(({ img: src, pdf }) => {
-                const fig = document.createElement('figure');
-                fig.className = 'mx-auto w-full max-w-2xl';
-                const img = document.createElement('img');
-                img.src = src;
-                img.alt = btn.getAttribute('aria-label') || '';
-                img.className = 'w-full rounded bg-white';
-                // Server không render được ảnh trang 1 của PDF → thay bằng khối icon, vẫn giữ nút mở PDF bên dưới
-                img.onerror = () => {
-                    const ph = document.createElement('div');
-                    ph.className = 'flex h-48 flex-col items-center justify-center gap-2 rounded bg-red-50 text-sm font-semibold text-red-600';
-                    ph.textContent = pdf ? 'Tài liệu PDF — chạm nút bên dưới để xem' : 'Không tải được ảnh';
-                    img.replaceWith(ph);
-                };
-                fig.append(img);
-                if (pdf) {
-                    const a = document.createElement('a');
-                    a.href = pdf; a.target = '_blank'; a.rel = 'noopener';
-                    a.textContent = 'Mở bản PDF đầy đủ';
-                    a.className = 'mt-2 block rounded-full bg-white/15 py-2 text-center text-sm font-semibold text-white';
-                    fig.append(a);
-                }
-                return fig;
-            }));
-            box.hidden = false;
-            document.body.style.overflow = 'hidden';
+        const spinner = '<svg class="h-4 w-4 animate-spin text-gray-500" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+        // Tải trước một ảnh (timeout 20s) — lightbox chỉ mở khi mọi ảnh đã về, không mở lên màn đen chờ mạng
+        const preload = (src) => new Promise((resolve, reject) => {
+            const im = new Image();
+            const timer = setTimeout(() => reject(new Error('timeout')), 20000);
+            im.onload = () => { clearTimeout(timer); resolve(im); };
+            im.onerror = () => { clearTimeout(timer); reject(new Error('load')); };
+            im.src = src;
+        });
+        document.querySelectorAll('button[data-trace-lightbox]').forEach((btn) => btn.addEventListener('click', async () => {
+            if (btn.disabled) return; // chống bấm liên tục khi đang tải
+            const slides = JSON.parse(btn.dataset.traceLightbox);
+            const icon = btn.querySelector('[data-pill-icon]');
+            const iconHtml = icon?.innerHTML;
+            btn.disabled = true;
+            btn.setAttribute('aria-busy', 'true');
+            if (icon) icon.innerHTML = spinner;
+            try {
+                const images = await Promise.all(slides.map(({ img }) => preload(img)));
+                const caption = document.createElement('p');
+                caption.className = 'mx-auto w-full max-w-2xl text-center text-sm font-medium text-white';
+                caption.textContent = btn.dataset.traceCaption || '';
+                boxBody.replaceChildren(...(caption.textContent ? [caption] : []), ...slides.map(({ pdf }, i) => {
+                    const fig = document.createElement('figure');
+                    fig.className = 'mx-auto w-full max-w-2xl';
+                    const img = images[i];
+                    img.alt = btn.dataset.traceCaption || '';
+                    img.className = 'w-full rounded bg-white';
+                    fig.append(img);
+                    if (pdf) {
+                        const a = document.createElement('a');
+                        a.href = pdf; a.target = '_blank'; a.rel = 'noopener noreferrer';
+                        a.textContent = 'Mở bản PDF đầy đủ';
+                        a.className = 'mt-2 block rounded-full bg-white/15 py-2 text-center text-sm font-semibold text-white';
+                        fig.append(a);
+                    }
+                    return fig;
+                }));
+                box.hidden = false;
+                document.body.style.overflow = 'hidden';
+            } catch {
+                toast('Tài liệu tạm thời không khả dụng');
+            } finally {
+                btn.disabled = false;
+                btn.removeAttribute('aria-busy');
+                if (icon) icon.innerHTML = iconHtml;
+            }
         }));
         box?.querySelector('[data-trace-lightbox-close]').addEventListener('click', closeBox);
         box?.addEventListener('click', (e) => { if (e.target === box || e.target === boxBody) closeBox(); });
