@@ -233,6 +233,19 @@
                     ], fn ($row) => $row !== null && filled($row[1])) as [$rowLabel, $rowValue])
                     <div><dt class="inline text-gray-600">{{ $rowLabel }}:</dt> <dd class="inline font-medium text-gray-900">{{ $rowValue }}</dd></div>
                     @endforeach
+                    @if($loc['preSeason'] !== null || $loc['harvestApprovedAt'])
+                    <div>
+                        <dt class="inline text-gray-600">QC vùng trồng:</dt>
+                        <dd class="inline font-medium">
+                            @if($loc['preSeason'] !== null)
+                            <span class="{{ $loc['preSeason'] ? 'text-green-700' : 'text-red-600' }}">{{ $loc['preSeason'] ? '✓' : '✕' }} trước vụ</span>
+                            @endif
+                            @if($loc['harvestApprovedAt'])
+                            <span class="whitespace-nowrap text-green-700">{{ $loc['preSeason'] !== null ? '• ' : '' }}✓ phê duyệt thu hoạch</span>
+                            @endif
+                        </dd>
+                    </div>
+                    @endif
                     {{-- Mã nguồn = mã lô canh tác, Địa điểm = mã vùng trồng (mã truy vết địa điểm theo TT 02/2024) --}}
                     <div class="text-gray-600">
                         <span class="whitespace-nowrap">Mã nguồn: <span class="font-mono text-[13px] font-medium text-gray-900">{{ $loc['batchCode'] }}</span></span>
@@ -254,7 +267,7 @@
                            before:absolute before:left-[5px] before:top-3 before:bottom-0 before:w-0.5 before:bg-green-200 last:before:hidden
                            after:absolute after:left-0 after:top-1 after:h-3 after:w-3 after:rounded-full after:ring-4
                            {{ $step['done'] ? 'after:bg-green-600 after:ring-green-100' : 'after:bg-gray-300 after:ring-gray-100' }}">
-                    <p class="text-[15px] font-bold leading-snug {{ $step['done'] ? 'text-slate-900' : 'text-gray-400' }}">{{ $step['title'] }}</p>
+                    <p class="text-[15px] font-medium leading-snug {{ $step['done'] ? 'text-slate-900' : 'text-gray-400' }}">{{ $step['title'] }}</p>
                     @if($step['time'])
                     <p class="mt-0.5 text-xs font-medium text-gray-500">{{ $step['time'] }}</p>
                     @endif
@@ -341,45 +354,71 @@
             @endforelse
         </section>
 
-        {{-- 4b. Kiểm soát chất lượng: QC vùng trồng (nếu có lô canh tác) + 3 khâu QC của doanh nghiệp --}}
+        {{-- 4b. Kiểm soát chất lượng: 3 khâu QC của doanh nghiệp + kết luận lô --}}
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+            <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Kiểm soát chất lượng
             </h3>
-            <ul class="divide-y divide-gray-100">
+            <dl>
                 @foreach($trace->qualityChecks as $qc)
-                <li class="flex items-center gap-3 py-3">
-                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full {{ $qc['result'] === 'fail' ? 'bg-red-100 text-red-600' : ($qc['result'] ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400') }}">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['shield'] }}"/></svg>
-                    </span>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-sm font-medium leading-snug text-gray-900">{{ $qc['label'] }}</p>
-                        <p class="text-xs text-gray-500">{{ $qc['owner'] === 'VISAFO' ? $trace->brand : $qc['owner'] }}{{ $qc['at'] ? ' · ' . $fmtAt($qc['at']) : '' }}</p>
-                    </div>
+                <div class="flex items-baseline justify-between gap-3 py-2">
+                    <dt class="text-sm text-gray-700">{{ $qc['label'] }}</dt>
                     @if($qc['result'] === 'pass')
-                    <span class="shrink-0 rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-semibold text-white">Đạt</span>
+                    <dd class="shrink-0 text-sm font-semibold text-green-700" @if($qc['at']) title="{{ $fmtAt($qc['at']) }}" @endif>✓ Đạt</dd>
                     @elseif($qc['result'] === 'fail')
-                    <span class="shrink-0 rounded-full bg-red-600 px-2.5 py-0.5 text-xs font-semibold text-white">Không đạt</span>
+                    <dd class="shrink-0 text-sm font-semibold text-red-600" @if($qc['at']) title="{{ $fmtAt($qc['at']) }}" @endif>✕ Không đạt</dd>
                     @else
-                    <span class="shrink-0 text-xs italic text-gray-400">Đang cập nhật</span>
+                    <dd class="shrink-0 text-sm italic text-gray-400">Đang cập nhật</dd>
                     @endif
-                </li>
+                </div>
                 @endforeach
-            </ul>
+                <div class="mt-1 flex items-baseline justify-between gap-3 border-t border-gray-200 pt-3">
+                    <dt class="text-sm text-gray-700">Kết luận lô hàng</dt>
+                    @if($trace->qcConclusion === 'pass')
+                    <dd class="shrink-0 text-sm font-bold uppercase text-green-700">Đủ ĐK xuất</dd>
+                    @elseif($trace->qcConclusion === 'fail')
+                    <dd class="shrink-0 text-sm font-bold uppercase text-red-600">Không đạt</dd>
+                    @else
+                    <dd class="shrink-0 text-sm italic text-gray-400">Đang cập nhật</dd>
+                    @endif
+                </div>
+            </dl>
         </section>
 
-        {{-- 4c. Giao vận (chỉ khi đã xuất kho; tên điểm nhận đã che ở backend) --}}
+        {{-- 4c. Giao vận & điểm nhận (chỉ khi đã xuất kho). Tên điểm nhận đã che, địa chỉ chỉ cấp phường/quận + tỉnh — xử lý ở backend --}}
         @if($trace->delivery)
+        @php $dl = $trace->delivery; @endphp
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Giao vận
+            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Giao vận &amp; điểm nhận
             </h3>
-            <ul class="divide-y divide-gray-100">
-                @include('traceability.partials.row', ['ic' => 'qr', 'label' => 'Mã vận đơn', 'value' => $trace->delivery['code'], 'mono' => true])
-                @include('traceability.partials.row', ['ic' => 'truck', 'label' => 'Thời gian xuất kho', 'value' => $fmtAt($trace->delivery['shippedAt'])])
-                @include('traceability.partials.row', ['ic' => 'harvest', 'label' => 'Giao thành công', 'value' => $fmtAt($trace->delivery['deliveredAt'])])
-                @include('traceability.partials.row', ['ic' => 'pin', 'label' => 'Điểm nhận', 'value' => $trace->delivery['recipient']])
-            </ul>
+            <div class="rounded-lg bg-[#f8f9fa] p-3.5 text-sm">
+                <p class="font-bold text-slate-900">🏢 Kho {{ $trace->brand }}</p>
+                <p class="mt-0.5 text-gray-600">{{ implode(' • ', array_filter([$dl['warehouse'], 'Xuất ' . $dl['shippedAt']->format('H:i • d/m/Y')])) }}</p>
+
+                <p class="my-1.5 pl-2 text-lg leading-none text-green-600" aria-hidden="true">↓</p>
+
+                <p class="font-bold text-slate-900">🚚 Đơn giao: <span class="font-mono">{{ $dl['code'] }}</span></p>
+                <p class="mt-0.5 {{ $dl['deliveredAt'] ? 'text-green-700' : 'text-amber-600' }}">{{ $dl['status'] }}</p>
+
+                <p class="my-1.5 pl-2 text-lg leading-none text-green-600" aria-hidden="true">↓</p>
+
+                <div class="rounded-lg border border-green-200 bg-white p-3">
+                    <p class="font-bold text-slate-900">📍 {{ $dl['recipient'] ?? 'Điểm nhận' }}</p>
+                    @if($dl['deliveredAt'])
+                    <p class="mt-0.5 font-medium text-green-700">✓ Đã nhận hàng • {{ $dl['deliveredAt']->format('H:i • d/m/Y') }}</p>
+                    @else
+                    <p class="mt-0.5 text-gray-500">Chờ nhận hàng</p>
+                    @endif
+                    @if($dl['area'])
+                    <p class="mt-0.5 text-gray-600">Điểm giao: {{ $dl['area'] }}</p>
+                    @endif
+                </div>
+            </div>
+            <p class="mt-3 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+                <span aria-hidden="true">🔒</span>
+                <span>Trang công khai chỉ hiển thị tên tổ chức/điểm giao được phép công bố. SĐT, người liên hệ… không hiển thị công khai.</span>
+            </p>
         </section>
         @endif
 

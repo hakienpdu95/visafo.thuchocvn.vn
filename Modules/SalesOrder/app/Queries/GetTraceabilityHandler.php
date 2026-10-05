@@ -131,6 +131,9 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'batchCode'   => $farmingBatch->batch_code,
                 'vendorName'  => $farmingBatch->vendor?->name,
                 'isOwn'       => $farmingBatch->vendor !== null && $this->isOwnVendor($farmingBatch->vendor, $company),
+                // QC phía vùng trồng (hiện trong khối Nguồn gốc): kiểm tra trước vụ, phê duyệt thu hoạch
+                'preSeason'   => $source->pre_season_checked_at && in_array($source->status, ['passed', 'failed'], true) ? $source->status === 'passed' : null,
+                'harvestApprovedAt' => $farmingBatch->pre_harvest_status === 'passed' ? $farmingBatch->pre_harvest_checked_at : null,
             ] : null,
             batchCode: $batchCode,
             standards: $this->standards($product, $vendor),
@@ -143,9 +146,10 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             relatedProducts: $this->relatedProducts($item, $vendor, $supplierText, $product),
             brandStory: trim((string) config('trace.brand_story')),
             documentGroups: $this->documentGroups($log->trace_code),
-            qualityChecks: $this->qualityCheckRows($farmingBatch, $qualityChecks),
+            qualityChecks: $this->qualityCheckRows($qualityChecks),
+            qcConclusion: $this->qcConclusion($qualityChecks),
             journey: $this->journey($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $order, $qualityChecks, $item),
-            delivery: $this->delivery($order),
+            delivery: $this->delivery($order, $company),
         );
     }
 
@@ -354,33 +358,40 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     }
 
     /**
-     * Khối "Kiểm soát chất lượng": QC phía nông hộ (nếu có lô canh tác) + 3 khâu của VISAFO (chưa ghi → result null).
+     * Khối "Kiểm soát chất lượng": 3 khâu QC của doanh nghiệp (chưa ghi → result null = "Đang cập nhật").
      * Chỉ công khai khâu, kết quả, thời điểm — không có ghi chú/người kiểm.
      *
-     * @return array<int, array{label: string, owner: string, result: ?string, at: mixed}>
+     * @return array<int, array{label: string, result: ?string, at: mixed}>
      */
-    private function qualityCheckRows(?FarmingBatch $farmingBatch, Collection $checks): array
+    private function qualityCheckRows(Collection $checks): array
     {
-        $rows = [];
-        $source = $farmingBatch?->farmingSource;
-
-        if ($source?->pre_season_checked_at && in_array($source->status, ['passed', 'failed'], true)) {
-            $rows[] = ['label' => 'Kiểm tra vùng trồng trước vụ', 'owner' => 'Vùng trồng', 'result' => $source->status === 'passed' ? 'pass' : 'fail', 'at' => $source->pre_season_checked_at];
-        }
-        if ($farmingBatch?->pre_harvest_checked_at && $farmingBatch->pre_harvest_status === 'passed') {
-            $rows[] = ['label' => 'Phê duyệt thu hoạch (hết cách ly BVTV)', 'owner' => 'Vùng trồng', 'result' => 'pass', 'at' => $farmingBatch->pre_harvest_checked_at];
-        }
-
-        foreach (QualityCheckStage::cases() as $stage) {
-            $check = $checks->get($stage->value);
-            $rows[] = ['label' => $stage->label(), 'owner' => 'VISAFO', 'result' => $check?->result->value, 'at' => $check?->checked_at];
-        }
-
-        return $rows;
+        return array_map(fn (QualityCheckStage $stage) => [
+            'label'  => match ($stage) {
+                QualityCheckStage::Receiving   => 'Kiểm tra khi tiếp nhận',
+                QualityCheckStage::Sensory     => 'Kiểm tra cảm quan',
+                QualityCheckStage::PreDispatch => 'Kiểm tra trước xuất',
+            },
+            'result' => $checks->get($stage->value)?->result->value,
+            'at'     => $checks->get($stage->value)?->checked_at,
+        ], QualityCheckStage::cases());
     }
 
-    /** @return array{code: string, shippedAt: mixed, deliveredAt: mixed, recipient: ?string}|null */
-    private function delivery(?SalesOrder $order): ?array
+    /** Kết luận lô: có khâu không đạt → fail; QC trước xuất đạt (hoặc cả 3 khâu đạt) → pass; còn lại null (chưa kết luận). */
+    private function qcConclusion(Collection $checks): ?string
+    {
+        if ($checks->contains(fn (BatchQualityCheck $c) => $c->result->value === 'fail')) {
+            return 'fail';
+        }
+
+        return $checks->has(QualityCheckStage::PreDispatch->value) || $checks->count() === count(QualityCheckStage::cases()) ? 'pass' : null;
+    }
+
+    /**
+     * Giao vận & điểm nhận (null = chưa xuất kho). Tên điểm nhận đã che; địa chỉ chỉ giữ cấp phường/quận + tỉnh.
+     *
+     * @return array{code: string, status: string, shippedAt: mixed, deliveredAt: mixed, recipient: ?string, area: ?string, warehouse: ?string}|null
+     */
+    private function delivery(?SalesOrder $order, array $company): ?array
     {
         if ($order?->shipped_at === null) {
             return null;
@@ -388,16 +399,33 @@ class GetTraceabilityHandler implements QueryHandlerInterface
 
         return [
             'code'        => (string) $order->delivery_code,
+            'status'      => $order->delivered_at ? 'Đã hoàn thành' : 'Đang giao',
             'shippedAt'   => $order->shipped_at,
             'deliveredAt' => $order->delivered_at,
             'recipient'   => $this->maskName($order->customer_name),
+            'area'        => $this->publicArea($order->delivery_address),
+            'warehouse'   => $company['area'] ?: null,
         ];
+    }
+
+    /**
+     * Địa chỉ công khai: chỉ 2 cấp hành chính cuối (VD "Số 12 ngõ 5 Nguyễn Văn Cừ, Long Biên, Hà Nội" → "Long Biên, Hà Nội"),
+     * bỏ tiền tố Xã/Phường/Quận/Huyện/Thành phố/Tỉnh và "Việt Nam"; phần có chữ số (số nhà) không bao giờ công khai.
+     */
+    private function publicArea(?string $address): ?string
+    {
+        $parts = array_values(array_filter(array_map(
+            fn (string $p) => trim((string) preg_replace('/^(xã|phường|thị trấn|quận|huyện|thị xã|thành phố|tp\.?|tỉnh)\s+/iu', '', trim($p))),
+            explode(',', (string) $address),
+        ), fn (string $p) => $p !== '' && mb_strtolower($p) !== 'việt nam' && ! preg_match('/\p{N}/u', $p)));
+
+        return count($parts) >= 2 ? implode(', ', array_slice($parts, -2)) : null;
     }
 
     /** Tiền tố loại đơn vị giữ nguyên khi che tên điểm nhận (so khớp không phân biệt hoa thường, dài nhất trước). */
     private const RECIPIENT_TYPE_PREFIXES = [
         'Trường mầm non', 'Trường tiểu học', 'Trường THCS', 'Trường THPT', 'Trường MN', 'Trường TH',
-        'Bếp ăn', 'Công ty TNHH', 'Công ty cổ phần', 'Công ty CP', 'Công ty', 'Nhà hàng', 'Khách sạn',
+        'Mầm non', 'Tiểu học', 'Nhà trẻ', 'Bệnh viện', 'Bếp ăn', 'Công ty TNHH', 'Công ty cổ phần', 'Công ty CP', 'Công ty', 'Nhà hàng', 'Khách sạn',
     ];
 
     /**
@@ -509,7 +537,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ->all();
     }
 
-    /** @return array{name: string, address: string, hotline: string, taxCode: string} */
+    /** @return array{name: string, address: string, hotline: string, taxCode: string, area: string} */
     private function company(): array
     {
         $hq = InternalFacility::query()->where('type', 'headquarter')->with(['province', 'ward'])->first();
@@ -520,6 +548,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             'address' => $hq?->fullAddress() ?: config('trace.company_address', ''),
             'hotline' => (string) config('trace.company_hotline', ''),
             'taxCode' => trim((string) $hq?->tax_code),
+            'area'    => $this->publicArea($hq?->fullAddress() ?: (string) config('trace.company_address', '')) ?? '',
         ];
     }
 }
