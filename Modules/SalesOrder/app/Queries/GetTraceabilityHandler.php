@@ -68,7 +68,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'orderItem.product.category', 'orderItem.product.media', 'orderItem.salesOrder', 'attributes',
                 'vendor.province', 'vendor.ward', 'productBatch.goodsReceipt.vendor.province', 'productBatch.goodsReceipt.vendor.ward',
                 'productBatch.qualityChecks', 'orderItem.qualityChecks',
-                'productBatch.farmingBatch.farmingSource',
+                'productBatch.farmingBatch.farmingSource', 'productBatch.farmingBatch.vendor',
                 'productBatch.farmingBatch.logs.vendorFarmingStep', 'productBatch.farmingBatch.logs.agriFertilizer', 'productBatch.farmingBatch.logs.agriPesticide',
             ])
             ->first();
@@ -139,6 +139,9 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'area'        => $source->area_hectare !== null ? (float) $source->area_hectare : null,
                 'waterSource' => $source->water_source ?: null,
                 'harvestedAt' => $farmingBatch->actual_harvest_date,
+                'batchCode'   => $farmingBatch->batch_code,
+                'vendorName'  => $farmingBatch->vendor?->name,
+                'isOwn'       => $farmingBatch->vendor !== null && $this->isOwnVendor($farmingBatch->vendor, $company),
             ] : null,
             batchCode: $batchCode,
             timeline: $this->timeline($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $supplierText, $batchCode, $order, $qualityChecks, (string) config('trace.company_name', 'VISAFO')),

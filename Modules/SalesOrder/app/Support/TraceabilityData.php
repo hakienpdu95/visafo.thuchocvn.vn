@@ -21,7 +21,7 @@ readonly class TraceabilityData
      * @param  array<int, array{key: string, value: string}>  $attributes
      * @param  array{name: string, address: string, hotline: string, taxCode: string}  $company  đơn vị đóng gói / phân phối (tên pháp nhân chủ hệ thống)
      * @param  array{name: string, address: ?string, taxCode: ?string, isVendor: bool, isOwnFarm: bool}  $producer  đơn vị sản xuất / nguồn cung (isOwnFarm = vùng trồng tự quản của doanh nghiệp)
-     * @param  array{code: string, name: ?string, address: ?string, area: ?float, waterSource: ?string, harvestedAt: ?Carbon}|null  $location  vùng trồng của lô canh tác gắn với lô nhập
+     * @param  array{code: string, name: ?string, address: ?string, area: ?float, waterSource: ?string, harvestedAt: ?Carbon, batchCode: string, vendorName: ?string, isOwn: bool}|null  $location  vùng trồng của lô canh tác gắn với lô nhập (null = lô nhập chưa liên kết lô canh tác)
      * @param  array<int, array{icon: string, title: string, description: string, at: ?Carbon, done: bool, image?: ?string}>  $timeline
      * @param  array<int, array{label: string, documents: array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: ?Carbon, expiresAt: ?Carbon, files: array<int, array{url: string, thumb: string, preview: string, isPdf: bool}>}>}>  $documentGroups  hồ sơ doanh nghiệp công khai theo nhóm (tab "Thương hiệu")
      * @param  array<int, array{label: string, owner: string, result: ?string, at: ?Carbon}>  $qualityChecks  khối "Kiểm soát chất lượng" (result null = chưa ghi nhận)

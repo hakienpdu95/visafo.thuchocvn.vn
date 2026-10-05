@@ -209,6 +209,41 @@
             </ul>
         </section>
 
+        {{-- 2b. Nguồn gốc sản phẩm: chỉ khi lô nhập đã liên kết lô canh tác (product_batches.farming_batch_id) --}}
+        @if($trace->location)
+        @php $loc = $trace->location; @endphp
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Nguồn gốc sản phẩm
+            </h3>
+            <div class="ml-1.5 border-l-2 border-green-200 pl-4">
+                <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 ring-1 ring-green-200">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Đã liên kết nguồn
+                </span>
+                <p class="mt-2 text-lg font-bold leading-snug text-green-700">{{ $loc['isOwn'] ? 'Vùng trồng của ' . $trace->brand : $loc['name'] }}</p>
+                <dl class="mt-2 space-y-1.5 text-sm leading-snug">
+                    @foreach(array_filter([
+                        $loc['isOwn'] ? ['Khu trồng', $loc['name']] : null,
+                        ['Vùng sản xuất', $loc['address']],
+                        ['Nhà cung cấp', $loc['isOwn'] ? null : $loc['vendorName']],
+                        ['Ngày thu hoạch', $loc['harvestedAt']?->format('d/m/Y')],
+                        ['Diện tích', $loc['area'] !== null ? rtrim(rtrim(number_format($loc['area'], 2, ',', '.'), '0'), ',') . ' ha' : null],
+                        ['Nguồn nước', $loc['waterSource']],
+                    ], fn ($row) => $row !== null && filled($row[1])) as [$rowLabel, $rowValue])
+                    <div><dt class="inline text-gray-600">{{ $rowLabel }}:</dt> <dd class="inline font-medium text-gray-900">{{ $rowValue }}</dd></div>
+                    @endforeach
+                    {{-- Mã nguồn = mã lô canh tác, Địa điểm = mã vùng trồng (mã truy vết địa điểm theo TT 02/2024) --}}
+                    <div class="text-gray-600">
+                        <span class="whitespace-nowrap">Mã nguồn: <span class="font-mono text-[13px] font-medium text-gray-900">{{ $loc['batchCode'] }}</span></span>
+                        <span class="whitespace-nowrap">• Địa điểm: <span class="font-mono text-[13px] font-medium text-gray-900">{{ $loc['code'] }}</span></span>
+                    </div>
+                </dl>
+            </div>
+            <p class="mt-3 text-xs italic text-gray-400">Hệ thống chỉ hiển thị cơ sở sản xuất/vùng sản xuất khi có dữ liệu nguồn tương ứng.</p>
+        </section>
+        @endif
+
         {{-- 3. Đơn vị sản xuất, kinh doanh & địa điểm --}}
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
@@ -218,19 +253,10 @@
                 @include('traceability.partials.row', ['ic' => 'factory', 'label' => $trace->producer['isOwnFarm'] ? 'Vùng trồng của ' . $trace->brand . ' (tự sản xuất)' : ($trace->producer['isVendor'] ? 'Đơn vị sản xuất / Nguồn cung' : 'Đơn vị sản xuất, kinh doanh'),
                     'value' => $trace->producer['name'], 'sub' => $trace->producer['taxCode'] ? 'MST: ' . $trace->producer['taxCode'] : null])
                 @include('traceability.partials.row', ['ic' => 'pin', 'label' => 'Địa chỉ', 'value' => $trace->producer['address']])
-                @include('traceability.partials.row', ['ic' => 'map', 'label' => 'Mã truy vết địa điểm (vùng trồng)',
-                    'value' => $trace->location['code'] ?? null, 'mono' => true,
-                    'sub' => $trace->location ? implode(' · ', array_filter([$trace->location['name'], $trace->location['address']])) : null])
-                @if($trace->location)
-                @if($trace->location['area'] !== null || $trace->location['waterSource'])
-                @include('traceability.partials.row', ['ic' => 'water', 'label' => 'Điều kiện canh tác',
-                    'value' => implode(' · ', array_filter([
-                        $trace->location['area'] !== null ? 'Diện tích ' . rtrim(rtrim(number_format($trace->location['area'], 2, ',', '.'), '0'), ',') . ' ha' : null,
-                        $trace->location['waterSource'] ? 'Nguồn nước: ' . $trace->location['waterSource'] : null,
-                    ]))])
-                @endif
-                @include('traceability.partials.row', ['ic' => 'harvest', 'label' => 'Ngày thu hoạch', 'value' => $trace->location['harvestedAt']?->format('d/m/Y')])
-                @endif
+                {{-- Có lô canh tác thì mã địa điểm nằm ở khối "Nguồn gốc sản phẩm"; chưa có vẫn giữ dòng (trường bắt buộc TT 02/2024) --}}
+                @unless($trace->location)
+                @include('traceability.partials.row', ['ic' => 'map', 'label' => 'Mã truy vết địa điểm (vùng trồng)', 'value' => null])
+                @endunless
                 @if($trace->producer['isVendor'])
                 @include('traceability.partials.row', ['ic' => 'building', 'label' => 'Đơn vị đóng gói / phân phối',
                     'value' => $trace->company['name'], 'sub' => $trace->company['address'] ?: null])
