@@ -360,7 +360,7 @@
                     {{-- Soạn ở dashboard/internal-compliance (Jodit), đã qua RichHtmlSanitizer --}}
                     <div>
                         <dt>Vai trò:</dt>
-                        <dd class="mt-1 space-y-2 break-words text-gray-900 [&_a]:text-green-700 [&_a]:underline [&_h2]:font-semibold [&_h3]:font-semibold [&_h4]:font-semibold [&_img]:!h-auto [&_img]:max-w-full [&_img]:rounded-md [&_ol]:list-decimal [&_ol]:pl-5 [&_table]:w-full [&_td]:border [&_td]:border-gray-200 [&_td]:p-1 [&_ul]:list-disc [&_ul]:pl-5">{!! $trace->company['supplyChainRole'] !!}</dd>
+                        <dd class="wysiwyg-content mt-1">{!! $trace->company['supplyChainRole'] !!}</dd>
                     </div>
                     @else
                     <div><dt class="inline">Vai trò:</dt> <dd class="inline font-medium text-gray-900">Tiếp nhận • QC • Sơ chế/đóng gói • Cung ứng</dd></div>

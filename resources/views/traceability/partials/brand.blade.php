@@ -39,6 +39,17 @@
     </div>
 </section>
 
+{{-- 1b. Vai trò trong chuỗi cung ứng — soạn ở dashboard/internal-compliance (Jodit), đã qua RichHtmlSanitizer ở backend;
+     render unescaped để giữ định dạng. Trống thì ẩn khối. --}}
+@if($trace->company['supplyChainRole'])
+<section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+    <h3 class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-green-700">
+        <span class="h-4 w-1 rounded bg-green-600"></span> Vai trò trong chuỗi cung ứng
+    </h3>
+    <div class="wysiwyg-content rounded-lg bg-[#f8f9fa] p-4 text-[15px] leading-relaxed">{!! $trace->company['supplyChainRole'] !!}</div>
+</section>
+@endif
+
 {{-- 2. Hồ sơ pháp lý & năng lực: mỗi hồ sơ là một nút pill, bấm mở lightbox (tệp phát qua route trace.document).
      Nhóm theo thứ tự các tab ở internal-compliance; nhóm không có hồ sơ công khai đã bị bỏ ở backend. --}}
 <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
