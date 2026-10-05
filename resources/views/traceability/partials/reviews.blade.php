@@ -112,7 +112,6 @@
             <textarea name="comment" rows="3" required minlength="10" maxlength="2000" placeholder="VD: rau bị dập, tem mờ không quét được, giao trễ…"
                       class="w-full rounded-lg border border-gray-300 px-2.5 py-2 text-sm focus:border-green-600"></textarea>
         </label>
-        <p class="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-200">🔒 Không công khai thông tin cá nhân. Phản hồi chỉ dùng nội bộ để kiểm tra và xử lý lô hàng.</p>
         <button type="submit" class="w-full rounded-full border border-green-600 py-2.5 text-sm font-semibold text-green-700 transition hover:bg-green-50 disabled:opacity-70">Gửi phản hồi</button>
     </form>
 </section>
