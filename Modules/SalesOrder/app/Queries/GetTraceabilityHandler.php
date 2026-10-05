@@ -41,6 +41,9 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         'supplier_attp',       // Cơ sở đủ điều kiện ATTP (NCC)
     ];
 
+    /** Chứng nhận vùng trồng / cơ sở của nguồn cung (gắn NCC hoặc mặt hàng của NCC) — nút "Hồ sơ nguồn". */
+    private const SOURCE_DOCUMENT_CODES = ['supplier_vietgap', 'supplier_gmp', 'supplier_ocop', 'supplier_vet', 'supplier_attp'];
+
     /** Hồ sơ chung của chính doanh nghiệp (documentable_type = null) được công khai. */
     private const PUBLIC_COMPANY_STANDARD_CODES = ['facility_attp', 'internal_haccp'];
 
@@ -57,7 +60,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'orderItem.product.category', 'orderItem.product.media', 'orderItem.salesOrder', 'attributes',
                 'vendor.province', 'vendor.ward', 'productBatch.goodsReceipt.vendor.province', 'productBatch.goodsReceipt.vendor.ward',
                 'productBatch.qualityChecks', 'orderItem.qualityChecks',
-                'productBatch.farmingBatch.farmingSource', 'productBatch.farmingBatch.vendor',
+                'productBatch.farmingBatch.farmingSource', 'productBatch.farmingBatch.vendor', 'productBatch.farmingBatch.partnerProduct',
                 'productBatch.farmingBatch.logs',
             ])
             ->first();
@@ -146,6 +149,8 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             relatedProducts: $this->relatedProducts($item, $vendor, $supplierText, $product),
             brandStory: trim((string) config('trace.brand_story')),
             documentGroups: $this->documentGroups($log->trace_code),
+            sourceDocuments: $this->sourceDocuments($farmingBatch, $log->trace_code),
+            hasBatch: $log->productBatch !== null,
             qualityChecks: $this->qualityCheckRows($qualityChecks),
             qcConclusion: $this->qcConclusion($qualityChecks),
             journey: $this->journey($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $order, $qualityChecks, $item),
@@ -236,6 +241,55 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Hồ sơ đang hiệu lực của nguồn (NCC của lô canh tác + mặt hàng NCC tương ứng) thuộc SOURCE_DOCUMENT_CODES.
+     * Chỉ khi lô nhập đã liên kết lô canh tác. Dùng chung cho trang (nút "Hồ sơ nguồn") và route trace.document (whitelist).
+     *
+     * @return Builder<ComplianceDocument>|null
+     */
+    public static function sourceDocumentQuery(?FarmingBatch $farmingBatch): ?Builder
+    {
+        if ($farmingBatch === null) {
+            return null;
+        }
+
+        $owners = array_filter([$farmingBatch->vendor, $farmingBatch->partnerProduct]);
+
+        return ComplianceDocument::query()
+            ->where('status', ComplianceDocumentStatus::Active->value)
+            ->where(fn (Builder $q) => $q->whereNull('expiration_date')->orWhereDate('expiration_date', '>=', today()))
+            ->whereHas('documentType', fn (Builder $t) => $t->whereIn('code', self::SOURCE_DOCUMENT_CODES))
+            ->where(function (Builder $q) use ($owners) {
+                foreach ($owners as $model) {
+                    $q->orWhere(fn (Builder $o) => $o->where('documentable_type', $model->getMorphClass())->where('documentable_id', $model->getKey()));
+                }
+            });
+    }
+
+    /** @return array<int, array{name: string, caption: string, files: array<int, array{url: string, preview: string, isPdf: bool}>}> chỉ hồ sơ có tệp xem được */
+    private function sourceDocuments(?FarmingBatch $farmingBatch, string $traceCode): array
+    {
+        return (self::sourceDocumentQuery($farmingBatch)?->with(['documentType', 'media'])->orderBy('issue_date')->get() ?? collect())
+            ->map(fn (ComplianceDocument $doc) => [
+                'name'    => $doc->custom_name ?: ($doc->documentType?->name ?? 'Hồ sơ nguồn'),
+                'caption' => implode(' · ', array_filter([
+                    $doc->custom_name ?: $doc->documentType?->name,
+                    $doc->document_number ? 'Số ' . $doc->document_number : null,
+                    $doc->issued_by ? 'Cấp bởi ' . $doc->issued_by : null,
+                    $doc->expiration_date ? 'Hiệu lực đến ' . $doc->expiration_date->format('d/m/Y') : null,
+                ])),
+                'files'   => $doc->getMedia('attachments_private')
+                    ->filter(fn (Media $m) => in_array($m->mime_type, self::PUBLIC_DOCUMENT_MIMES, true))
+                    ->map(fn (Media $m) => [
+                        'url'     => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id]),
+                        'preview' => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id, 'variant' => 'preview']),
+                        'isPdf'   => $m->mime_type === 'application/pdf',
+                    ])->values()->all(),
+            ])
+            ->filter(fn ($d) => $d['files'] !== [])
+            ->values()->all();
     }
 
     /** Mô tả dự phòng khi sản phẩm chưa nhập mô tả: ghép từ dữ liệu thật (nguồn cung, vùng trồng), không bịa thông tin. */

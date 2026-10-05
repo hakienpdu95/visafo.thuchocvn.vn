@@ -1,4 +1,4 @@
-{{-- Tab "Thương hiệu" trên trang truy xuất. Biến: $trace, $icon (từ show.blade.php). --}}
+{{-- Tab "VISAFO" trên trang truy xuất. Biến: $trace, $icon, $pillClass (từ show.blade.php). --}}
 
 {{-- 1. Câu chuyện thương hiệu (config trace.brand_story) --}}
 <section class="overflow-hidden rounded-md bg-white shadow-sm ring-1 ring-black/5">
@@ -65,7 +65,7 @@
             @endphp
             @if($doc['files'])
             <button type="button" data-trace-lightbox='@json($slides)' data-trace-caption="{{ $caption }}" aria-label="Xem {{ $doc['name'] }}" title="{{ $caption }}"
-                    class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-gray-200 bg-gray-100 py-1.5 pl-2.5 pr-3 text-[13px] font-medium text-gray-800 transition hover:border-green-300 hover:bg-green-50 active:scale-95">
+                    class="{{ $pillClass }}">
                 @if($hasPdf)
                 <svg class="h-4 w-4 shrink-0 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
                 @else

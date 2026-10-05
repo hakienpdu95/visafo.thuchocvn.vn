@@ -70,6 +70,7 @@ class TraceabilityDemoSeeder extends Seeder
                 'name' => 'HTX Rau an toàn Văn Đức (DEMO)', 'tax_code' => 'DEMO-0101000001',
                 'address' => 'Thôn Trung Quan, xã Văn Đức, huyện Gia Lâm, Hà Nội', 'status' => 'active',
             ]);
+            $this->sourceCertificate($farmer, 'VietGAP-TT-2026-0118');
             $own = Vendor::where('tax_code', $this->hqTaxCode())->first() ?? Vendor::create([
                 'name' => 'VISAFO - Vùng trồng tự quản', 'tax_code' => $this->hqTaxCode(),
                 'address' => 'Xã Phúc Thịnh, Hà Nội', 'status' => 'active',
@@ -218,6 +219,26 @@ class TraceabilityDemoSeeder extends Seeder
             $ext === 'pdf' ? $this->writePdf($path, $type->name, $number) : $this->writeDocImage($path, $type->name, $number, $issuedBy);
             $uploader->upload(new UploadedFile($path, 'DEMO ' . $type->name . '.' . $ext, $ext === 'pdf' ? 'application/pdf' : 'image/png', null, true), $doc, 'attachments_private');
         }
+    }
+
+    /** Chứng nhận VietGAP của nông hộ (ảnh scan giả lập) — nút "Hồ sơ nguồn" trên trang truy xuất. */
+    public function sourceCertificate(Vendor $vendor, string $number): void
+    {
+        $type = DocumentMasterType::where('code', 'supplier_vietgap')->first();
+        if ($type === null) {
+            return;
+        }
+        $doc = new ComplianceDocument([
+            'document_master_type_id' => $type->id, 'document_number' => $number, 'issued_by' => 'Trung tâm Chứng nhận VietGAP (DEMO)',
+            'issue_date' => today()->subMonths(5), 'expiration_date' => today()->addYears(2),
+            'status' => ComplianceDocumentStatus::Active, 'notes' => 'DEMO',
+        ]);
+        $doc->documentable()->associate($vendor);
+        $doc->save();
+
+        $path = sys_get_temp_dir() . '/demo-vietgap-' . $vendor->id . '.png';
+        $this->writeDocImage($path, 'Giấy chứng nhận VietGAP', $number, $vendor->name);
+        app(MediaUploadService::class)->upload(new UploadedFile($path, 'DEMO VietGAP.png', 'image/png', null, true), $doc, 'attachments_private');
     }
 
     private function hqTaxCode(): string

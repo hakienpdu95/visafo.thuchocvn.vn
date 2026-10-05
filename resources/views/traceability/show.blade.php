@@ -11,6 +11,8 @@
 @php
     $fmtAt = fn ($at) => $at ? $at->format($at->format('H:i') === '00:00' ? 'd/m/Y' : 'H:i, d/m/Y') : null;
     $expired = $trace->expDate?->isPast();
+    // Nút pill dùng chung: hồ sơ tab VISAFO (partials/brand) và khối "Hồ sơ liên quan"
+    $pillClass = 'inline-flex max-w-full items-center gap-1.5 rounded-full border border-gray-200 bg-gray-100 py-1.5 pl-2.5 pr-3 text-[13px] font-medium text-gray-800 transition hover:border-green-300 hover:bg-green-50 active:scale-95';
     // Icon (heroicons outline, path "d") dùng chung cho các dòng thông tin — xem partials/row.blade.php
     $icon = [
         'box'       => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
@@ -174,7 +176,7 @@
         </section>
 
         {{-- 2. Thông tin sản phẩm & lô: lưới 2 cột (1 cột khi màn hình < 340px) + NSX / thông tin in bổ sung bên dưới --}}
-        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section id="trace-lot" class="scroll-mt-32 rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin sản phẩm &amp; lô
             </h3>
@@ -283,7 +285,7 @@
         </section>
 
         {{-- 4b. Kiểm soát chất lượng: 3 khâu QC của doanh nghiệp + kết luận lô --}}
-        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section id="trace-qc" class="scroll-mt-32 rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Kiểm soát chất lượng
             </h3>
@@ -303,9 +305,9 @@
                 <div class="mt-1 flex items-baseline justify-between gap-3 border-t border-gray-200 pt-3">
                     <dt class="text-sm text-gray-700">Kết luận lô hàng</dt>
                     @if($trace->qcConclusion === 'pass')
-                    <dd class="shrink-0 text-sm font-bold uppercase text-green-700">Đủ ĐK xuất</dd>
+                    <dd class="shrink-0 text-sm font-medium uppercase text-green-700">Đủ ĐK xuất</dd>
                     @elseif($trace->qcConclusion === 'fail')
-                    <dd class="shrink-0 text-sm font-bold uppercase text-red-600">Không đạt</dd>
+                    <dd class="shrink-0 text-sm font-medium uppercase text-red-600">Không đạt</dd>
                     @else
                     <dd class="shrink-0 text-sm italic text-gray-400">Đang cập nhật</dd>
                     @endif
@@ -316,7 +318,7 @@
         {{-- 4c. Giao vận & điểm nhận (chỉ khi đã xuất kho). Tên điểm nhận đã che, địa chỉ chỉ cấp phường/quận + tỉnh — xử lý ở backend --}}
         @if($trace->delivery)
         @php $dl = $trace->delivery; @endphp
-        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <section id="trace-delivery" class="scroll-mt-32 rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Giao vận &amp; điểm nhận
             </h3>
@@ -343,10 +345,6 @@
                     @endif
                 </div>
             </div>
-            <p class="mt-3 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
-                <span aria-hidden="true">🔒</span>
-                <span>Trang công khai chỉ hiển thị tên tổ chức/điểm giao được phép công bố. SĐT, người liên hệ… không hiển thị công khai.</span>
-            </p>
         </section>
         @endif
 
@@ -363,18 +361,6 @@
                 @unless($trace->location)
                 @include('traceability.partials.row', ['ic' => 'map', 'label' => 'Mã truy vết địa điểm (vùng trồng)', 'value' => null])
                 @endunless
-                @if($trace->producer['isVendor'])
-                @include('traceability.partials.row', ['ic' => 'building', 'label' => 'Đơn vị đóng gói / phân phối',
-                    'value' => $trace->company['name'], 'sub' => $trace->company['address'] ?: null])
-                @endif
-                @if($trace->company['hotline'] !== '')
-                <li class="flex items-center gap-3 py-3">
-                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['phone'] }}"/></svg>
-                    </span>
-                    <a href="tel:{{ preg_replace('/\s+/', '', $trace->company['hotline']) }}" class="font-semibold text-green-700">Hotline: {{ $trace->company['hotline'] }}</a>
-                </li>
-                @endif
             </ul>
         </section>
 
@@ -420,6 +406,54 @@
             @empty
             <p class="text-sm text-gray-500">Đang cập nhật hồ sơ tiêu chuẩn.</p>
             @endforelse
+        </section>
+
+        {{-- 6. Đơn vị cung ứng: doanh nghiệp chủ quản kiểm soát chuỗi (hồ sơ trụ sở chính / config trace) --}}
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Đơn vị cung ứng
+            </h3>
+            <div class="ml-1.5 border-l-2 border-green-200 pl-4 text-sm leading-snug">
+                <p class="font-bold uppercase text-green-700">{{ $trace->company['name'] }}</p>
+                <dl class="mt-2 space-y-1.5 text-gray-700">
+                    <div><dt class="inline">Vai trò:</dt> <dd class="inline font-medium text-gray-900">Tiếp nhận • QC • Sơ chế/đóng gói • Cung ứng</dd></div>
+                    @if($trace->company['address'])
+                    <div><dt class="inline">Địa chỉ:</dt> <dd class="inline font-medium text-gray-900">{{ $trace->company['address'] }}</dd></div>
+                    @endif
+                    @if($trace->company['taxCode'] !== '')
+                    <div><dt class="inline">MST:</dt> <dd class="inline font-mono font-medium text-gray-900">{{ $trace->company['taxCode'] }}</dd></div>
+                    @endif
+                    @if($trace->company['hotline'] !== '')
+                    <div><dt class="inline">Hotline:</dt> <dd class="inline"><a href="tel:{{ preg_replace('/\s+/', '', $trace->company['hotline']) }}" class="font-semibold text-green-700">{{ $trace->company['hotline'] }}</a></dd></div>
+                    @endif
+                </dl>
+            </div>
+        </section>
+
+        {{-- 7. Hồ sơ liên quan: chỉ nút có dữ liệu thật — Hồ sơ nguồn mở file (lightbox, route trace.document), các nút khác cuộn tới khối tương ứng --}}
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Hồ sơ liên quan
+            </h3>
+            <div class="flex flex-wrap gap-2">
+                @if($trace->sourceDocuments)
+                @php
+                    $sourceSlides = collect($trace->sourceDocuments)->flatMap(fn ($d) => array_map(fn ($f) => ['img' => $f['isPdf'] ? $f['preview'] : $f['url'], 'pdf' => $f['isPdf'] ? $f['url'] : null], $d['files']))->values()->all();
+                @endphp
+                <button type="button" data-trace-lightbox='@json($sourceSlides)' data-trace-caption="{{ collect($trace->sourceDocuments)->pluck('caption')->implode(' | ') }}" class="{{ $pillClass }}">🌱 Hồ sơ nguồn <span aria-hidden="true">›</span></button>
+                @endif
+                @if(collect($trace->qualityChecks)->contains(fn ($q) => $q['result'] !== null))
+                <button type="button" data-trace-scroll="trace-qc" class="{{ $pillClass }}">📋 Phiếu QC <span aria-hidden="true">›</span></button>
+                @endif
+                @if($trace->hasBatch)
+                <button type="button" data-trace-scroll="trace-lot" class="{{ $pillClass }}">📦 Phiếu lô <span aria-hidden="true">›</span></button>
+                @endif
+                @if($trace->delivery)
+                <button type="button" data-trace-scroll="trace-delivery" class="{{ $pillClass }}">🚚 Giao nhận <span aria-hidden="true">›</span></button>
+                @endif
+                <button type="button" data-trace-goto-tab="brand" class="{{ $pillClass }}">🏢 Hồ sơ {{ $trace->brand }} <span aria-hidden="true">›</span></button>
+            </div>
+            <p class="mt-3 text-xs text-gray-400">Chỉ hiển thị chứng nhận/hồ sơ thực sự liên kết với nguồn, sản phẩm hoặc lô tương ứng.</p>
         </section>
 
         </div>
@@ -519,6 +553,13 @@
         });
         const hashTab = Object.keys(tabHash).find((k) => tabHash[k] === location.hash);
         if (tabs.length && hashTab) showTab(hashTab);
+        // Nút "Hồ sơ liên quan": cuộn tới khối trong tab Sản phẩm, hoặc chuyển sang tab VISAFO
+        document.querySelectorAll('[data-trace-scroll]').forEach((b) => b.addEventListener('click', () =>
+            document.getElementById(b.dataset.traceScroll)?.scrollIntoView({ behavior: 'smooth', block: 'start' })));
+        document.querySelectorAll('[data-trace-goto-tab]').forEach((b) => b.addEventListener('click', () => {
+            showTab(b.dataset.traceGotoTab);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }));
 
         // Lightbox xem ảnh hồ sơ doanh nghiệp
         const box = document.querySelector('[data-trace-lightbox-root]');
