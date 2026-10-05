@@ -76,14 +76,3 @@
     <p class="text-sm text-gray-500">Đang cập nhật hồ sơ doanh nghiệp.</p>
     @endforelse
 </section>
-
-{{-- Lightbox xem bản scan (các tệp của một hồ sơ xếp dọc, cuộn được) --}}
-<div data-trace-lightbox-root hidden class="fixed inset-0 z-50 flex flex-col bg-black/90" role="dialog" aria-modal="true" aria-label="Xem hồ sơ">
-    <div class="flex justify-end p-3">
-        <button type="button" data-trace-lightbox-close aria-label="Đóng"
-                class="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-    </div>
-    <div data-trace-lightbox-body class="flex-1 space-y-3 overflow-y-auto px-3 pb-6"></div>
-</div>

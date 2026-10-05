@@ -410,6 +410,17 @@
     </main>
     @endunless
 </div>
+{{-- Lightbox xem bản scan (các tệp của một hồ sơ xếp dọc, cuộn được). Đặt ngoài các tab: nút mở nằm ở cả tab Sản phẩm lẫn VISAFO —
+     nếu nằm trong panel đang ẩn thì lightbox mở "vô hình" mà trang vẫn bị khóa cuộn. --}}
+<div data-trace-lightbox-root hidden class="fixed inset-0 z-50 flex flex-col bg-black/90" role="dialog" aria-modal="true" aria-label="Xem hồ sơ">
+    <div class="flex justify-end p-3">
+        <button type="button" data-trace-lightbox-close aria-label="Đóng"
+                class="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+    <div data-trace-lightbox-body class="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 pb-6"></div>
+</div>
 {{-- Ảnh sản phẩm lỗi URL (404, hết hạn) → thay bằng ảnh placeholder cùng kích thước khung --}}
 <template id="trace-img-placeholder-lg">@include('traceability.partials.image-placeholder', ['size' => 'lg'])</template>
 <template id="trace-img-placeholder-sm">@include('traceability.partials.image-placeholder', ['size' => 'sm'])</template>
