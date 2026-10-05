@@ -429,7 +429,11 @@
         const closeBox = () => { box.hidden = true; boxBody.replaceChildren(); document.body.style.overflow = ''; };
         document.querySelectorAll('[data-trace-lightbox]').forEach((btn) => btn.addEventListener('click', () => {
             // Mỗi tệp: ảnh lớn (PDF = trang 1 đã render) + nút mở bản PDF đầy đủ nếu là PDF
-            boxBody.replaceChildren(...JSON.parse(btn.dataset.traceLightbox).map(({ img: src, pdf }) => {
+            // Chú thích hồ sơ (tên · số · cơ quan cấp · hiệu lực) đứng đầu lightbox
+            const caption = document.createElement('p');
+            caption.className = 'mx-auto w-full max-w-2xl text-center text-sm font-medium text-white';
+            caption.textContent = btn.dataset.traceCaption || '';
+            boxBody.replaceChildren(...(caption.textContent ? [caption] : []), ...JSON.parse(btn.dataset.traceLightbox).map(({ img: src, pdf }) => {
                 const fig = document.createElement('figure');
                 fig.className = 'mx-auto w-full max-w-2xl';
                 const img = document.createElement('img');
