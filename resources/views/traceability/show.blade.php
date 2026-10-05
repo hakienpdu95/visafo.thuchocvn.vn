@@ -348,66 +348,6 @@
         </section>
         @endif
 
-        {{-- 3. Đơn vị sản xuất, kinh doanh & địa điểm --}}
-        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Đơn vị sản xuất, kinh doanh
-            </h3>
-            <ul class="divide-y divide-gray-100">
-                @include('traceability.partials.row', ['ic' => 'factory', 'label' => $trace->producer['isOwnFarm'] ? 'Vùng trồng của ' . $trace->brand . ' (tự sản xuất)' : ($trace->producer['isVendor'] ? 'Đơn vị sản xuất / Nguồn cung' : 'Đơn vị sản xuất, kinh doanh'),
-                    'value' => $trace->producer['name'], 'sub' => $trace->producer['taxCode'] ? 'MST: ' . $trace->producer['taxCode'] : null])
-                @include('traceability.partials.row', ['ic' => 'pin', 'label' => 'Địa chỉ', 'value' => $trace->producer['address']])
-                {{-- Có lô canh tác thì mã địa điểm nằm ở khối "Nguồn gốc sản phẩm"; chưa có vẫn giữ dòng (trường bắt buộc TT 02/2024) --}}
-                @unless($trace->location)
-                @include('traceability.partials.row', ['ic' => 'map', 'label' => 'Mã truy vết địa điểm (vùng trồng)', 'value' => null])
-                @endunless
-            </ul>
-        </section>
-
-        {{-- 3b. Nguồn cung cấp + sản phẩm cùng đơn bán, cùng NCC (ẩn danh sách khi chỉ có đúng SP này) --}}
-        @if($trace->supplier)
-        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin nguồn cung cấp
-            </h3>
-            <ul class="divide-y divide-gray-100">
-                @include('traceability.partials.row', ['ic' => 'farm', 'label' => 'Nhà cung cấp tận gốc', 'value' => $trace->supplier['name']])
-                @include('traceability.partials.row', ['ic' => 'pin', 'label' => 'Địa chỉ', 'value' => $trace->supplier['address']])
-            </ul>
-            @if($trace->relatedProducts)
-            <div class="mt-1 border-t border-gray-100 pt-3">
-                <p class="mb-2 text-sm text-gray-600">Các sản phẩm cùng nhập trong lô hàng này:</p>
-                @include('traceability.partials.product-strip', ['products' => $trace->relatedProducts])
-            </div>
-            @endif
-        </section>
-        @endif
-
-        {{-- 4. Tiêu chuẩn công bố áp dụng (chỉ hồ sơ đang hiệu lực, thuộc whitelist công khai) --}}
-        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Tiêu chuẩn &amp; chứng nhận
-            </h3>
-            @forelse($trace->standards as $doc)
-            <div class="flex gap-3 rounded-xl border border-green-100 bg-green-50/60 p-3 {{ $loop->last ? '' : 'mb-2' }}">
-                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-green-700 ring-1 ring-green-200">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['shield'] }}"/></svg>
-                </span>
-                <div class="min-w-0 text-sm">
-                    <p class="font-semibold leading-snug text-gray-900">{{ $doc['name'] }}</p>
-                    @if($doc['number'])<p class="text-gray-600">Số: <span class="font-mono">{{ $doc['number'] }}</span></p>@endif
-                    @if($doc['issuedBy'])<p class="text-gray-600">Cấp bởi: {{ $doc['issuedBy'] }}</p>@endif
-                    <p class="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                        <span class="rounded-full bg-green-600 px-2 py-0.5 font-medium text-white">Đang hiệu lực</span>
-                        <span class="text-gray-500">{{ $doc['owner'] }}{{ $doc['expiresAt'] ? ' · đến ' . $doc['expiresAt']->format('d/m/Y') : '' }}</span>
-                    </p>
-                </div>
-            </div>
-            @empty
-            <p class="text-sm text-gray-500">Đang cập nhật hồ sơ tiêu chuẩn.</p>
-            @endforelse
-        </section>
-
         {{-- 6. Đơn vị cung ứng: doanh nghiệp chủ quản kiểm soát chuỗi (hồ sơ trụ sở chính / config trace) --}}
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
@@ -453,7 +393,6 @@
                 @endif
                 <button type="button" data-trace-goto-tab="brand" class="{{ $pillClass }}">🏢 Hồ sơ {{ $trace->brand }} <span aria-hidden="true">›</span></button>
             </div>
-            <p class="mt-3 text-xs text-gray-400">Chỉ hiển thị chứng nhận/hồ sơ thực sự liên kết với nguồn, sản phẩm hoặc lô tương ứng.</p>
         </section>
 
         </div>

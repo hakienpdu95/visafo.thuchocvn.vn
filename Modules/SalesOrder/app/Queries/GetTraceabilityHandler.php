@@ -14,10 +14,8 @@ use Modules\GoodsReceipt\Enums\QualityCheckStage;
 use Modules\GoodsReceipt\Models\BatchQualityCheck;
 use Modules\GoodsReceipt\Models\ProductBatch;
 use Modules\Product\Enums\DocumentGroupType;
-use Modules\Product\Enums\ProductStatus;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingSource;
-use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
@@ -28,24 +26,8 @@ use Modules\Vendor\Models\Vendor;
 
 class GetTraceabilityHandler implements QueryHandlerInterface
 {
-    /**
-     * Loại hồ sơ được phép công khai ở mục "Tiêu chuẩn áp dụng" (theo document_master_types.code).
-     * Whitelist thay vì lấy hết: CCCD, hợp đồng, hóa đơn, sổ nội bộ... tuyệt đối không công bố.
-     */
-    private const PUBLIC_STANDARD_CODES = [
-        'product_declaration', // Tự công bố / Đăng ký bản công bố
-        'supplier_vietgap',    // VietGAP / GlobalGAP
-        'supplier_gmp',
-        'supplier_ocop',
-        'supplier_vet',        // Kiểm dịch thú y
-        'supplier_attp',       // Cơ sở đủ điều kiện ATTP (NCC)
-    ];
-
     /** Chứng nhận vùng trồng / cơ sở của nguồn cung (gắn NCC hoặc mặt hàng của NCC) — nút "Hồ sơ nguồn". */
     private const SOURCE_DOCUMENT_CODES = ['supplier_vietgap', 'supplier_gmp', 'supplier_ocop', 'supplier_vet', 'supplier_attp'];
-
-    /** Hồ sơ chung của chính doanh nghiệp (documentable_type = null) được công khai. */
-    private const PUBLIC_COMPANY_STANDARD_CODES = ['facility_attp', 'internal_haccp'];
 
     /** Định dạng file hồ sơ doanh nghiệp được phát ra trang công khai (xem trực tiếp trên trình duyệt). */
     public const PUBLIC_DOCUMENT_MIMES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -116,14 +98,6 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 ->map(fn ($a) => ['key' => $a->attribute_key, 'value' => (string) $a->attribute_value])
                 ->values()->all(),
             company: $company,
-            producer: [
-                // Không có NCC / vùng trồng tự quản → chính doanh nghiệp là đơn vị sản xuất / kinh doanh
-                'name'      => $supplierText ?: $company['name'],
-                'address'   => ($vendor && ! $isOwnFarm) ? $this->vendorAddress($vendor) : ($supplierText ? null : ($company['address'] ?: null)),
-                'taxCode'   => $isOwnFarm ? ($company['taxCode'] ?: null) : ($vendor?->tax_code ?: null),
-                'isVendor'  => (bool) $supplierText,
-                'isOwnFarm' => $isOwnFarm,
-            ],
             location: $source ? [
                 'code'        => $source->source_code,
                 'name'        => $source->name,
@@ -139,14 +113,8 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'harvestApprovedAt' => $farmingBatch->pre_harvest_status === 'passed' ? $farmingBatch->pre_harvest_checked_at : null,
             ] : null,
             batchCode: $batchCode,
-            standards: $this->standards($product, $vendor),
             status: $log->status,
             statusReason: $log->status_reason,
-            supplier: $supplierText ? [
-                'name'    => $supplierText,
-                'address' => $vendor ? $this->vendorAddress($vendor) : null,
-            ] : null,
-            relatedProducts: $this->relatedProducts($item, $vendor, $supplierText, $product),
             brandStory: trim((string) config('trace.brand_story')),
             documentGroups: $this->documentGroups($log->trace_code),
             sourceDocuments: $this->sourceDocuments($farmingBatch, $log->trace_code),
@@ -156,50 +124,6 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             journey: $this->journey($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $order, $qualityChecks, $item),
             delivery: $this->delivery($order, $company),
         );
-    }
-
-    /**
-     * Sản phẩm khác trong CÙNG đơn bán hàng có tem in từ CÙNG nguồn cung (NCC chọn lúc in, NCC của lô nhập,
-     * hoặc tên nguồn cung nhập tay); chỉ SP đang kinh doanh, SP đang xem đứng đầu.
-     * Chỉ có đúng SP đang xem → trả rỗng (view ẩn danh sách).
-     *
-     * @return array<int, array{name: string, image: ?string, isCurrent: bool}>
-     */
-    private function relatedProducts(SalesOrderItem $item, ?Vendor $vendor, ?string $supplierText, ?Product $current): array
-    {
-        if ($vendor === null && ! $supplierText) {
-            return [];
-        }
-
-        $sameSupplier = fn (Builder $q) => $q
-            ->where('status', PrintLogStatus::Active->value)
-            ->where(fn (Builder $w) => $vendor
-                ? $w->where('vendor_id', $vendor->id)
-                    ->orWhere(fn (Builder $b) => $b->whereNull('vendor_id')
-                        ->whereHas('productBatch.goodsReceipt', fn (Builder $r) => $r->where('vendor_id', $vendor->id)))
-                : $w->whereNull('vendor_id')->where('supplier_name', $supplierText));
-
-        $products = SalesOrderItem::query()
-            ->where('order_id', $item->order_id)
-            ->whereHas('printLogs', $sameSupplier)
-            ->with('product.media')
-            ->orderBy('line_no')
-            ->get()
-            ->pluck('product')
-            ->filter(fn (?Product $p) => $p?->status === ProductStatus::Active)
-            ->unique('id')
-            ->sortByDesc(fn (Product $p) => $p->id === $current?->id)
-            ->values();
-
-        if ($products->count() < 2) {
-            return [];
-        }
-
-        return $products->map(fn (Product $p) => [
-            'name'      => $p->name,
-            'image'     => $p->galleryImages()->first()['thumb_url'] ?? ($p->image_url ?: null),
-            'isCurrent' => $p->id === $current?->id,
-        ])->all();
     }
 
     /**
@@ -527,68 +451,6 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     {
         return in_array($vendor->id, (array) config('trace.own_vendor_ids', []), true)
             || ($company['taxCode'] !== '' && $vendor->tax_code !== null && trim($vendor->tax_code) === $company['taxCode']);
-    }
-
-    private function vendorAddress(Vendor $vendor): ?string
-    {
-        $parts = array_filter([$vendor->address, $vendor->ward?->name, $vendor->province?->name]);
-
-        return $parts ? implode(', ', array_unique($parts)) : null;
-    }
-
-    /**
-     * Hồ sơ tiêu chuẩn đang hiệu lực của sản phẩm, NCC, sản phẩm-của-NCC và hồ sơ chung của doanh nghiệp.
-     *
-     * @return array<int, array{name: string, number: ?string, issuedBy: ?string, expiresAt: mixed, owner: string}>
-     */
-    private function standards(?Product $product, ?Vendor $vendor): array
-    {
-        $partnerProduct = ($product && $vendor)
-            ? PartnerProduct::query()->where('vendor_id', $vendor->id)->where('product_id', $product->id)->first()
-            : null;
-
-        $hqId = InternalFacility::query()->where('type', 'headquarter')->value('id');
-
-        $owners = array_filter([
-            'Sản phẩm'          => $product,
-            'Nhà cung cấp'      => $vendor,
-            'Sản phẩm của NCC'  => $partnerProduct,
-        ]);
-
-        return ComplianceDocument::query()
-            ->with('documentType')
-            ->where('status', ComplianceDocumentStatus::Active->value)
-            ->where(fn (Builder $q) => $q->whereNull('expiration_date')->orWhereDate('expiration_date', '>=', today()))
-            ->where(function (Builder $q) use ($owners, $hqId) {
-                foreach ($owners as $model) {
-                    $q->orWhere(fn (Builder $o) => $o
-                        ->where('documentable_type', $model->getMorphClass())
-                        ->where('documentable_id', $model->getKey())
-                        ->whereHas('documentType', fn (Builder $t) => $t->whereIn('code', self::PUBLIC_STANDARD_CODES)));
-                }
-                // Chứng nhận của chính doanh nghiệp (HACCP, ATTP): hồ sơ chung hoặc hồ sơ gắn trụ sở chính —
-                // mọi lô hàng đều qua kiểm soát chất lượng của doanh nghiệp nên kế thừa chứng nhận này.
-                $q->orWhere(fn (Builder $o) => $o
-                    ->where(fn (Builder $w) => $w->whereNull('documentable_type')
-                        ->when($hqId, fn (Builder $h) => $h->orWhere(fn (Builder $f) => $f
-                            ->where('documentable_type', (new InternalFacility())->getMorphClass())
-                            ->where('documentable_id', $hqId))))
-                    ->whereHas('documentType', fn (Builder $t) => $t->whereIn('code', self::PUBLIC_COMPANY_STANDARD_CODES)));
-            })
-            ->orderBy('issue_date')
-            ->get()
-            ->map(fn (ComplianceDocument $doc) => [
-                'name'      => $doc->custom_name ?: ($doc->documentType?->name ?? 'Hồ sơ tiêu chuẩn'),
-                'number'    => $doc->document_number ?: null,
-                'issuedBy'  => $doc->issued_by ?: null,
-                'expiresAt' => $doc->expiration_date,
-                'owner'     => in_array($doc->documentable_type, [null, (new InternalFacility())->getMorphClass()], true)
-                    ? 'Đơn vị phân phối'
-                    : (array_search($doc->documentable_type, array_map(fn ($m) => $m->getMorphClass(), $owners), true) ?: 'Sản phẩm'),
-            ])
-            ->unique(fn ($d) => $d['name'] . '|' . $d['number'])
-            ->values()
-            ->all();
     }
 
     /** @return array{name: string, address: string, hotline: string, taxCode: string, area: string} */
