@@ -151,14 +151,25 @@
             <div class="px-2 pb-2 pt-4">
                 <span class="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon['shield'] }}"/></svg>
-                    Đã xác thực bởi {{ $trace->company['name'] }}
+                    Lô hàng được {{ $trace->brand }} ghi nhận &amp; kiểm soát
                 </span>
-                <h1 class="mt-3 text-[26px] font-semibold leading-tight text-gray-900">{{ $trace->productName }}</h1>
-                <p class="mt-1 text-sm font-medium text-orange-600">{{ $trace->productSubtitle }}</p>
-                <p class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
-                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon['package'] }}"/></svg>
-                    Quy cách: {{ $trace->weight }}
-                </p>
+                <h1 class="mt-3 text-[26px] font-bold leading-tight text-gray-900">{{ $trace->productName }}</h1>
+                @if($trace->categoryName)
+                <p class="mt-1 text-sm font-medium text-orange-600">{{ $trace->categoryName }}</p>
+                @endif
+                {{-- Quy cách · Mã lô · Mã TXNG --}}
+                <div class="mt-3 flex flex-wrap gap-2">
+                    @foreach(array_filter([
+                        ['package', 'Quy cách: ' . $trace->weight, false],
+                        $trace->batchCode ? ['tag', 'Lô: ' . $trace->batchCode, true] : null,
+                        ['qr', 'TX: ' . strtoupper($trace->traceCode), true],
+                    ]) as [$pillIcon, $pillText, $pillMono])
+                    <span class="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 {{ $pillMono ? 'font-mono' : '' }}">
+                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon[$pillIcon] }}"/></svg>
+                        {{ $pillText }}
+                    </span>
+                    @endforeach
+                </div>
             </div>
         </section>
 

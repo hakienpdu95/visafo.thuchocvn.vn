@@ -110,7 +110,6 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         return new TraceabilityData(
             traceCode: $log->trace_code,
             productName: $productName,
-            productSubtitle: $product?->category?->name ?: (string) config('trace.company_slogan'),
             productDescription: trim((string) $product?->description) ?: $this->autoDescription($productName, $supplierText, $source, $company['name']),
             productImages: array_values($productImages),
             categoryName: $product?->category?->name,

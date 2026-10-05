@@ -30,7 +30,6 @@ readonly class TraceabilityData
     public function __construct(
         public string $traceCode,
         public string $productName,
-        public string $productSubtitle,
         public string $productDescription,
         public array $productImages,
         public ?string $categoryName,
