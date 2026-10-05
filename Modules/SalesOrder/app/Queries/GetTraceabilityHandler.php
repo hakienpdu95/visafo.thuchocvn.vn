@@ -140,7 +140,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'harvestedAt' => $farmingBatch->actual_harvest_date,
             ] : null,
             batchCode: $batchCode,
-            timeline: $this->timeline($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $supplierText, $batchCode, $order, $qualityChecks, $company['name']),
+            timeline: $this->timeline($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $supplierText, $batchCode, $order, $qualityChecks, (string) config('trace.company_name', 'VISAFO')),
             standards: $this->standards($product, $vendor),
             status: $log->status,
             statusReason: $log->status_reason,
@@ -322,26 +322,50 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         ];
     }
 
-    /** Che tên khách hàng trên trang công khai: giữ từ đầu, các từ sau chỉ giữ chữ cái đầu. VD "Trường MN Hoa Sen" → "Trường M*** H*** S***". */
+    /** Tiền tố loại đơn vị giữ nguyên khi che tên điểm nhận (so khớp không phân biệt hoa thường, dài nhất trước). */
+    private const RECIPIENT_TYPE_PREFIXES = [
+        'Trường mầm non', 'Trường tiểu học', 'Trường THCS', 'Trường THPT', 'Trường MN', 'Trường TH',
+        'Bếp ăn', 'Công ty TNHH', 'Công ty cổ phần', 'Công ty CP', 'Công ty', 'Nhà hàng', 'Khách sạn',
+    ];
+
+    /**
+     * Che tên điểm nhận trên trang công khai: giữ tiền tố loại đơn vị (nếu có, giữ đúng cách viết gốc), phần tên riêng
+     * chỉ giữ chữ cái đầu. Không có tiền tố → giữ từ đầu tiên. Từ có chữ số (số nhà, SĐT) che toàn bộ.
+     * VD "Trường Mầm non Hoa Sen" → "Trường Mầm non H*** S***".
+     */
     private function maskName(?string $name): ?string
     {
-        // Bỏ dấu câu rời ("-", ","); từ có chữ số (số nhà, SĐT) che toàn bộ
-        $words = array_values(array_filter(
-            preg_split('/\s+/u', trim((string) $name), -1, PREG_SPLIT_NO_EMPTY),
-            fn (string $w) => preg_match('/[\p{L}\p{N}]/u', $w),
-        ));
-        if (! $words) {
+        $name = trim((string) preg_replace('/\s+/u', ' ', (string) $name));
+        if ($name === '') {
             return null;
         }
 
-        return implode(' ', array_map(
+        $prefixes = self::RECIPIENT_TYPE_PREFIXES;
+        usort($prefixes, fn ($a, $b) => mb_strlen($b) <=> mb_strlen($a));
+        $kept = null;
+        foreach ($prefixes as $prefix) {
+            if (preg_match('/^' . preg_quote($prefix, '/') . '(?=\s|$)/iu', $name, $m)) {
+                $kept = $m[0];
+                break;
+            }
+        }
+
+        // Bỏ dấu câu rời ("-", ",")
+        $words = array_values(array_filter(
+            preg_split('/\s+/u', $kept !== null ? mb_substr($name, mb_strlen($kept)) : $name, -1, PREG_SPLIT_NO_EMPTY),
+            fn (string $w) => preg_match('/[\p{L}\p{N}]/u', $w),
+        ));
+
+        $masked = array_map(
             fn (string $w, int $i) => match (true) {
                 (bool) preg_match('/\p{N}/u', $w) => '***',
-                $i === 0                         => $w,
+                $kept === null && $i === 0       => $w,
                 default                          => mb_substr($w, 0, 1) . '***',
             },
             $words, array_keys($words),
-        ));
+        );
+
+        return implode(' ', array_filter([$kept, ...$masked])) ?: null;
     }
 
     /** Vendor đại diện vùng trồng tự quản: khai báo ID ở TRACE_OWN_VENDOR_IDS, hoặc trùng MST với hồ sơ trụ sở chính. */
@@ -352,7 +376,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     }
 
     /** @return array<int, array{icon: string, title: string, description: string, at: mixed, done: bool, image?: ?string}> */
-    private function timeline(PrintLog $log, ?FarmingBatch $farmingBatch, $receivedAt, ?string $supplier, ?string $batchCode, ?SalesOrder $order, Collection $checks, string $companyName): array
+    private function timeline(PrintLog $log, ?FarmingBatch $farmingBatch, $receivedAt, ?string $supplier, ?string $batchCode, ?SalesOrder $order, Collection $checks, string $brand): array
     {
         $farmSteps = [];
 
@@ -418,7 +442,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         $qcStep = fn (QualityCheckStage $stage, string $icon) => ($check = $checks->get($stage->value)) ? [[
             'icon'        => $icon,
             'title'       => $stage->label(),
-            'description' => $check->result->label() . ' — ' . $companyName . ' kiểm soát.',
+            'description' => $check->result->label() . ' — ' . $brand . ' kiểm soát.',
             'at'          => $check->checked_at,
             'done'        => true,
         ]] : [];
@@ -502,6 +526,8 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ? PartnerProduct::query()->where('vendor_id', $vendor->id)->where('product_id', $product->id)->first()
             : null;
 
+        $hqId = InternalFacility::query()->where('type', 'headquarter')->value('id');
+
         $owners = array_filter([
             'Sản phẩm'          => $product,
             'Nhà cung cấp'      => $vendor,
@@ -512,15 +538,20 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ->with('documentType')
             ->where('status', ComplianceDocumentStatus::Active->value)
             ->where(fn (Builder $q) => $q->whereNull('expiration_date')->orWhereDate('expiration_date', '>=', today()))
-            ->where(function (Builder $q) use ($owners) {
+            ->where(function (Builder $q) use ($owners, $hqId) {
                 foreach ($owners as $model) {
                     $q->orWhere(fn (Builder $o) => $o
                         ->where('documentable_type', $model->getMorphClass())
                         ->where('documentable_id', $model->getKey())
                         ->whereHas('documentType', fn (Builder $t) => $t->whereIn('code', self::PUBLIC_STANDARD_CODES)));
                 }
+                // Chứng nhận của chính doanh nghiệp (HACCP, ATTP): hồ sơ chung hoặc hồ sơ gắn trụ sở chính —
+                // mọi lô hàng đều qua kiểm soát chất lượng của doanh nghiệp nên kế thừa chứng nhận này.
                 $q->orWhere(fn (Builder $o) => $o
-                    ->whereNull('documentable_type')
+                    ->where(fn (Builder $w) => $w->whereNull('documentable_type')
+                        ->when($hqId, fn (Builder $h) => $h->orWhere(fn (Builder $f) => $f
+                            ->where('documentable_type', (new InternalFacility())->getMorphClass())
+                            ->where('documentable_id', $hqId))))
                     ->whereHas('documentType', fn (Builder $t) => $t->whereIn('code', self::PUBLIC_COMPANY_STANDARD_CODES)));
             })
             ->orderBy('issue_date')
@@ -530,7 +561,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'number'    => $doc->document_number ?: null,
                 'issuedBy'  => $doc->issued_by ?: null,
                 'expiresAt' => $doc->expiration_date,
-                'owner'     => $doc->documentable_type === null
+                'owner'     => in_array($doc->documentable_type, [null, (new InternalFacility())->getMorphClass()], true)
                     ? 'Đơn vị phân phối'
                     : (array_search($doc->documentable_type, array_map(fn ($m) => $m->getMorphClass(), $owners), true) ?: 'Sản phẩm'),
             ])

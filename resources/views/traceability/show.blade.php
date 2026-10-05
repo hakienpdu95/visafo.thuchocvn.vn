@@ -114,16 +114,13 @@
                             @foreach($trace->productImages as $i => $imageUrl)
                             <div class="swiper-slide">
                                 <img src="{{ $imageUrl }}" alt="{{ $trace->productName }}{{ $i ? ' — ảnh ' . ($i + 1) : '' }}"
-                                     class="h-full w-full object-cover" @if($i) loading="lazy" @endif>
+                                     class="h-full w-full object-cover" @if($i) loading="lazy" @endif data-trace-img-fallback>
                             </div>
                             @endforeach
                         </div>
                     </div>
                 @else
-                <div class="flex h-full flex-col items-center justify-center text-gray-300">
-                    <svg class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="{{ $icon['box'] }}"/></svg>
-                    <span class="mt-1 text-xs text-gray-400">Chưa có hình ảnh</span>
-                </div>
+                @include('traceability.partials.image-placeholder', ['size' => 'lg'])
                 @endif
 
                 {{-- Nút nổi: Chia sẻ / Yêu thích --}}
@@ -359,6 +356,15 @@
     </main>
     @endunless
 </div>
+{{-- Ảnh sản phẩm lỗi URL (404, hết hạn) → thay bằng ảnh placeholder cùng kích thước khung --}}
+<template id="trace-img-placeholder-lg">@include('traceability.partials.image-placeholder', ['size' => 'lg'])</template>
+<template id="trace-img-placeholder-sm">@include('traceability.partials.image-placeholder', ['size' => 'sm'])</template>
+<script>
+    document.querySelectorAll('img[data-trace-img-fallback]').forEach((img) => {
+        const swap = () => img.replaceWith(document.getElementById('trace-img-placeholder-' + (img.dataset.traceImgFallback || 'lg')).content.cloneNode(true));
+        if (img.complete && img.naturalWidth === 0) swap(); else img.addEventListener('error', swap, { once: true });
+    });
+</script>
 @if(count($trace->productImages) > 1)
 <script type="module">
     // Pagination tự vẽ (pill "1/N" + chấm) thay cho pagination mặc định của Swiper

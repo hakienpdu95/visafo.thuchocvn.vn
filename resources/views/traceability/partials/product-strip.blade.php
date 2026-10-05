@@ -4,9 +4,9 @@
     <li class="w-20 shrink-0 snap-start text-center">
         <div class="relative mx-auto h-16 w-16 overflow-hidden rounded-xl bg-gray-100 {{ $related['isCurrent'] ? 'ring-2 ring-green-600 ring-offset-1' : 'ring-1 ring-black/5' }}">
             @if($related['image'])
-            <img src="{{ $related['image'] }}" alt="{{ $related['name'] }}" class="h-full w-full object-cover" loading="lazy">
+            <img src="{{ $related['image'] }}" alt="{{ $related['name'] }}" class="h-full w-full object-cover" loading="lazy" data-trace-img-fallback="sm">
             @else
-            <svg class="m-auto h-full w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $icon['box'] }}"/></svg>
+            @include('traceability.partials.image-placeholder', ['size' => 'sm'])
             @endif
         </div>
         <p class="mt-1.5 line-clamp-2 text-xs font-medium leading-tight {{ $related['isCurrent'] ? 'text-green-700' : 'text-gray-800' }}">{{ $related['name'] }}</p>
