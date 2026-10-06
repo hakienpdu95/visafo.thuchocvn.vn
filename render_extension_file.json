@@ -65,7 +65,8 @@
         "product_type///string///20///NOT_NULL///__///__///raw_material | finished_good | trading_good | consumables",
         "shelf_life_days///unsignedInteger///__///_NULL///NULL///__///Số ngày bảo quản mặc định để tự động tính HSD",
         "label_template_id///unsignedBigInteger///__///_NULL///NULL///->constrained('label_templates')->onDelete('set null')///Mẫu tem in cho sản phẩm — NULL = dùng tem mặc định của hệ thống",
-        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "description///text///__///_NULL///NULL///__///Mô tả ngắn hiển thị trên trang truy xuất"
     ],
     [
         "contracts///add///__///",
@@ -89,7 +90,8 @@
     [
         "document_master_types///add///__///",
         "internal_tab_group///string///20///_NULL///NULL///__///legal | operation | hr — chỉ dùng khi applicable_to chứa internal, quyết định tab hiển thị ở trang Hồ sơ năng lực VISAFO",
-        "__index///index///__///__///__///internal_tab_group|idx_document_master_types_internal_tab_group///__"
+        "__index///index///__///__///__///internal_tab_group|idx_document_master_types_internal_tab_group///__",
+        "is_public///boolean///__///NOT_NULL///false///__///__"
     ],
     [
         "compliance_documents///add///__///",
@@ -138,7 +140,12 @@
         "__index///index///__///__///__///product_batch_id///__",
         "__index///index///__///__///__///batch_code///__",
         "__index///index///__///__///__///created_at///__",
-        "ulid///ulid///__///_NULL///NULL///__///Nhà cung cấp chọn khi in"
+        "ulid///ulid///__///_NULL///NULL///__///Nhà cung cấp chọn khi in",
+        "print_count///unsignedInteger///__///NOT_NULL///1///__///Số lần in tem này",
+        "last_printed_at///timestamp///__///_NULL///NULL///__///Lần in gần nhất",
+        "last_print_session_id///string///26///_NULL///NULL///__///Phiên in gần nhất chứa tem này",
+        "__index///index///__///__///__///last_print_session_id///__",
+        "__index///index///__///__///__///order_item_id,status///__"
     ],
     [
         "food_inspection_step1_details///add///__///",
@@ -171,7 +178,10 @@
         "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
         "__index///index///__///__///__///delivery_date///__",
         "__index///index///__///__///__///created_at///__",
-        "__index///index///__///__///__///customer_name///__"
+        "__index///index///__///__///__///customer_name///__",
+        "delivery_code///string///30///_NULL///NULL///->unique()///Mã vận đơn GH-yymmdd-XXXX, sinh khi bấm Xuất kho",
+        "shipped_at///timestamp///__///_NULL///NULL///__///Thời điểm xuất kho",
+        "delivered_at///timestamp///__///_NULL///NULL///__///Thời điểm giao thành công"
     ],
     [
         "partner_products///add///__///",
@@ -183,7 +193,8 @@
     ],
     [
         "product_batches///add///__///",
-        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "farming_batch_id///unsignedBigInteger///__///_NULL///NULL///->constrained('farming_batches')->onDelete('set null')///Lô canh tác nguồn (nhật ký đồng ruộng) — trang truy xuất đi theo khóa này, không đoán theo mã lô"
     ],
     [
         "food_inspection_step2_logs///add///__///",
@@ -203,7 +214,15 @@
     ],
     [
         "internal_facilities///add///__///",
-        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "company_name///string///__///_NULL///NULL///__///__",
+        "company_type///string///30///_NULL///NULL///__///__",
+        "tax_code///string///20///_NULL///NULL///__///__",
+        "tax_code_issue_date///date///__///_NULL///NULL///__///__",
+        "tax_code_issue_place///string///__///_NULL///NULL///__///__",
+        "province_code///string///2///_NULL///NULL///__///__",
+        "ward_code///string///5///_NULL///NULL///__///__",
+        "supply_chain_role///longText///__///_NULL///NULL///__///Vai trò trong chuỗi cung ứng (HTML từ Jodit, đã làm sạch) — hiển thị ở khối \"Đơn vị cung ứng\" trang truy xuất"
     ],
     [
         "farming_batches///add///__///",

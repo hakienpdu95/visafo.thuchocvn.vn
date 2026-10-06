@@ -59,6 +59,21 @@ return new class extends Migration {
             if (!Schema::hasColumn('print_logs', 'ulid')) {
                 $table->ulid('ulid')->nullable()->after('created_by')->comment('Nhà cung cấp chọn khi in');
             }
+            if (!Schema::hasColumn('print_logs', 'print_count')) {
+                $table->unsignedInteger('print_count')->default(1)->after('ulid')->comment('Số lần in tem này');
+            }
+            if (!Schema::hasColumn('print_logs', 'last_printed_at')) {
+                $table->timestamp('last_printed_at')->nullable()->after('print_count')->comment('Lần in gần nhất');
+            }
+            if (!Schema::hasColumn('print_logs', 'last_print_session_id')) {
+                $table->string('last_print_session_id', 26)->nullable()->after('last_printed_at')->comment('Phiên in gần nhất chứa tem này');
+            }
+            if (!Schema::hasIndex('print_logs', 'print_logs_last_print_session_id_index')) {
+                $table->index('last_print_session_id');
+            }
+            if (!Schema::hasIndex('print_logs', 'print_logs_order_item_id_status_index')) {
+                $table->index(['order_item_id', 'status']);
+            }
         });
     }
 
@@ -68,7 +83,7 @@ return new class extends Migration {
             if (Schema::hasColumn('print_logs', 'label_template_id')) $table->dropForeign(['label_template_id']);
             if (Schema::hasColumn('print_logs', 'status_changed_by')) $table->dropForeign(['status_changed_by']);
             if (Schema::hasColumn('print_logs', 'created_by')) $table->dropForeign(['created_by']);
-            $cols = array_filter(['label_template_id', 'trace_code', 'print_session_id', 'status', 'status_reason', 'status_changed_by', 'status_changed_at', 'batch_code', 'vendor_id', 'product_batch_id', 'created_by', 'ulid'], fn($c) => Schema::hasColumn('print_logs', $c));
+            $cols = array_filter(['label_template_id', 'trace_code', 'print_session_id', 'status', 'status_reason', 'status_changed_by', 'status_changed_at', 'batch_code', 'vendor_id', 'product_batch_id', 'created_by', 'ulid', 'print_count', 'last_printed_at', 'last_print_session_id'], fn($c) => Schema::hasColumn('print_logs', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

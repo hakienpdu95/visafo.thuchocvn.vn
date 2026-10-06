@@ -35,6 +35,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('products', 'created_by')) {
                 $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->after('label_template_id')->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
             }
+            if (!Schema::hasColumn('products', 'description')) {
+                $table->text('description')->nullable()->after('created_by')->comment('Mô tả ngắn hiển thị trên trang truy xuất');
+            }
         });
     }
 
@@ -44,7 +47,7 @@ return new class extends Migration {
             if (Schema::hasColumn('products', 'category_id')) $table->dropForeign(['category_id']);
             if (Schema::hasColumn('products', 'label_template_id')) $table->dropForeign(['label_template_id']);
             if (Schema::hasColumn('products', 'created_by')) $table->dropForeign(['created_by']);
-            $cols = array_filter(['sapo_product_id', 'sapo_variant_id', 'image_url', 'category_id', 'product_type', 'shelf_life_days', 'label_template_id', 'created_by'], fn($c) => Schema::hasColumn('products', $c));
+            $cols = array_filter(['sapo_product_id', 'sapo_variant_id', 'image_url', 'category_id', 'product_type', 'shelf_life_days', 'label_template_id', 'created_by', 'description'], fn($c) => Schema::hasColumn('products', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

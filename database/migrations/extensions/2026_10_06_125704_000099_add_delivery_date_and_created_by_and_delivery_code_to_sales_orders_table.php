@@ -26,6 +26,15 @@ return new class extends Migration {
             if (!Schema::hasIndex('sales_orders', 'sales_orders_customer_name_index')) {
                 $table->index('customer_name');
             }
+            if (!Schema::hasColumn('sales_orders', 'delivery_code')) {
+                $table->string('delivery_code', 30)->nullable()->unique()->after('created_by')->comment('Mã vận đơn GH-yymmdd-XXXX, sinh khi bấm Xuất kho');
+            }
+            if (!Schema::hasColumn('sales_orders', 'shipped_at')) {
+                $table->timestamp('shipped_at')->nullable()->after('delivery_code')->comment('Thời điểm xuất kho');
+            }
+            if (!Schema::hasColumn('sales_orders', 'delivered_at')) {
+                $table->timestamp('delivered_at')->nullable()->after('shipped_at')->comment('Thời điểm giao thành công');
+            }
         });
     }
 
@@ -33,7 +42,7 @@ return new class extends Migration {
     {
         Schema::table('sales_orders', function (Blueprint $table) {
             if (Schema::hasColumn('sales_orders', 'created_by')) $table->dropForeign(['created_by']);
-            $cols = array_filter(['delivery_date', 'created_by'], fn($c) => Schema::hasColumn('sales_orders', $c));
+            $cols = array_filter(['delivery_date', 'created_by', 'delivery_code', 'shipped_at', 'delivered_at'], fn($c) => Schema::hasColumn('sales_orders', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

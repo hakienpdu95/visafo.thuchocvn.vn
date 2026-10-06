@@ -17,13 +17,16 @@ return new class extends Migration {
             if (!Schema::hasIndex('document_master_types', 'idx_document_master_types_internal_tab_group')) {
                 $table->index('internal_tab_group', 'idx_document_master_types_internal_tab_group');
             }
+            if (!Schema::hasColumn('document_master_types', 'is_public')) {
+                $table->boolean('is_public')->default(false)->after('internal_tab_group');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('document_master_types', function (Blueprint $table) {
-            $cols = array_filter(['internal_tab_group'], fn($c) => Schema::hasColumn('document_master_types', $c));
+            $cols = array_filter(['internal_tab_group', 'is_public'], fn($c) => Schema::hasColumn('document_master_types', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

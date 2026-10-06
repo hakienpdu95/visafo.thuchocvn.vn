@@ -14,6 +14,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('product_batches', 'created_by')) {
                 $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
             }
+            if (!Schema::hasColumn('product_batches', 'farming_batch_id')) {
+                $table->foreignUlid('farming_batch_id')->nullable()->constrained('farming_batches')->nullOnDelete()->after('created_by')->comment('Lô canh tác nguồn (nhật ký đồng ruộng) — trang truy xuất đi theo khóa này, không đoán theo mã lô');
+            }
         });
     }
 
@@ -21,7 +24,8 @@ return new class extends Migration {
     {
         Schema::table('product_batches', function (Blueprint $table) {
             if (Schema::hasColumn('product_batches', 'created_by')) $table->dropForeign(['created_by']);
-            $cols = array_filter(['created_by'], fn($c) => Schema::hasColumn('product_batches', $c));
+            if (Schema::hasColumn('product_batches', 'farming_batch_id')) $table->dropForeign(['farming_batch_id']);
+            $cols = array_filter(['created_by', 'farming_batch_id'], fn($c) => Schema::hasColumn('product_batches', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }
