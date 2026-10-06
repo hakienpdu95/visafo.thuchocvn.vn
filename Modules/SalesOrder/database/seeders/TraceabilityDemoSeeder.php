@@ -109,6 +109,32 @@ class TraceabilityDemoSeeder extends Seeder
             $logB = $this->lot('b', $own, $products['b'], $fbB, $order, 2, 'NK-DEMO-0002', receiptDaysAgo: 1, weight: 1, qc: ['receiving' => 'pass']);
             $this->lot('c', $trader, $products['c'], null, $order2, 1, 'NK-DEMO-0003', receiptDaysAgo: 6, weight: 0.25, qc: ['receiving' => 'pass', 'sensory' => 'pass']);
 
+            // ── Kịch bản D/E: NCC có nhiều mặt hàng — tem Cà chua chỉ hiện đúng mặt hàng Cà chua (tầng 2) ──
+            $dongAnh = Vendor::create([
+                'name' => 'HTX Nông nghiệp Đông Anh (DEMO)', 'tax_code' => 'DEMO-0102000003',
+                'address' => 'Thôn Đản Dị, xã Uy Nỗ, huyện Đông Anh, Hà Nội', 'status' => 'active',
+            ]);
+            $this->vendorDocument($dongAnh, 'supplier_business_registration', '0102000003', 'Sở KH&ĐT TP. Hà Nội', null);
+            $this->vendorDocument($dongAnh, 'supplier_vietgap', 'VietGAP-DA-2026-0042', 'Trung tâm Chứng nhận VietGAP (DEMO)', 2);
+            $tomato = PartnerProduct::create(['vendor_id' => $dongAnh->id, 'product_id' => $products['b']->id, 'vendor_sku' => 'DA-CACHUA-01',
+                'name' => 'Cà chua bi đỏ loại 1', 'manufacturer_name' => 'Công ty TNHH MTV XNL Mạnh Dũng', 'origin_address' => 'Cánh đồng Đản Dị, xã Uy Nỗ, Đông Anh, Hà Nội']);
+            $this->vendorDocument($tomato, 'product_test_report', 'KN-CC-2026-118', 'Trung tâm Kiểm nghiệm Hà Nội (DEMO)', 1);
+            $this->vendorDocument($tomato, 'supplier_soil_water_test', 'DN-CC-2026-07', 'Viện Thổ nhưỡng Nông hóa (DEMO)', 1);
+            foreach ([['317MBV', 'Khoai tây Đà Lạt', 'Hợp tác xã Lâm Đồng'], ['259MBV', 'Cà rốt Hải Dương', 'HTX Đức Chính']] as [$sku, $name, $maker]) {
+                if ($other = Product::where('sku', $sku)->first()) {
+                    PartnerProduct::create(['vendor_id' => $dongAnh->id, 'product_id' => $other->id, 'name' => $name, 'manufacturer_name' => $maker, 'origin_address' => 'KHÔNG ĐƯỢC HIỆN TRÊN TEM CÀ CHUA']);
+                }
+            }
+            $order3 = SalesOrder::create([
+                'misa_ref_id' => 'DEMO-XK-0003', 'customer_name' => 'Trường Tiểu học Đông Anh',
+                'delivery_address' => 'Thị trấn Đông Anh, Hà Nội', 'delivery_date' => today(), 'source_file_name' => 'DEMO',
+            ]);
+            $this->vendorOnlyLabel('d', $dongAnh, $products['b'], $order3, 1, 1);
+            $logE = $this->lot('e', $dongAnh, $products['b'], null, $order3, 2, 'NK-DEMO-0005', receiptDaysAgo: 1, weight: 1, qc: ['receiving' => 'pass', 'sensory' => 'pass']);
+            $receiptE = $logE->productBatch->goodsReceipt;
+            $this->vendorDocument($receiptE, 'receipt_delivery_record', 'BBGN-0005', null, null);
+            $this->vendorDocument($logE->productBatch, 'batch_residue_test', 'TN-BVTV-0005', 'Phòng QC VISAFO', null);
+
             foreach ([$logA, $logB] as $log) {
                 BatchQualityCheck::create(['sales_order_item_id' => $log->order_item_id, 'stage' => 'pre_dispatch', 'result' => 'pass',
                     'checked_at' => now()->subHours(4), 'checked_by' => auth()->id(), 'note' => 'DEMO']);
@@ -116,7 +142,7 @@ class TraceabilityDemoSeeder extends Seeder
             $order->update(['delivery_code' => 'GH-DEMO-0001', 'shipped_at' => now()->subHours(3), 'delivered_at' => now()->subMinutes(45), 'status' => SalesOrder::STATUS_DELIVERED]);
         });
 
-        foreach (['a', 'b', 'c'] as $k) {
+        foreach (['a', 'b', 'c', 'd', 'e'] as $k) {
             $this->command?->info(route('trace.show', 'demotrace' . $k . '1'));
         }
     }
@@ -124,7 +150,8 @@ class TraceabilityDemoSeeder extends Seeder
     /** @param array<int, array{0: string, 1: int, 2: ?float, 3: string, 4: ?string}> $logs [loại, số ngày trước, số lượng, ghi chú, ảnh] */
     private function farm(Vendor $vendor, Product $product, string $sourceCode, string $sourceName, string $address, float $area, string $water, string $batchCode, int $sowDaysAgo, int $harvestDaysAgo, array $logs): FarmingBatch
     {
-        $partnerProduct = PartnerProduct::create(['vendor_id' => $vendor->id, 'product_id' => $product->id, 'name' => $product->name]);
+        $partnerProduct = PartnerProduct::create(['vendor_id' => $vendor->id, 'product_id' => $product->id, 'name' => $product->name . ' (NCC kê khai)',
+            'manufacturer_name' => $vendor->name, 'origin_address' => $address]);
         $source = FarmingSource::create([
             'vendor_id' => $vendor->id, 'source_code' => $sourceCode, 'name' => $sourceName, 'address' => $address,
             'area_hectare' => $area, 'water_source' => $water, 'status' => 'passed',
@@ -189,6 +216,42 @@ class TraceabilityDemoSeeder extends Seeder
         DB::table('print_logs')->where('id', $log->id)->update(['created_at' => now()->subDays($receiptDaysAgo)->setTime(10, 0)]);
 
         return $log->fresh();
+    }
+
+    /** Tem chỉ gắn NCC, không gắn lô nhập (tầng 1 + 2, ẩn Hành trình). */
+    private function vendorOnlyLabel(string $key, Vendor $vendor, Product $product, SalesOrder $order, int $line, float $weight): PrintLog
+    {
+        $item = SalesOrderItem::create(['order_id' => $order->id, 'product_id' => $product->id, 'line_no' => $line,
+            'product_name_raw' => $product->name, 'unit_raw' => 'kg', 'requested_qty' => 5, 'actual_qty' => 5, 'printed_qty' => 5]);
+        $mfg = today();
+        $exp = $mfg->copy()->addDays($product->shelf_life_days ?: 5);
+
+        return PrintLog::create([
+            'order_item_id' => $item->id, 'trace_code' => 'demotrace' . $key . '1', 'print_session_id' => Str::lower((string) Str::ulid()),
+            'label_template_id' => LabelTemplate::where('view_path', 'labels.templates.visafo_80x60')->value('id'),
+            'weight_per_label' => $weight, 'mfg_date' => $mfg, 'exp_date' => $exp, 'vendor_id' => $vendor->id, 'supplier_name' => $vendor->name,
+            'batch_code' => 'LOT-' . $mfg->format('dmy') . '-' . $exp->format('dmy'), 'printed_by' => auth()->id(), 'status' => 'active',
+        ]);
+    }
+
+    /** Hồ sơ (ảnh scan giả lập) gắn vào NCC / hàng hóa NCC / phiếu nhập / lô nhập. */
+    private function vendorDocument(\Illuminate\Database\Eloquent\Model $owner, string $code, ?string $number, ?string $issuedBy, ?int $years): void
+    {
+        $type = DocumentMasterType::where('code', $code)->first();
+        if ($type === null) {
+            return;
+        }
+        $doc = new ComplianceDocument([
+            'document_master_type_id' => $type->id, 'document_number' => $number, 'issued_by' => $issuedBy,
+            'issue_date' => today()->subMonths(2), 'expiration_date' => $years ? today()->addYears($years) : null,
+            'status' => ComplianceDocumentStatus::Active, 'notes' => 'DEMO',
+        ]);
+        $doc->documentable()->associate($owner);
+        $doc->save();
+
+        $path = sys_get_temp_dir() . '/demo-' . $code . '-' . $owner->getKey() . '.png';
+        $this->writeDocImage($path, $type->name, $number, $issuedBy);
+        app(MediaUploadService::class)->upload(new UploadedFile($path, 'DEMO ' . $type->name . '.png', 'image/png', null, true), $doc, 'attachments_private');
     }
 
     /** Hồ sơ doanh nghiệp công khai của trụ sở chính (tab Thương hiệu): 2 ảnh + 2 PDF. */

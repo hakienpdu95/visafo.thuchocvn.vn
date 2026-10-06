@@ -266,6 +266,21 @@
                     @endif
                 </div>
                 @endif
+                @if(! $pp && ! empty($sup['vendorProducts']))
+                <div class="mt-3 border-l-2 border-gray-200 pl-3 text-sm leading-snug text-gray-700">
+                    <p class="text-gray-500">📦 Hàng hóa nhà cung cấp:</p>
+                    <ul class="mt-1.5 space-y-1.5">
+                        @foreach($sup['vendorProducts'] as $vp)
+                        <li>
+                            <span class="font-medium text-slate-800">{{ $vp['name'] }}</span>
+                            @if($vp['manufacturer'] || $vp['origin'])
+                            <span class="block text-xs text-gray-500">{{ implode(' · ', array_filter([$vp['manufacturer'] ? 'NSX/Nguồn gốc: ' . $vp['manufacturer'] : null, $vp['origin'] ? 'Vùng gốc: ' . $vp['origin'] : null])) }}</span>
+                            @endif
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
             </div>
 
             @if($trace->location)

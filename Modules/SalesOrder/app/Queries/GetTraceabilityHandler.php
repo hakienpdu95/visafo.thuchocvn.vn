@@ -181,18 +181,33 @@ class GetTraceabilityHandler implements QueryHandlerInterface
 
     public static function partnerProductFor(PrintLog $log): ?PartnerProduct
     {
-        $productId = $log->orderItem?->product_id;
         if ($log->vendor_id === null) {
             return null;
         }
 
-        return $log->productBatch?->farmingBatch?->partnerProduct
-            ?? ($productId === null ? null : PartnerProduct::query()
-                ->where('vendor_id', $log->vendor_id)
-                ->where('product_id', $productId)
-                ->orderByRaw('status = ? desc', [PartnerProductStatus::Active->value])
-                ->latest('created_at')->latest('id')
-                ->first());
+        if ($fromFarm = $log->productBatch?->farmingBatch?->partnerProduct) {
+            return $fromFarm;
+        }
+
+        $item = $log->orderItem;
+        $productId = $item?->product_id;
+        $candidates = PartnerProduct::query()
+            ->where('vendor_id', $log->vendor_id)
+            ->with('product:id,name,sku')
+            ->orderByRaw('status = ? desc', [PartnerProductStatus::Active->value])
+            ->latest('created_at')->latest('id')
+            ->get();
+
+        if ($productId !== null && ($exact = $candidates->first(fn (PartnerProduct $p) => (string) $p->product_id === (string) $productId))) {
+            return $exact;
+        }
+
+        $norm = fn (?string $v) => mb_strtolower(trim((string) preg_replace(['/(?<!\p{L})sơ chế(?!\p{L})/iu', '/\s+/u'], ['', ' '], (string) $v)));
+        $names = array_filter([$norm($item?->product?->name), $norm($item?->product_name_raw)]);
+        $byName = $names === [] ? collect() : $candidates->filter(fn (PartnerProduct $p) => in_array($norm($p->product?->name), $names, true)
+            || in_array($norm($p->name), $names, true));
+
+        return $byName->count() === 1 ? $byName->first() : null;
     }
 
     public static function batchDocumentQuery(?ProductBatch $batch): ?Builder
@@ -260,10 +275,20 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'sku'          => $partner->vendor_sku ?: null,
                 'manufacturer' => $partner->manufacturer_name ?: null,
                 'origin'       => $partner->origin_address ?: null,
-                'mappedTo'     => $partner->product_id && $partner->product_id === $product?->id
-                    ? implode(' · ', array_filter([$product->name, $product->sku])) : null,
+                'mappedTo'     => match (true) {
+                    $partner->product_id === null => null,
+                    $partner->product_id === $product?->id => implode(' · ', array_filter([$product->name, $product->sku])),
+                    default => implode(' · ', array_filter([$partner->product?->name, $partner->product?->sku])) . ' (nguyên liệu — ' . config('trace.company_name', 'VISAFO') . ' sơ chế)',
+                },
                 'documents'    => $this->documentRows(self::supplierDocumentQuery([$partner]), $log->trace_code),
             ] : null,
+            'vendorProducts' => $partner ? [] : PartnerProduct::query()
+                ->where('vendor_id', $vendor->id)
+                ->where('status', PartnerProductStatus::Active->value)
+                ->orderBy('name')
+                ->get(['name', 'manufacturer_name', 'origin_address'])
+                ->map(fn (PartnerProduct $p) => ['name' => $p->name, 'manufacturer' => $p->manufacturer_name ?: null, 'origin' => $p->origin_address ?: null])
+                ->all(),
         ];
     }
 
