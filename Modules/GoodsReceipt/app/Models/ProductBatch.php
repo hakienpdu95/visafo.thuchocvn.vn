@@ -7,6 +7,8 @@ use App\Foundation\Models\TenantAwareModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Modules\Compliance\Models\ComplianceDocument;
 use Illuminate\Support\Carbon;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\Product;
@@ -87,6 +89,11 @@ class ProductBatch extends TenantAwareModel
     public function qualityChecks(): HasMany
     {
         return $this->hasMany(BatchQualityCheck::class)->orderBy('checked_at');
+    }
+
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(ComplianceDocument::class, 'documentable');
     }
 
     public function permissionModule(): string

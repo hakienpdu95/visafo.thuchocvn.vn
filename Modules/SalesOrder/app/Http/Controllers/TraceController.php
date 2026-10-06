@@ -40,13 +40,15 @@ class TraceController extends Controller
 
         // Whitelist: hồ sơ doanh nghiệp công khai + hồ sơ NCC / hàng hóa NCC thuộc ĐÚNG tem này (không mở hồ sơ NCC khác)
         $sourceDocs = GetTraceabilityHandler::supplierDocumentQuery(GetTraceabilityHandler::supplierDocumentOwners($log));
+        $batchDocs = GetTraceabilityHandler::batchDocumentQuery($log->productBatch);
         $media = Media::query()
             ->whereKey($mediaId)
             ->where('collection_name', 'attachments_private')
             ->whereIn('mime_type', GetTraceabilityHandler::PUBLIC_DOCUMENT_MIMES)
             ->where('model_type', (new ComplianceDocument())->getMorphClass())
             ->where(fn ($q) => $q->whereIn('model_id', ComplianceDocument::query()->publicCompanyProfile()->select('id'))
-                ->when($sourceDocs, fn ($w) => $w->orWhereIn('model_id', $sourceDocs->select('id'))))
+                ->when($sourceDocs, fn ($w) => $w->orWhereIn('model_id', $sourceDocs->select('id')))
+                ->when($batchDocs, fn ($w) => $w->orWhereIn('model_id', $batchDocs->select('id'))))
             ->firstOrFail();
 
         $disk = Storage::disk($media->disk);

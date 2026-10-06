@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\GoodsReceipt\Http\Controllers\Api\GoodsReceiptApiController;
 use Modules\GoodsReceipt\Http\Controllers\GoodsReceiptController;
+use Modules\GoodsReceipt\Http\Controllers\GoodsReceiptDocumentController;
 use Modules\GoodsReceipt\Http\Controllers\GoodsReceiptImportController;
 use Modules\GoodsReceipt\Http\Controllers\ProductBatchController;
 
@@ -12,6 +13,8 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
 
     Route::get('goods-receipts', [GoodsReceiptController::class, 'index'])->name('goods-receipts.index');
     Route::get('goods-receipts/{goods_receipt}', [GoodsReceiptController::class, 'show'])->name('goods-receipts.show');
+    Route::post('goods-receipts/{goods_receipt}/documents', [GoodsReceiptDocumentController::class, 'store'])->name('goods-receipts.documents.store');
+    Route::delete('goods-receipts/{goods_receipt}/documents/{document}', [GoodsReceiptDocumentController::class, 'destroy'])->name('goods-receipts.documents.destroy');
 
     Route::put('product-batches/{product_batch}', [ProductBatchController::class, 'update'])->name('product-batches.update');
     Route::post('product-batches/{product_batch}/quality-checks', [ProductBatchController::class, 'storeQualityCheck'])->name('product-batches.quality-checks.store');

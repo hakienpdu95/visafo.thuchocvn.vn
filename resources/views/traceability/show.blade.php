@@ -239,24 +239,34 @@
                     <div><dt class="inline text-gray-600">{{ $rowLabel }}:</dt> <dd class="inline font-medium text-gray-900">{{ $rowValue }}</dd></div>
                     @endforeach
                 </dl>
-            </div>
 
-            @if($pp)
-            <div class="mt-4 ml-1.5 border-l-2 border-green-200 pl-4">
-                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Hàng hóa của nhà cung cấp</p>
-                <p class="mt-1 text-md font-medium leading-snug text-slate-900">{{ $pp['name'] }}</p>
-                <dl class="mt-2 space-y-1.5 text-sm leading-snug">
-                    @foreach(array_filter([
-                        ['Mã hàng NCC', $pp['sku']],
-                        ['Nhà sản xuất trực tiếp / Nguồn gốc', $pp['manufacturer']],
-                        ['Vùng trồng / Địa chỉ lô gốc', $pp['origin']],
-                        ['Ánh xạ sản phẩm', $pp['mappedTo']],
-                    ], fn ($row) => filled($row[1])) as [$rowLabel, $rowValue])
-                    <div><dt class="inline text-gray-600">{{ $rowLabel }}:</dt> <dd class="inline font-medium text-gray-900">{{ $rowValue }}</dd></div>
-                    @endforeach
-                </dl>
+                @if($pp)
+                <div class="mt-3 space-y-1.5 border-l-2 border-gray-200 pl-3 text-sm leading-snug text-gray-700">
+                    <p class="flex items-start gap-1.5">
+                        <span aria-hidden="true">📦</span>
+                        <span><span class="text-gray-500">Hàng hóa NCC:</span> <span class="font-medium text-slate-800">{{ $pp['name'] }}</span>@if($pp['sku']) <span class="font-mono text-xs text-gray-500">({{ $pp['sku'] }})</span>@endif</span>
+                    </p>
+                    @if($pp['manufacturer'])
+                    <p class="flex items-start gap-1.5">
+                        <span aria-hidden="true">🏭</span>
+                        <span><span class="text-gray-500">Nhà sản xuất trực tiếp / Nguồn gốc:</span> <span class="font-medium text-slate-800">{{ $pp['manufacturer'] }}</span></span>
+                    </p>
+                    @endif
+                    @if($pp['origin'])
+                    <p class="flex items-start gap-1.5">
+                        <span aria-hidden="true">📍</span>
+                        <span><span class="text-gray-500">Vùng trồng / Lô gốc:</span> <span class="font-medium text-slate-800">{{ $pp['origin'] }}</span></span>
+                    </p>
+                    @endif
+                    @if($pp['mappedTo'])
+                    <p class="flex items-start gap-1.5">
+                        <span aria-hidden="true">🔗</span>
+                        <span><span class="text-gray-500">Ánh xạ sản phẩm:</span> <span class="font-medium text-slate-800">{{ $pp['mappedTo'] }}</span></span>
+                    </p>
+                    @endif
+                </div>
+                @endif
             </div>
-            @endif
 
             @if($trace->location)
             @php $loc = $trace->location; @endphp
@@ -295,7 +305,7 @@
             </div>
             @endif
 
-            @php $supDocs = array_merge($sup['documents'], $pp['documents'] ?? []); @endphp
+            @php $supDocs = array_merge($pp['documents'] ?? [], $sup['documents']); @endphp
             @if($supDocs)
             <div class="mt-4 rounded-lg bg-[#f8f9fa] p-3">
                 <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Hồ sơ &amp; Chứng nhận đính kèm</p>
@@ -334,6 +344,16 @@
                 </li>
                 @endforeach
             </ul>
+            @if($trace->batchDocuments)
+            <div class="mt-4 rounded-lg bg-[#f8f9fa] p-3">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Hồ sơ lô hàng</p>
+                <div class="flex flex-wrap gap-2">
+                    @foreach($trace->batchDocuments as $doc)
+                    @include('traceability.partials.doc-pill', ['label' => $doc['name'], 'iconHtml' => '📎', 'files' => $doc['files'], 'caption' => $doc['caption']])
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </section>
         @endif
 

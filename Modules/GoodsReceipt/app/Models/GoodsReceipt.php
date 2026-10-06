@@ -7,6 +7,8 @@ use App\Foundation\Models\TenantAwareModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Vendor\Models\Vendor;
 
 class GoodsReceipt extends TenantAwareModel
@@ -47,6 +49,11 @@ class GoodsReceipt extends TenantAwareModel
     public function batches(): HasMany
     {
         return $this->hasMany(ProductBatch::class);
+    }
+
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(ComplianceDocument::class, 'documentable');
     }
 
     public function permissionModule(): string

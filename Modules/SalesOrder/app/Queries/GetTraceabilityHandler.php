@@ -37,6 +37,8 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         'product_declaration', 'product_test_report', 'product_production_process',
     ];
 
+    private const BATCH_PUBLIC_DOCUMENT_CODES = ['receipt_delivery_record', 'batch_residue_test', 'product_test_report', 'supplier_test_report', 'supplier_vet'];
+
     /** Định dạng file hồ sơ doanh nghiệp được phát ra trang công khai (xem trực tiếp trên trình duyệt). */
     public const PUBLIC_DOCUMENT_MIMES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
@@ -121,6 +123,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             brandStory: trim((string) config('trace.brand_story')),
             documentGroups: $this->documentGroups($log->trace_code),
             supplier: $vendor ? $this->supplier($log, $vendor, $isOwnFarm, $company) : null,
+            batchDocuments: $this->documentRows(self::batchDocumentQuery($batch), $log->trace_code),
             hasBatch: $batch !== null,
             qualityChecks: $this->qualityCheckRows($qualityChecks),
             qcConclusion: $this->qcConclusion($qualityChecks),
@@ -190,6 +193,23 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 ->orderByRaw('status = ? desc', [PartnerProductStatus::Active->value])
                 ->latest('created_at')->latest('id')
                 ->first());
+    }
+
+    public static function batchDocumentQuery(?ProductBatch $batch): ?Builder
+    {
+        if ($batch === null) {
+            return null;
+        }
+
+        return ComplianceDocument::query()
+            ->where('status', ComplianceDocumentStatus::Active->value)
+            ->where(fn (Builder $q) => $q->whereNull('expiration_date')->orWhereDate('expiration_date', '>=', today()))
+            ->whereHas('documentType', fn (Builder $t) => $t->whereIn('code', self::BATCH_PUBLIC_DOCUMENT_CODES))
+            ->where(fn (Builder $q) => $q
+                ->where(fn (Builder $o) => $o->where('documentable_type', $batch->getMorphClass())->where('documentable_id', $batch->getKey()))
+                ->when($batch->goods_receipt_id, fn (Builder $w) => $w->orWhere(fn (Builder $o) => $o
+                    ->where('documentable_type', (new \Modules\GoodsReceipt\Models\GoodsReceipt())->getMorphClass())
+                    ->where('documentable_id', $batch->goods_receipt_id))));
     }
 
     public static function supplierDocumentQuery(array $owners): ?Builder
@@ -386,6 +406,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     {
         $at = fn ($t) => $t ? $t->format($t->format('H:i') === '00:00' ? 'd/m/Y' : 'H:i • d/m/Y') : null;
         $brand = (string) config('trace.company_name', 'VISAFO');
+        $batch = $log->productBatch;
         $steps = [];
 
         if ($farmingBatch !== null) {
@@ -395,19 +416,29 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 $steps[] = ['title' => 'Thu hoạch tại nguồn', 'time' => $at($harvestedAt),
                     'meta' => implode(' • ', array_filter([$source?->address ?: $source?->name, $source?->source_code])) ?: null, 'done' => true, 'ok' => null];
             }
+        } elseif ($batch?->mfg_date) {
+            $vendor = $log->vendor;
+            $steps[] = ['title' => 'Thu hoạch tại nguồn', 'time' => $at($batch->mfg_date),
+                'meta' => implode(' • ', array_filter([
+                    $vendor ? (implode(', ', array_filter([trim((string) $vendor->address), $vendor->ward?->name, $vendor->province?->name])) ?: $vendor->name) : null,
+                ])) ?: null, 'done' => true, 'ok' => null];
         }
 
         if ($receivedAt) {
+            $hasReceiptRecord = (bool) self::batchDocumentQuery($batch)?->whereHas('documentType', fn (Builder $t) => $t->where('code', 'receipt_delivery_record'))->exists();
             $steps[] = ['title' => $brand . ' tiếp nhận', 'time' => $at($receivedAt),
-                'meta' => implode(' • ', array_filter([$log->productBatch ? $this->batchQuantity($log->productBatch, $item) : null, 'Kho ' . $brand])), 'done' => true, 'ok' => null];
+                'meta' => implode(' • ', array_filter([
+                    $batch ? $this->batchQuantity($batch, $item) : null,
+                    'Kho ' . $brand,
+                    $hasReceiptRecord ? 'Hồ sơ tiếp nhận đã ghi nhận' : null,
+                ])), 'done' => true, 'ok' => null];
         }
 
-        // QC gom nhóm: thời điểm = khâu kiểm tại kho mới nhất (tiếp nhận/cảm quan), chưa có thì lấy khâu trước xuất
-        if ($checks->isNotEmpty()) {
-            $batchChecks = $checks->filter(fn (BatchQualityCheck $c) => $c->stage->isBatchStage());
-            $passed = $checks->every(fn (BatchQualityCheck $c) => $c->result->value === 'pass');
-            $steps[] = ['title' => 'Kiểm tra chất lượng', 'time' => $at(($batchChecks->isNotEmpty() ? $batchChecks : $checks)->max('checked_at')),
-                'meta' => 'Kết quả: ' . ($passed ? 'Đạt' : 'Không đạt') . ' (' . $checks->map(fn (BatchQualityCheck $c) => mb_strtolower(str_replace('Kiểm tra ', '', $c->stage->label())))->implode(', ') . ')',
+        $batchChecks = $checks->filter(fn (BatchQualityCheck $c) => $c->stage->isBatchStage());
+        if ($batchChecks->isNotEmpty()) {
+            $passed = $batchChecks->every(fn (BatchQualityCheck $c) => $c->result->value === 'pass');
+            $steps[] = ['title' => 'Kiểm tra chất lượng', 'time' => $at($batchChecks->max('checked_at')),
+                'meta' => 'Kết quả: ' . ($passed ? 'Đạt' : 'Không đạt') . ' (' . $batchChecks->map(fn (BatchQualityCheck $c) => mb_strtolower(str_replace('Kiểm tra ', '', $c->stage->label())))->implode(', ') . ')',
                 'done' => true, 'ok' => $passed];
         }
 

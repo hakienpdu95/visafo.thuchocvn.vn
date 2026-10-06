@@ -60,6 +60,7 @@ readonly class TraceabilityData
         /** @var array<int, array{name: ?string, verified: bool, score: ?float, comment: ?string, at: mixed, lot: ?string}> nhận xét công khai */
         public array $reviews = [],
         public ?array $supplier = null,
+        public array $batchDocuments = [],
         public bool $hasBatch = false, // tem gắn lô nhập thật (nút "Phiếu lô")
     ) {}
 }

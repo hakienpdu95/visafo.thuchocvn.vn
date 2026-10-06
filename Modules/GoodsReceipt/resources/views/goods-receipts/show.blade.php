@@ -95,6 +95,85 @@
         </div>
     </div>
 
+    <div class="card w-full bg-base-100 shadow-sm border border-base-200">
+        <div class="card-body p-5">
+            <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide">Hồ sơ lô hàng</p>
+            <p class="text-xs text-base-content/50 mb-4">Biên bản giao nhận, phiếu test dư lượng, kiểm nghiệm… của chuyến hàng này — hiển thị công khai ở khối "Hành trình hàng hóa" trên trang truy xuất của tem gắn lô tương ứng.</p>
+
+            @if($documents->isNotEmpty())
+            <div class="overflow-x-auto mb-5">
+                <table class="table table-sm">
+                    <thead><tr><th>Loại hồ sơ</th><th>Áp dụng cho</th><th>Số hiệu / Ngày</th><th>File</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach($documents as $doc)
+                        <tr>
+                            <td class="font-medium">{{ $doc->documentType?->name }}</td>
+                            <td class="text-sm">{{ $doc->documentable instanceof \Modules\GoodsReceipt\Models\ProductBatch ? 'Lô ' . $doc->documentable->batch_code : 'Cả phiếu nhập' }}</td>
+                            <td class="text-sm">{{ implode(' · ', array_filter([$doc->document_number, $doc->issue_date?->format('d/m/Y')])) ?: '—' }}</td>
+                            <td class="text-sm">
+                                @foreach($doc->getMedia('attachments_private') as $m)
+                                <a href="{{ app(\App\Services\Media\MediaUrlService::class)->url($m) }}" target="_blank" class="link link-primary block truncate max-w-56">{{ $m->file_name }}</a>
+                                @endforeach
+                            </td>
+                            <td class="text-right">
+                                @can('update', $goodsReceipt)
+                                <form method="POST" action="{{ route('backend.goods-receipts.documents.destroy', [$goodsReceipt, $doc]) }}" onsubmit="return confirm('Xóa hồ sơ này?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-ghost btn-xs text-error">Xóa</button>
+                                </form>
+                                @endcan
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @endif
+
+            @can('update', $goodsReceipt)
+            <form method="POST" action="{{ route('backend.goods-receipts.documents.store', $goodsReceipt) }}" enctype="multipart/form-data"
+                  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+                @csrf
+                <div class="form-control lg:col-span-2">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Loại hồ sơ <span class="text-error">*</span></span></label>
+                    <select name="document_master_type_id" required class="select select-bordered select-sm w-full">
+                        @foreach($documentTypes as $type)
+                        <option value="{{ $type->id }}" @selected(old('document_master_type_id') === $type->id)>{{ $type->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Áp dụng cho</span></label>
+                    <select name="product_batch_id" class="select select-bordered select-sm w-full">
+                        <option value="">Cả phiếu nhập</option>
+                        @foreach($goodsReceipt->batches as $batch)
+                        <option value="{{ $batch->id }}" @selected(old('product_batch_id') === $batch->id)>Lô {{ $batch->batch_code }} · {{ $batch->product?->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Số hiệu</span></label>
+                    <input type="text" name="document_number" maxlength="150" value="{{ old('document_number') }}" class="input input-bordered input-sm w-full">
+                </div>
+                <div class="form-control">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày lập</span></label>
+                    <input type="date" name="issue_date" value="{{ old('issue_date', $goodsReceipt->receipt_date?->format('Y-m-d')) }}" class="input input-bordered input-sm w-full">
+                </div>
+                <div class="form-control md:col-span-2 lg:col-span-4">
+                    <label class="label py-0 pb-1">
+                        <span class="label-text text-xs font-medium">File <span class="text-error">*</span></span>
+                        <span class="label-text-alt text-xs text-base-content/40">PDF, JPG, PNG — chọn được nhiều file</span>
+                    </label>
+                    <input type="file" name="files[]" multiple required accept=".pdf,.jpg,.jpeg,.png" class="file-input file-input-bordered file-input-sm w-full">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary btn-sm w-full">Tải lên hồ sơ</button>
+                </div>
+            </form>
+            @endcan
+        </div>
+    </div>
+
 </div>
 
 <dialog id="batchDateModal" class="modal">
