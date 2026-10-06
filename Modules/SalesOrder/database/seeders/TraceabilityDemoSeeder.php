@@ -120,9 +120,9 @@ class TraceabilityDemoSeeder extends Seeder
                 'name' => 'Cà chua bi đỏ loại 1', 'manufacturer_name' => 'Công ty TNHH MTV XNL Mạnh Dũng', 'origin_address' => 'Cánh đồng Đản Dị, xã Uy Nỗ, Đông Anh, Hà Nội']);
             $this->vendorDocument($tomato, 'product_test_report', 'KN-CC-2026-118', 'Trung tâm Kiểm nghiệm Hà Nội (DEMO)', 1);
             $this->vendorDocument($tomato, 'supplier_soil_water_test', 'DN-CC-2026-07', 'Viện Thổ nhưỡng Nông hóa (DEMO)', 1);
-            foreach ([['317MBV', 'Khoai tây Đà Lạt', 'Hợp tác xã Lâm Đồng'], ['259MBV', 'Cà rốt Hải Dương', 'HTX Đức Chính']] as [$sku, $name, $maker]) {
+            foreach ([['317MBV', 'Khoai tây Đà Lạt', 'Hợp tác xã Lâm Đồng', 'Phường 7, TP. Đà Lạt, Lâm Đồng'], ['259MBV', 'Cà rốt Hải Dương', 'HTX Đức Chính', 'Xã Đức Chính, Cẩm Giàng, Hải Dương']] as [$sku, $name, $maker, $origin]) {
                 if ($other = Product::where('sku', $sku)->first()) {
-                    PartnerProduct::create(['vendor_id' => $dongAnh->id, 'product_id' => $other->id, 'name' => $name, 'manufacturer_name' => $maker, 'origin_address' => 'KHÔNG ĐƯỢC HIỆN TRÊN TEM CÀ CHUA']);
+                    PartnerProduct::create(['vendor_id' => $dongAnh->id, 'product_id' => $other->id, 'name' => $name, 'manufacturer_name' => $maker, 'origin_address' => $origin]);
                 }
             }
             $order3 = SalesOrder::create([

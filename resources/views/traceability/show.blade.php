@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Truy xuất nguồn gốc — {{ $trace->productName }}</title>
-    @vite(array_filter(['resources/css/app.css', count($trace->productImages) > 1 ? 'resources/js/modules/swiper.js' : null]), 'build/backend')
+    @vite(array_filter(['resources/css/app.css', count($trace->productImages) > 1 || ! empty($trace->supplier['vendorProducts']) ? 'resources/js/modules/swiper.js' : null]), 'build/backend')
 </head>
 <body class="bg-gray-200/60 text-gray-800 antialiased">
 @php
@@ -240,45 +240,27 @@
                     @endforeach
                 </dl>
 
-                @if($pp)
-                <div class="mt-3 space-y-1.5 border-l-2 border-gray-200 pl-3 text-sm leading-snug text-gray-700">
-                    <p class="flex items-start gap-1.5">
-                        <span aria-hidden="true">📦</span>
-                        <span><span class="text-gray-500">Hàng hóa NCC:</span> <span class="font-medium text-slate-800">{{ $pp['name'] }}</span>@if($pp['sku']) <span class="font-mono text-xs text-gray-500">({{ $pp['sku'] }})</span>@endif</span>
-                    </p>
-                    @if($pp['manufacturer'])
-                    <p class="flex items-start gap-1.5">
-                        <span aria-hidden="true">🏭</span>
-                        <span><span class="text-gray-500">Nhà sản xuất trực tiếp / Nguồn gốc:</span> <span class="font-medium text-slate-800">{{ $pp['manufacturer'] }}</span></span>
-                    </p>
-                    @endif
-                    @if($pp['origin'])
-                    <p class="flex items-start gap-1.5">
-                        <span aria-hidden="true">📍</span>
-                        <span><span class="text-gray-500">Vùng trồng / Lô gốc:</span> <span class="font-medium text-slate-800">{{ $pp['origin'] }}</span></span>
-                    </p>
-                    @endif
-                    @if($pp['mappedTo'])
-                    <p class="flex items-start gap-1.5">
-                        <span aria-hidden="true">🔗</span>
-                        <span><span class="text-gray-500">Ánh xạ sản phẩm:</span> <span class="font-medium text-slate-800">{{ $pp['mappedTo'] }}</span></span>
-                    </p>
-                    @endif
-                </div>
-                @endif
-                @if(! $pp && ! empty($sup['vendorProducts']))
-                <div class="mt-3 border-l-2 border-gray-200 pl-3 text-sm leading-snug text-gray-700">
-                    <p class="text-gray-500">📦 Hàng hóa nhà cung cấp:</p>
-                    <ul class="mt-1.5 space-y-1.5">
-                        @foreach($sup['vendorProducts'] as $vp)
-                        <li>
-                            <span class="font-medium text-slate-800">{{ $vp['name'] }}</span>
-                            @if($vp['manufacturer'] || $vp['origin'])
-                            <span class="block text-xs text-gray-500">{{ implode(' · ', array_filter([$vp['manufacturer'] ? 'NSX/Nguồn gốc: ' . $vp['manufacturer'] : null, $vp['origin'] ? 'Vùng gốc: ' . $vp['origin'] : null])) }}</span>
-                            @endif
-                        </li>
-                        @endforeach
-                    </ul>
+                @if($sup['vendorProducts'])
+                <div class="mt-4">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Hàng hóa nhà cung cấp</p>
+                    <div id="trace-vendor-products" class="swiper w-full">
+                        <div class="swiper-wrapper">
+                            @foreach($sup['vendorProducts'] as $vp)
+                            <div class="swiper-slide !h-auto">
+                                <div class="h-full overflow-hidden rounded-lg border bg-white {{ $vp['isCurrent'] ? 'border-green-500 ring-1 ring-green-500' : 'border-gray-200' }}">
+                                    <div class="aspect-square bg-gray-100">
+                                        @if($vp['image'])
+                                        <img src="{{ $vp['image'] }}" alt="{{ $vp['name'] }}" loading="lazy" class="h-full w-full object-cover" data-trace-img-fallback="sm">
+                                        @else
+                                        @include('traceability.partials.image-placeholder', ['size' => 'sm'])
+                                        @endif
+                                    </div>
+                                    <p class="line-clamp-2 min-h-[3.4em] px-2 py-2 text-[13px] font-medium leading-snug text-slate-900">{{ $vp['name'] }}</p>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
                 @endif
             </div>
@@ -535,6 +517,11 @@
             },
         },
     });
+</script>
+@endif
+@if(! empty($trace->supplier['vendorProducts']))
+<script type="module">
+    initSwiper('#trace-vendor-products', { navigation: false, pagination: false, slidesPerView: 2.3, spaceBetween: 10 });
 </script>
 @endif
 <script>

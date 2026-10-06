@@ -260,6 +260,11 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     {
         $partner = self::partnerProductFor($log);
         $product = $log->orderItem?->product;
+        $mappedTo = match (true) {
+            $partner?->product_id === null => null,
+            $partner->product_id === $product?->id => implode(' · ', array_filter([$product->name, $product->sku])),
+            default => implode(' · ', array_filter([$partner->product?->name, $partner->product?->sku])) . ' (nguyên liệu — ' . config('trace.company_name', 'VISAFO') . ' sơ chế)',
+        };
 
         return [
             'name'      => $isOwn ? $company['name'] : $vendor->name,
@@ -275,19 +280,22 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'sku'          => $partner->vendor_sku ?: null,
                 'manufacturer' => $partner->manufacturer_name ?: null,
                 'origin'       => $partner->origin_address ?: null,
-                'mappedTo'     => match (true) {
-                    $partner->product_id === null => null,
-                    $partner->product_id === $product?->id => implode(' · ', array_filter([$product->name, $product->sku])),
-                    default => implode(' · ', array_filter([$partner->product?->name, $partner->product?->sku])) . ' (nguyên liệu — ' . config('trace.company_name', 'VISAFO') . ' sơ chế)',
-                },
+                'mappedTo'     => $mappedTo,
                 'documents'    => $this->documentRows(self::supplierDocumentQuery([$partner]), $log->trace_code),
             ] : null,
-            'vendorProducts' => $partner ? [] : PartnerProduct::query()
+            'vendorProducts' => PartnerProduct::query()
                 ->where('vendor_id', $vendor->id)
-                ->where('status', PartnerProductStatus::Active->value)
+                ->where(fn ($q) => $q->where('status', PartnerProductStatus::Active->value)->when($partner, fn ($w) => $w->orWhereKey($partner->id)))
+                ->with('product.media')
                 ->orderBy('name')
-                ->get(['name', 'manufacturer_name', 'origin_address'])
-                ->map(fn (PartnerProduct $p) => ['name' => $p->name, 'manufacturer' => $p->manufacturer_name ?: null, 'origin' => $p->origin_address ?: null])
+                ->get()
+                ->sortByDesc(fn (PartnerProduct $p) => $p->id === $partner?->id)
+                ->map(fn (PartnerProduct $p) => [
+                    'name'      => $p->name,
+                    'image'     => $p->product ? ($p->product->galleryImages()->first()['url'] ?? ($p->product->image_url ?: null)) : null,
+                    'isCurrent' => $p->id === $partner?->id,
+                ])
+                ->values()
                 ->all(),
         ];
     }
