@@ -208,9 +208,18 @@
             </ul>
         </section>
 
-        {{-- 2b. Nguồn gốc sản phẩm: chỉ khi lô nhập đã liên kết lô canh tác (product_batches.farming_batch_id) --}}
-        @if($trace->location)
-        @php $loc = $trace->location; @endphp
+        @if($trace->productInfo)
+        <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <h3 class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-green-700">
+                <span class="h-4 w-1 rounded bg-green-600"></span> Thông tin sản phẩm
+            </h3>
+            <div class="wysiwyg-content p-3 text-[15px] leading-relaxed">{!! $trace->productInfo !!}</div>
+        </section>
+        @endif
+
+        {{-- 2b. Nguồn gốc sản phẩm: chỉ khi tem có chọn nhà cung cấp (print_logs.vendor_id) --}}
+        @if($trace->supplier)
+        @php $sup = $trace->supplier; $pp = $sup['partnerProduct']; @endphp
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Nguồn gốc sản phẩm
@@ -220,12 +229,44 @@
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                     Đã liên kết nguồn
                 </span>
-                <p class="mt-2 text-md font-medium leading-snug text-green-700">{{ $loc['isOwn'] ? 'Vùng trồng của ' . $trace->brand : $loc['name'] }}</p>
+                <p class="mt-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Nhà cung cấp</p>
+                <p class="mt-1 text-md font-medium leading-snug text-green-700">{{ $sup['name'] }}</p>
+                <dl class="mt-2 space-y-1.5 text-sm leading-snug">
+                    @foreach(array_filter([
+                        ['Pháp nhân / Địa chỉ', $sup['address'] ?? $sup['area']],
+                        ['MST', $sup['taxCode']],
+                    ], fn ($row) => filled($row[1])) as [$rowLabel, $rowValue])
+                    <div><dt class="inline text-gray-600">{{ $rowLabel }}:</dt> <dd class="inline font-medium text-gray-900">{{ $rowValue }}</dd></div>
+                    @endforeach
+                </dl>
+            </div>
+
+            @if($pp)
+            <div class="mt-4 ml-1.5 border-l-2 border-green-200 pl-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Hàng hóa của nhà cung cấp</p>
+                <p class="mt-1 text-md font-medium leading-snug text-slate-900">{{ $pp['name'] }}</p>
+                <dl class="mt-2 space-y-1.5 text-sm leading-snug">
+                    @foreach(array_filter([
+                        ['Mã hàng NCC', $pp['sku']],
+                        ['Nhà sản xuất trực tiếp / Nguồn gốc', $pp['manufacturer']],
+                        ['Vùng trồng / Địa chỉ lô gốc', $pp['origin']],
+                        ['Ánh xạ sản phẩm', $pp['mappedTo']],
+                    ], fn ($row) => filled($row[1])) as [$rowLabel, $rowValue])
+                    <div><dt class="inline text-gray-600">{{ $rowLabel }}:</dt> <dd class="inline font-medium text-gray-900">{{ $rowValue }}</dd></div>
+                    @endforeach
+                </dl>
+            </div>
+            @endif
+
+            @if($trace->location)
+            @php $loc = $trace->location; @endphp
+            <div class="mt-4 ml-1.5 border-l-2 border-green-200 pl-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Vùng trồng</p>
+                <p class="mt-1 text-md font-medium leading-snug text-green-700">{{ $loc['isOwn'] ? 'Vùng trồng của ' . $trace->brand : $loc['name'] }}</p>
                 <dl class="mt-2 space-y-1.5 text-sm leading-snug">
                     @foreach(array_filter([
                         $loc['isOwn'] ? ['Khu trồng', $loc['name']] : null,
                         ['Vùng sản xuất', $loc['address']],
-                        ['Nhà cung cấp', $loc['isOwn'] ? null : $loc['vendorName']],
                         ['Ngày thu hoạch', $loc['harvestedAt']?->format('d/m/Y')],
                         ['Diện tích', $loc['area'] !== null ? rtrim(rtrim(number_format($loc['area'], 2, ',', '.'), '0'), ',') . ' ha' : null],
                         ['Nguồn nước', $loc['waterSource']],
@@ -252,10 +293,24 @@
                     </div>
                 </dl>
             </div>
+            @endif
+
+            @php $supDocs = array_merge($sup['documents'], $pp['documents'] ?? []); @endphp
+            @if($supDocs)
+            <div class="mt-4 rounded-lg bg-[#f8f9fa] p-3">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Hồ sơ &amp; Chứng nhận đính kèm</p>
+                <div class="flex flex-wrap gap-2">
+                    @foreach($supDocs as $doc)
+                    @include('traceability.partials.doc-pill', ['label' => $doc['name'], 'iconHtml' => '📎', 'files' => $doc['files'], 'caption' => $doc['caption']])
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </section>
         @endif
 
-        {{-- 2c. Hành trình hàng hóa: 5 mốc tóm tắt; trục + chấm vẽ bằng ::before/::after của <li> --}}
+        {{-- 2c. Hành trình hàng hóa: chỉ khi tem gắn lô nhập kho (print_logs.product_batch_id) --}}
+        @if($trace->hasBatch)
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Hành trình hàng hóa
@@ -280,6 +335,7 @@
                 @endforeach
             </ul>
         </section>
+        @endif
 
         {{-- 4b. Kiểm soát chất lượng: 3 khâu QC của doanh nghiệp + kết luận lô --}}
         @if($trace->qualityChecks)
@@ -381,9 +437,6 @@
             </h3>
             <div class="flex flex-wrap gap-2">
                 {{-- Chỉ nút có tệp thật (doc-pill không render khi rỗng). Phiếu QC / phiếu lô / giao nhận: thêm khi hệ thống có tệp đính kèm --}}
-                @include('traceability.partials.doc-pill', ['label' => 'Hồ sơ nguồn', 'iconHtml' => '🌱',
-                    'files' => collect($trace->sourceDocuments)->flatMap(fn ($d) => $d['files'])->values()->all(),
-                    'caption' => collect($trace->sourceDocuments)->pluck('caption')->implode(' | ') ?: 'Hồ sơ nguồn'])
                 <button type="button" data-trace-goto-tab="brand" class="{{ $pillClass }}">🏢 Hồ sơ {{ $trace->brand }} <span aria-hidden="true">›</span></button>
             </div>
         </section>

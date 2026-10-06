@@ -47,6 +47,7 @@ class Product extends TenantAwareModel implements HasMedia
         'sku',
         'name',
         'description',
+        'product_info',
         'category_id',
         'product_type',
         'unit',

@@ -28,17 +28,18 @@ class TraceController extends Controller
 
     /**
      * Phát file hồ sơ (disk private): hồ sơ doanh nghiệp công khai (tab VISAFO) và chứng nhận nguồn của chính lô này
-     * (nút "Hồ sơ nguồn"). Chỉ file ảnh/PDF trong whitelist — mọi file khác (kể cả của hồ sơ nội bộ) trả 404.
+     * (khối Nguồn gốc). Chỉ file ảnh/PDF trong whitelist — mọi file khác (kể cả của hồ sơ nội bộ) trả 404.
      */
     /** Ảnh dựng sẵn cho thẻ hồ sơ: thumb (lưới) / preview (lightbox) — chiều rộng px. PDF render trang 1. */
     private const DOCUMENT_VARIANTS = ['thumb' => 480, 'preview' => 1400];
 
     public function document(string $traceCode, string $mediaId, ?string $variant = null)
     {
-        $log = PrintLog::query()->where('trace_code', $traceCode)->with('productBatch.farmingBatch.vendor', 'productBatch.farmingBatch.partnerProduct')->firstOrFail();
+        $log = PrintLog::query()->where('trace_code', $traceCode)
+            ->with('vendor', 'orderItem', 'productBatch.farmingBatch.vendor', 'productBatch.farmingBatch.partnerProduct')->firstOrFail();
 
-        // Whitelist: hồ sơ doanh nghiệp công khai + chứng nhận của nguồn thuộc ĐÚNG chuỗi của mã này (không mở hồ sơ NCC khác)
-        $sourceDocs = GetTraceabilityHandler::sourceDocumentQuery($log->productBatch?->farmingBatch);
+        // Whitelist: hồ sơ doanh nghiệp công khai + hồ sơ NCC / hàng hóa NCC thuộc ĐÚNG tem này (không mở hồ sơ NCC khác)
+        $sourceDocs = GetTraceabilityHandler::supplierDocumentQuery(GetTraceabilityHandler::supplierDocumentOwners($log));
         $media = Media::query()
             ->whereKey($mediaId)
             ->where('collection_name', 'attachments_private')

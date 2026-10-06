@@ -38,6 +38,9 @@ class UpdateProductData extends Data
         #[Nullable, StringType, Max(2000)]
         public readonly ?string $description = null,
 
+        #[Nullable, StringType, Max(100000)]
+        public readonly ?string $product_info = null,
+
         /** JSON mảng ID media theo thứ tự hiển thị; null = form không gửi → giữ nguyên ảnh. */
         public readonly ?string $gallery = null,
 

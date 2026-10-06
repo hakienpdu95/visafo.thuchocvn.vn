@@ -42,12 +42,14 @@ class BulkPrintSalesOrderLabelsAction
             $total = 0;
             $printedItems = 0;
             $reusedItems = 0;
+            $sourceChanged = 0;
 
             $customGroups = isset($data['items'])
                 ? collect($data['items'])->mapWithKeys(fn ($i) => [$i['order_item_id'] => collect($i['label_groups'])
                     ->map(fn ($g) => ['weight' => round((float) $g['weight_per_label'], 3), 'qty' => (int) $g['label_count']])
                     ->all()])
                 : null;
+            $itemSources = collect($data['items'] ?? [])->keyBy('order_item_id');
 
             foreach ($items as $item) {
                 if ($customGroups !== null) {
@@ -66,12 +68,16 @@ class BulkPrintSalesOrderLabelsAction
                 }
 
                 $total++;
-                $source = $sourceResolver->forItem($item, $data);
+                $source = $sourceResolver->forBulkItem($item, $itemSources->get($item->id, []), $data);
 
                 // Check & Reuse (xem PrintSalesOrderItemLabelAction): đã có tem đang lưu hành → in lại mã cũ
-                $existing = PrintLog::query()->activeForItem($item->id, $data['product_batch_id'] ?? null)->get();
+                $existing = PrintLog::query()->activeForItem($item->id)->get();
                 if ($existing->isNotEmpty()) {
-                    $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId, $source['vendor_id'], $source['supplier_name']));
+                    if (PrintLog::sourceDiffers($existing, $source)) {
+                        PrintLog::updateSource($existing, $source);
+                        $sourceChanged++;
+                    }
+                    $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
                     LabelPrintEvent::record($existing, $sessionId, $printedBy, true);
                     array_push($logs, ...$existing->all());
                     $printedItems++;
@@ -94,6 +100,7 @@ class BulkPrintSalesOrderLabelsAction
                             'exp_date'          => $data['exp_date'],
                             'supplier_name'     => $source['supplier_name'],
                             'vendor_id'         => $source['vendor_id'],
+                            'product_batch_id'  => $source['product_batch_id'],
                             'batch_code'        => $data['batch_code'] ?? null,
                             'printed_by'        => $printedBy,
                             'status'            => PrintLogStatus::Active,
@@ -123,6 +130,7 @@ class BulkPrintSalesOrderLabelsAction
                 'total'   => $total,
                 'printed' => $printedItems,
                 'reused'  => $reusedItems,
+                'source_changed' => $sourceChanged,
             ];
         });
     }

@@ -234,7 +234,7 @@ dialog .ts-wrapper.dropdown-active { position: relative; z-index: 30; }
 
 /* Nội dung WYSIWYG (Jodit) trên trang truy xuất công khai — ảnh không tràn viền màn hình điện thoại */
 .wysiwyg-content { color: #333; overflow-wrap: anywhere; }
-.wysiwyg-content img { max-width: 100%; height: auto !important; border-radius: 4px; }
+.wysiwyg-content img, .wysiwyg-content iframe { max-width: 100% !important; height: auto !important; border-radius: 4px; }
 .wysiwyg-content p { margin-bottom: 8px; color: #333; }
 .wysiwyg-content > :last-child { margin-bottom: 0; }
 .wysiwyg-content ul { list-style: disc; padding-left: 1.25em; margin-bottom: 8px; }

@@ -363,11 +363,11 @@ document.addEventListener('alpine:init', () => {
                     if (win) {
                         win.location = data.print_url;
                         // In lại mã cũ (Check & Reuse) → giữ modal để báo rõ dữ liệu vừa nhập không được dùng
-                        if (data.reused) this.message = data.message;
+                        if (data.message) this.message = data.message;
                         else this.close();
                     } else {
                         this.blockedUrl = data.print_url;
-                        if (data.reused) this.message = data.message;
+                        if (data.message) this.message = data.message;
                     }
                 } catch (e) {
                     console.error('[print-label] failed', e);
@@ -442,12 +442,32 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    // ── In tem toàn bộ đơn (Bulk Print) — modal cấu hình chung áp dụng cho mọi mặt hàng còn thiếu ──
-    Alpine.data('bulkPrintOrder', ({ url, defaultTemplateId = '' }) => {
+    // ── In tem toàn bộ đơn (Bulk Print): lô xuất kho / nguồn cung điền sẵn theo từng mặt hàng ──
+    Alpine.data('bulkPrintOrder', ({ url, defaultTemplateId = '', vendors = [] }) => {
         let templateTs = null;
-        let supplierTs = null;
+        let globalTs = null;
+        const rowSupplierTs = new Map();
         let mfgPicker = null;
         let expPicker = null;
+        const draftKey = 'bulk-print-draft:' + url;
+        let draft = {};
+        try { draft = JSON.parse(localStorage.getItem(draftKey) || '{}') || {}; } catch { draft = {}; }
+
+        const saveDraft = (items) => {
+            items.forEach((row) => {
+                draft[row.id] = {
+                    batchId: row.batchId, batchText: row.batchText, vendorId: row.vendorId, vendorName: row.vendorName,
+                    supplierManual: row.supplierManual, supplierText: row.supplierText, dirty: row.dirty, viaGlobal: row.viaGlobal, manual: row.manual,
+                    groups: row.groups.map((g) => ({ weight: g.weight, qty: g.qty })), total: row.total,
+                };
+            });
+            try { localStorage.setItem(draftKey, JSON.stringify(draft)); } catch {}
+        };
+
+        const clearDraft = () => {
+            draft = {};
+            try { localStorage.removeItem(draftKey); } catch {}
+        };
 
         return {
             confirming: false,
@@ -458,12 +478,56 @@ document.addEventListener('alpine:init', () => {
             preview: { total: 0 },
             items: [],
             _uid: 0,
-            form: { template: '', mfg: '', exp: '', batchCode: '', supplierManual: false, supplierText: '', vendorId: '' },
+            form: { template: '', mfg: '', exp: '', batchCode: '' },
+            globalVendorId: '',
 
             fmtKg,
 
             get introText() {
-                return `Cấu hình chung bên dưới áp dụng cho ${this.preview.total} mặt hàng trong đơn. Kiểm tra cách chia tem của từng mặt hàng và bấm biểu tượng bút để sửa nếu cần.`;
+                return `Lô xuất kho và nguồn cung của ${this.preview.total} mặt hàng đã được điền sẵn (theo lần in trước, hoặc lô còn tồn cũ nhất). Kiểm tra lại rồi bấm "In tem"; bấm biểu tượng bút nếu cần đổi lô hoặc cách chia tem.`;
+            },
+
+            get globalAppliedCount() {
+                return this.items.filter((row) => row.viaGlobal).length;
+            },
+
+            sourceChanged(row) {
+                const p = row.printedSource;
+                if (!p || row.printed === 0) return false;
+                const vendorId = row.supplierManual ? '' : row.vendorId;
+                return (row.batchId || '') !== p.batchId || vendorId !== p.vendorId
+                    || (!vendorId && (row.supplierManual ? row.supplierText.trim() : '') !== p.supplierText);
+            },
+
+            applyGlobalVendor(value) {
+                const name = value ? (vendors.find((v) => v.value === value)?.text ?? '') : '';
+                this.globalVendorId = value || '';
+                this.items.forEach((row) => {
+                    if (row.manual) return;
+                    if (value) {
+                        if (!row.viaGlobal) {
+                            row.beforeGlobal = { batchId: row.batchId, batchText: row.batchText, vendorId: row.vendorId, vendorName: row.vendorName, supplierManual: row.supplierManual, supplierText: row.supplierText };
+                        }
+                        Object.assign(row, { batchId: '', batchText: '', vendorId: value, vendorName: name, supplierManual: false, supplierText: '', viaGlobal: true, dirty: true });
+                    } else if (row.viaGlobal) {
+                        Object.assign(row, row.beforeGlobal ?? { batchId: '', batchText: '', vendorId: '', vendorName: '', supplierManual: false, supplierText: '' }, { viaGlobal: false });
+                    }
+                    rowSupplierTs.get(row.id)?.setValue(row.supplierManual ? '' : row.vendorId, true);
+                });
+            },
+
+            batchCodeOf(row) {
+                return (row.batchText || '').split(' · ')[0];
+            },
+
+            supplierOf(row) {
+                if (row.supplierManual) return row.supplierText.trim();
+                return row.vendorName || (row.vendorId ? (vendors.find((v) => v.value === row.vendorId)?.text ?? '') : '');
+            },
+
+            batchOptions(row) {
+                if (!row.batchId || row.batches.some((b) => b.value === row.batchId)) return row.batches;
+                return [{ value: row.batchId, text: row.batchText }, ...row.batches];
             },
 
             get totalLabels() {
@@ -500,17 +564,116 @@ document.addEventListener('alpine:init', () => {
                 if (row.groups.length > 1) row.groups.splice(index, 1);
             },
 
+            toggleRow(row) {
+                row.editing = !row.editing;
+                if (row.editing) this.loadRowBatches(row);
+            },
+
+            async loadRowBatches(row) {
+                if (row.batchesLoaded || row.loadingBatches || !row.batchesUrl || !row.hasBatches) return;
+                row.loadingBatches = true;
+                try {
+                    const res = await fetch(row.batchesUrl, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    row.batches = data.data ?? [];
+                    row.batchesLoaded = true;
+                } catch (e) {
+                    console.error('[bulk-print] load batches failed', e);
+                } finally {
+                    row.loadingBatches = false;
+                }
+            },
+
+            initRowSupplier(row, el) {
+                rowSupplierTs.get(row.id)?.destroy();
+                const ts = createTs(el, {
+                    placeholder: '— Chọn nhà cung cấp —',
+                    maxOptions: null,
+                    options: vendors.map((v) => ({ value: v.value, text: v.text })),
+                    items: row.vendorId && !row.supplierManual ? [row.vendorId] : [],
+                    onChange: (value) => {
+                        row.vendorId = value || '';
+                        row.vendorName = value ? (vendors.find((v) => v.value === value)?.text ?? '') : '';
+                        row.dirty = true;
+                        row.viaGlobal = false;
+                        row.manual = true;
+                    },
+                });
+                if (ts) rowSupplierTs.set(row.id, ts);
+            },
+
+            onRowBatchChange(row) {
+                const batch = row.batches.find((b) => b.value === row.batchId);
+                row.dirty = true;
+                row.viaGlobal = false;
+                row.manual = true;
+                row.batchText = batch?.text ?? '';
+                row.vendorId = batch?.vendor_id ?? '';
+                row.vendorName = batch?.vendor_name ?? '';
+                row.supplierManual = !batch?.vendor_id && !!batch?.supplier_name;
+                row.supplierText = row.supplierManual ? batch.supplier_name : '';
+            },
+
+            onRowSupplierManualToggle(row) {
+                rowSupplierTs.get(row.id)?.clear(true);
+                row.vendorId = '';
+                row.vendorName = '';
+                row.supplierText = '';
+                row.dirty = true;
+                row.viaGlobal = false;
+                row.manual = true;
+            },
+
             buildItems(rows) {
+                const prev = new Map(this.items.map((row) => [row.id, row]));
                 this.items = rows.map((r) => {
+                    const total = Math.round(Number(r.requested_qty_raw) * 1000) / 1000;
+                    const old = prev.get(r.id);
+                    if (old && old.total === total) {
+                        old.editing = false;
+                        return old;
+                    }
+
+                    const pf = r.print_prefill ?? {};
+                    const d = draft[r.id];
+                    const src = d ?? {
+                        batchId: pf.batch_id ?? '', batchText: pf.batch_text ?? '', vendorId: pf.vendor_id ?? '', vendorName: pf.vendor_name ?? '',
+                        supplierManual: !pf.vendor_id && !!pf.supplier_name, supplierText: pf.supplier_name ?? '', dirty: false,
+                    };
                     const row = {
                         id: r.id,
                         name: r.product_name || r.name,
                         unit: r.unit,
-                        total: Math.round(Number(r.requested_qty_raw) * 1000) / 1000,
+                        total,
                         groups: [],
                         editing: false,
+                        batchesUrl: r.batches_url,
+                        hasBatches: !!pf.has_batches,
+                        printed: pf.printed ?? 0,
+                        origin: pf.origin ?? null,
+                        batches: [],
+                        batchesLoaded: false,
+                        loadingBatches: false,
+                        batchId: src.batchId || '',
+                        batchText: src.batchText || '',
+                        vendorId: src.vendorId || '',
+                        vendorName: src.vendorName || '',
+                        supplierManual: !!src.supplierManual,
+                        supplierText: src.supplierText || '',
+                        dirty: !!src.dirty,
+                        viaGlobal: !!src.viaGlobal,
+                        manual: !!src.manual,
+                        beforeGlobal: null,
+                        printedSource: pf.origin === 'history' && (pf.printed ?? 0) > 0
+                            ? { batchId: pf.batch_id ?? '', vendorId: pf.vendor_id ?? '', supplierText: pf.vendor_id ? '' : (pf.supplier_name ?? '') }
+                            : null,
                     };
-                    this.autoSplit(row);
+                    if (d?.groups?.length && d.total === total) {
+                        row.groups = d.groups.map((g) => ({ uid: ++this._uid, weight: g.weight, qty: g.qty }));
+                    } else {
+                        this.autoSplit(row);
+                    }
                     return row;
                 }).filter((row) => row.total > 0);
                 this.preview = { total: this.items.length };
@@ -519,6 +682,8 @@ document.addEventListener('alpine:init', () => {
             get alertClass() { return this.ok ? 'alert-success' : 'alert-warning'; },
 
             init() {
+                this.$watch('items', () => saveDraft(this.items), { deep: true });
+
                 this.$nextTick(() => {
                     const tplEl = document.getElementById('bp-label-template');
                     if (tplEl && !tplEl.tomselect) {
@@ -530,16 +695,13 @@ document.addEventListener('alpine:init', () => {
                         });
                     }
 
-                    const supplierEl = document.getElementById('bp-supplier');
-                    if (supplierEl && !supplierEl.tomselect) {
-                        supplierTs = createTs(supplierEl, {
-                            placeholder: '— Chọn nhà cung cấp —',
+                    const globalEl = document.getElementById('bp-supplier');
+                    if (globalEl && !globalEl.tomselect) {
+                        globalTs = createTs(globalEl, {
+                            placeholder: '— Không áp dụng —',
                             maxOptions: null,
                             dropdownParent: 'body',
-                            onChange: (value) => {
-                                this.form.vendorId = value || '';
-                                this.form.supplierText = value ? (supplierTs.options[value]?.text ?? '') : '';
-                            },
+                            onChange: (value) => this.applyGlobalVendor(value),
                         });
                     }
 
@@ -573,12 +735,6 @@ document.addEventListener('alpine:init', () => {
                 this.form.batchCode = (mfg && exp) ? `LOT-${mfg}-${exp}` : '';
             },
 
-            onSupplierManualToggle() {
-                supplierTs?.clear(true);
-                this.form.supplierText = '';
-                this.form.vendorId = '';
-            },
-
             openConfirm() {
                 const rows = window.salesOrderItemsTable?.getData() ?? [];
                 this.errors = {};
@@ -596,12 +752,13 @@ document.addEventListener('alpine:init', () => {
             },
 
             openForm() {
-                this.form = { template: defaultTemplateId || '', mfg: toYmd(new Date()), exp: '', batchCode: '', supplierManual: false, supplierText: '', vendorId: '' };
-                templateTs?.setValue(this.form.template, true);
-                supplierTs?.clear(true);
-                mfgPicker?.setDate(this.form.mfg, false);
-                expPicker?.clear(false);
-                this.recalcExp();
+                if (!this.form.mfg) {
+                    this.form = { template: defaultTemplateId || '', mfg: toYmd(new Date()), exp: '', batchCode: '' };
+                    templateTs?.setValue(this.form.template, true);
+                    mfgPicker?.setDate(this.form.mfg, false);
+                    expPicker?.clear(false);
+                    this.recalcExp();
+                }
                 this.confirming = true;
             },
 
@@ -626,11 +783,12 @@ document.addEventListener('alpine:init', () => {
                             label_template_id: this.form.template || null,
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
-                            supplier_name: this.form.supplierText.trim() || null,
-                            vendor_id: this.form.supplierManual ? null : (this.form.vendorId || null),
                             batch_code: this.form.batchCode || null,
                             items: this.items.map((row) => ({
                                 order_item_id: row.id,
+                                product_batch_id: row.batchId || null,
+                                vendor_id: row.supplierManual ? null : (row.vendorId || null),
+                                supplier_name: row.supplierManual ? (row.supplierText.trim() || null) : null,
                                 label_groups: row.groups.map((g) => ({ weight_per_label: Number(g.weight), label_count: Number(g.qty) })),
                             })),
                         }),
@@ -646,6 +804,18 @@ document.addEventListener('alpine:init', () => {
                         return;
                     }
                     if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+
+                    this.items.forEach((row) => {
+                        if (row.printed === 0) row.printed = row.groups.reduce((s, g) => s + groupQty(g), 0);
+                        row.printedSource = { batchId: row.batchId || '', vendorId: row.supplierManual ? '' : row.vendorId, supplierText: row.supplierManual ? row.supplierText.trim() : '' };
+                        row.origin = 'history';
+                        row.dirty = false;
+                        row.viaGlobal = false;
+                        row.manual = false;
+                    });
+                    this.globalVendorId = '';
+                    globalTs?.clear(true);
+                    clearDraft();
 
                     this.confirming = false;
                     this.ok = true;

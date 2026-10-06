@@ -12,7 +12,7 @@ use Modules\SalesOrder\Enums\PrintLogStatus;
  * Các trường tối thiểu theo Thông tư 02/2024/TT-BKHCN:
  *  tên SP (productName) · hình ảnh (productImages) · đơn vị SXKD + địa chỉ (company, location) · công đoạn (journey)
  *  · mã truy vết SP (traceCode, batchCode) · thời gian SX (mfgDate) · mã truy vết địa điểm (location)
- *  · thương hiệu/mã số (brand, productSku) · thời hạn sử dụng (expDate) · tiêu chuẩn áp dụng (documentGroups, sourceDocuments).
+ *  · thương hiệu/mã số (brand, productSku) · thời hạn sử dụng (expDate) · tiêu chuẩn áp dụng (documentGroups, supplier).
  */
 readonly class TraceabilityData
 {
@@ -30,6 +30,7 @@ readonly class TraceabilityData
         public string $traceCode,
         public string $productName,
         public string $productDescription,
+        public ?string $productInfo,
         public array $productImages,
         public ?string $categoryName,
         public ?string $productSku,
@@ -58,8 +59,7 @@ readonly class TraceabilityData
         public array $reviewSummary = ['average' => null, 'count' => 0, 'criteria' => []],
         /** @var array<int, array{name: ?string, verified: bool, score: ?float, comment: ?string, at: mixed, lot: ?string}> nhận xét công khai */
         public array $reviews = [],
-        /** @var array<int, array{name: string, caption: string, files: array<int, array{url: string, preview: string, isPdf: bool}>}> chứng nhận của nguồn (nút "Hồ sơ nguồn") */
-        public array $sourceDocuments = [],
+        public ?array $supplier = null,
         public bool $hasBatch = false, // tem gắn lô nhập thật (nút "Phiếu lô")
     ) {}
 }

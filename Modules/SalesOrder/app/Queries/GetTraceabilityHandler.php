@@ -16,7 +16,9 @@ use Modules\GoodsReceipt\Models\BatchQualityCheck;
 use Modules\GoodsReceipt\Models\ProductBatch;
 use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Models\FarmingBatch;
+use Modules\Product\Enums\PartnerProductStatus;
 use Modules\Product\Models\FarmingSource;
+use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
@@ -29,7 +31,11 @@ use Modules\Vendor\Models\Vendor;
 class GetTraceabilityHandler implements QueryHandlerInterface
 {
     /** Chứng nhận vùng trồng / cơ sở của nguồn cung (gắn NCC hoặc mặt hàng của NCC) — nút "Hồ sơ nguồn". */
-    private const SOURCE_DOCUMENT_CODES = ['supplier_vietgap', 'supplier_gmp', 'supplier_ocop', 'supplier_vet', 'supplier_attp'];
+    private const SUPPLIER_PUBLIC_DOCUMENT_CODES = [
+        'supplier_business_registration', 'supplier_attp', 'supplier_commitment', 'supplier_vietgap', 'supplier_gmp', 'supplier_vet', 'supplier_ocop',
+        'supplier_soil_water_test', 'supplier_input_origin', 'supplier_test_report', 'supplier_personnel_training',
+        'product_declaration', 'product_test_report', 'product_production_process',
+    ];
 
     /** Định dạng file hồ sơ doanh nghiệp được phát ra trang công khai (xem trực tiếp trên trình duyệt). */
     public const PUBLIC_DOCUMENT_MIMES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -42,7 +48,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ->where('trace_code', $query->traceCode)
             ->with([
                 'orderItem.product.category', 'orderItem.product.media', 'orderItem.salesOrder', 'attributes',
-                'vendor.province', 'vendor.ward', 'productBatch.goodsReceipt.vendor.province', 'productBatch.goodsReceipt.vendor.ward',
+                'vendor.province', 'vendor.ward', 'productBatch.goodsReceipt',
                 'productBatch.qualityChecks', 'orderItem.qualityChecks',
                 'productBatch.farmingBatch.farmingSource', 'productBatch.farmingBatch.vendor', 'productBatch.farmingBatch.partnerProduct',
                 'productBatch.farmingBatch.logs',
@@ -57,28 +63,22 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         $order = $item->salesOrder;
         $product = $item->product;
 
-        // Lô nhập: ưu tiên lô đã chọn khi in tem; tem cũ chưa lưu lô thì lấy lô nhập gần nhất trước lúc in.
-        $batch = $log->productBatch ?? $this->guessBatch($log, $item->product_id);
+        $batch = $log->productBatch;
         $receipt = $batch?->goodsReceipt;
-
-        $vendor = $log->vendor ?? $receipt?->vendor;
-        if ($vendor !== null && ! $vendor->relationLoaded('province')) {
-            $vendor->load(['province', 'ward']);
-        }
+        $vendor = $log->vendor;
 
         $company = $this->company();
         // Lô canh tác chỉ lấy theo khóa product_batches.farming_batch_id của lô đã chọn khi in — không đoán theo mã lô / ngày
-        // (đoán sai khi một NCC có nhiều vụ chồng nhau), cũng không đi qua lô nhập đoán ở guessBatch().
-        $farmingBatch = $log->productBatch?->farmingBatch;
+        $farmingBatch = $batch?->farmingBatch;
         $source = $farmingBatch?->farmingSource;
         $isOwnFarm = $vendor !== null && $this->isOwnVendor($vendor, $company);
-        $qualityChecks = $this->qualityChecks($log->productBatch?->qualityChecks ?? collect(), $item->qualityChecks);
+        $qualityChecks = $this->qualityChecks($batch?->qualityChecks ?? collect(), $item->qualityChecks);
 
         // Ảnh chính đã ở đầu nhờ order_column; chưa upload ảnh thì dùng image_url (Sapo)
         $productImages = $product?->galleryImages()->pluck('url')->all() ?: array_filter([$product?->image_url]);
 
         // Vendor đại diện vùng trồng tự quản của VISAFO → không coi là nguồn cung bên ngoài
-        $supplierText = $isOwnFarm ? null : ($vendor?->name ?: ($receipt?->supplier_name ?: $log->supplier_name));
+        $supplierText = $isOwnFarm ? null : ($vendor?->name ?: $log->supplier_name);
         $batchCode = $log->batch_code ?: ($batch?->batch_code ?: $farmingBatch?->batch_code);
 
         $productName = $product?->name ?? $item->product_name_raw ?? '—';
@@ -87,6 +87,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             traceCode: $log->trace_code,
             productName: $productName,
             productDescription: trim((string) $product?->description) ?: $this->autoDescription($productName, $supplierText, $source, $company['name']),
+            productInfo: RichHtmlSanitizer::clean($product?->product_info),
             productImages: array_values($productImages),
             categoryName: $product?->category?->name,
             productSku: $product?->sku,
@@ -95,7 +96,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             mfgDate: $log->mfg_date ?? $batch?->mfg_date,
             expDate: $log->exp_date ?? $batch?->exp_date,
             packedAt: $log->created_at,
-            batchQuantity: $this->batchQuantity($log->productBatch, $item),
+            batchQuantity: $this->batchQuantity($batch, $item),
             attributes: $log->attributes
                 ->map(fn ($a) => ['key' => $a->attribute_key, 'value' => (string) $a->attribute_value])
                 ->values()->all(),
@@ -119,8 +120,8 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             statusReason: $log->status_reason,
             brandStory: trim((string) config('trace.brand_story')),
             documentGroups: $this->documentGroups($log->trace_code),
-            sourceDocuments: $this->sourceDocuments($farmingBatch, $log->trace_code),
-            hasBatch: $log->productBatch !== null,
+            supplier: $vendor ? $this->supplier($log, $vendor, $isOwnFarm, $company) : null,
+            hasBatch: $batch !== null,
             qualityChecks: $this->qualityCheckRows($qualityChecks),
             qcConclusion: $this->qcConclusion($qualityChecks),
             // Tiếp nhận = ngày nhập trên phiếu (nghiệp vụ); lô tạo cùng ngày thì lấy luôn giờ tạo lô. created_at của lô là lúc
@@ -175,24 +176,33 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ->all();
     }
 
-    /**
-     * Hồ sơ đang hiệu lực của nguồn (NCC của lô canh tác + mặt hàng NCC tương ứng) thuộc SOURCE_DOCUMENT_CODES.
-     * Chỉ khi lô nhập đã liên kết lô canh tác. Dùng chung cho trang (nút "Hồ sơ nguồn") và route trace.document (whitelist).
-     *
-     * @return Builder<ComplianceDocument>|null
-     */
-    public static function sourceDocumentQuery(?FarmingBatch $farmingBatch): ?Builder
+    public static function partnerProductFor(PrintLog $log): ?PartnerProduct
     {
-        if ($farmingBatch === null) {
+        $productId = $log->orderItem?->product_id;
+        if ($log->vendor_id === null) {
             return null;
         }
 
-        $owners = array_filter([$farmingBatch->vendor, $farmingBatch->partnerProduct]);
+        return $log->productBatch?->farmingBatch?->partnerProduct
+            ?? ($productId === null ? null : PartnerProduct::query()
+                ->where('vendor_id', $log->vendor_id)
+                ->where('product_id', $productId)
+                ->orderByRaw('status = ? desc', [PartnerProductStatus::Active->value])
+                ->latest('created_at')->latest('id')
+                ->first());
+    }
+
+    public static function supplierDocumentQuery(array $owners): ?Builder
+    {
+        $owners = array_values(array_filter($owners));
+        if ($owners === []) {
+            return null;
+        }
 
         return ComplianceDocument::query()
             ->where('status', ComplianceDocumentStatus::Active->value)
             ->where(fn (Builder $q) => $q->whereNull('expiration_date')->orWhereDate('expiration_date', '>=', today()))
-            ->whereHas('documentType', fn (Builder $t) => $t->whereIn('code', self::SOURCE_DOCUMENT_CODES))
+            ->whereHas('documentType', fn (Builder $t) => $t->where(fn (Builder $c) => $c->whereIn('code', self::SUPPLIER_PUBLIC_DOCUMENT_CODES)->orWhere('is_public', true)))
             ->where(function (Builder $q) use ($owners) {
                 foreach ($owners as $model) {
                     $q->orWhere(fn (Builder $o) => $o->where('documentable_type', $model->getMorphClass())->where('documentable_id', $model->getKey()));
@@ -200,12 +210,48 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             });
     }
 
-    /** @return array<int, array{name: string, caption: string, files: array<int, array{url: string, preview: string, isPdf: bool}>}> chỉ hồ sơ có tệp xem được */
-    private function sourceDocuments(?FarmingBatch $farmingBatch, string $traceCode): array
+    public static function supplierDocumentOwners(PrintLog $log): array
     {
-        return (self::sourceDocumentQuery($farmingBatch)?->with(['documentType', 'media'])->orderBy('issue_date')->get() ?? collect())
+        if ($log->vendor_id === null) {
+            return [];
+        }
+
+        $farmingBatch = $log->productBatch?->farmingBatch;
+
+        return array_values(array_filter([$log->vendor, $farmingBatch?->vendor, self::partnerProductFor($log)]));
+    }
+
+    private function supplier(PrintLog $log, Vendor $vendor, bool $isOwn, array $company): array
+    {
+        $partner = self::partnerProductFor($log);
+        $product = $log->orderItem?->product;
+
+        return [
+            'name'      => $isOwn ? $company['name'] : $vendor->name,
+            'isOwn'     => $isOwn,
+            'taxCode'   => $vendor->tax_code ?: null,
+            'area'      => implode(', ', array_filter([$vendor->ward?->name, $vendor->province?->name])) ?: null,
+            'address'   => $isOwn ? ($company['address'] ?: null) : (implode(', ', array_unique(array_filter([
+                trim((string) $vendor->address), $vendor->ward?->name, $vendor->province?->name,
+            ]))) ?: null),
+            'documents' => $this->documentRows(self::supplierDocumentQuery([$vendor, $log->productBatch?->farmingBatch?->vendor]), $log->trace_code),
+            'partnerProduct' => $partner ? [
+                'name'         => $partner->name,
+                'sku'          => $partner->vendor_sku ?: null,
+                'manufacturer' => $partner->manufacturer_name ?: null,
+                'origin'       => $partner->origin_address ?: null,
+                'mappedTo'     => $partner->product_id && $partner->product_id === $product?->id
+                    ? implode(' · ', array_filter([$product->name, $product->sku])) : null,
+                'documents'    => $this->documentRows(self::supplierDocumentQuery([$partner]), $log->trace_code),
+            ] : null,
+        ];
+    }
+
+    private function documentRows(?Builder $query, string $traceCode): array
+    {
+        return ($query?->with(['documentType', 'media'])->orderBy('issue_date')->get() ?? collect())
             ->map(fn (ComplianceDocument $doc) => [
-                'name'    => $doc->custom_name ?: ($doc->documentType?->name ?? 'Hồ sơ nguồn'),
+                'name'    => $doc->custom_name ?: ($doc->documentType?->name ?? 'Hồ sơ'),
                 'caption' => implode(' · ', array_filter([
                     $doc->custom_name ?: $doc->documentType?->name,
                     $doc->document_number ? 'Số ' . $doc->document_number : null,
@@ -391,7 +437,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
 
     /**
      * Khối lượng lô: số lượng nhập ban đầu của lô đã chọn khi in (đơn vị theo dòng phiếu nhập); tem không gắn lô
-     * thì lấy số lượng thực xuất (hoặc yêu cầu) của dòng đơn bán. Không dùng lô đoán ở guessBatch().
+     * thì lấy số lượng thực xuất (hoặc yêu cầu) của dòng đơn bán.
      */
     private function batchQuantity(?ProductBatch $batch, SalesOrderItem $item): ?string
     {
@@ -407,19 +453,6 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         $qty = $item->actual_qty ?? $item->requested_qty;
 
         return $qty !== null ? $fmt($qty) . ' ' . ($item->unit_raw ?: 'kg') : null;
-    }
-
-    private function guessBatch(PrintLog $log, ?string $productId): ?ProductBatch
-    {
-        if ($productId === null) {
-            return null;
-        }
-
-        $batchQuery = ProductBatch::query()->where('product_id', $productId)
-            ->with(['goodsReceipt.vendor.province', 'goodsReceipt.vendor.ward']);
-
-        return (clone $batchQuery)->where('created_at', '<=', $log->created_at)->latest('created_at')->first()
-            ?? (clone $batchQuery)->latest('created_at')->first();
     }
 
     /**

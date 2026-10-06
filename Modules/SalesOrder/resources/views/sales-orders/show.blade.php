@@ -79,6 +79,7 @@
         'history_url'   => route('backend.sales-orders.items.print-logs', $item),
         'label_template_id' => $item->product?->label_template_id,
         'batches_url'   => route('backend.sales-orders.items.batches', $item),
+        'print_prefill' => $printPrefill[$item->id] ?? null,
         'shelf_life_days' => $item->product?->shelf_life_days,
         'print_url'     => $canPrint ? route('backend.sales-orders.items.print', $item) : null,
         'qc_url'        => $canPrint ? route('backend.sales-orders.items.quality-checks.store', $item) : null,
@@ -90,7 +91,7 @@
 <div class="flex flex-col gap-6">
 
     @can('print', $salesOrder)
-    <div x-data="bulkPrintOrder({{ Js::from(['url' => route('backend.sales-orders.print-all', $salesOrder), 'defaultTemplateId' => $defaultLabelTemplateId]) }})"
+    <div x-data="bulkPrintOrder({{ Js::from(['url' => route('backend.sales-orders.print-all', $salesOrder), 'defaultTemplateId' => $defaultLabelTemplateId, 'vendors' => $vendors]) }})"
          @open-bulk-print.window="openConfirm()" class="contents" x-cloak>
 
         <div class="alert py-2.5 px-4 text-sm" :class="alertClass" x-show="message" x-transition>
@@ -158,33 +159,16 @@
 
                             <div class="form-control">
                                 <label class="label py-0 pb-1.5" for="bp-supplier">
-                                    <span class="label-text font-medium">Nguồn cung</span>
-                                    <span class="label-text-alt text-base-content/40 text-xs">Tuỳ chọn</span>
+                                    <span class="label-text font-medium">Nguồn cung chung</span>
+                                    <span class="label-text-alt text-base-content/40 text-xs">Tuỳ chọn · áp cho mọi mặt hàng chưa sửa riêng</span>
                                 </label>
-
-                                <div x-show="!form.supplierManual">
-                                    <select id="bp-supplier"
-                                            class="select select-bordered select-sm w-full"
-                                            data-ts-placeholder="— Chọn nhà cung cấp —">
-                                        <option value="">— Chọn nhà cung cấp —</option>
-                                        @foreach($vendors as $vendor)
-                                        <option value="{{ $vendor['value'] }}" data-text="{{ $vendor['text'] }}">{{ $vendor['text'] }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div x-show="form.supplierManual">
-                                    <input type="text" maxlength="255" x-model="form.supplierText" placeholder="VD: HTX Rau sạch Đà Lạt"
-                                           class="input input-bordered input-sm w-full"
-                                           :class="{ 'input-error': errors.supplier_name }">
-                                </div>
-
-                                <label class="label cursor-pointer justify-start gap-2 py-1.5">
-                                    <input type="checkbox" x-model="form.supplierManual" @change="onSupplierManualToggle()" class="checkbox checkbox-xs">
-                                    <span class="label-text text-xs">Khác / Nhập tay</span>
-                                </label>
-                                <p class="text-xs text-warning" x-show="form.supplierManual">Nguồn cung nhập tay sẽ không truy vết được theo nhà cung cấp.</p>
-                                <p class="mt-1 text-xs text-error" x-show="errors.supplier_name" x-text="errors.supplier_name"></p>
+                                <select id="bp-supplier" class="select select-bordered select-sm w-full" data-ts-placeholder="— Không áp dụng —">
+                                    <option value="">— Không áp dụng —</option>
+                                    @foreach($vendors as $vendor)
+                                    <option value="{{ $vendor['value'] }}">{{ $vendor['text'] }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-base-content/50" x-show="globalVendorId" x-text="'Đã áp cho ' + globalAppliedCount + ' mặt hàng.'"></p>
                             </div>
                         </div>
 
@@ -216,14 +200,73 @@
                                                 <span class="text-xs text-error" x-show="!rowMatch(row)"
                                                       x-text="'Lệch: ' + fmtKg(rowTotal(row)) + '/' + fmtKg(row.total)"></span>
                                             </div>
-                                            <button type="button" class="btn btn-ghost btn-xs btn-square" @click="row.editing = !row.editing"
-                                                    :title="row.editing ? 'Thu gọn' : 'Sửa cách chia tem'">
+                                            <button type="button" class="btn btn-ghost btn-xs btn-square" @click="toggleRow(row)"
+                                                    :title="row.editing ? 'Thu gọn' : 'Đổi lô xuất kho / cách chia tem'">
                                                 <svg x-show="!row.editing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.232-6.232a2.5 2.5 0 113.536 3.536L12.536 16.5 8 18l1.5-4.536z"/></svg>
                                                 <svg x-show="row.editing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
                                             </button>
                                         </div>
+                                        <div class="flex flex-wrap items-center gap-1 px-3 pb-2 -mt-1">
+                                            <span class="badge badge-sm badge-success badge-outline font-mono max-w-full truncate" x-show="row.batchId"
+                                                  :title="row.batchText" x-text="'Lô ' + batchCodeOf(row)"></span>
+                                            <span class="badge badge-sm bg-base-200 border-base-300 text-base-content/70 max-w-full truncate" x-show="supplierOf(row)"
+                                                  :title="supplierOf(row)" x-text="(row.viaGlobal ? 'Theo cấu hình chung - ' : '') + supplierOf(row)"></span>
+                                            <span class="badge badge-sm badge-warning badge-outline" x-show="!row.batchId && !supplierOf(row)"
+                                                  x-text="row.hasBatches ? 'Chưa chọn lô xuất kho' : 'Chưa có nguồn cung'"></span>
+                                            <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'history' && !sourceChanged(row)">Theo lần in trước</span>
+                                            <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'fifo' && !row.dirty">Gợi ý FIFO</span>
+                                            <span class="badge badge-sm badge-info badge-outline text-[11px]" x-show="row.printed > 0 && !sourceChanged(row)"
+                                                  x-text="'Đã in ' + row.printed + ' tem · in lại mã cũ'"></span>
+                                            <span class="badge badge-sm badge-info text-[11px]" x-show="row.printed > 0 && sourceChanged(row)"
+                                                  :title="'Ghi nhận NCC mới cho ' + row.printed + ' tem đã in, giữ nguyên mã QR'">Cập nhật NCC &amp; In lại mã cũ</span>
+                                        </div>
 
                                         <div x-show="row.editing" class="px-3 pb-3 bg-base-200/40">
+                                            <p class="text-xs text-info mb-2" x-show="row.printed > 0">
+                                                Mặt hàng đã có tem — bấm In luôn in lại đúng mã cũ. Đổi lô / nguồn cung sẽ cập nhật thông tin của chính các tem đó
+                                                (quét mã QR cũ thấy ngay nguồn mới); cách chia tem không áp dụng cho tem đã in.
+                                            </p>
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                                <div class="form-control" x-show="row.hasBatches">
+                                                    <label class="label py-0 pb-1">
+                                                        <span class="label-text text-xs font-medium">Lô xuất kho</span>
+                                                        <span class="label-text-alt text-base-content/40 text-xs" x-show="row.loadingBatches">Đang tải…</span>
+                                                    </label>
+                                                    <select class="select select-bordered select-sm w-full" x-model="row.batchId" @change="onRowBatchChange(row)">
+                                                        <option value="">— Không chọn lô —</option>
+                                                        <template x-for="b in batchOptions(row)" :key="b.value">
+                                                            <option :value="b.value" x-text="b.text + (b.in_stock === false ? ' (hết tồn)' : '')" :selected="b.value === row.batchId"></option>
+                                                        </template>
+                                                    </select>
+                                                </div>
+                                                <div class="form-control" x-show="row.hasBatches && row.batchId">
+                                                    <label class="label py-0 pb-1">
+                                                        <span class="label-text text-xs font-medium">Nhà cung cấp</span>
+                                                        <span class="label-text-alt text-base-content/40 text-xs">Theo lô — không sửa</span>
+                                                    </label>
+                                                    <input type="text" readonly disabled :value="supplierOf(row) || 'Chưa rõ NCC'"
+                                                           class="input input-bordered input-sm w-full bg-base-200 text-base-content/70 cursor-not-allowed">
+                                                </div>
+                                                <div class="form-control" x-show="!row.hasBatches">
+                                                    <label class="label py-0 pb-1">
+                                                        <span class="label-text text-xs font-medium">Nguồn cung</span>
+                                                        <span class="label-text-alt text-base-content/40 text-xs">Sản phẩm không quản lý theo lô</span>
+                                                    </label>
+                                                    <div x-show="!row.supplierManual">
+                                                        <select class="select select-bordered select-sm w-full" x-init="initRowSupplier(row, $el)">
+                                                            <option value="">— Chọn nhà cung cấp —</option>
+                                                        </select>
+                                                    </div>
+                                                    <div x-show="row.supplierManual">
+                                                        <input type="text" maxlength="255" x-model="row.supplierText" @input="row.dirty = true" placeholder="VD: HTX Rau sạch Đà Lạt"
+                                                               class="input input-bordered input-sm w-full">
+                                                    </div>
+                                                    <label class="label cursor-pointer justify-start gap-2 py-1">
+                                                        <input type="checkbox" x-model="row.supplierManual" @change="onRowSupplierManualToggle(row)" class="checkbox checkbox-xs">
+                                                        <span class="label-text text-xs">Khác / Nhập tay</span>
+                                                    </label>
+                                                </div>
+                                            </div>
                                             <div class="rounded-lg border border-base-200 bg-base-100 overflow-hidden">
                                                 <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-1.5 bg-base-200/50 text-xs font-medium text-base-content/60">
                                                     <span x-text="'Số lượng/Tem (' + row.unit + ')'"></span><span></span><span>Số lượng Tem</span><span class="w-14"></span>

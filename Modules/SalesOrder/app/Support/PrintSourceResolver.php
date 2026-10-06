@@ -27,8 +27,9 @@ class PrintSourceResolver
         }
 
         $vendorSelected = $vendorId !== null;
-        $supplierName = $data['supplier_name'] ?? null;
-        if ($vendorId === null && ($supplierName === null || trim($supplierName) === '') && $item !== null) {
+        $supplierName = trim((string) ($data['supplier_name'] ?? '')) ?: null;
+        $sourceSelected = $vendorSelected || $batchId !== null || $supplierName !== null;
+        if ($vendorId === null && $supplierName === null && $item !== null) {
             $vendorId = $this->defaultVendorId($item);
         }
 
@@ -41,17 +42,24 @@ class PrintSourceResolver
             'product_batch_id' => $batchId,
             'supplier_name'    => $supplierName,
             'vendor_selected'  => $vendorSelected,
+            'source_selected'  => $sourceSelected,
         ];
     }
 
-    public function forItem(SalesOrderItem $item, array $data): array
+    public function forBulkItem(SalesOrderItem $item, array $itemData, array $globalData): array
     {
-        $vendorId = $this->defaultVendorId($item) ?? (($data['vendor_id'] ?? null) ?: null);
-        $supplierName = $vendorId !== null
-            ? Vendor::query()->whereKey($vendorId)->value('name')
-            : (($data['supplier_name'] ?? null) ?: null);
+        $own = array_filter([
+            'vendor_id'        => $itemData['vendor_id'] ?? null,
+            'supplier_name'    => trim((string) ($itemData['supplier_name'] ?? '')) ?: null,
+            'product_batch_id' => $itemData['product_batch_id'] ?? null,
+        ]);
 
-        return ['vendor_id' => $vendorId, 'supplier_name' => $supplierName];
+        $global = array_filter([
+            'vendor_id'     => $globalData['vendor_id'] ?? null,
+            'supplier_name' => trim((string) ($globalData['supplier_name'] ?? '')) ?: null,
+        ]);
+
+        return $this->resolve($own !== [] ? $own : $global, $item);
     }
 
     public function defaultVendorId(SalesOrderItem $item): ?string

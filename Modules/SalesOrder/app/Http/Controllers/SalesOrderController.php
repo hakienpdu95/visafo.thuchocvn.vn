@@ -15,6 +15,7 @@ use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsHandler;
 use Modules\LabelTemplate\Queries\ListLabelTemplateOptionsQuery;
 use Modules\SalesOrder\Models\SalesOrder;
 use Modules\SalesOrder\Models\SalesOrderItem;
+use Modules\SalesOrder\Support\BulkPrintPrefillResolver;
 use Modules\Vendor\Queries\ListVendorOptionsHandler;
 use Modules\Vendor\Queries\ListVendorOptionsQuery;
 
@@ -35,7 +36,7 @@ class SalesOrderController extends Controller
         return view('salesorder::sales-orders.index', compact('statuses'));
     }
 
-    public function show(SalesOrder $salesOrder, ListLabelTemplateOptionsHandler $labelTemplateOptions, ListVendorOptionsHandler $vendorOptions)
+    public function show(SalesOrder $salesOrder, ListLabelTemplateOptionsHandler $labelTemplateOptions, ListVendorOptionsHandler $vendorOptions, BulkPrintPrefillResolver $prefillResolver)
     {
         $salesOrder->load(['importedBy', 'items.product', 'items.qualityChecks']);
         $labelTemplates = $labelTemplateOptions->handle(new ListLabelTemplateOptionsQuery());
@@ -45,8 +46,9 @@ class SalesOrderController extends Controller
             ->value('id')
             ?? LabelTemplate::query()->where('default_size', '80x60')->value('id')
             ?? '';
+        $printPrefill = $prefillResolver->forOrder($salesOrder);
 
-        return view('salesorder::sales-orders.show', compact('salesOrder', 'labelTemplates', 'vendors', 'defaultLabelTemplateId'));
+        return view('salesorder::sales-orders.show', compact('salesOrder', 'labelTemplates', 'vendors', 'defaultLabelTemplateId', 'printPrefill'));
     }
 
     public function updateDeliveryDate(Request $request, SalesOrder $salesOrder): RedirectResponse

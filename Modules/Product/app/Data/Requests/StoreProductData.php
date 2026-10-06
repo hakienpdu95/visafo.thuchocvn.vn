@@ -38,6 +38,9 @@ class StoreProductData extends Data
         #[Nullable, StringType, Max(2000)]
         public readonly ?string $description = null,
 
+        #[Nullable, StringType, Max(100000)]
+        public readonly ?string $product_info = null,
+
         /** JSON mảng ID media theo thứ tự hiển thị; null = form không gửi → giữ nguyên ảnh. */
         public readonly ?string $gallery = null,
 
@@ -101,6 +104,8 @@ class StoreProductData extends Data
 
             'description.string' => 'Mô tả không hợp lệ.',
             'description.max'    => 'Mô tả không được vượt quá 2000 ký tự.',
+
+            'product_info.max' => 'Nội dung "Thông tin sản phẩm" quá dài.',
         ];
     }
 }

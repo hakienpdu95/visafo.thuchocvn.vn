@@ -8,6 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initFormValidation(FORM_SEL);
     initAllTomSelects(form);
+
+    const info = form.querySelector('#product_info');
+    if (info && window.initJodit) window.initJodit(info);
+
+    form.addEventListener('submit', (e) => {
+        if (!e.defaultPrevented) window.clearJoditDraftTracking?.('product_info');
+    });
 });
 
 /**

@@ -15,15 +15,16 @@ class PrintLog extends TenantAwareModel
 {
     use HasCreator;
 
-    /** Chỉ các cột này được phép đổi sau khi in (QC thu hồi / đánh dấu lỗi, theo dõi in lại). */
+    /** Chỉ các cột này được phép đổi sau khi in (QC thu hồi / đánh dấu lỗi, theo dõi in lại, cập nhật nguồn cung / lô). */
     private const MUTABLE_COLUMNS = [
         'status', 'status_reason', 'status_changed_by', 'status_changed_at',
         'print_count', 'last_printed_at', 'last_print_session_id', 'updated_at',
+        'vendor_id', 'product_batch_id', 'supplier_name',
     ];
 
     /**
-     * Log in tem là bản ghi lịch sử bất biến: chỉ được tạo mới, không được xóa, và chỉ được đổi
-     * trạng thái (status*) — mọi dữ liệu đã in (khối lượng, NSX/HSD, mã truy xuất...) không được sửa.
+     * Log in tem: chỉ được tạo mới, không được xóa; sau khi in chỉ được đổi trạng thái, bộ đếm in lại và nguồn cung / lô —
+     * dữ liệu in trên tem (khối lượng, NSX/HSD, mã truy xuất...) không được sửa.
      */
     protected static function booted(): void
     {
@@ -40,12 +41,7 @@ class PrintLog extends TenantAwareModel
             $log->last_print_session_id ??= $log->print_session_id;
             $log->last_printed_at ??= now();
         });
-        static::updating(function (PrintLog $log): bool {
-            $dirty = array_diff(array_keys($log->getDirty()), self::MUTABLE_COLUMNS);
-            $fillingSource = array_filter($dirty, fn (string $col) => in_array($col, ['vendor_id', 'supplier_name'], true) && $log->getOriginal($col) === null);
-
-            return array_diff($dirty, $fillingSource) === [];
-        });
+        static::updating(fn (PrintLog $log): bool => array_diff(array_keys($log->getDirty()), self::MUTABLE_COLUMNS) === []);
         static::deleting(fn () => false);
     }
 
@@ -134,30 +130,52 @@ class PrintLog extends TenantAwareModel
     }
 
     /**
-     * Tem đang lưu hành của một dòng hàng (= đơn + sản phẩm), cùng lô nhập kho nếu có.
-     * Có rồi thì "In tem" phải in lại đúng các mã này thay vì sinh mã mới (Check & Reuse).
-     * Không so batch_code: frontend tự sinh nó từ NSX/HSD (LOT-ddmmyy-ddmmyy) nên đổi theo ngày in.
+     * Tem đang lưu hành của một dòng hàng. "In tem" luôn in lại đúng các mã này; chọn nguồn / lô khác thì cập nhật nguồn
+     * của chính các tem đó (giữ nguyên trace_code).
      */
-    public function scopeActiveForItem(Builder $query, string $orderItemId, ?string $productBatchId, ?string $vendorId = null): Builder
+    public function scopeActiveForItem(Builder $query, string $orderItemId): Builder
     {
         return $query->where('order_item_id', $orderItemId)
             ->where('status', PrintLogStatus::Active->value)
-            ->when($productBatchId, fn (Builder $q) => $q->where('product_batch_id', $productBatchId), fn (Builder $q) => $q->whereNull('product_batch_id'))
-            ->when($vendorId, fn (Builder $q) => $q->where(fn (Builder $v) => $v->where('vendor_id', $vendorId)
-                ->orWhere(fn (Builder $n) => $n->whereNull('vendor_id')->whereNull('supplier_name'))))
             ->orderBy('created_at')->orderBy('id');
     }
 
-    /** Ghi nhận một lần in lại (không đổi dữ liệu đã in). */
-    public function markReprinted(string $sessionId, ?string $vendorId = null, ?string $supplierName = null): void
+    public static function sourceDiffers(iterable $logs, array $source): bool
     {
-        $this->update(array_filter([
+        if (! ($source['source_selected'] ?? false)) {
+            return false;
+        }
+
+        foreach ($logs as $log) {
+            if ($log->product_batch_id !== ($source['product_batch_id'] ?? null)
+                || $log->vendor_id !== ($source['vendor_id'] ?? null)
+                || ($log->vendor_id === null && trim((string) $log->supplier_name) !== trim((string) ($source['supplier_name'] ?? '')))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function updateSource(iterable $logs, array $source): void
+    {
+        foreach ($logs as $log) {
+            $log->update([
+                'vendor_id'        => $source['vendor_id'] ?? null,
+                'product_batch_id' => $source['product_batch_id'] ?? null,
+                'supplier_name'    => $source['supplier_name'] ?? null,
+            ]);
+        }
+    }
+
+    /** Ghi nhận một lần in lại — chỉ bộ đếm/phiên in; dữ liệu nguồn đã in là bất biến. */
+    public function markReprinted(string $sessionId): void
+    {
+        $this->update([
             'print_count'           => $this->print_count + 1,
             'last_printed_at'       => now(),
             'last_print_session_id' => $sessionId,
-            'vendor_id'             => $this->vendor_id === null && $this->supplier_name === null ? $vendorId : null,
-            'supplier_name'         => $this->supplier_name === null ? $supplierName : null,
-        ], fn ($v) => $v !== null));
+        ]);
     }
 
     public function printEvents(): HasMany

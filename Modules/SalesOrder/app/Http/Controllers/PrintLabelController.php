@@ -18,6 +18,7 @@ use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\SalesOrder;
 use Modules\SalesOrder\Models\SalesOrderItem;
 use Modules\SalesOrder\Support\BatchAttributeResolver;
+use Modules\SalesOrder\Support\BulkPrintPrefillResolver;
 use Modules\SalesOrder\Support\LabelPrintEntryFactory;
 use Modules\SalesOrder\Support\LabelViewResolver;
 use Modules\SalesOrder\Support\PrintSourceResolver;
@@ -93,6 +94,7 @@ class PrintLabelController extends Controller
             'reused'      => $result['reused'],
             'message'     => $result['reused']
                 ? "Mặt hàng đã có {$result['logs']->count()} tem đang lưu hành — in lại đúng mã TXNG cũ, không tạo mã mới. "
+                    . ($result['source_changed'] ? 'Đã cập nhật nguồn cung / lô mới cho các tem này. ' : '')
                     . 'Cần đổi khối lượng / NSX / HSD hoặc thay tem bị mất: dùng "Hủy mã & Cấp lại" ở Nhật ký TXNG.'
                 : null,
             // Trang in cả phiên: mỗi tem một bản ghi + một trace_code/QR riêng.
@@ -119,10 +121,12 @@ class PrintLabelController extends Controller
             ->limit(50)
             ->get()
             ->map(fn (ProductBatch $b) => [
-                'value'       => $b->id,
-                'text'        => $b->batch_code . ' · ' . ($b->goodsReceipt?->vendor?->name ?? $b->goodsReceipt?->supplier_name ?? 'Chưa rõ NCC')
-                    . ($b->goodsReceipt?->receipt_date ? ' · nhập ' . $b->goodsReceipt->receipt_date->format('d/m/Y') : ''),
-                'vendor_id'   => $b->goodsReceipt?->vendor_id,
+                'value'         => $b->id,
+                'text'          => BulkPrintPrefillResolver::batchText($b),
+                'vendor_id'     => $b->goodsReceipt?->vendor_id,
+                'vendor_name'   => $b->goodsReceipt?->vendor?->name,
+                'supplier_name' => $b->goodsReceipt?->vendor_id ? null : $b->goodsReceipt?->supplier_name,
+                'in_stock'      => (float) $b->current_qty > 0,
             ]);
 
         return response()->json(['data' => $batches]);
@@ -193,7 +197,7 @@ class PrintLabelController extends Controller
         return response()->json(['print_url' => route('print.render_session', $newSessionId)]);
     }
 
-    public function storeAll(Request $request, SalesOrder $salesOrder, BulkPrintSalesOrderLabelsAction $action, PrintSourceResolver $sourceResolver): JsonResponse
+    public function storeAll(Request $request, SalesOrder $salesOrder, BulkPrintSalesOrderLabelsAction $action): JsonResponse
     {
         $this->authorize('print', $salesOrder);
 
@@ -203,6 +207,9 @@ class PrintLabelController extends Controller
             'items.*.label_groups'                   => ['required', 'array', 'min:1', 'max:20'],
             'items.*.label_groups.*.weight_per_label' => ['required', 'numeric', 'gt:0', 'max:99999'],
             'items.*.label_groups.*.label_count'      => ['required', 'integer', 'min:1', 'max:200'],
+            'items.*.vendor_id'        => ['nullable', 'string', Rule::exists('vendors', 'id')->whereNull('deleted_at')],
+            'items.*.supplier_name'    => ['nullable', 'string', 'max:255'],
+            'items.*.product_batch_id' => ['nullable', 'string', Rule::exists('product_batches', 'id')->whereNull('deleted_at')],
             'mfg_date'         => ['nullable', 'date'],
             'exp_date'         => array_filter([
                 'required', 'date',
@@ -232,13 +239,14 @@ class PrintLabelController extends Controller
             'items.*.label_groups.*.label_count.integer'       => 'Số lượng tem phải là số nguyên.',
             'items.*.label_groups.*.label_count.min'           => 'Mỗi dòng cần in tối thiểu 1 tem.',
             'items.*.label_groups.*.label_count.max'           => 'Mỗi dòng tối đa 200 tem.',
+            'items.*.vendor_id.exists'        => 'Nhà cung cấp của mặt hàng không hợp lệ.',
+            'items.*.supplier_name.max'       => 'Nguồn cung của mặt hàng không được vượt quá 255 ký tự.',
+            'items.*.product_batch_id.exists' => 'Lô nhập kho của mặt hàng không hợp lệ.',
         ]);
 
         if (collect($data['items'] ?? [])->flatMap(fn ($i) => $i['label_groups'])->sum('label_count') > 2000) {
             throw ValidationException::withMessages(['items' => 'Mỗi lần in toàn bộ đơn tối đa 2000 tem.']);
         }
-
-        $data = array_merge($data, $sourceResolver->resolve($data));
 
         $result = $action->handle($salesOrder, $data, $request->user()?->id);
 
@@ -247,6 +255,9 @@ class PrintLabelController extends Controller
             : "Đã in thành công {$result['printed']}/{$result['total']} mặt hàng."
                 . ($result['reused'] > 0
                     ? " {$result['reused']} mặt hàng đã có tem đang lưu hành nên được in lại đúng mã TXNG cũ (không tạo mã mới)."
+                    : '')
+                . ($result['source_changed'] > 0
+                    ? " Đã cập nhật nguồn cung / lô mới cho tem của {$result['source_changed']} mặt hàng (giữ nguyên mã TXNG)."
                     : '');
 
         return response()->json([

@@ -106,6 +106,15 @@
                         @error('description')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
                     </div>
 
+                    <div class="form-control">
+                        <label class="label py-0 pb-1.5">
+                            <span class="label-text font-medium">Thông tin sản phẩm</span>
+                        </label>
+                        <textarea id="product_info" name="product_info" data-jodit-preset="standard" data-jodit-height="360" data-jodit-context-type="product" data-jodit-context-id="{{ $product->id }}"
+                                  class="textarea textarea-bordered w-full @error('product_info') textarea-error @enderror">{{ old('product_info', $product->product_info) }}</textarea>
+                        @error('product_info')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <div class="form-control">
@@ -203,6 +212,7 @@
     @vite([
         'resources/js/modules/tom-select.js',
         'resources/js/modules/filepond.js',
+        'resources/js/modules/jodit.js',
         'Modules/Product/resources/assets/js/product.js',
     ], 'build/backend')
 @endpush
