@@ -66,7 +66,8 @@
         "shelf_life_days///unsignedInteger///__///_NULL///NULL///__///Số ngày bảo quản mặc định để tự động tính HSD",
         "label_template_id///unsignedBigInteger///__///_NULL///NULL///->constrained('label_templates')->onDelete('set null')///Mẫu tem in cho sản phẩm — NULL = dùng tem mặc định của hệ thống",
         "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
-        "description///text///__///_NULL///NULL///__///Mô tả ngắn hiển thị trên trang truy xuất"
+        "description///text///__///_NULL///NULL///__///Mô tả ngắn hiển thị trên trang truy xuất",
+        "product_info///longText///__///_NULL///NULL///__///Thông tin sản phẩm"
     ],
     [
         "contracts///add///__///",
