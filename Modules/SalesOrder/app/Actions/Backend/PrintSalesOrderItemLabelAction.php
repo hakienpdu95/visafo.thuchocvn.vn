@@ -58,6 +58,7 @@ class PrintSalesOrderItemLabelAction
                         'exp_date'          => $data['exp_date'],
                         'supplier_name'     => $data['supplier_name'] ?? null,
                         'vendor_id'         => $data['vendor_id'] ?? null,
+                        'partner_product_id' => $data['partner_product_id'] ?? null,
                         'product_batch_id'  => $data['product_batch_id'] ?? null,
                         'batch_code'        => $data['batch_code'] ?? null,
                         'printed_by'        => $printedBy,

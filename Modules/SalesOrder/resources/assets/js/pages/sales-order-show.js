@@ -447,6 +447,8 @@ document.addEventListener('alpine:init', () => {
         let templateTs = null;
         let globalTs = null;
         const rowSupplierTs = new Map();
+        const rowPartnerTs = new Map();
+        const rowBatchTs = new Map();
         let mfgPicker = null;
         let expPicker = null;
         const draftKey = 'bulk-print-draft:' + url;
@@ -456,7 +458,7 @@ document.addEventListener('alpine:init', () => {
         const saveDraft = (items) => {
             items.forEach((row) => {
                 draft[row.id] = {
-                    batchId: row.batchId, batchText: row.batchText, vendorId: row.vendorId, vendorName: row.vendorName,
+                    batchId: row.batchId, batchText: row.batchText, vendorId: row.vendorId, vendorName: row.vendorName, partnerProductId: row.partnerProductId,
                     supplierManual: row.supplierManual, supplierText: row.supplierText, dirty: row.dirty, viaGlobal: row.viaGlobal, manual: row.manual,
                     groups: row.groups.map((g) => ({ weight: g.weight, qty: g.qty })), total: row.total,
                 };
@@ -496,6 +498,7 @@ document.addEventListener('alpine:init', () => {
                 if (!p || row.printed === 0) return false;
                 const vendorId = row.supplierManual ? '' : row.vendorId;
                 return (row.batchId || '') !== p.batchId || vendorId !== p.vendorId
+                    || (vendorId ? row.partnerProductId || '' : '') !== p.partnerProductId
                     || (!vendorId && (row.supplierManual ? row.supplierText.trim() : '') !== p.supplierText);
             },
 
@@ -506,13 +509,16 @@ document.addEventListener('alpine:init', () => {
                     if (row.manual) return;
                     if (value) {
                         if (!row.viaGlobal) {
-                            row.beforeGlobal = { batchId: row.batchId, batchText: row.batchText, vendorId: row.vendorId, vendorName: row.vendorName, supplierManual: row.supplierManual, supplierText: row.supplierText };
+                            row.beforeGlobal = { batchId: row.batchId, batchText: row.batchText, vendorId: row.vendorId, vendorName: row.vendorName, partnerProductId: row.partnerProductId, supplierManual: row.supplierManual, supplierText: row.supplierText };
                         }
-                        Object.assign(row, { batchId: '', batchText: '', vendorId: value, vendorName: name, supplierManual: false, supplierText: '', viaGlobal: true, dirty: true });
+                        const partnerProductId = row.vendorId === value ? row.partnerProductId : '';
+                        Object.assign(row, { batchId: '', batchText: '', vendorId: value, vendorName: name, partnerProductId, supplierManual: false, supplierText: '', viaGlobal: true, dirty: true });
                     } else if (row.viaGlobal) {
-                        Object.assign(row, row.beforeGlobal ?? { batchId: '', batchText: '', vendorId: '', vendorName: '', supplierManual: false, supplierText: '' }, { viaGlobal: false });
+                        Object.assign(row, row.beforeGlobal ?? { batchId: '', batchText: '', vendorId: '', vendorName: '', partnerProductId: '', supplierManual: false, supplierText: '' }, { viaGlobal: false });
                     }
-                    rowSupplierTs.get(row.id)?.setValue(row.supplierManual ? '' : row.vendorId, true);
+                    this.syncRowSupplier(row);
+                    this.syncRowBatch(row);
+                    if (row.editing) this.loadRowPartners(row);
                 });
             },
 
@@ -530,8 +536,42 @@ document.addEventListener('alpine:init', () => {
                 return [{ value: row.batchId, text: row.batchText }, ...row.batches];
             },
 
+            syncRowBatch(row) {
+                const ts = rowBatchTs.get(row.id);
+                if (!ts) return;
+                ts.clearOptions();
+                ts.addOption({ value: '', text: '— Không chọn lô —' });
+                ts.addOptions(this.batchOptions(row).map((b) => ({ value: b.value, text: b.text + (b.in_stock === false ? ' (hết tồn)' : '') })));
+                ts.setValue(row.batchId || '', true);
+            },
+
+            initRowBatch(row, el) {
+                rowBatchTs.get(row.id)?.destroy();
+                const ts = createTs(el, {
+                    placeholder: '— Không chọn lô —',
+                    maxOptions: null,
+                    allowEmptyOption: true,
+                    onChange: (value) => {
+                        row.batchId = value || '';
+                        this.onRowBatchChange(row);
+                    },
+                });
+                if (!ts) return;
+                rowBatchTs.set(row.id, ts);
+                this.syncRowBatch(row);
+            },
+
             get totalLabels() {
                 return this.items.reduce((sum, row) => sum + row.groups.reduce((s, g) => s + groupQty(g), 0), 0);
+            },
+
+            // Nguồn của dòng đúng như trên màn hình: lô, NCC hoặc tên nhập tay — server không tự gán mặc định; thiếu nguồn vẫn in được (chỉ cảnh báo).
+            rowHasSource(row) {
+                return !!row.batchId || (row.supplierManual ? !!row.supplierText.trim() : !!row.vendorId);
+            },
+
+            get missingSourceCount() {
+                return this.items.filter((row) => !this.rowHasSource(row)).length;
             },
 
             get canRun() {
@@ -566,7 +606,91 @@ document.addEventListener('alpine:init', () => {
 
             toggleRow(row) {
                 row.editing = !row.editing;
-                if (row.editing) this.loadRowBatches(row);
+                if (row.editing) {
+                    this.loadRowBatches(row);
+                    this.loadRowPartners(row);
+                }
+            },
+
+            // Đồng bộ ô Tom Select "Hàng hóa NCC" theo state của dòng (danh sách, giá trị, khóa/mở).
+            syncRowPartner(row) {
+                const ts = rowPartnerTs.get(row.id);
+                if (!ts) return;
+                const options = [...row.partnerProducts];
+                if (row.partnerProductId && !options.some((p) => p.value === row.partnerProductId)) {
+                    options.unshift({ value: row.partnerProductId, text: 'Hàng hóa NCC đã chọn trước đó' });
+                }
+                ts.clearOptions();
+                ts.addOptions(options);
+                ts.settings.placeholder = !row.vendorId ? '— Chọn nguồn cung trước —'
+                    : row.loadingPartners ? 'Đang tải…'
+                    : options.length === 0 ? 'NCC chưa kê khai hàng hóa này' : '— Không chọn —';
+                ts.control_input.setAttribute('placeholder', ts.settings.placeholder);
+                ts.setValue(row.partnerProductId || '', true);
+                // Có lô: hàng hóa NCC theo lô (lô canh tác) hoặc chỉ có 1 lựa chọn → khóa; nhiều lựa chọn thì vẫn cho chọn.
+                const lockedByBatch = !!row.batchId && (!!row.batchPartnerId || options.length <= 1);
+                const disabled = !row.vendorId || row.supplierManual || row.loadingPartners || options.length === 0 || lockedByBatch;
+                disabled ? ts.disable() : ts.enable();
+            },
+
+            initRowPartner(row, el) {
+                rowPartnerTs.get(row.id)?.destroy();
+                const ts = createTs(el, {
+                    placeholder: '— Chọn nguồn cung trước —',
+                    maxOptions: null,
+                    onChange: (value) => {
+                        row.partnerProductId = value || '';
+                        row.dirty = true;
+                        row.manual = true;
+                    },
+                });
+                if (!ts) return;
+                rowPartnerTs.set(row.id, ts);
+                this.syncRowPartner(row);
+            },
+
+            // Cascade Nguồn cung → Hàng hóa NCC: tải hàng hóa của NCC đang chọn ánh xạ đúng sản phẩm chuẩn của dòng; chỉ 1 kết quả thì tự chọn.
+            async loadRowPartners(row) {
+                const vendorId = row.supplierManual ? '' : row.vendorId;
+                if (!vendorId || !row.partnerProductsUrl) {
+                    row.partnerProducts = [];
+                    row.partnerProductsVendorId = '';
+                    row.partnerProductId = '';
+                    this.syncRowPartner(row);
+                    return;
+                }
+                if (row.partnerProductsVendorId === vendorId) return this.syncRowPartner(row);
+
+                row.loadingPartners = true;
+                this.syncRowPartner(row);
+                try {
+                    const res = await fetch(row.partnerProductsUrl + '?vendor_id=' + encodeURIComponent(vendorId), {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    if ((row.supplierManual ? '' : row.vendorId) !== vendorId) return; // NCC đã đổi trong lúc chờ
+                    row.partnerProducts = data.data ?? [];
+                    row.partnerProductsVendorId = vendorId;
+                    if (row.partnerProductId && !row.partnerProducts.some((p) => p.value === row.partnerProductId)) row.partnerProductId = '';
+                    if (!row.partnerProductId && row.partnerProducts.length === 1) row.partnerProductId = row.partnerProducts[0].value;
+                } catch (e) {
+                    console.error('[bulk-print] load partner products failed', e);
+                } finally {
+                    row.loadingPartners = false;
+                    this.syncRowPartner(row);
+                }
+            },
+
+            onRowVendorChange(row, prevVendorId = null, presetPartnerId = '') {
+                if (prevVendorId !== null && prevVendorId === (row.supplierManual ? '' : row.vendorId)) {
+                    if (presetPartnerId) row.partnerProductId = presetPartnerId;
+                    return this.loadRowPartners(row);
+                }
+                row.partnerProductId = presetPartnerId;
+                row.partnerProducts = [];
+                row.partnerProductsVendorId = '';
+                return this.loadRowPartners(row);
             },
 
             async loadRowBatches(row) {
@@ -578,6 +702,9 @@ document.addEventListener('alpine:init', () => {
                     const data = await res.json();
                     row.batches = data.data ?? [];
                     row.batchesLoaded = true;
+                    row.batchPartnerId = row.batches.find((b) => b.value === row.batchId)?.partner_product_id ?? '';
+                    this.syncRowBatch(row);
+                    this.syncRowPartner(row);
                 } catch (e) {
                     console.error('[bulk-print] load batches failed', e);
                 } finally {
@@ -585,19 +712,42 @@ document.addEventListener('alpine:init', () => {
                 }
             },
 
+            // Chỉ NCC có hàng hóa ánh xạ tới sản phẩm của dòng; NCC đang gán (lần in trước / nguồn cung chung) vẫn giữ để không mất giá trị.
+            rowVendorOptions(row) {
+                const allowed = new Set(row.vendorIds);
+                if (row.vendorId) allowed.add(row.vendorId);
+                return vendors.filter((v) => allowed.has(v.value))
+                    .concat(row.vendorId && !vendors.some((v) => v.value === row.vendorId) ? [{ value: row.vendorId, text: row.vendorName || row.vendorId }] : [])
+                    .map((v) => ({ value: v.value, text: v.text }));
+            },
+
+            syncRowSupplier(row) {
+                const ts = rowSupplierTs.get(row.id);
+                if (!ts) return;
+                const value = row.supplierManual ? '' : row.vendorId;
+                if (value && !ts.options[value]) ts.addOptions(this.rowVendorOptions(row));
+                ts.setValue(value, true);
+            },
+
             initRowSupplier(row, el) {
                 rowSupplierTs.get(row.id)?.destroy();
+                const empty = row.vendorIds.length === 0;
                 const ts = createTs(el, {
-                    placeholder: '— Chọn nhà cung cấp —',
+                    placeholder: empty ? 'Không tìm thấy NCC nào cung cấp mặt hàng này' : '— Chọn nhà cung cấp —',
                     maxOptions: null,
-                    options: vendors.map((v) => ({ value: v.value, text: v.text })),
+                    options: this.rowVendorOptions(row),
                     items: row.vendorId && !row.supplierManual ? [row.vendorId] : [],
+                    render: {
+                        no_results: () => '<div class="no-results" style="padding:.75rem;font-size:.875rem;color:#94a3b8;text-align:center">'
+                            + (empty ? 'Không tìm thấy NCC nào cung cấp mặt hàng này' : 'Không tìm thấy kết quả') + '</div>',
+                    },
                     onChange: (value) => {
                         row.vendorId = value || '';
                         row.vendorName = value ? (vendors.find((v) => v.value === value)?.text ?? '') : '';
                         row.dirty = true;
                         row.viaGlobal = false;
                         row.manual = true;
+                        this.onRowVendorChange(row);
                     },
                 });
                 if (ts) rowSupplierTs.set(row.id, ts);
@@ -605,6 +755,7 @@ document.addEventListener('alpine:init', () => {
 
             onRowBatchChange(row) {
                 const batch = row.batches.find((b) => b.value === row.batchId);
+                const prevVendorId = row.supplierManual ? '' : row.vendorId;
                 row.dirty = true;
                 row.viaGlobal = false;
                 row.manual = true;
@@ -613,6 +764,9 @@ document.addEventListener('alpine:init', () => {
                 row.vendorName = batch?.vendor_name ?? '';
                 row.supplierManual = !batch?.vendor_id && !!batch?.supplier_name;
                 row.supplierText = row.supplierManual ? batch.supplier_name : '';
+                row.batchPartnerId = batch?.partner_product_id ?? '';
+                this.syncRowSupplier(row);
+                this.onRowVendorChange(row, prevVendorId, row.batchPartnerId);
             },
 
             onRowSupplierManualToggle(row) {
@@ -623,6 +777,7 @@ document.addEventListener('alpine:init', () => {
                 row.dirty = true;
                 row.viaGlobal = false;
                 row.manual = true;
+                this.onRowVendorChange(row);
             },
 
             buildItems(rows) {
@@ -649,7 +804,13 @@ document.addEventListener('alpine:init', () => {
                         groups: [],
                         editing: false,
                         batchesUrl: r.batches_url,
+                        partnerProductsUrl: r.partner_products_url,
+                        partnerProducts: [],
+                        partnerProductsVendorId: '',
+                        loadingPartners: false,
                         hasBatches: !!pf.has_batches,
+                        vendorIds: pf.vendor_ids ?? [],
+                        batchPartnerId: '',
                         printed: pf.printed ?? 0,
                         origin: pf.origin ?? null,
                         batches: [],
@@ -659,6 +820,8 @@ document.addEventListener('alpine:init', () => {
                         batchText: src.batchText || '',
                         vendorId: src.vendorId || '',
                         vendorName: src.vendorName || '',
+                        // Bản nháp cũ chưa có khóa này → lấy theo lần in trước nếu cùng NCC.
+                        partnerProductId: (d && 'partnerProductId' in d ? d.partnerProductId : ((src.vendorId || '') === (pf.vendor_id ?? '') ? pf.partner_product_id : '')) || '',
                         supplierManual: !!src.supplierManual,
                         supplierText: src.supplierText || '',
                         dirty: !!src.dirty,
@@ -666,7 +829,7 @@ document.addEventListener('alpine:init', () => {
                         manual: !!src.manual,
                         beforeGlobal: null,
                         printedSource: pf.origin === 'history' && (pf.printed ?? 0) > 0
-                            ? { batchId: pf.batch_id ?? '', vendorId: pf.vendor_id ?? '', supplierText: pf.vendor_id ? '' : (pf.supplier_name ?? '') }
+                            ? { batchId: pf.batch_id ?? '', vendorId: pf.vendor_id ?? '', partnerProductId: pf.vendor_id ? (pf.partner_product_id ?? '') : '', supplierText: pf.vendor_id ? '' : (pf.supplier_name ?? '') }
                             : null,
                     };
                     if (d?.groups?.length && d.total === total) {
@@ -788,6 +951,7 @@ document.addEventListener('alpine:init', () => {
                                 order_item_id: row.id,
                                 product_batch_id: row.batchId || null,
                                 vendor_id: row.supplierManual ? null : (row.vendorId || null),
+                                partner_product_id: row.supplierManual || !row.vendorId ? null : (row.partnerProductId || null),
                                 supplier_name: row.supplierManual ? (row.supplierText.trim() || null) : null,
                                 label_groups: row.groups.map((g) => ({ weight_per_label: Number(g.weight), label_count: Number(g.qty) })),
                             })),
@@ -807,7 +971,7 @@ document.addEventListener('alpine:init', () => {
 
                     this.items.forEach((row) => {
                         if (row.printed === 0) row.printed = row.groups.reduce((s, g) => s + groupQty(g), 0);
-                        row.printedSource = { batchId: row.batchId || '', vendorId: row.supplierManual ? '' : row.vendorId, supplierText: row.supplierManual ? row.supplierText.trim() : '' };
+                        row.printedSource = { batchId: row.batchId || '', vendorId: row.supplierManual ? '' : row.vendorId, partnerProductId: row.supplierManual || !row.vendorId ? '' : (row.partnerProductId || ''), supplierText: row.supplierManual ? row.supplierText.trim() : '' };
                         row.origin = 'history';
                         row.dirty = false;
                         row.viaGlobal = false;

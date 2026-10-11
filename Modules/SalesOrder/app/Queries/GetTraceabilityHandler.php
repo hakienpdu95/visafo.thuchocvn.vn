@@ -50,7 +50,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ->where('trace_code', $query->traceCode)
             ->with([
                 'orderItem.product.category', 'orderItem.product.media', 'orderItem.salesOrder', 'attributes',
-                'vendor.province', 'vendor.ward', 'productBatch.goodsReceipt',
+                'vendor.province', 'vendor.ward', 'productBatch.goodsReceipt', 'partnerProduct.product:id,name,sku',
                 'productBatch.qualityChecks', 'orderItem.qualityChecks',
                 'productBatch.farmingBatch.farmingSource', 'productBatch.farmingBatch.vendor', 'productBatch.farmingBatch.partnerProduct',
                 'productBatch.farmingBatch.logs',
@@ -185,6 +185,11 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             return null;
         }
 
+        // Tem in có chọn hàng hóa NCC → dùng thẳng bản ghi đó; tem cũ (null) mới suy ra theo vendor_id + product_id bên dưới.
+        if ($log->partner_product_id !== null && ($chosen = $log->loadMissing('partnerProduct.product:id,name,sku')->partnerProduct) !== null) {
+            return $chosen;
+        }
+
         if ($fromFarm = $log->productBatch?->farmingBatch?->partnerProduct) {
             return $fromFarm;
         }
@@ -275,28 +280,16 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 trim((string) $vendor->address), $vendor->ward?->name, $vendor->province?->name,
             ]))) ?: null),
             'documents' => $this->documentRows(self::supplierDocumentQuery([$vendor, $log->productBatch?->farmingBatch?->vendor]), $log->trace_code),
+            // Đúng 1 hàng hóa NCC của chính tem này (partner_product_id, tem cũ thì suy ra theo NCC + sản phẩm) — không liệt kê hàng hóa khác của NCC.
             'partnerProduct' => $partner ? [
                 'name'         => $partner->name,
+                'image'        => $this->partnerProductImage($partner, $product),
                 'sku'          => $partner->vendor_sku ?: null,
                 'manufacturer' => $partner->manufacturer_name ?: null,
                 'origin'       => $partner->origin_address ?: null,
                 'mappedTo'     => $mappedTo,
                 'documents'    => $this->documentRows(self::supplierDocumentQuery([$partner]), $log->trace_code),
             ] : null,
-            'vendorProducts' => PartnerProduct::query()
-                ->where('vendor_id', $vendor->id)
-                ->where(fn ($q) => $q->where('status', PartnerProductStatus::Active->value)->when($partner, fn ($w) => $w->orWhereKey($partner->id)))
-                ->with('product.media')
-                ->orderBy('name')
-                ->get()
-                ->sortByDesc(fn (PartnerProduct $p) => $p->id === $partner?->id)
-                ->map(fn (PartnerProduct $p) => [
-                    'name'      => $p->name,
-                    'image'     => $p->product ? ($p->product->galleryImages()->first()['url'] ?? ($p->product->image_url ?: null)) : null,
-                    'isCurrent' => $p->id === $partner?->id,
-                ])
-                ->values()
-                ->all(),
         ];
     }
 
@@ -645,6 +638,16 @@ class GetTraceabilityHandler implements QueryHandlerInterface
     }
 
     /** Vendor đại diện vùng trồng tự quản: khai báo ID ở TRACE_OWN_VENDOR_IDS, hoặc trùng MST với hồ sơ trụ sở chính. */
+    private function partnerProductImage(PartnerProduct $partner, ?Product $itemProduct): ?string
+    {
+        // product của hàng hóa NCC chỉ nạp vài cột → dùng lại sản phẩm của dòng hàng nếu trùng, không thì nạp đủ kèm ảnh.
+        $product = $partner->product_id === $itemProduct?->id
+            ? $itemProduct
+            : ($partner->product_id ? Product::query()->with('media')->find($partner->product_id) : null);
+
+        return $product ? ($product->galleryImages()->first()['url'] ?? ($product->image_url ?: null)) : null;
+    }
+
     private function isOwnVendor(Vendor $vendor, array $company): bool
     {
         return in_array($vendor->id, (array) config('trace.own_vendor_ids', []), true)

@@ -19,7 +19,7 @@ class PrintLog extends TenantAwareModel
     private const MUTABLE_COLUMNS = [
         'status', 'status_reason', 'status_changed_by', 'status_changed_at',
         'print_count', 'last_printed_at', 'last_print_session_id', 'updated_at',
-        'vendor_id', 'product_batch_id', 'supplier_name',
+        'vendor_id', 'partner_product_id', 'product_batch_id', 'supplier_name',
     ];
 
     /**
@@ -62,6 +62,7 @@ class PrintLog extends TenantAwareModel
         'exp_date',
         'supplier_name',
         'vendor_id',
+        'partner_product_id',
         'product_batch_id',
         'batch_code',
         'printed_by',
@@ -114,6 +115,12 @@ class PrintLog extends TenantAwareModel
         return $this->belongsTo(\Modules\Vendor\Models\Vendor::class);
     }
 
+    /** Hàng hóa NCC chọn khi in (null với tem in trước khi có cột này). */
+    public function partnerProduct(): BelongsTo
+    {
+        return $this->belongsTo(\Modules\Product\Models\PartnerProduct::class);
+    }
+
     public function productBatch(): BelongsTo
     {
         return $this->belongsTo(\Modules\GoodsReceipt\Models\ProductBatch::class);
@@ -149,6 +156,7 @@ class PrintLog extends TenantAwareModel
         foreach ($logs as $log) {
             if ($log->product_batch_id !== ($source['product_batch_id'] ?? null)
                 || $log->vendor_id !== ($source['vendor_id'] ?? null)
+                || (array_key_exists('partner_product_id', $source) && $log->partner_product_id !== $source['partner_product_id'])
                 || ($log->vendor_id === null && trim((string) $log->supplier_name) !== trim((string) ($source['supplier_name'] ?? '')))) {
                 return true;
             }
@@ -160,9 +168,14 @@ class PrintLog extends TenantAwareModel
     public static function updateSource(iterable $logs, array $source): void
     {
         foreach ($logs as $log) {
+            $vendorId = $source['vendor_id'] ?? null;
             $log->update([
-                'vendor_id'        => $source['vendor_id'] ?? null,
-                'product_batch_id' => $source['product_batch_id'] ?? null,
+                'vendor_id'          => $vendorId,
+                // Form không gửi hàng hóa NCC → giữ nguyên nếu vẫn cùng NCC, đổi NCC thì bỏ (hàng hóa cũ thuộc NCC cũ).
+                'partner_product_id' => array_key_exists('partner_product_id', $source)
+                    ? $source['partner_product_id']
+                    : ($log->vendor_id === $vendorId ? $log->partner_product_id : null),
+                'product_batch_id'   => $source['product_batch_id'] ?? null,
                 'supplier_name'    => $source['supplier_name'] ?? null,
             ]);
         }

@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Truy xuất nguồn gốc — {{ $trace->productName }}</title>
-    @vite(array_filter(['resources/css/app.css', count($trace->productImages) > 1 || ! empty($trace->supplier['vendorProducts']) ? 'resources/js/modules/swiper.js' : null]), 'build/backend')
+    @vite(array_filter(['resources/css/app.css', count($trace->productImages) > 1 ? 'resources/js/modules/swiper.js' : null]), 'build/backend')
 </head>
 <body class="bg-gray-200/60 text-gray-800 antialiased">
 @php
@@ -240,25 +240,28 @@
                     @endforeach
                 </dl>
 
-                @if($sup['vendorProducts'])
+                @if($pp)
                 <div class="mt-4">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Hàng hóa nhà cung cấp</p>
-                    <div id="trace-vendor-products" class="swiper w-full">
-                        <div class="swiper-wrapper">
-                            @foreach($sup['vendorProducts'] as $vp)
-                            <div class="swiper-slide !h-auto">
-                                <div class="h-full overflow-hidden rounded-lg border bg-white {{ $vp['isCurrent'] ? 'border-green-500 ring-1 ring-green-500' : 'border-gray-200' }}">
-                                    <div class="aspect-square bg-gray-100">
-                                        @if($vp['image'])
-                                        <img src="{{ $vp['image'] }}" alt="{{ $vp['name'] }}" loading="lazy" class="h-full w-full object-cover" data-trace-img-fallback="sm">
-                                        @else
-                                        @include('traceability.partials.image-placeholder', ['size' => 'sm'])
-                                        @endif
-                                    </div>
-                                    <p class="line-clamp-2 min-h-[3.4em] px-2 py-2 text-[13px] font-medium leading-snug text-slate-900">{{ $vp['name'] }}</p>
-                                </div>
-                            </div>
-                            @endforeach
+                    <div class="flex gap-3 overflow-hidden rounded-lg border border-green-500 bg-white p-2 ring-1 ring-green-500">
+                        <div class="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-gray-100">
+                            @if($pp['image'])
+                            <img src="{{ $pp['image'] }}" alt="{{ $pp['name'] }}" loading="lazy" class="h-full w-full object-cover" data-trace-img-fallback="sm">
+                            @else
+                            @include('traceability.partials.image-placeholder', ['size' => 'sm'])
+                            @endif
+                        </div>
+                        <div class="min-w-0 flex-1 py-0.5">
+                            <p class="line-clamp-2 text-sm font-medium leading-snug text-slate-900">{{ $pp['name'] }}</p>
+                            <dl class="mt-1 space-y-0.5 text-[13px] leading-snug">
+                                @foreach(array_filter([
+                                    ['Mã hàng', $pp['sku']],
+                                    ['Nhà sản xuất', $pp['manufacturer']],
+                                    ['Vùng gốc', $pp['origin']],
+                                ], fn ($row) => filled($row[1])) as [$rowLabel, $rowValue])
+                                <div><dt class="inline text-gray-600">{{ $rowLabel }}:</dt> <dd class="inline font-medium text-gray-900">{{ $rowValue }}</dd></div>
+                                @endforeach
+                            </dl>
                         </div>
                     </div>
                 </div>
@@ -517,11 +520,6 @@
             },
         },
     });
-</script>
-@endif
-@if(! empty($trace->supplier['vendorProducts']))
-<script type="module">
-    initSwiper('#trace-vendor-products', { navigation: false, pagination: false, slidesPerView: 2.3, spaceBetween: 10 });
 </script>
 @endif
 <script>

@@ -36,7 +36,7 @@ class TraceController extends Controller
     public function document(string $traceCode, string $mediaId, ?string $variant = null)
     {
         $log = PrintLog::query()->where('trace_code', $traceCode)
-            ->with('vendor', 'orderItem', 'productBatch.farmingBatch.vendor', 'productBatch.farmingBatch.partnerProduct')->firstOrFail();
+            ->with('vendor', 'partnerProduct', 'orderItem', 'productBatch.farmingBatch.vendor', 'productBatch.farmingBatch.partnerProduct')->firstOrFail();
 
         // Whitelist: hồ sơ doanh nghiệp công khai + hồ sơ NCC / hàng hóa NCC thuộc ĐÚNG tem này (không mở hồ sơ NCC khác)
         $sourceDocs = GetTraceabilityHandler::supplierDocumentQuery(GetTraceabilityHandler::supplierDocumentOwners($log));

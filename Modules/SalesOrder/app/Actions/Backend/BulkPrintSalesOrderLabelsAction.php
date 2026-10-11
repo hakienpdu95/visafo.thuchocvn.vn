@@ -100,6 +100,7 @@ class BulkPrintSalesOrderLabelsAction
                             'exp_date'          => $data['exp_date'],
                             'supplier_name'     => $source['supplier_name'],
                             'vendor_id'         => $source['vendor_id'],
+                            'partner_product_id' => $source['partner_product_id'] ?? null,
                             'product_batch_id'  => $source['product_batch_id'],
                             'batch_code'        => $data['batch_code'] ?? null,
                             'printed_by'        => $printedBy,

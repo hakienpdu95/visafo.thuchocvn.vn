@@ -79,6 +79,7 @@
         'history_url'   => route('backend.sales-orders.items.print-logs', $item),
         'label_template_id' => $item->product?->label_template_id,
         'batches_url'   => route('backend.sales-orders.items.batches', $item),
+        'partner_products_url' => route('backend.sales-orders.items.partner-products', $item),
         'print_prefill' => $printPrefill[$item->id] ?? null,
         'shelf_life_days' => $item->product?->shelf_life_days,
         'print_url'     => $canPrint ? route('backend.sales-orders.items.print', $item) : null,
@@ -100,7 +101,7 @@
         </div>
 
         <div class="modal" :class="{ 'modal-open': confirming }" @keydown.escape.window="confirming = false">
-            <div class="modal-box max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="modal-box max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
                 <h3 class="font-bold text-lg mb-1 shrink-0">In tem toàn bộ đơn</h3>
 
                 <form @submit.prevent="run()" novalidate class="flex flex-col flex-1 min-h-0">
@@ -211,8 +212,8 @@
                                                   :title="row.batchText" x-text="'Lô ' + batchCodeOf(row)"></span>
                                             <span class="badge badge-sm bg-base-200 border-base-300 text-base-content/70 max-w-full truncate" x-show="supplierOf(row)"
                                                   :title="supplierOf(row)" x-text="(row.viaGlobal ? 'Theo cấu hình chung - ' : '') + supplierOf(row)"></span>
-                                            <span class="badge badge-sm badge-warning badge-outline" x-show="!row.batchId && !supplierOf(row)"
-                                                  x-text="row.hasBatches ? 'Chưa chọn lô xuất kho' : 'Chưa có nguồn cung'"></span>
+                                            <span class="badge badge-sm badge-error badge-outline" x-show="!rowHasSource(row)"
+                                                  x-text="row.hasBatches ? 'Chưa chọn lô xuất kho / nguồn cung' : 'Chưa chọn nguồn cung'"></span>
                                             <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'history' && !sourceChanged(row)">Theo lần in trước</span>
                                             <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'fifo' && !row.dirty">Gợi ý FIFO</span>
                                             <span class="badge badge-sm badge-info badge-outline text-[11px]" x-show="row.printed > 0 && !sourceChanged(row)"
@@ -232,11 +233,8 @@
                                                         <span class="label-text text-xs font-medium">Lô xuất kho</span>
                                                         <span class="label-text-alt text-base-content/40 text-xs" x-show="row.loadingBatches">Đang tải…</span>
                                                     </label>
-                                                    <select class="select select-bordered select-sm w-full" x-model="row.batchId" @change="onRowBatchChange(row)">
+                                                    <select class="select select-bordered select-sm w-full" x-init="initRowBatch(row, $el)">
                                                         <option value="">— Không chọn lô —</option>
-                                                        <template x-for="b in batchOptions(row)" :key="b.value">
-                                                            <option :value="b.value" x-text="b.text + (b.in_stock === false ? ' (hết tồn)' : '')" :selected="b.value === row.batchId"></option>
-                                                        </template>
                                                     </select>
                                                 </div>
                                                 <div class="form-control" x-show="row.hasBatches && row.batchId">
@@ -247,10 +245,10 @@
                                                     <input type="text" readonly disabled :value="supplierOf(row) || 'Chưa rõ NCC'"
                                                            class="input input-bordered input-sm w-full bg-base-200 text-base-content/70 cursor-not-allowed">
                                                 </div>
-                                                <div class="form-control" x-show="!row.hasBatches">
+                                                <div class="form-control" x-show="!row.hasBatches || !row.batchId">
                                                     <label class="label py-0 pb-1">
                                                         <span class="label-text text-xs font-medium">Nguồn cung</span>
-                                                        <span class="label-text-alt text-base-content/40 text-xs">Sản phẩm không quản lý theo lô</span>
+                                                        <span class="label-text-alt text-base-content/40 text-xs" x-text="row.hasBatches ? 'Không chọn lô — chọn nguồn cung thủ công' : 'Sản phẩm không quản lý theo lô'"></span>
                                                     </label>
                                                     <div x-show="!row.supplierManual">
                                                         <select class="select select-bordered select-sm w-full" x-init="initRowSupplier(row, $el)">
@@ -265,6 +263,16 @@
                                                         <input type="checkbox" x-model="row.supplierManual" @change="onRowSupplierManualToggle(row)" class="checkbox checkbox-xs">
                                                         <span class="label-text text-xs">Khác / Nhập tay</span>
                                                     </label>
+                                                </div>
+                                                <div class="form-control" x-show="!row.supplierManual">
+                                                    <label class="label py-0 pb-1">
+                                                        <span class="label-text text-xs font-medium">Hàng hóa nhà cung cấp</span>
+                                                        <span class="label-text-alt text-base-content/40 text-xs" x-show="row.loadingPartners">Đang tải…</span>
+                                                        <span class="label-text-alt text-base-content/40 text-xs" x-show="!row.loadingPartners && row.vendorId && row.partnerProductsVendorId === row.vendorId && row.partnerProducts.length === 0">NCC chưa kê khai hàng hóa này</span>
+                                                    </label>
+                                                    <select class="select select-bordered select-sm w-full" x-init="initRowPartner(row, $el)">
+                                                        <option value="">— Chọn nguồn cung trước —</option>
+                                                    </select>
                                                 </div>
                                             </div>
                                             <div class="rounded-lg border border-base-200 bg-base-100 overflow-hidden">
@@ -312,6 +320,10 @@
 
                         <div class="modal-action mt-4 items-center shrink-0">
                             <p class="text-xs text-base-content/50 mr-auto" x-show="!form.template">Vui lòng chọn mẫu tem in</p>
+                            <p class="flex items-start gap-1.5 text-xs text-warning mr-auto" x-show="form.template && missingSourceCount > 0">
+                                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                                <span x-text="'Lưu ý: Có ' + missingSourceCount + ' mặt hàng chưa chọn Nguồn cung (Tem in ra sẽ không có thông tin nguồn gốc)'"></span>
+                            </p>
                             <button type="submit" class="btn btn-sm border-0 bg-blue-800 text-white hover:bg-blue-900"
                                     :disabled="!canRun">
                                 <span class="loading loading-spinner loading-xs" x-show="submitting"></span>

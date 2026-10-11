@@ -48,6 +48,7 @@ class PrintLabelController extends Controller
             'supplier_name'    => ['nullable', 'string', 'max:255'],
             'vendor_id'        => ['nullable', 'string', Rule::exists('vendors', 'id')->whereNull('deleted_at')],
             'product_batch_id' => ['nullable', 'string', Rule::exists('product_batches', 'id')->whereNull('deleted_at')],
+            'partner_product_id' => ['nullable', 'string', Rule::exists('partner_products', 'id')->whereNull('deleted_at')],
             'batch_code'       => ['nullable', 'string', 'max:100'],
             'label_template_id' => ['nullable', 'string', Rule::exists('label_templates', 'id')->whereNull('deleted_at')],
             'extra_attributes'         => ['nullable', 'array', 'max:30'],
@@ -71,6 +72,7 @@ class PrintLabelController extends Controller
             'supplier_name.max'         => 'Nguồn cung không được vượt quá 255 ký tự.',
             'vendor_id.exists'          => 'Nhà cung cấp không hợp lệ.',
             'product_batch_id.exists'   => 'Lô nhập kho không hợp lệ.',
+            'partner_product_id.exists' => 'Hàng hóa nhà cung cấp không hợp lệ.',
             'batch_code.max'            => 'Mã lô không được vượt quá 100 ký tự.',
             'label_template_id.exists'  => 'Mẫu tem được chọn không hợp lệ.',
             'extra_attributes.max'             => 'Tối đa 30 dòng thông tin bổ sung.',
@@ -116,7 +118,7 @@ class PrintLabelController extends Controller
 
         $batches = ProductBatch::query()
             ->where('product_id', $item->product_id)
-            ->with('goodsReceipt:id,misa_ref_id,receipt_date,vendor_id,supplier_name', 'goodsReceipt.vendor:id,name')
+            ->with('goodsReceipt:id,misa_ref_id,receipt_date,vendor_id,supplier_name', 'goodsReceipt.vendor:id,name', 'farmingBatch:id,partner_product_id')
             ->latest('created_at')->latest('id')
             ->limit(50)
             ->get()
@@ -125,11 +127,23 @@ class PrintLabelController extends Controller
                 'text'          => BulkPrintPrefillResolver::batchText($b),
                 'vendor_id'     => $b->goodsReceipt?->vendor_id,
                 'vendor_name'   => $b->goodsReceipt?->vendor?->name,
+                // Lô gắn lô canh tác → hàng hóa NCC xác định theo lô (khóa ô "Hàng hóa NCC").
+                'partner_product_id' => $b->goodsReceipt?->vendor_id ? $b->farmingBatch?->partner_product_id : null,
                 'supplier_name' => $b->goodsReceipt?->vendor_id ? null : $b->goodsReceipt?->supplier_name,
                 'in_stock'      => (float) $b->current_qty > 0,
             ]);
 
         return response()->json(['data' => $batches]);
+    }
+
+    /** Hàng hóa NCC của nguồn cung vừa chọn, ánh xạ đúng sản phẩm chuẩn của dòng hàng — ô "Hàng hóa nhà cung cấp" (cascade theo Nguồn cung). */
+    public function partnerProducts(Request $request, SalesOrderItem $item, PrintSourceResolver $sourceResolver): JsonResponse
+    {
+        $this->authorize('print', $item->order);
+
+        $vendorId = $request->validate(['vendor_id' => ['required', 'string', 'max:26']])['vendor_id'];
+
+        return response()->json(['data' => $sourceResolver->partnerProductOptions($item, $vendorId)]);
     }
 
     /** Lịch sử in của một dòng hàng (mới nhất trước). */
@@ -210,6 +224,7 @@ class PrintLabelController extends Controller
             'items.*.vendor_id'        => ['nullable', 'string', Rule::exists('vendors', 'id')->whereNull('deleted_at')],
             'items.*.supplier_name'    => ['nullable', 'string', 'max:255'],
             'items.*.product_batch_id' => ['nullable', 'string', Rule::exists('product_batches', 'id')->whereNull('deleted_at')],
+            'items.*.partner_product_id' => ['nullable', 'string', Rule::exists('partner_products', 'id')->whereNull('deleted_at')],
             'mfg_date'         => ['nullable', 'date'],
             'exp_date'         => array_filter([
                 'required', 'date',
@@ -242,6 +257,7 @@ class PrintLabelController extends Controller
             'items.*.vendor_id.exists'        => 'Nhà cung cấp của mặt hàng không hợp lệ.',
             'items.*.supplier_name.max'       => 'Nguồn cung của mặt hàng không được vượt quá 255 ký tự.',
             'items.*.product_batch_id.exists' => 'Lô nhập kho của mặt hàng không hợp lệ.',
+            'items.*.partner_product_id.exists' => 'Hàng hóa nhà cung cấp của mặt hàng không hợp lệ.',
         ]);
 
         if (collect($data['items'] ?? [])->flatMap(fn ($i) => $i['label_groups'])->sum('label_count') > 2000) {
