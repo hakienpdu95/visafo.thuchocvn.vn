@@ -135,6 +135,7 @@
         "status_changed_at///timestamp///__///_NULL///NULL///__///Thời điểm đổi trạng thái gần nhất",
         "batch_code///string///100///_NULL///NULL///__///Mã lô tự sinh LOT-[NSX]-[HSD] tại thời điểm in",
         "vendor_id///ulid///__///_NULL///NULL///__///Nhà cung cấp chọn khi in",
+        "partner_product_id///ulid///__///_NULL///NULL///__///Hàng hóa NCC chọn khi in (null = suy ra từ vendor_id + product_id)",
         "product_batch_id///ulid///__///_NULL///NULL///__///Lô nhập kho chọn khi in",
         "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
         "__index///index///__///__///__///vendor_id///__",
@@ -146,7 +147,8 @@
         "last_printed_at///timestamp///__///_NULL///NULL///__///Lần in gần nhất",
         "last_print_session_id///string///26///_NULL///NULL///__///Phiên in gần nhất chứa tem này",
         "__index///index///__///__///__///last_print_session_id///__",
-        "__index///index///__///__///__///order_item_id,status///__"
+        "__index///index///__///__///__///order_item_id,status///__",
+        "__index///index///__///__///__///partner_product_id///__"
     ],
     [
         "food_inspection_step1_details///add///__///",
