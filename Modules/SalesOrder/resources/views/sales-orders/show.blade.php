@@ -215,7 +215,6 @@
                                             <span class="badge badge-sm badge-error badge-outline" x-show="!rowHasSource(row)"
                                                   x-text="row.hasBatches ? 'Chưa chọn lô xuất kho / nguồn cung' : 'Chưa chọn nguồn cung'"></span>
                                             <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'history' && !sourceChanged(row)">Theo lần in trước</span>
-                                            <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'fifo' && !row.dirty">Gợi ý FIFO</span>
                                             <span class="badge badge-sm badge-info badge-outline text-[11px]" x-show="row.printed > 0 && !sourceChanged(row)"
                                                   x-text="'Đã in ' + row.printed + ' tem · in lại mã cũ'"></span>
                                             <span class="badge badge-sm badge-info text-[11px]" x-show="row.printed > 0 && sourceChanged(row)"

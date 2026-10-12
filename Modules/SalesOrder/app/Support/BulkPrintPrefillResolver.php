@@ -23,18 +23,17 @@ class BulkPrintPrefillResolver
             ->groupBy('order_item_id');
 
         $productIds = $items->pluck('product_id')->filter()->unique()->values();
-        $batches = ProductBatch::query()
+        $productsWithBatches = ProductBatch::query()
             ->whereIn('product_id', $productIds)
-            ->with('goodsReceipt.vendor:id,name')
-            ->get()
-            ->groupBy('product_id');
+            ->distinct()
+            ->pluck('product_id')
+            ->flip();
 
-        return $items->mapWithKeys(function (SalesOrderItem $item) use ($logs, $batches) {
+        return $items->mapWithKeys(function (SalesOrderItem $item) use ($logs, $productsWithBatches) {
             $itemLogs = $logs->get($item->id, collect());
-            $productBatches = $batches->get($item->product_id, collect());
             $base = [
                 'printed'     => $itemLogs->where('status', PrintLogStatus::Active)->count(),
-                'has_batches' => $productBatches->isNotEmpty(),
+                'has_batches' => $item->product_id !== null && $productsWithBatches->has($item->product_id),
             ];
 
             if ($last = $itemLogs->first()) {
@@ -50,19 +49,15 @@ class BulkPrintPrefillResolver
                 ]];
             }
 
-            $fifo = $productBatches
-                ->filter(fn (ProductBatch $b) => (float) $b->current_qty > 0)
-                ->sortBy(fn (ProductBatch $b) => [$b->goodsReceipt?->receipt_date?->timestamp ?? $b->created_at?->timestamp, $b->created_at?->timestamp, $b->id])
-                ->first();
-
+            // Chưa in lần nào: không tự điền lô / nguồn cung — nhân viên kho phải tự chọn đúng lô thực tế.
             return [$item->id => $base + [
-                'origin'        => $fifo ? 'fifo' : null,
-                'batch_id'      => $fifo?->id,
-                'batch_text'    => $fifo ? self::batchText($fifo) : null,
-                'vendor_id'     => $fifo?->goodsReceipt?->vendor_id,
-                'vendor_name'   => $fifo?->goodsReceipt?->vendor?->name,
+                'origin'        => null,
+                'batch_id'      => null,
+                'batch_text'    => null,
+                'vendor_id'     => null,
+                'vendor_name'   => null,
                 'partner_product_id' => null,
-                'supplier_name' => $fifo && ! $fifo->goodsReceipt?->vendor_id ? $fifo->goodsReceipt?->supplier_name : null,
+                'supplier_name' => null,
             ]];
         })->all();
     }

@@ -784,8 +784,10 @@ document.addEventListener('alpine:init', () => {
                     }
 
                     const pf = r.print_prefill ?? {};
+                    // Bản nháp chỉ giữ nguồn cung khi người dùng đã tự chọn (bản nháp cũ có thể chứa gợi ý FIFO).
                     const d = draft[r.id];
-                    const src = d ?? {
+                    const ds = d && (d.dirty || d.manual || d.viaGlobal) ? d : null;
+                    const src = ds ?? {
                         batchId: pf.batch_id ?? '', batchText: pf.batch_text ?? '', vendorId: pf.vendor_id ?? '', vendorName: pf.vendor_name ?? '',
                         supplierManual: !pf.vendor_id && !!pf.supplier_name, supplierText: pf.supplier_name ?? '', dirty: false,
                     };
@@ -813,7 +815,7 @@ document.addEventListener('alpine:init', () => {
                         vendorId: src.vendorId || '',
                         vendorName: src.vendorName || '',
                         // Bản nháp cũ chưa có khóa này → lấy theo lần in trước nếu cùng NCC.
-                        partnerProductId: (d && 'partnerProductId' in d ? d.partnerProductId : ((src.vendorId || '') === (pf.vendor_id ?? '') ? pf.partner_product_id : '')) || '',
+                        partnerProductId: (ds && 'partnerProductId' in ds ? ds.partnerProductId : ((src.vendorId || '') === (pf.vendor_id ?? '') ? pf.partner_product_id : '')) || '',
                         supplierManual: !!src.supplierManual,
                         supplierText: src.supplierText || '',
                         dirty: !!src.dirty,
