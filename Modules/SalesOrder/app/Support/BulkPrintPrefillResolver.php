@@ -3,8 +3,6 @@
 namespace Modules\SalesOrder\Support;
 
 use Modules\GoodsReceipt\Models\ProductBatch;
-use Modules\Product\Enums\PartnerProductStatus;
-use Modules\Product\Models\PartnerProduct;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\SalesOrder;
@@ -12,7 +10,7 @@ use Modules\SalesOrder\Models\SalesOrderItem;
 
 class BulkPrintPrefillResolver
 {
-    /** @return array<string, array{origin: ?string, batch_id: ?string, batch_text: ?string, vendor_id: ?string, vendor_name: ?string, partner_product_id: ?string, supplier_name: ?string, printed: int, has_batches: bool, vendor_ids: list<string>}> */
+    /** @return array<string, array{origin: ?string, batch_id: ?string, batch_text: ?string, vendor_id: ?string, vendor_name: ?string, partner_product_id: ?string, supplier_name: ?string, printed: int, has_batches: bool}> */
     public function forOrder(SalesOrder $order): array
     {
         $items = $order->items;
@@ -31,22 +29,12 @@ class BulkPrintPrefillResolver
             ->get()
             ->groupBy('product_id');
 
-        // NCC có hàng hóa ánh xạ tới từng sản phẩm chuẩn — ô "Nguồn cung" từng dòng chỉ liệt kê các NCC này.
-        $vendorIdsByProduct = PartnerProduct::query()
-            ->whereIn('product_id', $productIds)
-            ->where('status', PartnerProductStatus::Active->value)
-            ->whereNotNull('vendor_id')
-            ->get(['product_id', 'vendor_id'])
-            ->groupBy('product_id')
-            ->map(fn ($rows) => $rows->pluck('vendor_id')->unique()->values()->all());
-
-        return $items->mapWithKeys(function (SalesOrderItem $item) use ($logs, $batches, $vendorIdsByProduct) {
+        return $items->mapWithKeys(function (SalesOrderItem $item) use ($logs, $batches) {
             $itemLogs = $logs->get($item->id, collect());
             $productBatches = $batches->get($item->product_id, collect());
             $base = [
                 'printed'     => $itemLogs->where('status', PrintLogStatus::Active)->count(),
                 'has_batches' => $productBatches->isNotEmpty(),
-                'vendor_ids'  => $vendorIdsByProduct->get($item->product_id, []),
             ];
 
             if ($last = $itemLogs->first()) {

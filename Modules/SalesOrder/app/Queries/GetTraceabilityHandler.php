@@ -16,7 +16,6 @@ use Modules\GoodsReceipt\Models\BatchQualityCheck;
 use Modules\GoodsReceipt\Models\ProductBatch;
 use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Models\FarmingBatch;
-use Modules\Product\Enums\PartnerProductStatus;
 use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\Product;
@@ -179,40 +178,16 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             ->all();
     }
 
+    /** Chỉ hàng hóa NCC đã chọn khi in (print_logs.partner_product_id) và thuộc đúng NCC của tem — không suy đoán. */
     public static function partnerProductFor(PrintLog $log): ?PartnerProduct
     {
-        if ($log->vendor_id === null) {
+        if ($log->vendor_id === null || $log->partner_product_id === null) {
             return null;
         }
 
-        // Tem in có chọn hàng hóa NCC → dùng thẳng bản ghi đó; tem cũ (null) mới suy ra theo vendor_id + product_id bên dưới.
-        if ($log->partner_product_id !== null && ($chosen = $log->loadMissing('partnerProduct.product:id,name,sku')->partnerProduct) !== null) {
-            return $chosen;
-        }
+        $chosen = $log->loadMissing('partnerProduct.product:id,name,sku')->partnerProduct;
 
-        if ($fromFarm = $log->productBatch?->farmingBatch?->partnerProduct) {
-            return $fromFarm;
-        }
-
-        $item = $log->orderItem;
-        $productId = $item?->product_id;
-        $candidates = PartnerProduct::query()
-            ->where('vendor_id', $log->vendor_id)
-            ->with('product:id,name,sku')
-            ->orderByRaw('status = ? desc', [PartnerProductStatus::Active->value])
-            ->latest('created_at')->latest('id')
-            ->get();
-
-        if ($productId !== null && ($exact = $candidates->first(fn (PartnerProduct $p) => (string) $p->product_id === (string) $productId))) {
-            return $exact;
-        }
-
-        $norm = fn (?string $v) => mb_strtolower(trim((string) preg_replace(['/(?<!\p{L})sơ chế(?!\p{L})/iu', '/\s+/u'], ['', ' '], (string) $v)));
-        $names = array_filter([$norm($item?->product?->name), $norm($item?->product_name_raw)]);
-        $byName = $names === [] ? collect() : $candidates->filter(fn (PartnerProduct $p) => in_array($norm($p->product?->name), $names, true)
-            || in_array($norm($p->name), $names, true));
-
-        return $byName->count() === 1 ? $byName->first() : null;
+        return $chosen?->vendor_id === $log->vendor_id ? $chosen : null;
     }
 
     public static function batchDocumentQuery(?ProductBatch $batch): ?Builder
@@ -280,7 +255,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 trim((string) $vendor->address), $vendor->ward?->name, $vendor->province?->name,
             ]))) ?: null),
             'documents' => $this->documentRows(self::supplierDocumentQuery([$vendor, $log->productBatch?->farmingBatch?->vendor]), $log->trace_code),
-            // Đúng 1 hàng hóa NCC của chính tem này (partner_product_id, tem cũ thì suy ra theo NCC + sản phẩm) — không liệt kê hàng hóa khác của NCC.
+            // Tầng 2: chỉ khi tem có chọn hàng hóa NCC (partner_product_id); không có thì chỉ hiện thông tin + hồ sơ chung của NCC.
             'partnerProduct' => $partner ? [
                 'name'         => $partner->name,
                 'image'        => $this->partnerProductImage($partner, $product),

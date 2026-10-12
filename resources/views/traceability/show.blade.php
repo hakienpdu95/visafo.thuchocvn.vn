@@ -305,7 +305,7 @@
             </div>
             @endif
 
-            @php $supDocs = array_merge($pp['documents'] ?? [], $sup['documents']); @endphp
+            @php $supDocs = array_merge($sup['documents'], $pp['documents'] ?? []); @endphp
             @if($supDocs)
             <div class="mt-4 rounded-lg bg-[#f8f9fa] p-3">
                 <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Hồ sơ &amp; Chứng nhận đính kèm</p>

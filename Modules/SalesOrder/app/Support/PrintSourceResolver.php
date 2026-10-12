@@ -15,9 +15,10 @@ class PrintSourceResolver
     {
         $vendorId = ($data['vendor_id'] ?? null) ?: null;
         $batchId = ($data['product_batch_id'] ?? null) ?: null;
+        $batch = null;
 
         if ($batchId !== null) {
-            $batch = ProductBatch::query()->with('goodsReceipt.vendor')->find($batchId);
+            $batch = ProductBatch::query()->with(['goodsReceipt.vendor', 'farmingBatch:id,partner_product_id'])->find($batchId);
 
             if ($batch === null || ($item !== null && $batch->product_id !== $item->product_id)) {
                 throw ValidationException::withMessages(['product_batch_id' => 'Lô nhập kho không khớp với mặt hàng.']);
@@ -46,6 +47,9 @@ class PrintSourceResolver
         // Chỉ form có ô "Hàng hóa NCC" mới gửi khóa này; thiếu khóa = giữ nguyên hàng hóa NCC của tem đã in (xem PrintLog::updateSource).
         if (array_key_exists('partner_product_id', $data)) {
             $resolved['partner_product_id'] = $this->partnerProductId($data['partner_product_id'] ?: null, $vendorId, $item);
+        } elseif (($farmPartnerId = $batch?->farmingBatch?->partner_product_id) !== null && $vendorId !== null
+            && PartnerProduct::query()->whereKey($farmPartnerId)->where('vendor_id', $vendorId)->exists()) {
+            $resolved['partner_product_id'] = $farmPartnerId;
         }
 
         return $resolved;

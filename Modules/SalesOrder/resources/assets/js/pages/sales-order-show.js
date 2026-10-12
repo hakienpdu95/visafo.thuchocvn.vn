@@ -712,11 +712,9 @@ document.addEventListener('alpine:init', () => {
                 }
             },
 
-            // Chỉ NCC có hàng hóa ánh xạ tới sản phẩm của dòng; NCC đang gán (lần in trước / nguồn cung chung) vẫn giữ để không mất giá trị.
+            // Toàn bộ NCC đang hoạt động; NCC đang gán (lần in trước / nguồn cung chung) vẫn giữ để không mất giá trị.
             rowVendorOptions(row) {
-                const allowed = new Set(row.vendorIds);
-                if (row.vendorId) allowed.add(row.vendorId);
-                return vendors.filter((v) => allowed.has(v.value))
+                return vendors
                     .concat(row.vendorId && !vendors.some((v) => v.value === row.vendorId) ? [{ value: row.vendorId, text: row.vendorName || row.vendorId }] : [])
                     .map((v) => ({ value: v.value, text: v.text }));
             },
@@ -731,16 +729,11 @@ document.addEventListener('alpine:init', () => {
 
             initRowSupplier(row, el) {
                 rowSupplierTs.get(row.id)?.destroy();
-                const empty = row.vendorIds.length === 0;
                 const ts = createTs(el, {
-                    placeholder: empty ? 'Không tìm thấy NCC nào cung cấp mặt hàng này' : '— Chọn nhà cung cấp —',
+                    placeholder: '— Chọn nhà cung cấp —',
                     maxOptions: null,
                     options: this.rowVendorOptions(row),
                     items: row.vendorId && !row.supplierManual ? [row.vendorId] : [],
-                    render: {
-                        no_results: () => '<div class="no-results" style="padding:.75rem;font-size:.875rem;color:#94a3b8;text-align:center">'
-                            + (empty ? 'Không tìm thấy NCC nào cung cấp mặt hàng này' : 'Không tìm thấy kết quả') + '</div>',
-                    },
                     onChange: (value) => {
                         row.vendorId = value || '';
                         row.vendorName = value ? (vendors.find((v) => v.value === value)?.text ?? '') : '';
@@ -809,7 +802,6 @@ document.addEventListener('alpine:init', () => {
                         partnerProductsVendorId: '',
                         loadingPartners: false,
                         hasBatches: !!pf.has_batches,
-                        vendorIds: pf.vendor_ids ?? [],
                         batchPartnerId: '',
                         printed: pf.printed ?? 0,
                         origin: pf.origin ?? null,
