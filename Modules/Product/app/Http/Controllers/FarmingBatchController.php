@@ -81,11 +81,12 @@ class FarmingBatchController extends Controller
             'logs.agriFertilizer', 'logs.agriPesticide', 'logs.vendorFarmingStep', 'logs.creator',
         ]);
 
-        $pendingQuarantineLogs = $farmingBatch->pendingQuarantineLogs()->with('agriPesticide')->get();
+        $pendingQuarantineLogs = $farmingBatch->pendingQuarantineLogs()->with('agriPesticide', 'agriFertilizer')->get();
         $isReadyForHarvest = $pendingQuarantineLogs->isEmpty();
+        $quarantineDaysLeft = $farmingBatch->quarantineDaysLeft();
 
         return view('product::farming_batches.show', compact(
-            'farmingBatch', 'pendingQuarantineLogs', 'isReadyForHarvest'
+            'farmingBatch', 'pendingQuarantineLogs', 'isReadyForHarvest', 'quarantineDaysLeft'
         ));
     }
 
@@ -95,7 +96,7 @@ class FarmingBatchController extends Controller
 
         if (!$farmingBatch->isReadyForHarvest()) {
             return redirect()->route('backend.farming-batches.show', $farmingBatch)
-                ->with('error', 'Lô này chưa hết thời gian cách ly — không thể phê duyệt thu hoạch.');
+                ->with('error', 'Lô đang trong thời gian cách ly thuốc (còn ' . $farmingBatch->quarantineDaysLeft() . ' ngày) — không thể phê duyệt thu hoạch.');
         }
 
         $action->handle($farmingBatch, auth()->id());

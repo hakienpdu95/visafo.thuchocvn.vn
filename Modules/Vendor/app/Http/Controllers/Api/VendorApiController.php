@@ -25,6 +25,7 @@ class VendorApiController extends Controller
             'ward_code'     => ['nullable', 'string', 'max:20'],
             'phone_number'  => ['nullable', 'string', 'max:20'],
             'source_group'  => ['nullable', 'string', 'max:10'],
+            'has_documents' => ['nullable', 'in:yes,no'],
         ]);
 
         $sortRaw   = $request->input('sort.0');
@@ -42,6 +43,7 @@ class VendorApiController extends Controller
             wardCode:      $validated['ward_code'] ?? null,
             phoneNumber:   $validated['phone_number'] ?? null,
             sourceGroup:   $validated['source_group'] ?? null,
+            hasDocuments:  $validated['has_documents'] ?? null,
         );
 
         $paginator = $handler->handle($query);

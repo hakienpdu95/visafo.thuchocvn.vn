@@ -38,7 +38,7 @@
                     <div class="form-control sm:col-span-2">
                         <label class="label mb-2">
                             <span class="label-text text-xs font-medium">Tìm kiếm</span>
-                            <span class="label-text-alt text-xs text-base-content/40">Tên, email, SĐT, vai trò</span>
+                            <span class="label-text-alt text-xs text-base-content/40">Tên, email, SĐT, vai trò, số CCCD</span>
                         </label>
                         <div class="input input-sm input-bordered flex items-center gap-2 bg-base-100">
                             <svg class="w-3.5 h-3.5 text-base-content/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -18,6 +18,12 @@ class StoreFarmingBatchAction
         $farmingSource = FarmingSource::query()->findOrFail($data->farming_source_id);
         $partnerProduct = PartnerProduct::query()->findOrFail($data->partner_product_id);
 
+        if ($farmingSource->status !== 'passed') {
+            throw ValidationException::withMessages([
+                'farming_source_id' => 'Vùng trồng "' . $farmingSource->name . '" chưa được QC xác nhận kiểm tra trước vụ — chưa thể mở vụ/lô.',
+            ]);
+        }
+
         if ($partnerProduct->vendor_id !== $farmingSource->vendor_id) {
             throw ValidationException::withMessages([
                 'partner_product_id' => 'Mặt hàng phải thuộc đúng nông hộ của vùng trồng đã chọn.',

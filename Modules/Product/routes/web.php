@@ -19,6 +19,7 @@ use Modules\Product\Http\Controllers\DocumentMasterTypeController;
 use Modules\Product\Http\Controllers\Farmer\FarmerDashboardController;
 use Modules\Product\Http\Controllers\Farmer\FarmingLogController;
 use Modules\Product\Http\Controllers\FarmingBatchController;
+use Modules\Product\Http\Controllers\FarmingLogImportController;
 use Modules\Product\Http\Controllers\FarmingSourceController;
 use Modules\Product\Http\Controllers\PartnerProductController;
 use Modules\Product\Http\Controllers\ProductController;
@@ -71,6 +72,10 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::prefix('farming-batches')->name('farming-batches.')->group(function () {
         Route::get('/', [FarmingBatchController::class, 'index'])->name('index');
         Route::post('/', [FarmingBatchController::class, 'store'])->name('store');
+        Route::get('log-import-template', [FarmingLogImportController::class, 'template'])->name('log-import-template');
+        Route::post('log-import/preview', [FarmingLogImportController::class, 'preview'])->name('log-import.preview');
+        Route::post('log-import', [FarmingLogImportController::class, 'store'])->name('log-import.store');
+        Route::delete('log-import/{token}', [FarmingLogImportController::class, 'discard'])->name('log-import.discard');
         Route::get('{farming_batch}', [FarmingBatchController::class, 'show'])->name('show');
         Route::put('{farming_batch}', [FarmingBatchController::class, 'update'])->name('update');
         Route::delete('{farming_batch}', [FarmingBatchController::class, 'destroy'])->name('destroy');

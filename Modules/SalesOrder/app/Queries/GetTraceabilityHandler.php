@@ -107,6 +107,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 'name'        => $source->name,
                 'address'     => $source->address,
                 'area'        => $source->area_hectare !== null ? (float) $source->area_hectare : null,
+                'areaText'    => $source->areaText(),
                 'waterSource' => $source->water_source ?: null,
                 'harvestedAt' => $farmingBatch->actual_harvest_date,
                 'batchCode'   => $farmingBatch->batch_code,

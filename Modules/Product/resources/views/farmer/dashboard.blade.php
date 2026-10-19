@@ -58,10 +58,7 @@
                 <div class="space-y-1.5">
                     @foreach($batch->recentLogs as $log)
                     @php
-                        $typeLabel = $log->vendorFarmingStep?->step_name ?? match($log->activity_type) {
-                            'water' => 'Tưới nước', 'fertilizer' => 'Bón phân', 'pesticide' => 'Phun thuốc BVTV',
-                            'harvest' => 'Thu hoạch', 'other' => 'Khác', 'cultivation' => 'Canh tác', default => $log->activity_type,
-                        };
+                        $typeLabel = $log->typeLabel();
                         $canMutate = auth()->user()->can('compliance.manage') || $log->created_at->isAfter(now()->subHours(24));
                     @endphp
                     <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-base-200/50">

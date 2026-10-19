@@ -17,19 +17,22 @@ class UpdateEmployeeAction
 
     public function handle(Employee $employee, UpdateEmployeeData $data): Employee
     {
-        $employee->update([
-            'full_name'    => $data->full_name,
-            'email'        => $data->email,
-            'phone'        => $data->phone,
-            'facebook_url' => $data->facebook_url,
-            'job_title'    => $data->job_title,
-        ]);
+        $employee->update($data->profileAttributes());
 
         $employee->departments()->sync($data->department_ids);
 
         if ($data->avatar !== null) {
             $this->uploadService->bulkDelete($employee, 'avatar');
             $this->uploadService->upload($data->avatar, $employee, 'avatar');
+        }
+
+        foreach (Employee::ID_CARD_COLLECTIONS as $collection) {
+            if ($data->{$collection} !== null || $data->{'remove_' . $collection}) {
+                $this->uploadService->bulkDelete($employee, $collection);
+            }
+            if ($data->{$collection} !== null) {
+                $this->uploadService->upload($data->{$collection}, $employee, $collection);
+            }
         }
 
         return $employee;

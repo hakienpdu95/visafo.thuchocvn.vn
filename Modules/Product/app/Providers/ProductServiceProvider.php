@@ -3,6 +3,7 @@
 namespace Modules\Product\Providers;
 
 use Illuminate\Support\Facades\Gate;
+use Modules\Product\Console\Commands\CleanupFarmingLogImportsCommand;
 use Modules\Product\Models\AgriFertilizer;
 use Modules\Product\Models\AgriPesticide;
 use Modules\Product\Models\AgriSeed;
@@ -33,6 +34,10 @@ class ProductServiceProvider extends ModuleServiceProvider
 
     protected array $providers = [
         RouteServiceProvider::class,
+    ];
+
+    protected array $commands = [
+        CleanupFarmingLogImportsCommand::class,
     ];
 
     public function register(): void

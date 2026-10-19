@@ -175,6 +175,17 @@ document.addEventListener('DOMContentLoaded', () => {
         document.activeElement?.blur();
     }
     if (modal.open) requestAnimationFrame(() => _initModalSelects(modal));
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('create') === '1' && !modal.open) {
+        window.openFarmingBatchModal();
+        const sowingDate = params.get('sowing_date');
+        if (sowingDate) {
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                modal.querySelector('#fp-sowing_date')?._flatpickr?.setDate(sowingDate, false);
+            }));
+        }
+    }
 });
 
 function esc(v) {
@@ -236,6 +247,19 @@ document.addEventListener('alpine:init', () => {
 
             _setup() {
                 const self = this;
+                const statusTs = createTs('#ts-batch-status-filter', {
+                    allowEmptyOption: true,
+                    plugins:          [],
+                    controlInput:     null,
+                    onChange: (value) => {
+                        self.filters.status = value;
+                        self.onFilterChange();
+                    },
+                });
+                this.$watch('filters.status', (value) => {
+                    if (statusTs && statusTs.getValue() !== value) statusTs.setValue(value, true);
+                });
+
                 const columns = [
                     {
                         title: 'Mã lô', field: 'batch_code', width: 160, sorter: 'string', frozen: true,
@@ -260,8 +284,11 @@ document.addEventListener('alpine:init', () => {
 
                 if (canManage) {
                     columns.push({
-                        title: '', field: 'id', width: 110, hozAlign: 'center', headerSort: false,
-                        formatter: () => '<div class="flex items-center justify-center gap-1">'
+                        title: '', field: 'id', width: 210, hozAlign: 'center', headerSort: false,
+                        formatter: (c) => '<div class="flex items-center justify-center gap-1">'
+                            + (c.getRow().getData().log_url
+                                ? '<a href="' + esc(c.getRow().getData().log_url) + '" class="btn btn-primary btn-outline btn-xs whitespace-nowrap">📝 Ghi nhật ký</a>'
+                                : '')
                             + '<button type="button" class="btn btn-ghost btn-xs" data-action="edit">Sửa</button>'
                             + '<button type="button" class="btn btn-ghost btn-xs text-error" data-action="delete">Xóa</button>'
                             + '</div>',

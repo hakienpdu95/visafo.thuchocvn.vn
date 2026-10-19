@@ -45,6 +45,7 @@ class ComplianceDocumentListResource extends JsonResource
             'delete_url'            => $isShared ? route('backend.document-repository.destroy', $this->resource) : null,
 
             'media_count' => $media->count(),
+            'download_url' => $media->isNotEmpty() ? route('backend.document-repository.download', $this->resource) : null,
             'media'       => $media->map(fn ($m) => [
                 'id'       => $m->id,
                 'name'     => $m->file_name,

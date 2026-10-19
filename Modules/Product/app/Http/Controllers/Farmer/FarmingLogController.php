@@ -22,10 +22,10 @@ class FarmingLogController extends Controller
         $this->authorizeOwnership($farmingBatch);
 
         return view('product::farmer.logs.create', [
-            'farmingBatch' => $farmingBatch,
-            'fertilizers'  => $this->activeFertilizers(),
-            'pesticides'   => $this->activePesticides(),
-            'steps'        => $this->buildSteps($farmingBatch),
+            'farmingBatch'       => $farmingBatch,
+            'materials'          => $this->materialSuggestions(),
+            'steps'              => $this->buildSteps($farmingBatch),
+            'quarantineDaysLeft' => $farmingBatch->quarantineDaysLeft(),
         ]);
     }
 
@@ -34,7 +34,7 @@ class FarmingLogController extends Controller
         $this->authorizeOwnership($farmingBatch);
 
         $data = StoreFarmingLogData::validateAndCreate($request->all());
-        $action->handle($farmingBatch, $data, auth()->id());
+        $action->handle($farmingBatch, $data, auth()->id(), auth()->user()->name);
 
         return $this->redirectAfterMutation($farmingBatch, 'Đã ghi nhật ký cho lô "' . $farmingBatch->batch_code . '".');
     }
@@ -42,7 +42,7 @@ class FarmingLogController extends Controller
     public function edit(FarmingLog $farmingLog)
     {
         $this->authorizeMutation($farmingLog);
-        $farmingLog->load('batch');
+        $farmingLog->load('batch', 'agriFertilizer', 'agriPesticide', 'creator');
 
         $steps = $this->buildSteps($farmingLog->batch);
 
@@ -53,10 +53,7 @@ class FarmingLogController extends Controller
         if (!collect($steps)->contains('key', $currentKey)) {
             array_unshift($steps, [
                 'key'                    => $currentKey,
-                'label'                  => match ($farmingLog->activity_type) {
-                    'water' => 'Tưới nước', 'other' => 'Khác', 'cultivation' => 'Canh tác',
-                    default => $farmingLog->activity_type,
-                },
+                'label'                  => $farmingLog->typeLabel(),
                 'activity_type'          => $farmingLog->activity_type,
                 'shell'                  => 'legacy',
                 'color'                  => 'btn-neutral',
@@ -65,12 +62,12 @@ class FarmingLogController extends Controller
         }
 
         return view('product::farmer.logs.edit', [
-            'farmingLog'   => $farmingLog,
-            'farmingBatch' => $farmingLog->batch,
-            'fertilizers'  => $this->activeFertilizers(),
-            'pesticides'   => $this->activePesticides(),
-            'steps'        => $steps,
-            'currentKey'   => $currentKey,
+            'farmingLog'         => $farmingLog,
+            'farmingBatch'       => $farmingLog->batch,
+            'materials'          => $this->materialSuggestions(),
+            'steps'              => $steps,
+            'currentKey'         => $currentKey,
+            'quarantineDaysLeft' => $farmingLog->batch->quarantineDaysLeft(),
         ]);
     }
 
@@ -96,11 +93,18 @@ class FarmingLogController extends Controller
 
     private function buildSteps(FarmingBatch $farmingBatch): array
     {
-        $hardShell = [
-            ['key' => 'fertilizer', 'label' => 'Bón phân',        'activity_type' => 'fertilizer', 'shell' => 'hard', 'color' => 'btn-warning', 'vendor_farming_step_id' => null],
-            ['key' => 'pesticide',  'label' => 'Phun thuốc BVTV', 'activity_type' => 'pesticide',  'shell' => 'hard', 'color' => 'btn-error',   'vendor_farming_step_id' => null],
-            ['key' => 'harvest',    'label' => 'Thu hoạch',       'activity_type' => 'harvest',    'shell' => 'hard', 'color' => 'btn-success', 'vendor_farming_step_id' => null],
-        ];
+        $hardShell = collect(FarmingLog::ACTIVITY_TYPES)
+            ->except('cultivation')
+            ->map(fn (array $type, string $key) => [
+                'key'                    => $key,
+                'label'                  => $type['label'],
+                'activity_type'          => $key,
+                'shell'                  => 'hard',
+                'color'                  => $type['btn'],
+                'vendor_farming_step_id' => null,
+            ])
+            ->values()
+            ->all();
 
         $softShell = VendorFarmingStep::query()
             ->where('vendor_id', $farmingBatch->vendor_id)
@@ -123,22 +127,26 @@ class FarmingLogController extends Controller
         return array_merge($hardShell, $softShell);
     }
 
-    private function activeFertilizers()
+    private function materialSuggestions(): array
     {
-        return AgriFertilizer::query()
+        $fertilizers = AgriFertilizer::query()
             ->where('status', 'active')
             ->where('is_banned', false)
             ->orderBy('name')
-            ->get(['id', 'name']);
-    }
+            ->pluck('name')
+            ->map(fn (string $name) => ['name' => $name, 'quarantine_days' => null]);
 
-    private function activePesticides()
-    {
-        return AgriPesticide::query()
+        $pesticides = AgriPesticide::query()
             ->where('status', 'active')
             ->where('is_banned', false)
             ->orderBy('trade_name')
-            ->get(['id', 'trade_name', 'target_pest']);
+            ->get(['trade_name', 'quarantine_days'])
+            ->map(fn (AgriPesticide $p) => ['name' => $p->trade_name, 'quarantine_days' => $p->quarantine_days]);
+
+        return [
+            'fertilizer' => $fertilizers->values()->all(),
+            'pesticide'  => $pesticides->values()->all(),
+        ];
     }
 
     private function redirectAfterMutation(FarmingBatch $farmingBatch, string $message): RedirectResponse

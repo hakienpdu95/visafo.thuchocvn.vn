@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Product\Enums\AreaUnit;
 use Modules\Vendor\Models\Vendor;
 
 class FarmingSource extends TenantAwareModel
@@ -31,6 +32,8 @@ class FarmingSource extends TenantAwareModel
         'source_code',
         'name',
         'area_hectare',
+        'area_value',
+        'area_unit',
         'water_source',
         'address',
         'status',
@@ -42,7 +45,9 @@ class FarmingSource extends TenantAwareModel
     protected function casts(): array
     {
         return [
-            'area_hectare'           => 'decimal:2',
+            'area_hectare'           => 'decimal:4',
+            'area_value'             => 'decimal:2',
+            'area_unit'              => AreaUnit::class,
             'pre_season_checked_at'  => 'datetime',
         ];
     }
@@ -70,5 +75,26 @@ class FarmingSource extends TenantAwareModel
     public function permissionModule(): string
     {
         return 'compliance';
+    }
+
+    public function areaText(): ?string
+    {
+        if ($this->area_hectare === null) {
+            return null;
+        }
+
+        $format = fn (float $n, int $decimals) => rtrim(rtrim(number_format($n, $decimals, ',', '.'), '0'), ',');
+        $squareMeters = (float) $this->area_hectare * 10000;
+
+        if ($this->area_unit === null || $this->area_unit === AreaUnit::Hectare) {
+            return $format((float) $this->area_hectare, 4) . ' ha';
+        }
+
+        if ($this->area_unit === AreaUnit::SquareMeter) {
+            return $format($squareMeters, 2) . ' m²';
+        }
+
+        return $format((float) $this->area_value, 2) . ' ' . $this->area_unit->shortLabel()
+            . ' (' . $format($squareMeters, 2) . ' m²)';
     }
 }

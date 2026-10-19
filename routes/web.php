@@ -62,6 +62,12 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::get('/documents', [ComplianceDocumentController::class, 'index'])
         ->middleware('permission:compliance.view')
         ->name('document-repository.index');
+    Route::post('/documents/download', [ComplianceDocumentController::class, 'downloadMany'])
+        ->middleware('permission:compliance.view')
+        ->name('document-repository.download-many');
+    Route::get('/documents/{document}/download', [ComplianceDocumentController::class, 'download'])
+        ->middleware('permission:compliance.view')
+        ->name('document-repository.download');
     Route::post('/document-repository/upload', [ComplianceDocumentController::class, 'uploadShared'])
         ->middleware('permission:compliance.manage')
         ->name('document-repository.upload');

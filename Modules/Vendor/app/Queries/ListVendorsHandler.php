@@ -19,7 +19,9 @@ class ListVendorsHandler implements QueryHandlerInterface
         $sortField = in_array($query->sortField, self::SORTABLE, true) ? $query->sortField : 'created_at';
         $sortDir   = $query->sortDir === 'asc' ? 'asc' : 'desc';
 
-        $q = Vendor::query()->visibleTo()->with('latestDocument.documentType');
+        $q = Vendor::query()->visibleTo()
+            ->with('latestDocument.documentType')
+            ->withCount(['documents', 'partnerProducts as partner_products_with_documents_count' => fn (Builder $sub) => $sub->has('documents')]);
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';
@@ -48,6 +50,12 @@ class ListVendorsHandler implements QueryHandlerInterface
 
         if ($query->sourceGroup !== null && $query->sourceGroup !== '') {
             $q->where('source_group', $query->sourceGroup);
+        }
+
+        if ($query->hasDocuments === 'yes') {
+            $q->has('documents');
+        } elseif ($query->hasDocuments === 'no') {
+            $q->doesntHave('documents');
         }
 
         $q->orderBy($sortField, $sortDir);

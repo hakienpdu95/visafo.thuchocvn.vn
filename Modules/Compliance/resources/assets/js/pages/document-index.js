@@ -5,10 +5,58 @@ function esc(v) {
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+const selectedDocs = new Map();
+let onSelectionChange = () => {};
+
+function _pageRows(table) {
+    return table.getRows('active');
+}
+
+function _syncHeaderCheckbox(table) {
+    const box = table.element.querySelector('[data-select-all]');
+    if (!box) return;
+    const rows = _pageRows(table);
+    const picked = rows.filter(r => selectedDocs.has(r.getData().id)).length;
+    box.checked = rows.length > 0 && picked === rows.length;
+    box.indeterminate = picked > 0 && picked < rows.length;
+}
+
+function _toggleDoc(data, checked) {
+    if (checked) selectedDocs.set(data.id, { name: data.document_type_name, media_count: data.media_count });
+    else selectedDocs.delete(data.id);
+}
+
 function buildColumns() {
     return [
         {
-            title: 'Tên giấy tờ', field: 'document_type_name', minWidth: 220, sorter: 'string', frozen: true,
+            field: '_select', width: 44, minWidth: 44, hozAlign: 'center', headerHozAlign: 'center',
+            headerSort: false, resizable: false, frozen: true, responsive: 0,
+            titleFormatter: () => '<input type="checkbox" class="checkbox checkbox-xs" data-select-all title="Chọn tất cả trong trang">',
+            headerClick(e, column) {
+                const table = column.getTable();
+                const rows = _pageRows(table);
+                const selectAll = !rows.every(r => selectedDocs.has(r.getData().id));
+                rows.forEach(r => { _toggleDoc(r.getData(), selectAll); r.reformat(); });
+                _syncHeaderCheckbox(table);
+                onSelectionChange();
+            },
+            formatter(cell) {
+                const checked = selectedDocs.has(cell.getRow().getData().id) ? ' checked' : '';
+                return '<input type="checkbox" class="checkbox checkbox-xs"' + checked + '>';
+            },
+            cellClick(e, cell) {
+                const data = cell.getRow().getData();
+                _toggleDoc(data, !selectedDocs.has(data.id));
+                cell.getRow().reformat();
+                _syncHeaderCheckbox(cell.getTable());
+                onSelectionChange();
+            },
+        },
+        {
+            formatter: 'responsiveCollapse', width: 34, minWidth: 34, hozAlign: 'center', headerSort: false, resizable: false, frozen: true, responsive: 0,
+        },
+        {
+            title: 'Tên giấy tờ', field: 'document_type_name', minWidth: 220, sorter: 'string', frozen: true, responsive: 0,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 const clipIcon = '<svg class="w-3 h-3 inline-block -mt-0.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>';
@@ -22,7 +70,7 @@ function buildColumns() {
             },
         },
         {
-            title: 'Thuộc về', field: 'documentable_name', minWidth: 220, headerSort: false,
+            title: 'Thuộc về', field: 'documentable_name', minWidth: 200, headerSort: false, responsive: 1,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 const badge = '<span class="badge badge-ghost badge-xs">' + esc(d.documentable_label) + '</span>';
@@ -33,13 +81,13 @@ function buildColumns() {
             },
         },
         {
-            title: 'Ngày cấp', field: 'issue_date', width: 110, hozAlign: 'center', sorter: 'string',
+            title: 'Ngày cấp', field: 'issue_date', width: 110, hozAlign: 'center', sorter: 'string', responsive: 3,
             formatter(cell) {
                 return esc(cell.getValue()) || '<span class="text-base-content/25 text-xs">—</span>';
             },
         },
         {
-            title: 'Hết hạn', field: 'expiration_date', width: 150, hozAlign: 'center', sorter: 'string',
+            title: 'Hết hạn', field: 'expiration_date', width: 150, hozAlign: 'center', sorter: 'string', responsive: 1,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 let html = esc(d.expiration_date) || '<span class="text-base-content/25 text-xs">—</span>';
@@ -52,7 +100,7 @@ function buildColumns() {
             },
         },
         {
-            title: 'Trạng thái', field: 'status_value', width: 140, hozAlign: 'center', sorter: 'string',
+            title: 'Trạng thái', field: 'status_value', width: 140, hozAlign: 'center', sorter: 'string', responsive: 2,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 return '<span class="badge badge-sm badge-soft ' + esc(d.status_badge) + '">'
@@ -60,14 +108,18 @@ function buildColumns() {
             },
         },
         {
-            title: 'Ngày tạo', field: 'created_at', width: 110, hozAlign: 'center', sorter: 'string',
+            title: 'Ngày tạo', field: 'created_at', width: 110, hozAlign: 'center', sorter: 'string', responsive: 4,
         },
         {
-            title: 'Thao tác', field: 'actions', width: 130, hozAlign: 'center', headerSort: false, headerHozAlign: 'center',
+            title: 'Thao tác', field: 'actions', width: 110, responsive: 0, hozAlign: 'center', headerSort: false, headerHozAlign: 'center',
             formatter(cell) {
                 const d = cell.getRow().getData();
                 let html = '<div class="flex items-center justify-center gap-1">'
-                    + '<button type="button" class="btn btn-ghost btn-xs btn-square" title="Xem tệp" onclick="window.openViewDocFilesModal(\'' + d.id + '\')">' + ICON_EYE + '</button>';
+                    + '<button type="button" class="btn btn-ghost btn-xs btn-square" title="Xem tệp" onclick="window.openViewDocFilesModal(\'' + d.id + '\')">' + ICON_EYE + '</button>'
+                    + (d.download_url
+                        ? '<a href="' + esc(d.download_url) + '" class="btn btn-ghost btn-xs btn-square text-primary" title="'
+                            + (d.media_count > 1 ? 'Tải tài liệu (' + d.media_count + ' tệp, nén .zip)' : 'Tải tài liệu') + '" data-download>' + ICON_DOWNLOAD + '</a>'
+                        : '<span class="btn btn-ghost btn-xs btn-square btn-disabled" title="Chưa có tệp để tải">' + ICON_DOWNLOAD + '</span>');
 
                 if (d.is_shared) {
                     html += '<button type="button" class="btn btn-ghost btn-xs btn-square text-warning" title="Sửa" onclick="window.openEditSharedDocModal(\'' + d.id + '\')">' + ICON_EDIT + '</button>'
@@ -82,6 +134,7 @@ function buildColumns() {
 }
 
 const ICON_EYE = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>';
+const ICON_DOWNLOAD = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>';
 const ICON_EDIT = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>';
 const ICON_TRASH = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
 const ICON_IMAGE = '<svg class="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>';
@@ -110,10 +163,14 @@ document.addEventListener('alpine:init', () => {
         return {
             filters: { search: '', documentableType: '', expiring: false, expired: false },
             hiddenCols: [],
+            selectedCount: 0,
+            selectedFiles: 0,
+            bulkLimit: serverData.bulkDownloadLimit ?? 100,
+            bulkDownloadUrl: serverData.bulkDownloadUrl ?? '',
 
             get toggleableCols() {
                 return COLUMNS
-                    .filter(c => c.field !== 'id' && c.field !== 'document_type_name')
+                    .filter(c => c.title && c.field !== 'id' && c.field !== 'document_type_name' && c.field !== '_select')
                     .map(c => ({ field: c.field, title: c.title }));
             },
 
@@ -135,6 +192,7 @@ document.addEventListener('alpine:init', () => {
             },
 
             init() {
+                onSelectionChange = () => this._updateSelection();
                 this.loadState();
                 try { this.hiddenCols = JSON.parse(localStorage.getItem(LS_COLS) || '[]'); } catch (_) {}
                 this.$nextTick(() => this._setup());
@@ -167,6 +225,7 @@ document.addEventListener('alpine:init', () => {
 
                     layout:           'fitColumns',
                     responsiveLayout: 'collapse',
+                    responsiveLayoutCollapseStartOpen: false,
                     movableColumns:   true,
                     height:           '68vh',
 
@@ -191,6 +250,37 @@ document.addEventListener('alpine:init', () => {
 
                 window.documentTable = tableInst;
                 self.hiddenCols.forEach(field => tableInst.hideColumn(field));
+                tableInst.on('dataProcessed', () => _syncHeaderCheckbox(tableInst));
+            },
+
+            _updateSelection() {
+                this.selectedCount = selectedDocs.size;
+                this.selectedFiles = [...selectedDocs.values()].reduce((sum, d) => sum + (d.media_count || 0), 0);
+            },
+
+            clearSelection() {
+                selectedDocs.clear();
+                tableInst?.getRows('active').forEach(r => r.reformat());
+                if (tableInst) _syncHeaderCheckbox(tableInst);
+                this._updateSelection();
+            },
+
+            downloadSelected() {
+                if (!this.selectedCount || this.selectedCount > this.bulkLimit) return;
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = this.bulkDownloadUrl;
+                form.style.display = 'none';
+                const add = (name, value) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden'; input.name = name; input.value = value;
+                    form.appendChild(input);
+                };
+                add('_token', document.querySelector('meta[name=csrf-token]')?.content ?? '');
+                selectedDocs.forEach((_, id) => add('ids[]', id));
+                document.body.appendChild(form);
+                form.submit();
+                form.remove();
             },
 
             loadState() {

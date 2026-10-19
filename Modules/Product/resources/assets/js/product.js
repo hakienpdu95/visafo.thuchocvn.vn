@@ -15,3 +15,4 @@ import './pages/farming-source-index.js';
 import './pages/farming-batch-index.js';
 import './pages/farming-batch-show.js';
 import './pages/farming-log-form.js';
+import './pages/farming-log-import.js';

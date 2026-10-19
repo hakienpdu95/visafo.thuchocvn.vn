@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Traits\HasAutoCode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Modules\Vendor\Models\Vendor;
 
 class FarmingBatch extends TenantAwareModel
@@ -85,7 +86,6 @@ class FarmingBatch extends TenantAwareModel
     public function pendingQuarantineLogs(): HasMany
     {
         return $this->hasMany(FarmingLog::class)
-            ->where('activity_type', 'pesticide')
             ->whereNotNull('safe_harvest_date')
             ->whereDate('safe_harvest_date', '>', now()->toDateString());
     }
@@ -93,6 +93,24 @@ class FarmingBatch extends TenantAwareModel
     public function isReadyForHarvest(): bool
     {
         return !$this->pendingQuarantineLogs()->exists();
+    }
+
+    public function quarantineDaysLeft(): int
+    {
+        $latest = $this->pendingQuarantineLogs()->max('safe_harvest_date');
+
+        return $latest ? (int) today()->diffInDays(Carbon::parse($latest)->startOfDay()) : 0;
+    }
+
+    public function revokeHarvestApprovalIfQuarantined(): void
+    {
+        if ($this->status === 'active' && $this->pre_harvest_status === 'passed' && !$this->isReadyForHarvest()) {
+            $this->update([
+                'pre_harvest_status'     => 'pending',
+                'pre_harvest_checked_at' => null,
+                'pre_harvest_checked_by' => null,
+            ]);
+        }
     }
 
     public function permissionModule(): string

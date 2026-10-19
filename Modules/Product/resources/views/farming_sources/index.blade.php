@@ -103,15 +103,22 @@
                 <input type="text" name="name" class="input input-bordered input-sm w-full" placeholder="VD: Thửa ruộng số 3">
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-                <div class="form-control">
-                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Diện tích (ha)</span></label>
-                    <input type="number" step="0.01" min="0" name="area_hectare" class="input input-bordered input-sm w-full">
+            <div class="form-control">
+                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Diện tích</span></label>
+                <div class="join w-full">
+                    <input type="number" step="0.01" min="0" name="area_value" class="input input-bordered input-sm join-item min-w-0" style="width: auto; flex: 1 1 0%" placeholder="VD: 2">
+                    <select name="area_unit" class="select select-bordered select-sm join-item shrink-0" style="width: 13rem">
+                        @foreach(\Modules\Product\Enums\AreaUnit::cases() as $unit)
+                        <option value="{{ $unit->value }}" data-sqm="{{ $unit->squareMeters() }}" @selected($unit === \Modules\Product\Enums\AreaUnit::SaoBacBo)>{{ $unit->label() }}</option>
+                        @endforeach
+                    </select>
                 </div>
-                <div class="form-control">
-                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Nguồn nước</span></label>
-                    <input type="text" name="water_source" class="input input-bordered input-sm w-full" placeholder="VD: Giếng khoan, kênh mương">
-                </div>
+                <p id="areaConversionHint" class="text-xs text-base-content/50 mt-1 min-h-4"></p>
+            </div>
+
+            <div class="form-control">
+                <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Nguồn nước</span></label>
+                <input type="text" name="water_source" class="input input-bordered input-sm w-full" placeholder="VD: Giếng khoan, kênh mương">
             </div>
 
             <div class="form-control">

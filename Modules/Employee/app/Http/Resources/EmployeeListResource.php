@@ -4,6 +4,7 @@ namespace Modules\Employee\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\Employee\Models\Employee;
 
 class EmployeeListResource extends JsonResource
 {
@@ -19,6 +20,17 @@ class EmployeeListResource extends JsonResource
             'email'      => $this->email,
             'phone'      => $this->phone,
             'job_title'  => $this->job_title,
+
+            'gender_label'    => $this->gender?->label(),
+            'dob'             => $this->dob?->format('d/m/Y'),
+            'start_date'      => $this->start_date?->format('d/m/Y'),
+            'address'         => $this->address,
+            'id_card_masked'  => $this->id_card_number
+                ? substr($this->id_card_number, 0, 4) . str_repeat('*', max(0, strlen($this->id_card_number) - 8)) . substr($this->id_card_number, -4)
+                : null,
+            'id_card_images'  => collect(Employee::ID_CARD_COLLECTIONS)
+                ->filter(fn (string $c) => $this->media->contains('collection_name', $c))
+                ->count(),
 
             'departments' => $this->departments->map(fn ($d) => [
                 'id'   => $d->id,

@@ -7,6 +7,8 @@ use Modules\Vendor\Http\Controllers\Api\VendorApiController;
 use Modules\Vendor\Http\Controllers\VendorController;
 
 Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(function () {
+    Route::get('vendors/{vendor}/documents/download', [ComplianceDocumentController::class, 'downloadForVendor'])
+        ->name('vendors.documents.download');
     Route::resource('vendors', VendorController::class);
 
     Route::post('vendors/{vendor}/documents', [ComplianceDocumentController::class, 'storeForVendor'])

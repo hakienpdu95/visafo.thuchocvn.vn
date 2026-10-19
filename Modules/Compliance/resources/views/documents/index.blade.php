@@ -5,6 +5,8 @@
 <div x-data="documentListPage({{ Js::from([
     'apiUrl'            => route('backend.api.documents'),
     'documentableTypes' => $documentableTypes,
+    'bulkDownloadUrl'   => route('backend.document-repository.download-many'),
+    'bulkDownloadLimit' => 100,
 ]) }})">
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -50,6 +52,12 @@
     @if(session('success'))
     <div class="alert alert-success py-2.5 px-4 mb-5 text-sm">{{ session('success') }}</div>
     @endif
+    @if(session('error'))
+    <div class="alert alert-error py-2.5 px-4 mb-5 text-sm">{{ session('error') }}</div>
+    @endif
+    @error('ids')
+    <div class="alert alert-error py-2.5 px-4 mb-5 text-sm">{{ $message }}</div>
+    @enderror
 
     <div class="card bg-base-100 shadow-sm border border-base-200 mb-4">
         <div class="card-body py-3 px-4">
@@ -133,6 +141,23 @@
                     </span>
                 </template>
             </div>
+        </div>
+    </div>
+
+    <div x-show="selectedCount > 0" x-transition x-cloak
+         class="flex flex-wrap items-center gap-3 mb-3 px-4 py-2.5 rounded-xl border border-primary/30 bg-primary/5 text-sm">
+        <span>
+            Đã chọn <strong x-text="selectedCount"></strong> giấy tờ
+            <span class="text-base-content/50">(<span x-text="selectedFiles"></span> tệp đính kèm)</span>
+        </span>
+        <span x-show="selectedCount > bulkLimit" class="text-error text-xs">Chỉ tải tối đa <span x-text="bulkLimit"></span> giấy tờ mỗi lần.</span>
+        <div class="flex items-center gap-2 ml-auto">
+            <button type="button" class="btn btn-ghost btn-sm" @click="clearSelection()">Bỏ chọn</button>
+            <button type="button" class="btn btn-primary btn-sm gap-1.5" @click="downloadSelected()"
+                    :disabled="selectedFiles === 0 || selectedCount > bulkLimit">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Tải <span x-text="selectedCount"></span> giấy tờ (.zip)
+            </button>
         </div>
     </div>
 

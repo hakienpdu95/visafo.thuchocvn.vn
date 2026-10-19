@@ -53,11 +53,14 @@
     @if(session('success'))
     <div class="alert alert-success py-2.5 px-4 mb-5 text-sm">{{ session('success') }}</div>
     @endif
+    @if(session('error'))
+    <div class="alert alert-error py-2.5 px-4 mb-5 text-sm">{{ session('error') }}</div>
+    @endif
 
     <div class="section-page">
         <div class="card bg-base-100 mb-4">
             <div class="card-body py-3 px-3">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3 items-end">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-3 items-end">
 
                     <div class="form-control lg:col-span-2">
                         <label class="label mb-2">
@@ -143,6 +146,19 @@
                             @foreach($sourceGroups as $group)
                             <option value="{{ $group['value'] }}">{{ $group['text'] }}</option>
                             @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label py-0.5">
+                            <span class="label-text text-xs font-medium">Hồ sơ/chứng chỉ</span>
+                        </label>
+                        <select id="ts-has-documents" x-model="filters.hasDocuments" @change="onFilterChange()"
+                                data-ts-placeholder="Tất cả"
+                                class="select select-sm select-bordered w-full">
+                            <option value="">Tất cả</option>
+                            <option value="yes">Đã có</option>
+                            <option value="no">Chưa có</option>
                         </select>
                     </div>
 

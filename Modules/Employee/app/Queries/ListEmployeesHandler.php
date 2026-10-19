@@ -10,7 +10,7 @@ use Modules\Employee\Models\Employee;
 
 class ListEmployeesHandler implements QueryHandlerInterface
 {
-    private const SORTABLE = ['full_name', 'email', 'job_title', 'created_at'];
+    private const SORTABLE = ['full_name', 'email', 'job_title', 'dob', 'start_date', 'created_at'];
 
     public function handle(QueryInterface $query): LengthAwarePaginator
     {
@@ -18,7 +18,7 @@ class ListEmployeesHandler implements QueryHandlerInterface
         $sortDir   = $query->sortDir === 'desc' ? 'desc' : 'asc';
 
         $q = Employee::query()->visibleTo()
-            ->with(['departments', 'latestHealthCheck', 'latestAttpTraining']);
+            ->with(['departments', 'latestHealthCheck', 'latestAttpTraining', 'media']);
 
         if ($query->search !== null && $query->search !== '') {
             $term = '%' . $query->search . '%';
@@ -26,7 +26,8 @@ class ListEmployeesHandler implements QueryHandlerInterface
                 $sub->where('full_name', 'like', $term)
                     ->orWhere('email', 'like', $term)
                     ->orWhere('phone', 'like', $term)
-                    ->orWhere('job_title', 'like', $term);
+                    ->orWhere('job_title', 'like', $term)
+                    ->orWhere('id_card_number', 'like', $term);
             });
         }
 

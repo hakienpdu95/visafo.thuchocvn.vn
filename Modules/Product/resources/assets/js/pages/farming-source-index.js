@@ -48,7 +48,9 @@ function _setModalMode(modal, source) {
 
 function _fillForm(modal, source) {
     modal.querySelector('[name="name"]').value = source.name ?? '';
-    modal.querySelector('[name="area_hectare"]').value = source.area_hectare ?? '';
+    modal.querySelector('[name="area_value"]').value = source.area_value ?? '';
+    modal.querySelector('[name="area_unit"]').value = source.area_unit ?? 'sao_bac_bo';
+    _updateAreaHint(modal);
     modal.querySelector('[name="water_source"]').value = source.water_source ?? '';
     modal.querySelector('[name="address"]').value = source.address ?? '';
     modal.querySelector('[name="notes"]').value = source.notes ?? '';
@@ -57,8 +59,28 @@ function _fillForm(modal, source) {
     if (select?.tomselect) select.tomselect.setValue(source.vendor_id, false);
 }
 
+function _formatNumber(n, decimals) {
+    return n.toLocaleString('vi-VN', { maximumFractionDigits: decimals });
+}
+
+function _updateAreaHint(modal) {
+    const hint = modal.querySelector('#areaConversionHint');
+    const value = parseFloat(modal.querySelector('[name="area_value"]')?.value);
+    const unit = modal.querySelector('[name="area_unit"]');
+    if (!hint || !unit) return;
+
+    if (Number.isNaN(value) || value <= 0) {
+        hint.textContent = '';
+        return;
+    }
+
+    const sqm = value * Number(unit.selectedOptions[0]?.dataset.sqm ?? 1);
+    hint.textContent = '= ' + _formatNumber(sqm, 2) + ' m² (' + _formatNumber(sqm / 10000, 4) + ' ha)';
+}
+
 function _resetForm(modal) {
     modal.querySelector('form').reset();
+    _updateAreaHint(modal);
     modal.querySelector('#ts-farming-source-vendor')?.tomselect?.clear(false);
 }
 
@@ -68,6 +90,11 @@ window.openFarmingSourceModal = function (source) {
     _setModalMode(modal, source || null);
     modal.showModal();
     document.activeElement?.blur();
+    if (!modal._areaHintBound) {
+        modal._areaHintBound = true;
+        modal.querySelector('[name="area_value"]')?.addEventListener('input', () => _updateAreaHint(modal));
+        modal.querySelector('[name="area_unit"]')?.addEventListener('change', () => _updateAreaHint(modal));
+    }
     requestAnimationFrame(() => {
         _initVendorSelect(modal);
         if (source) _fillForm(modal, source);
@@ -148,7 +175,7 @@ document.addEventListener('alpine:init', () => {
                         { title: 'Nông hộ', field: 'vendor_name', minWidth: 180, sorter: 'string' },
                         { title: 'Mã vùng', field: 'source_code', width: 120, formatter: (c) => '<span class="font-mono text-xs">' + esc(c.getValue()) + '</span>' },
                         { title: 'Tên vùng trồng', field: 'name', minWidth: 200, sorter: 'string' },
-                        { title: 'Diện tích (ha)', field: 'area_hectare', width: 120, hozAlign: 'center', formatter: (c) => c.getValue() ? esc(c.getValue()) : '<span class="text-base-content/25 text-xs">—</span>' },
+                        { title: 'Diện tích', field: 'area_text', width: 170, hozAlign: 'center', headerSort: false, formatter: (c) => c.getValue() ? esc(c.getValue()) : '<span class="text-base-content/25 text-xs">—</span>' },
                         { title: 'Nguồn nước', field: 'water_source', minWidth: 150, headerSort: false, formatter: (c) => esc(c.getValue()) || '<span class="text-base-content/25 text-xs">—</span>' },
                         {
                             title: 'Trạng thái phê duyệt', field: 'status', width: 170, hozAlign: 'center', headerSort: false,

@@ -7,6 +7,37 @@ function _emptyOr(value, html) {
     return value ? html : '<span class="text-base-content/25 text-xs">—</span>';
 }
 
+function _detailHtml(d) {
+    const parts = [];
+
+    if (d.notes) {
+        parts.push('<div class="text-xs font-medium text-base-content leading-snug">' + _escHtml(d.notes) + '</div>');
+    }
+
+    const chips = [];
+    if (d.material) chips.push('<span class="badge badge-info badge-sm h-auto py-0.5 whitespace-normal text-left">Vật tư: ' + _escHtml(d.material) + '</span>');
+    if (d.dosage) chips.push('<span>Liều lượng: <strong>' + _escHtml(d.dosage) + '</strong></span>');
+    if (d.isolation_days) chips.push('<span>Cách ly: <strong>' + _escHtml(d.isolation_days) + ' ngày</strong></span>');
+    if (d.target) chips.push('<span>Đối tượng: ' + _escHtml(d.target) + '</span>');
+    if (d.is_harvest) {
+        chips.push(d.harvest_yield
+            ? '<span class="badge badge-success badge-sm">Sản lượng: ' + _escHtml(d.harvest_yield) + '</span>'
+            : '<span class="badge badge-ghost badge-sm">Chưa ghi sản lượng</span>');
+        if (d.buyer_name) chips.push('<span>Cơ sở tiêu thụ: <strong>' + _escHtml(d.buyer_name) + '</strong></span>');
+    }
+    if (chips.length) {
+        parts.push('<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-base-200 px-2 py-1 text-xs">'
+            + chips.join('<span class="text-base-content/30">|</span>') + '</div>');
+    }
+
+    if (d.quarantine_text) {
+        parts.push('<div class="text-xs mt-1 font-medium ' + (d.in_quarantine ? 'text-error' : 'text-success') + '">'
+            + _escHtml(d.quarantine_text) + '</div>');
+    }
+
+    return parts.length ? '<div class="py-1">' + parts.join('') + '</div>' : _emptyOr(null);
+}
+
 function _confirmDeleteLog(row, urlTemplate, table) {
     if (!confirm('Xóa nhật ký này? Bản ghi sẽ được ẩn nhưng vẫn giữ vết trong DB.')) return;
 
@@ -48,15 +79,10 @@ function initFarmingLogTable() {
             },
         },
         {
-            title: 'Chi tiết', field: 'detail', minWidth: 220, headerSort: false,
+            title: 'Chi tiết', field: 'notes', minWidth: 320, headerSort: false,
             formatter: (cell) => {
-                const d = cell.getRow().getData();
-                let html = _emptyOr(d.detail, '<span class="text-xs">' + _escHtml(d.detail) + '</span>');
-                if (d.quarantine_text) {
-                    html += '<div class="text-xs mt-0.5 font-medium ' + (d.in_quarantine ? 'text-error' : 'text-success') + '">'
-                        + _escHtml(d.quarantine_text) + '</div>';
-                }
-                return html;
+                cell.getElement().style.whiteSpace = 'normal';
+                return _detailHtml(cell.getRow().getData());
             },
         },
         {
@@ -76,8 +102,8 @@ function initFarmingLogTable() {
             },
         },
         {
-            title: 'Ghi chú', field: 'notes', minWidth: 160, headerSort: false,
-            formatter: (cell) => _emptyOr(cell.getValue(), '<span class="text-xs text-base-content/50">' + _escHtml(cell.getValue()) + '</span>'),
+            title: 'Người thực hiện', field: 'operator', width: 150, headerSort: false,
+            formatter: (cell) => _emptyOr(cell.getValue(), '<span class="text-xs">' + _escHtml(cell.getValue()) + '</span>'),
         },
     ];
 

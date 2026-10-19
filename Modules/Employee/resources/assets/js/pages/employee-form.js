@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initFormValidation(FORM_SEL);
     initAllTomSelects(form);
+    window.initAllDatePickers?.(form);
     _initDepartmentSelect(form);
     _setupHealthRecordForm(document);
 });

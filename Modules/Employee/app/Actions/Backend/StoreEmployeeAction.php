@@ -17,18 +17,18 @@ class StoreEmployeeAction
 
     public function handle(StoreEmployeeData $data): Employee
     {
-        $employee = Employee::create([
-            'full_name'    => $data->full_name,
-            'email'        => $data->email,
-            'phone'        => $data->phone,
-            'facebook_url' => $data->facebook_url,
-            'job_title'    => $data->job_title,
-        ]);
+        $employee = Employee::create($data->profileAttributes());
 
         $employee->departments()->sync($data->department_ids);
 
         if ($data->avatar !== null) {
             $this->uploadService->upload($data->avatar, $employee, 'avatar');
+        }
+
+        foreach (Employee::ID_CARD_COLLECTIONS as $collection) {
+            if ($data->{$collection} !== null) {
+                $this->uploadService->upload($data->{$collection}, $employee, $collection);
+            }
         }
 
         return $employee;

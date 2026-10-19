@@ -15,7 +15,7 @@ class UpdateFarmingSourceAction
         $farmingSource->update([
             'vendor_id'     => $data->vendor_id,
             'name'          => $data->name,
-            'area_hectare'  => $data->area_hectare,
+            ...$data->areaAttributes(),
             'water_source'  => $data->water_source,
             'address'       => $data->address,
             'notes'         => $data->notes,

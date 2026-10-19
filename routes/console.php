@@ -18,6 +18,12 @@ Schedule::command('media:cleanup-orphans')
     ->everyFourHours()
     ->onOneServer();
 
+// Product: xóa file Excel tạm của luồng import nhật ký canh tác bị bỏ dở > 24h
+Schedule::command('farming-logs:cleanup-temp')
+    ->name('farming-logs:cleanup-temp')
+    ->dailyAt('02:00')
+    ->onOneServer();
+
 // Passport Phase 0: auto-suspend membership đã quá contract_end_date
 Schedule::command('passport:auto-suspend-expired')
     ->name('passport:auto-suspend-expired')

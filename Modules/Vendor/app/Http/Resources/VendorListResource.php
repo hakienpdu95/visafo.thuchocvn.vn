@@ -28,6 +28,10 @@ class VendorListResource extends JsonResource
             'certificate_type'     => $cert?->documentType?->name,
             'certificate_expired'  => (bool) $cert?->isExpired(),
             'certificate_expiring' => (bool) $cert?->isExpiringWithinDays(30),
+            'documents_count'      => (int) ($this->documents_count ?? 0),
+            'documents_download_url' => ($this->documents_count ?? 0) + ($this->partner_products_with_documents_count ?? 0) > 0
+                ? route('backend.vendors.documents.download', $this->resource)
+                : null,
 
             'created_at' => $this->created_at?->format('d/m/Y'),
 

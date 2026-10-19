@@ -2,11 +2,9 @@
 
 namespace Modules\Product\Actions\Farmer;
 
-use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\Product\Data\Requests\StoreFarmingLogData;
-use Modules\Product\Models\AgriPesticide;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingLog;
 
@@ -14,38 +12,31 @@ class StoreFarmingLogAction
 {
     use AsAction;
 
-    public function handle(FarmingBatch $farmingBatch, StoreFarmingLogData $data, string $userId): FarmingLog
-    {
-        if ($data->activity_type === 'harvest' && $farmingBatch->pre_harvest_status !== 'passed') {
-            throw ValidationException::withMessages([
-                'activity_type' => 'Chưa hết thời gian cách ly. Không thể thu hoạch!',
-            ]);
-        }
+    public function __construct(private ResolveFarmingLogAttributesAction $resolveAttributes) {}
 
-        $safeHarvestDate = null;
-        if ($data->activity_type === 'pesticide' && $data->agri_pesticide_id) {
-            $pesticide = AgriPesticide::query()->find($data->agri_pesticide_id);
-            if ($pesticide?->quarantine_days !== null) {
-                $safeHarvestDate = Carbon::parse($data->activity_date)->addDays($pesticide->quarantine_days);
+    public function handle(FarmingBatch $farmingBatch, StoreFarmingLogData $data, string $userId, ?string $operatorName = null): FarmingLog
+    {
+        if ($data->activity_type === 'harvest') {
+            $daysLeft = $farmingBatch->quarantineDaysLeft();
+            if ($daysLeft > 0) {
+                throw ValidationException::withMessages([
+                    'activity_type' => 'Lô đang trong thời gian cách ly thuốc (còn ' . $daysLeft . ' ngày). Không được phép thu hoạch!',
+                ]);
+            }
+            if ($farmingBatch->pre_harvest_status !== 'passed') {
+                throw ValidationException::withMessages([
+                    'activity_type' => 'Lô chưa được QC phê duyệt cho phép thu hoạch.',
+                ]);
             }
         }
 
-        $imagePath = $data->image?->store('farming-logs', 'public');
+        $attributes = $this->resolveAttributes->handle($data, $operatorName);
 
         $log = FarmingLog::query()->create([
-            'farming_batch_id'       => $farmingBatch->id,
-            'activity_type'          => $data->activity_type,
-            'activity_date'          => $data->activity_date,
-            'agri_fertilizer_id'     => $data->agri_fertilizer_id,
-            'agri_pesticide_id'      => $data->agri_pesticide_id,
-            'vendor_farming_step_id' => $data->vendor_farming_step_id,
-            'quantity'               => $data->quantity,
-            'unit'                   => $data->unit,
-            'method_or_target'       => $data->method_or_target,
-            'safe_harvest_date'      => $safeHarvestDate,
-            'image_path'             => $imagePath,
-            'created_by'             => $userId,
-            'notes'                  => $data->notes,
+            ...$attributes,
+            'farming_batch_id' => $farmingBatch->id,
+            'image_path'       => $data->image?->store('farming-logs', 'public'),
+            'created_by'       => $userId,
         ]);
 
         if ($data->activity_type === 'harvest') {
@@ -54,6 +45,8 @@ class StoreFarmingLogAction
                 'status'              => 'harvested',
             ]);
         }
+
+        $farmingBatch->revokeHarvestApprovalIfQuarantined();
 
         return $log;
     }

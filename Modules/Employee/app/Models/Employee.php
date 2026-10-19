@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Employee\Enums\Gender;
 use Modules\Employee\Enums\HealthRecordType;
 use Modules\Employee\Enums\RecordStatus;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -28,13 +29,32 @@ class Employee extends Model implements HasMedia
     use LogsActivity;
     use HasTenantMedia;
 
+    public const ID_CARD_COLLECTIONS = ['id_card_front', 'id_card_back'];
+
     protected $fillable = [
         'full_name',
+        'gender',
+        'dob',
         'email',
         'phone',
         'facebook_url',
+        'address',
         'job_title',
+        'start_date',
+        'id_card_number',
+        'id_card_issue_date',
+        'id_card_issue_place',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'gender'             => Gender::class,
+            'dob'                => 'date',
+            'start_date'         => 'date',
+            'id_card_issue_date' => 'date',
+        ];
+    }
 
     public function departments(): BelongsToMany
     {
@@ -104,6 +124,7 @@ class Employee extends Model implements HasMedia
     {
         return LogOptions::defaults()
             ->logFillable()
+            ->logExcept(['id_card_number'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }

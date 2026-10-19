@@ -10,7 +10,10 @@ function esc(v) {
 function buildColumns(canDelete) {
     return [
         {
-            title: 'Nhà cung cấp', field: 'name', minWidth: 220, sorter: 'string', frozen: true,
+            formatter: 'responsiveCollapse', width: 34, minWidth: 34, hozAlign: 'center', headerSort: false, resizable: false, frozen: true, responsive: 0,
+        },
+        {
+            title: 'Nhà cung cấp', field: 'name', minWidth: 220, sorter: 'string', frozen: true, responsive: 0,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 return '<div>'
@@ -20,7 +23,7 @@ function buildColumns(canDelete) {
             },
         },
         {
-            title: 'Mã số thuế', field: 'tax_code', width: 140, headerSort: false,
+            title: 'Mã số thuế', field: 'tax_code', width: 140, headerSort: false, responsive: 2,
             formatter(cell) {
                 const v = cell.getValue();
                 return v ? '<span class="font-mono text-xs">' + esc(v) + '</span>'
@@ -28,13 +31,13 @@ function buildColumns(canDelete) {
             },
         },
         {
-            title: 'Người đại diện', field: 'representative_name', minWidth: 150, sorter: 'string',
+            title: 'Người đại diện', field: 'representative_name', minWidth: 150, sorter: 'string', responsive: 4,
             formatter(cell) {
                 return esc(cell.getValue()) || '<span class="text-base-content/25 text-xs">—</span>';
             },
         },
         {
-            title: 'Email / SĐT', field: 'email', minWidth: 180, headerSort: false,
+            title: 'Email / SĐT', field: 'email', minWidth: 180, headerSort: false, responsive: 3,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 const parts = [];
@@ -44,23 +47,26 @@ function buildColumns(canDelete) {
             },
         },
         {
-            title: 'Chứng chỉ mới nhất', field: 'certificate_type', minWidth: 220, headerSort: false,
+            title: 'Chứng chỉ mới nhất', field: 'certificate_type', minWidth: 220, headerSort: false, responsive: 0,
             formatter(cell) {
                 const d = cell.getRow().getData();
-                if (!d.certificate_type) {
-                    return '<span class="text-base-content/25 text-xs">Chưa có</span>';
+                if (!d.certificate_type && !d.documents_count) {
+                    return '<span class="badge badge-ghost badge-sm text-base-content/50">Chưa có hồ sơ</span>';
                 }
-                let html = '<span class="text-sm">' + esc(d.certificate_type) + '</span>';
+                let html = '<span class="text-sm">' + esc(d.certificate_type || 'Hồ sơ') + '</span>';
                 if (d.certificate_expired) {
                     html += '<span class="badge badge-error badge-xs ml-1">Hết hạn</span>';
                 } else if (d.certificate_expiring) {
                     html += '<span class="badge badge-warning badge-xs ml-1">Sắp hết hạn</span>';
                 }
+                if (d.documents_count) {
+                    html += '<div class="text-xs text-base-content/40">' + d.documents_count + ' giấy tờ</div>';
+                }
                 return html;
             },
         },
         {
-            title: 'Trạng thái', field: 'status_value', width: 140, hozAlign: 'center', sorter: 'string',
+            title: 'Trạng thái', field: 'status_value', width: 140, hozAlign: 'center', sorter: 'string', responsive: 1,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 return '<span class="badge badge-sm badge-soft ' + esc(d.status_badge) + '">'
@@ -68,10 +74,10 @@ function buildColumns(canDelete) {
             },
         },
         {
-            title: 'Ngày tạo', field: 'created_at', width: 110, hozAlign: 'center', sorter: 'string',
+            title: 'Ngày tạo', field: 'created_at', width: 110, hozAlign: 'center', sorter: 'string', responsive: 5,
         },
         {
-            title: 'Thao tác', field: 'id', width: 110, hozAlign: 'center', headerSort: false, frozen: true,
+            title: 'Thao tác', field: 'id', width: 140, hozAlign: 'center', headerSort: false, frozen: true, responsive: 0,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 let html = '<div class="flex items-center justify-center gap-1">';
@@ -79,6 +85,14 @@ function buildColumns(canDelete) {
                 html += '<a href="' + esc(d.show_url) + '" class="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-info" title="Xem">'
                     + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>'
                     + '</a>';
+
+                html += d.documents_download_url
+                    ? '<a href="' + esc(d.documents_download_url) + '" class="btn btn-ghost btn-xs btn-square text-primary/70 hover:text-primary" title="Tải hồ sơ/chứng chỉ (.zip)">'
+                        + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>'
+                        + '</a>'
+                    : '<span class="btn btn-ghost btn-xs btn-square btn-disabled" title="Chưa có hồ sơ để tải">'
+                        + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>'
+                        + '</span>';
 
                 html += '<a href="' + esc(d.edit_url) + '" class="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-warning" title="Sửa">'
                     + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'
@@ -171,20 +185,21 @@ document.addEventListener('alpine:init', () => {
         let tsProvince    = null;
         let tsWard        = null;
         let tsSourceGroup = null;
+        let tsHasDocuments = null;
 
         return {
-            filters: { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '' },
+            filters: { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '', hasDocuments: '' },
             hiddenCols: [],
 
             get toggleableCols() {
                 return COLUMNS
-                    .filter(c => c.field !== 'id' && c.field !== 'name')
+                    .filter(c => c.title && c.field !== 'id' && c.field !== 'name')
                     .map(c => ({ field: c.field, title: c.title }));
             },
 
             get hasFilters() {
                 const f = this.filters;
-                return !!(f.search || f.status || f.province || f.ward || f.phone || f.sourceGroup);
+                return !!(f.search || f.status || f.province || f.ward || f.phone || f.sourceGroup || f.hasDocuments);
             },
 
             get activeChips() {
@@ -207,6 +222,9 @@ document.addEventListener('alpine:init', () => {
                     const sg = sourceGroups.find(g => g.value === f.sourceGroup);
                     chips.push({ key: 'sourceGroup', label: sg ? sg.text : f.sourceGroup });
                 }
+                if (f.hasDocuments) {
+                    chips.push({ key: 'hasDocuments', label: f.hasDocuments === 'yes' ? 'Đã có hồ sơ' : 'Chưa có hồ sơ' });
+                }
                 return chips;
             },
 
@@ -227,6 +245,12 @@ document.addEventListener('alpine:init', () => {
                     placeholder: 'Tất cả trạng thái',
                     onChange() { statusEl.dispatchEvent(new Event('change', { bubbles: true })); },
                 });
+
+                const hasDocumentsEl = document.getElementById('ts-has-documents');
+                tsHasDocuments = hasDocumentsEl ? createTs(hasDocumentsEl, {
+                    placeholder: 'Tất cả',
+                    onChange() { hasDocumentsEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                }) : null;
 
                 tsSourceGroup = createTs(sourceGroupEl, {
                     placeholder: 'Tất cả nhóm nguồn',
@@ -303,6 +327,7 @@ document.addEventListener('alpine:init', () => {
                         if (f.ward)        p.ward_code     = f.ward;
                         if (f.phone)       p.phone_number  = f.phone;
                         if (f.sourceGroup) p.source_group  = f.sourceGroup;
+                        if (f.hasDocuments) p.has_documents = f.hasDocuments;
                         return p;
                     },
                     ajaxResponse: (_u, _p, res) => res,
@@ -318,6 +343,7 @@ document.addEventListener('alpine:init', () => {
 
                     layout:           'fitColumns',
                     responsiveLayout: 'collapse',
+                    responsiveLayoutCollapseStartOpen: false,
                     movableColumns:   true,
                     height:           '68vh',
 
@@ -352,6 +378,7 @@ document.addEventListener('alpine:init', () => {
                 if (p.has('ward')) this.filters.ward        = p.get('ward');
                 if (p.has('ph'))   this.filters.phone       = p.get('ph');
                 if (p.has('sg'))   this.filters.sourceGroup = p.get('sg');
+                if (p.has('doc'))  this.filters.hasDocuments = p.get('doc');
             },
 
             saveState() {
@@ -362,6 +389,7 @@ document.addEventListener('alpine:init', () => {
                 if (f.ward)        p.set('ward', f.ward);
                 if (f.phone)       p.set('ph', f.phone);
                 if (f.sourceGroup) p.set('sg', f.sourceGroup);
+                if (f.hasDocuments) p.set('doc', f.hasDocuments);
                 const qs = p.toString();
                 history.replaceState(null, '', qs ? '?' + qs : location.pathname);
             },
@@ -376,6 +404,7 @@ document.addEventListener('alpine:init', () => {
                 if (key === 'status')      { this.filters.status = ''; tsStatus?.setValue('', true); }
                 if (key === 'ward')        { this.filters.ward = ''; tsWard?.setValue('', true); }
                 if (key === 'sourceGroup') { this.filters.sourceGroup = ''; tsSourceGroup?.setValue('', true); }
+                if (key === 'hasDocuments') { this.filters.hasDocuments = ''; tsHasDocuments?.setValue('', true); }
                 if (key === 'province') {
                     this.filters.province = '';
                     tsProvince?.setValue('', true);
@@ -386,10 +415,11 @@ document.addEventListener('alpine:init', () => {
             },
 
             reset() {
-                this.filters = { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '' };
+                this.filters = { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '', hasDocuments: '' };
                 tsStatus?.setValue('', true);
                 tsProvince?.setValue('', true);
                 tsSourceGroup?.setValue('', true);
+                tsHasDocuments?.setValue('', true);
                 this.loadWardOptions('');
                 history.replaceState(null, '', location.pathname);
                 this.refresh();

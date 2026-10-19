@@ -278,7 +278,7 @@
                         $loc['isOwn'] ? ['Khu trồng', $loc['name']] : null,
                         ['Vùng sản xuất', $loc['address']],
                         ['Ngày thu hoạch', $loc['harvestedAt']?->format('d/m/Y')],
-                        ['Diện tích', $loc['area'] !== null ? rtrim(rtrim(number_format($loc['area'], 2, ',', '.'), '0'), ',') . ' ha' : null],
+                        ['Diện tích', $loc['areaText'] ?? null],
                         ['Nguồn nước', $loc['waterSource']],
                     ], fn ($row) => $row !== null && filled($row[1])) as [$rowLabel, $rowValue])
                     <div><dt class="inline text-gray-600">{{ $rowLabel }}:</dt> <dd class="inline font-medium text-gray-900">{{ $rowValue }}</dd></div>

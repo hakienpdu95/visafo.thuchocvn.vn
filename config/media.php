@@ -109,6 +109,20 @@ return [
             'disk'         => 'local',
             'conversions'  => [],
         ],
+        'id_card_front' => [
+            'max_size_kb'  => 10240,
+            'allowed_mime' => ['image/jpeg', 'image/png', 'image/webp'],
+            'is_public'    => false,
+            'disk'         => 'local',
+            'conversions'  => [],
+        ],
+        'id_card_back' => [
+            'max_size_kb'  => 10240,
+            'allowed_mime' => ['image/jpeg', 'image/png', 'image/webp'],
+            'is_public'    => false,
+            'disk'         => 'local',
+            'conversions'  => [],
+        ],
         'jodit_content' => [
             'max_size_kb'  => 10240,
             'allowed_mime' => ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],

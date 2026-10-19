@@ -33,6 +33,7 @@ class FarmingBatchListResource extends JsonResource
             'delete_url'                    => route('backend.farming-batches.destroy', $this->resource),
 
             'show_url' => route('backend.farming-batches.show', $this->resource),
+            'log_url'  => $this->status === 'active' ? route('farmer.batches.log.create', $this->resource) : null,
         ];
     }
 }

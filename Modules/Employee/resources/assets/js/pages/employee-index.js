@@ -10,7 +10,10 @@ function esc(v) {
 function buildColumns(canDelete) {
     return [
         {
-            title: 'Nhân viên', field: 'full_name', minWidth: 240, sorter: 'string', frozen: true,
+            formatter: 'responsiveCollapse', width: 34, minWidth: 34, hozAlign: 'center', headerSort: false, resizable: false, responsive: 0,
+        },
+        {
+            title: 'Nhân viên', field: 'full_name', minWidth: 220, sorter: 'string', responsive: 0,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 const avatar = d.avatar_url
@@ -22,39 +25,71 @@ function buildColumns(canDelete) {
             },
         },
         {
-            title: 'Vai trò công việc', field: 'job_title', minWidth: 160, sorter: 'string',
+            title: 'Vai trò công việc', field: 'job_title', minWidth: 140, sorter: 'string', responsive: 1,
             formatter(cell) {
                 return esc(cell.getValue()) || '<span class="text-base-content/25 text-xs">—</span>';
             },
         },
         {
-            title: 'Phòng ban', field: 'department_names', minWidth: 180, headerSort: false,
+            title: 'Giới tính · Ngày sinh', field: 'dob', width: 175, sorter: 'string', responsive: 2,
+            formatter(cell) {
+                const d = cell.getRow().getData();
+                const parts = [d.gender_label, d.dob].filter(Boolean).map(esc);
+                return parts.length ? parts.join(' · ') : '<span class="text-base-content/25 text-xs">—</span>';
+            },
+        },
+        {
+            title: 'Ngày vào làm', field: 'start_date', width: 135, sorter: 'string', responsive: 3,
             formatter(cell) {
                 return esc(cell.getValue()) || '<span class="text-base-content/25 text-xs">—</span>';
             },
         },
         {
-            title: 'Điện thoại', field: 'phone', width: 130, headerSort: false,
+            title: 'Phòng ban', field: 'department_names', minWidth: 150, headerSort: false, responsive: 1,
             formatter(cell) {
                 return esc(cell.getValue()) || '<span class="text-base-content/25 text-xs">—</span>';
             },
         },
         {
-            title: 'Khám SK', field: 'health_status_label', width: 130, hozAlign: 'center', headerSort: false,
+            title: 'Điện thoại', field: 'phone', width: 120, headerSort: false, responsive: 4,
+            formatter(cell) {
+                return esc(cell.getValue()) || '<span class="text-base-content/25 text-xs">—</span>';
+            },
+        },
+        {
+            title: 'Địa chỉ', field: 'address', minWidth: 180, headerSort: false, responsive: 5,
+            formatter(cell) {
+                const v = cell.getValue();
+                return v ? '<span class="text-xs" title="' + esc(v) + '">' + esc(v) + '</span>' : '<span class="text-base-content/25 text-xs">—</span>';
+            },
+        },
+        {
+            title: 'CCCD', field: 'id_card_masked', width: 140, headerSort: false, responsive: 0,
+            formatter(cell) {
+                const d = cell.getRow().getData();
+                if (!d.id_card_masked && !d.id_card_images) return '<span class="text-base-content/25 text-xs">—</span>';
+                const images = d.id_card_images === 2
+                    ? '<span class="badge badge-success badge-xs">Đủ ảnh 2 mặt</span>'
+                    : '<span class="badge badge-warning badge-xs">' + (d.id_card_images ? 'Thiếu 1 mặt' : 'Chưa có ảnh') + '</span>';
+                return '<div class="leading-tight"><div class="font-mono text-xs">' + (esc(d.id_card_masked) || '—') + '</div>' + images + '</div>';
+            },
+        },
+        {
+            title: 'Khám SK', field: 'health_status_label', width: 120, hozAlign: 'center', headerSort: false, responsive: 0,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 return '<span class="badge ' + esc(d.health_status_class) + ' badge-sm">' + esc(d.health_status_label) + '</span>';
             },
         },
         {
-            title: 'ATTP', field: 'attp_status_label', width: 130, hozAlign: 'center', headerSort: false,
+            title: 'ATTP', field: 'attp_status_label', width: 120, hozAlign: 'center', headerSort: false, responsive: 0,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 return '<span class="badge ' + esc(d.attp_status_class) + ' badge-sm">' + esc(d.attp_status_label) + '</span>';
             },
         },
         {
-            title: 'Thao tác', field: 'id', width: 110, hozAlign: 'center', headerSort: false, frozen: true,
+            title: 'Thao tác', field: 'id', width: 100, hozAlign: 'center', headerSort: false, responsive: 0,
             formatter(cell) {
                 const d = cell.getRow().getData();
                 let html = '<div class="flex items-center justify-center gap-1">';
@@ -200,6 +235,7 @@ document.addEventListener('alpine:init', () => {
 
                     layout:           'fitColumns',
                     responsiveLayout: 'collapse',
+                    responsiveLayoutCollapseStartOpen: false,
                     movableColumns:   true,
                     height:           '68vh',
 
