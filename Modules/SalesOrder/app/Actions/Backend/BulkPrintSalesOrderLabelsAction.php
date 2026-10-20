@@ -43,6 +43,7 @@ class BulkPrintSalesOrderLabelsAction
             $printedItems = 0;
             $reusedItems = 0;
             $sourceChanged = 0;
+            $resplitItems = 0;
 
             $customGroups = isset($data['items'])
                 ? collect($data['items'])->mapWithKeys(fn ($i) => [$i['order_item_id'] => collect($i['label_groups'])
@@ -70,9 +71,12 @@ class BulkPrintSalesOrderLabelsAction
                 $total++;
                 $source = $sourceResolver->forBulkItem($item, $itemSources->get($item->id, []), $data);
 
-                // Check & Reuse (xem PrintSalesOrderItemLabelAction): đã có tem đang lưu hành → in lại mã cũ
+                // Check & Reuse (xem PrintSalesOrderItemLabelAction): đã có tem đang lưu hành, cách chia giữ nguyên → in lại mã cũ; đổi cách chia → hủy mã cũ, tạo mã mới
                 $existing = PrintLog::query()->activeForItem($item->id)->get();
-                if ($existing->isNotEmpty()) {
+                if ($existing->isNotEmpty() && $customGroups !== null && PrintLog::splitDiffers($existing, $groups)) {
+                    PrintLog::revokeForResplit($existing, $printedBy, array_sum(PrintLog::splitOf($groups)));
+                    $resplitItems++;
+                } elseif ($existing->isNotEmpty()) {
                     if (PrintLog::sourceDiffers($existing, $source)) {
                         PrintLog::updateSource($existing, $source);
                         $sourceChanged++;
@@ -132,6 +136,7 @@ class BulkPrintSalesOrderLabelsAction
                 'printed' => $printedItems,
                 'reused'  => $reusedItems,
                 'source_changed' => $sourceChanged,
+                'resplit' => $resplitItems,
             ];
         });
     }

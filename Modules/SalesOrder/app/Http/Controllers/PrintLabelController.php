@@ -22,7 +22,6 @@ use Modules\SalesOrder\Support\BulkPrintPrefillResolver;
 use Modules\SalesOrder\Support\LabelPrintEntryFactory;
 use Modules\SalesOrder\Support\LabelViewResolver;
 use Modules\SalesOrder\Support\PrintSourceResolver;
-use Modules\GoodsReceipt\Models\ProductBatch;
 
 class PrintLabelController extends Controller
 {
@@ -97,8 +96,10 @@ class PrintLabelController extends Controller
             'message'     => $result['reused']
                 ? "Mặt hàng đã có {$result['logs']->count()} tem đang lưu hành — in lại đúng mã TXNG cũ, không tạo mã mới. "
                     . ($result['source_changed'] ? 'Đã cập nhật nguồn cung / lô mới cho các tem này. ' : '')
-                    . 'Cần đổi khối lượng / NSX / HSD hoặc thay tem bị mất: dùng "Hủy mã & Cấp lại" ở Nhật ký TXNG.'
-                : null,
+                    . 'Muốn chia lại tem: đổi khối lượng / số tem rồi In; sửa NSX / HSD: dùng "Sửa" ở Nhật ký TXNG; thay tem bị mất: "Hủy mã & Cấp lại".'
+                : ($result['resplit'] > 0
+                    ? "Cách chia tem đã thay đổi — đã hủy {$result['resplit']} mã cũ và tạo {$result['logs']->count()} mã TXNG mới."
+                    : null),
             // Trang in cả phiên: mỗi tem một bản ghi + một trace_code/QR riêng.
             'print_url'   => route('print.render_session', $result['session_id']),
         ]);
@@ -112,28 +113,11 @@ class PrintLabelController extends Controller
         return response()->json($resolver->forItem($item));
     }
 
-    public function batches(SalesOrderItem $item): JsonResponse
+    public function batches(SalesOrderItem $item, PrintSourceResolver $sourceResolver): JsonResponse
     {
         $this->authorize('print', $item->order);
 
-        $batches = ProductBatch::query()
-            ->where('product_id', $item->product_id)
-            ->with('goodsReceipt:id,misa_ref_id,receipt_date,vendor_id,supplier_name', 'goodsReceipt.vendor:id,name', 'farmingBatch:id,partner_product_id')
-            ->latest('created_at')->latest('id')
-            ->limit(50)
-            ->get()
-            ->map(fn (ProductBatch $b) => [
-                'value'         => $b->id,
-                'text'          => BulkPrintPrefillResolver::batchText($b),
-                'vendor_id'     => $b->goodsReceipt?->vendor_id,
-                'vendor_name'   => $b->goodsReceipt?->vendor?->name,
-                // Lô gắn lô canh tác → hàng hóa NCC xác định theo lô (khóa ô "Hàng hóa NCC").
-                'partner_product_id' => $b->goodsReceipt?->vendor_id ? $b->farmingBatch?->partner_product_id : null,
-                'supplier_name' => $b->goodsReceipt?->vendor_id ? null : $b->goodsReceipt?->supplier_name,
-                'in_stock'      => (float) $b->current_qty > 0,
-            ]);
-
-        return response()->json(['data' => $batches]);
+        return response()->json(['data' => $sourceResolver->batchOptions($item)]);
     }
 
     /** Hàng hóa NCC của nguồn cung vừa chọn, ánh xạ đúng sản phẩm chuẩn của dòng hàng — ô "Hàng hóa nhà cung cấp" (cascade theo Nguồn cung). */
@@ -274,6 +258,9 @@ class PrintLabelController extends Controller
                     : '')
                 . ($result['source_changed'] > 0
                     ? " Đã cập nhật nguồn cung / lô mới cho tem của {$result['source_changed']} mặt hàng (giữ nguyên mã TXNG)."
+                    : '')
+                . ($result['resplit'] > 0
+                    ? " {$result['resplit']} mặt hàng đổi cách chia tem nên đã hủy mã cũ và tạo mã TXNG mới."
                     : '');
 
         return response()->json([

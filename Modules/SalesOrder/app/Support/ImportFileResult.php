@@ -45,6 +45,7 @@ readonly class ImportFileResult
             'misa_ref_id' => $this->misaRefId,
             'message' => $this->message,
             'items_count' => $this->itemsCount,
+            'new_products' => $this->newProducts,
         ];
     }
 }

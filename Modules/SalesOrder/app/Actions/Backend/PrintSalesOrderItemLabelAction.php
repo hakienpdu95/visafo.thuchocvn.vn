@@ -17,11 +17,10 @@ class PrintSalesOrderItemLabelAction
     use AsAction;
 
     /**
-     * Check & Reuse: dòng hàng đã có tem đang lưu hành → in lại đúng các mã đó (chọn nguồn / lô khác thì cập nhật nguồn của chính các tem đó),
-     * KHÔNG tạo bản ghi / mã TXNG mới (dữ liệu nhập trên form bị bỏ qua vì tem đã in là bất biến).
-     * Muốn đổi khối lượng/NSX/HSD hoặc thay tem mất → "Hủy mã & Cấp lại" ở Nhật ký TXNG.
+     * Check & Reuse: dòng hàng đã có tem đang lưu hành và cách chia tem giữ nguyên → in lại đúng các mã đó (chọn nguồn / lô khác thì cập nhật nguồn của chính các tem đó).
+     * Cách chia tem (khối lượng/tem, số tem) khác lần in trước → hủy các mã cũ và tạo bộ mã mới đúng theo số nhập trên form.
      *
-     * @return array{session_id: string, logs: Collection<int, PrintLog>, reused: bool, source_changed: bool}
+     * @return array{session_id: string, logs: Collection<int, PrintLog>, reused: bool, source_changed: bool, resplit: int}
      */
     public function handle(SalesOrderItem $item, array $data, ?string $printedBy): array
     {
@@ -32,7 +31,11 @@ class PrintSalesOrderItemLabelAction
             $sessionId = Str::lower((string) Str::ulid());
 
             $existing = PrintLog::query()->activeForItem($item->id)->get();
-            if ($existing->isNotEmpty()) {
+            $resplit = 0;
+            if ($existing->isNotEmpty() && PrintLog::splitDiffers($existing, $data['label_groups'])) {
+                PrintLog::revokeForResplit($existing, $printedBy, array_sum(PrintLog::splitOf($data['label_groups'])));
+                $resplit = $existing->count();
+            } elseif ($existing->isNotEmpty()) {
                 $sourceChanged = PrintLog::sourceDiffers($existing, $data);
                 if ($sourceChanged) {
                     PrintLog::updateSource($existing, $data);
@@ -40,7 +43,7 @@ class PrintSalesOrderItemLabelAction
                 $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
                 LabelPrintEvent::record($existing, $sessionId, $printedBy, true);
 
-                return ['session_id' => $sessionId, 'logs' => $existing, 'reused' => true, 'source_changed' => $sourceChanged];
+                return ['session_id' => $sessionId, 'logs' => $existing, 'reused' => true, 'source_changed' => $sourceChanged, 'resplit' => 0];
             }
 
             $logs = new Collection();
@@ -79,7 +82,7 @@ class PrintSalesOrderItemLabelAction
 
             LabelPrintEvent::record($logs, $sessionId, $printedBy, false);
 
-            return ['session_id' => $sessionId, 'logs' => $logs, 'reused' => false, 'source_changed' => false];
+            return ['session_id' => $sessionId, 'logs' => $logs, 'reused' => false, 'source_changed' => false, 'resplit' => $resplit];
         });
     }
 }

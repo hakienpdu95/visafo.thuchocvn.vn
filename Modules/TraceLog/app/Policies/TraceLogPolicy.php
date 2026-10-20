@@ -18,6 +18,11 @@ class TraceLogPolicy
         return ModuleAccess::view($user, 'trace_log', $printLog);
     }
 
+    public function update(User $user, PrintLog $printLog): bool
+    {
+        return ModuleAccess::update($user, 'trace_log', $printLog);
+    }
+
     /** QC đổi trạng thái tem (thu hồi / lỗi / phục hồi). */
     public function changeStatus(User $user, PrintLog $printLog): bool
     {

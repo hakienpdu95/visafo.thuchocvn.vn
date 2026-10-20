@@ -162,6 +162,78 @@
     </div>
 </div>
 
+<div x-data="traceLogEditModal({{ Js::from(['vendors' => $vendorOptions]) }})" @open-trace-edit.window="openFor($event.detail)" x-cloak>
+    <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">
+        <div class="modal-box max-w-3xl">
+            <div class="flex items-start justify-between gap-3 mb-1">
+                <div>
+                    <h3 class="font-bold text-lg">Sửa thông tin TXNG</h3>
+                    <p class="mt-0.5 font-mono text-sm text-primary" x-text="data ? data.trace_code.toUpperCase() : ''"></p>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm btn-square" @click="close()" title="Đóng">✕</button>
+            </div>
+            <p class="text-xs text-base-content/60 mb-4" x-show="data">
+                <span x-text="data?.product_name"></span>
+                <template x-if="data?.order_ref"><span> · Đơn <span class="font-mono" x-text="data.order_ref"></span></span></template>
+                <span> · <span class="font-mono" x-text="data?.weight"></span> kg</span>
+            </p>
+
+            <p class="py-10 text-center text-sm text-base-content/40" x-show="loading">Đang tải thông tin tem...</p>
+            <p class="py-10 text-center text-sm text-error" x-show="loadError" x-text="loadError"></p>
+
+            <form x-show="data && !loading" @submit.prevent="save()" novalidate class="space-y-4">
+                <div class="alert alert-info alert-soft py-2 px-3 text-xs">
+                    Chỉ cập nhật đúng tem này, giữ nguyên mã TXNG / QR — người quét mã đã dán sẽ thấy ngay thông tin mới.
+                </div>
+
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-base-content/40 mb-2">Thông tin sản xuất</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="flex flex-col">
+                            <label class="block text-sm font-medium text-base-content mb-1" for="te-mfg">NSX</label>
+                            <input id="te-mfg" type="text" autocomplete="off" placeholder="DD/MM/YYYY"
+                                   class="input input-bordered input-sm w-full" :class="{ 'input-error': errors.mfg_date }">
+                            <p class="mt-1 text-xs text-error" x-show="errors.mfg_date" x-text="errors.mfg_date"></p>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="block text-sm font-medium text-base-content mb-1" for="te-exp">HSD <span class="text-error">*</span></label>
+                            <input id="te-exp" type="text" autocomplete="off" placeholder="DD/MM/YYYY"
+                                   class="input input-bordered input-sm w-full" :class="{ 'input-error': errors.exp_date }">
+                            <p class="mt-1 text-xs text-error" x-show="errors.exp_date" x-text="errors.exp_date"></p>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="block text-sm font-medium text-base-content mb-1">Mã lô <span class="text-xs font-normal text-base-content/40 ml-1">Tự sinh theo NSX/HSD</span></label>
+                            <input type="text" readonly disabled x-model="form.batchCode" placeholder="LOT-..."
+                                   class="input input-bordered input-sm w-full bg-base-200 text-base-content/70 cursor-not-allowed font-mono">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-base-content/40 mb-2">Thông tin nguồn gốc</p>
+                    <template x-for="row in (row ? [row] : [])" :key="row.uid">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            @include('salesorder::partials.print-source-fields')
+                        </div>
+                    </template>
+                    <p class="mt-1 text-xs text-error" x-show="sourceError" x-text="sourceError"></p>
+                </div>
+
+                <p class="text-xs text-error" x-show="errors.status || errors.general" x-text="errors.status || errors.general"></p>
+
+                <div class="modal-action mt-2">
+                    <button type="button" class="btn btn-ghost btn-sm" @click="close()" :disabled="saving">Hủy</button>
+                    <button type="submit" class="btn btn-primary btn-sm gap-1.5" :disabled="saving || !form.exp">
+                        <span class="loading loading-spinner loading-xs" x-show="saving"></span>
+                        <span x-text="saving ? 'Đang lưu...' : 'Lưu thông tin TXNG'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-backdrop" @click="close()"></div>
+    </div>
+</div>
+
 {{-- ── Modal hồ sơ tem ─────────────────────────────────────────────── --}}
 <div x-data="traceLogDetailModal()" @open-trace-detail.window="openFor($event.detail)" x-cloak>
     <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">

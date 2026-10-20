@@ -10,12 +10,17 @@
     <a href="{{ route('backend.sales-orders.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:ring ring-blue-200 active:text-gray-800 active:bg-gray-50 transition ease-in-out duration-150">Danh sách đơn xuất hàng</a>
 </div>
 
-@if(session('import_summary'))
-@php($summary = session('import_summary'))
-<div class="card bg-base-100 shadow-sm border border-base-200 mb-6">
+<div x-data="salesOrderImport({{ Js::from([
+    'url'     => route('backend.sales-orders.import.store'),
+    'limits'  => $uploadLimits,
+    'summary' => session('import_summary'),
+]) }})">
+
+<template x-if="summary">
+<div class="card bg-base-100 shadow-sm border border-base-200 mb-6" x-ref="summary">
     <div class="card-body p-5">
-        <h2 class="font-bold text-base-content mb-3">Kết quả import</h2>
-        <p class="text-sm mb-4">{{ $summary['summary_message'] }}</p>
+        <h2 class="font-bold text-base-content mb-3">Kết quả import <span class="text-sm font-normal text-base-content/50" x-text="'(' + summary.results.length + ' file)'"></span></h2>
+        <p class="text-sm mb-4" x-text="summary.summary_message"></p>
 
         <div class="overflow-x-auto">
             <table class="table table-sm">
@@ -30,32 +35,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($summary['results'] as $index => $result)
+                    <template x-for="(result, index) in summary.results" :key="index">
                     <tr>
-                        <td class="border border-gray-300 px-3 py-2 text-center">{{ $index + 1 }}</td>
-                        <td class="border border-gray-300 px-3 py-2 font-mono break-all">{{ $result['file_name'] }}</td>
+                        <td class="border border-gray-300 px-3 py-2 text-center" x-text="index + 1"></td>
+                        <td class="border border-gray-300 px-3 py-2 font-mono break-all" x-text="result.file_name"></td>
                         <td class="border border-gray-300 px-3 py-2 text-center">
-                            @if($result['status'] === 'imported')
-                                <span class="badge badge-success badge-sm">Thành công</span>
-                            @elseif($result['status'] === 'duplicate')
-                                <span class="badge badge-warning badge-sm">Trùng lặp</span>
-                            @else
-                                <span class="badge badge-error badge-sm">Lỗi</span>
-                            @endif
+                            <span class="badge badge-success badge-sm" x-show="result.status === 'imported'">Thành công</span>
+                            <span class="badge badge-warning badge-sm" x-show="result.status === 'duplicate'">Trùng lặp</span>
+                            <span class="badge badge-error badge-sm" x-show="result.status === 'failed'">Lỗi</span>
                         </td>
-                        <td class="border border-gray-300 px-3 py-2">{{ $result['misa_ref_id'] ?? '—' }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-right">{{ $result['items_count'] ?: '—' }}</td>
-                        <td class="border border-gray-300 px-3 py-2 {{ $result['status'] === 'failed' ? 'text-error' : 'text-base-content/70' }}">
-                            {{ $result['message'] ?? '—' }}
-                        </td>
+                        <td class="border border-gray-300 px-3 py-2" x-text="result.misa_ref_id || '—'"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-right" x-text="result.items_count || '—'"></td>
+                        <td class="border border-gray-300 px-3 py-2" :class="result.status === 'failed' ? 'text-error' : 'text-base-content/70'"
+                            x-text="result.message || '—'"></td>
                     </tr>
-                    @endforeach
+                    </template>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-@endif
+</template>
 
 <div class="card bg-base-100 shadow-sm border border-base-200">
     <div class="card-body p-6 md:p-8 gap-8">
@@ -110,7 +110,8 @@
         </div>
 
         {{-- 4. Form upload --}}
-        <form method="POST" action="{{ route('backend.sales-orders.import.store') }}" enctype="multipart/form-data" class="border-t border-gray-200 pt-6">
+        <form method="POST" action="{{ route('backend.sales-orders.import.store') }}" enctype="multipart/form-data" class="border-t border-gray-200 pt-6"
+              @submit.prevent="submit($event)" novalidate>
             @csrf
 
             <div class="mb-4 max-w-xs">
@@ -131,7 +132,9 @@
                     <span class="text-red-600">*</span> Chọn tập tin Excel (.xls, .xlsx)
                 </label>
                 <input type="file" id="files" name="files[]" multiple accept=".xls,.xlsx" required
+                       @change="onFilesChange($event)" :disabled="submitting"
                        class="file-input file-input-bordered w-full">
+                <span class="block text-xs text-gray-500 mt-1" x-show="selectedCount > 0" x-text="'Đã chọn ' + selectedCount + ' file.'"></span>
                 @error('files')
                 <span class="block text-error text-xs mt-1">{{ $message }}</span>
                 @enderror
@@ -140,11 +143,22 @@
                 @enderror
             </div>
 
+            <p class="text-sm text-error mb-3" x-show="error" x-text="error"></p>
+            <p class="text-sm text-info mb-3" x-show="progress" x-text="progress"></p>
+
             <div class="flex items-center gap-3">
-                <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">Nhập dữ liệu</button>
+                <button type="submit" :disabled="submitting" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                    <span class="loading loading-spinner loading-xs mr-1.5" x-show="submitting"></span>
+                    <span x-text="submitting ? 'Đang nhập dữ liệu...' : 'Nhập dữ liệu'">Nhập dữ liệu</span>
+                </button>
                 <a href="{{ route('backend.sales-orders.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:ring ring-blue-200 active:text-gray-800 active:bg-gray-50 transition ease-in-out duration-150">Hủy bỏ</a>
             </div>
         </form>
     </div>
 </div>
+</div>
 @endsection
+
+@push('scripts')
+    @vite(['Modules/SalesOrder/resources/assets/js/salesorder.js'], 'build/backend')
+@endpush

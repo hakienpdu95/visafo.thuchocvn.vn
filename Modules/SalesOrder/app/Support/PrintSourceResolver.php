@@ -75,6 +75,28 @@ class PrintSourceResolver
         return $partnerProductId;
     }
 
+    /** Lô nhập kho của sản phẩm (mới nhất trước) — ô "Lô xuất kho" của modal in tem / sửa thông tin TXNG. */
+    public function batchOptions(SalesOrderItem $item): array
+    {
+        return ProductBatch::query()
+            ->where('product_id', $item->product_id)
+            ->with('goodsReceipt:id,misa_ref_id,receipt_date,vendor_id,supplier_name', 'goodsReceipt.vendor:id,name', 'farmingBatch:id,partner_product_id')
+            ->latest('created_at')->latest('id')
+            ->limit(50)
+            ->get()
+            ->map(fn (ProductBatch $b) => [
+                'value'         => $b->id,
+                'text'          => BulkPrintPrefillResolver::batchText($b),
+                'vendor_id'     => $b->goodsReceipt?->vendor_id,
+                'vendor_name'   => $b->goodsReceipt?->vendor?->name,
+                // Lô gắn lô canh tác → hàng hóa NCC xác định theo lô (khóa ô "Hàng hóa NCC").
+                'partner_product_id' => $b->goodsReceipt?->vendor_id ? $b->farmingBatch?->partner_product_id : null,
+                'supplier_name' => $b->goodsReceipt?->vendor_id ? null : $b->goodsReceipt?->supplier_name,
+                'in_stock'      => (float) $b->current_qty > 0,
+            ])
+            ->all();
+    }
+
     /** Hàng hóa NCC ánh xạ (vendor_id, product_id) — đổ vào ô "Hàng hóa nhà cung cấp" của modal in tem. */
     public function partnerProductOptions(SalesOrderItem $item, string $vendorId): array
     {

@@ -6,23 +6,30 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Modules\GoodsReceipt\Models\ProductBatch;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Support\LabelPrintEntryFactory;
+use Modules\SalesOrder\Support\BulkPrintPrefillResolver;
 use Modules\SalesOrder\Support\LabelViewResolver;
+use Modules\SalesOrder\Support\PrintSourceResolver;
 use Modules\TraceLog\Actions\Backend\ChangeTraceLogStatusAction;
 use Modules\TraceLog\Actions\Backend\ReissueTraceLogAction;
+use Modules\TraceLog\Actions\Backend\UpdateTraceLogAction;
 use Modules\TraceLog\Data\Requests\ChangeTraceLogStatusData;
+use Modules\TraceLog\Data\Requests\UpdateTraceLogData;
 use Modules\TraceLog\Queries\GetTraceLogDetailHandler;
 use Modules\TraceLog\Queries\GetTraceLogDetailQuery;
 use Modules\TraceLog\Queries\ListTraceLogCustomersHandler;
 use Modules\TraceLog\Queries\ListTraceLogCustomersQuery;
 use Modules\TraceLog\Queries\ListTraceLogsHandler;
 use Modules\Vendor\Models\Vendor;
+use Modules\Vendor\Queries\ListVendorOptionsHandler;
+use Modules\Vendor\Queries\ListVendorOptionsQuery;
 
 class TraceLogController extends Controller
 {
-    public function index(ListTraceLogCustomersHandler $customers)
+    public function index(ListTraceLogCustomersHandler $customers, ListVendorOptionsHandler $vendorOptions)
     {
         $this->authorize('viewAny', PrintLog::class);
 
@@ -35,6 +42,7 @@ class TraceLogController extends Controller
         return view('tracelog::index', [
             'vendors'   => $vendors,
             'customers' => $customers->handle(new ListTraceLogCustomersQuery()),
+            'vendorOptions' => $vendorOptions->handle(new ListVendorOptionsQuery()),
             'statuses'  => collect(PrintLogStatus::cases())
                 ->map(fn (PrintLogStatus $s) => ['value' => $s->value, 'text' => $s->label()])->all(),
         ]);
@@ -55,6 +63,60 @@ class TraceLogController extends Controller
         return view('labels.master_print', [
             'items'     => [LabelPrintEntryFactory::make($viewPath, $printLog)],
             'autoPrint' => false,
+        ]);
+    }
+
+    public function edit(PrintLog $printLog, PrintSourceResolver $sourceResolver): JsonResponse
+    {
+        $this->authorize('update', $printLog);
+
+        $printLog->load(['orderItem.product', 'orderItem.salesOrder', 'productBatch.goodsReceipt.vendor', 'vendor:id,name']);
+        $item = $printLog->orderItem;
+
+        return response()->json([
+            'id'                 => $printLog->id,
+            'trace_code'         => $printLog->trace_code,
+            'status'             => $printLog->status->value,
+            'status_label'       => $printLog->status->label(),
+            'product_name'       => $item?->product?->name ?? $item?->product_name_raw,
+            'order_ref'          => $item?->salesOrder?->misa_ref_id,
+            'weight'             => number_format((float) $printLog->weight_per_label, 3),
+            'mfg_date'           => $printLog->mfg_date?->format('Y-m-d'),
+            'exp_date'           => $printLog->exp_date?->format('Y-m-d'),
+            'batch_code'         => $printLog->batch_code,
+            'product_batch_id'   => $printLog->product_batch_id,
+            'batch_text'         => $printLog->productBatch ? BulkPrintPrefillResolver::batchText($printLog->productBatch) : null,
+            'vendor_id'          => $printLog->vendor_id,
+            'vendor_name'        => $printLog->vendor?->name,
+            'partner_product_id' => $printLog->partner_product_id,
+            'supplier_name'      => $printLog->supplier_name,
+            'has_batches'        => $item?->product_id !== null && ProductBatch::query()->where('product_id', $item->product_id)->exists(),
+            'batches'            => $item?->product_id !== null ? $sourceResolver->batchOptions($item) : [],
+            'update_url'         => route('backend.trace-logs.update', $printLog),
+            'partner_products_url' => route('backend.trace-logs.partner-products', $printLog),
+        ]);
+    }
+
+    public function partnerProducts(Request $request, PrintLog $printLog, PrintSourceResolver $sourceResolver): JsonResponse
+    {
+        $this->authorize('update', $printLog);
+
+        $vendorId = $request->validate(['vendor_id' => ['required', 'string', 'max:26']])['vendor_id'];
+
+        return response()->json(['data' => $printLog->orderItem ? $sourceResolver->partnerProductOptions($printLog->orderItem, $vendorId) : []]);
+    }
+
+    public function update(Request $request, PrintLog $printLog, UpdateTraceLogAction $action, GetTraceLogDetailHandler $detail): JsonResponse
+    {
+        $this->authorize('update', $printLog);
+
+        $data = UpdateTraceLogData::validateAndCreate($request->all());
+
+        $log = $action->handle($printLog, $data, $request->user()?->id);
+
+        return response()->json([
+            'message' => 'Đã cập nhật thông tin truy xuất. Mã QR giữ nguyên.',
+            'detail'  => $detail->handle(new GetTraceLogDetailQuery($log->fresh())),
         ]);
     }
 

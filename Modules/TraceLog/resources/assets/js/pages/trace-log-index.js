@@ -1,4 +1,5 @@
 import { createTs } from '@shared/tom-select-factory.js';
+import { printSourceCascade, printSourcePayload, printSourceState } from '@shared/print-source-cascade.js';
 
 function esc(v) {
     if (v == null) return '';
@@ -7,16 +8,33 @@ function esc(v) {
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-const EYE = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>';
+const EYE = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>';
+const PEN = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.232-6.232a2.5 2.5 0 113.536 3.536L12.536 16.536 9 17l.464-3.536z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20h16"/></svg>';
 const EMPTY = '<span class="text-base-content/25 text-xs">—</span>';
 
 function openDetail(row) {
     window.dispatchEvent(new CustomEvent('open-trace-detail', { detail: row }));
 }
 
+function openEdit(row) {
+    window.dispatchEvent(new CustomEvent('open-trace-edit', { detail: row }));
+}
+
+const toDdMmYy = (ymd) => {
+    if (!ymd) return '';
+    const [y, m, d] = ymd.split('-');
+    return d + m + y.slice(2);
+};
+
+function initials(name) {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '';
+    return (parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 const COLUMNS = [
     {
-        title: 'Mã TXNG', field: 'trace_code', minWidth: 140, sorter: 'string', frozen: true,
+        title: 'Mã TXNG', field: 'trace_code', width: 130, sorter: 'string', frozen: true,
         formatter(cell) {
             return '<button type="button" class="font-mono font-semibold text-sm text-primary hover:underline" title="Xem chi tiết tem">'
                 + esc(String(cell.getValue()).toUpperCase()) + '</button>';
@@ -24,68 +42,80 @@ const COLUMNS = [
         cellClick(_e, cell) { openDetail(cell.getRow().getData()); },
     },
     {
-        title: 'Sản phẩm', field: 'product_name', minWidth: 200, headerSort: false,
-        formatter(cell) { return esc(cell.getValue()) || EMPTY; },
+        title: 'Sản phẩm', field: 'product_name', minWidth: 180, headerSort: false,
+        formatter(cell) { return '<span class="whitespace-normal leading-snug">' + (esc(cell.getValue()) || EMPTY) + '</span>'; },
     },
     {
-        title: 'Đơn hàng', field: 'order_ref', minWidth: 130, headerSort: false,
+        title: 'Khách hàng / Đơn hàng', field: 'customer_name', minWidth: 190, headerSort: false,
         formatter(cell) {
             const d = cell.getRow().getData();
-            return d.order_url
-                ? '<a href="' + esc(d.order_url) + '" class="font-mono text-sm hover:text-primary transition-colors" title="Mở chi tiết đơn hàng">' + esc(d.order_ref) + '</a>'
-                : EMPTY;
+            const order = d.order_url
+                ? '<a href="' + esc(d.order_url) + '" class="font-mono hover:text-primary transition-colors" title="Mở chi tiết đơn hàng">ĐH: ' + esc(d.order_ref) + '</a>'
+                : '<span>ĐH: —</span>';
+            return '<div class="leading-snug"><p class="text-sm font-medium truncate" title="' + esc(d.customer_name) + '">' + (esc(d.customer_name) || '—') + '</p>'
+                + '<p class="text-xs text-base-content/50">' + order + '</p></div>';
         },
     },
     {
-        title: 'Khách hàng', field: 'customer_name', minWidth: 200, headerSort: false,
-        formatter(cell) { return esc(cell.getValue()) || EMPTY; },
-    },
-    {
-        title: 'Nguồn cung', field: 'supplier_name', minWidth: 180, headerSort: false,
+        title: 'Nguồn gốc / Lô', field: 'supplier_name', minWidth: 190, headerSort: false,
         formatter(cell) {
             const d = cell.getRow().getData();
-            if (!d.supplier_name) return EMPTY;
-            return esc(d.supplier_name) + (d.vendor_linked ? '' : ' <span class="badge badge-xs badge-warning" title="Nguồn cung nhập tay — không truy vết được theo nhà cung cấp">Nhập tay</span>');
+            const supplier = d.supplier_name
+                ? '<span class="truncate" title="' + esc(d.supplier_name) + '">' + esc(d.supplier_name) + '</span>'
+                    + (d.vendor_linked ? '' : ' <span class="badge badge-xs badge-warning shrink-0" title="Nguồn cung nhập tay — không truy vết được theo nhà cung cấp">Nhập tay</span>')
+                : '<span class="text-base-content/30">—</span>';
+            const lot = (d.receipt_batch
+                    ? '<span title="Lô nhập kho">' + esc(d.receipt_batch) + '</span>'
+                    : '<span class="badge badge-xs badge-soft badge-warning" title="Tem chưa gắn lô nhập kho">Chưa gắn lô</span>')
+                + (d.batch_code ? ' <span class="text-base-content/50" title="Mã lô trên tem">' + esc(d.batch_code) + '</span>' : '');
+            return '<div class="leading-snug"><p class="text-sm font-medium flex items-center gap-1 min-w-0">' + supplier + '</p>'
+                + '<p class="font-mono text-xs text-base-content/50 truncate">' + lot + '</p></div>';
         },
     },
     {
-        title: 'Lô nhập / Mã lô', field: 'receipt_batch', minWidth: 170, headerSort: false,
-        formatter(cell) {
-            const d = cell.getRow().getData();
-            return '<div class="font-mono text-xs"><p>' + (esc(d.receipt_batch) || '<span class="text-base-content/30">Chưa gắn lô</span>') + '</p>'
-                + '<p class="text-base-content/50">' + (esc(d.batch_code) || '') + '</p></div>';
-        },
+        title: 'KL / Tem', field: 'weight_per_label', width: 95, hozAlign: 'right', sorter: 'number',
+        formatter(cell) { return '<span class="font-mono text-sm">' + esc(cell.getRow().getData().weight) + '</span>'; },
     },
     {
-        title: 'KL / Tem (kg)', field: 'weight_per_label', width: 130, hozAlign: 'right', sorter: 'number',
-        formatter(cell) { return '<span class="font-mono">' + esc(cell.getRow().getData().weight) + '</span>'; },
-    },
-    {
-        title: 'Ngày in / Người in', field: 'last_printed_at', minWidth: 160, sorter: 'string',
+        title: 'Ngày in / Người in', field: 'last_printed_at', width: 160, sorter: 'string',
         formatter(cell) {
             const d = cell.getRow().getData();
-            const reprinted = d.print_count > 1
-                ? '<p class="text-xs text-base-content/50">In ' + d.print_count + ' lần · gần nhất ' + esc(d.last_printed_at) + '</p>'
+            const by = d.printed_by
+                ? '<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-base-200 text-[10px] font-semibold text-base-content/70 shrink-0" title="Người in: ' + esc(d.printed_by) + '">' + esc(initials(d.printed_by)) + '</span>'
                 : '';
-            return '<div><p class="text-sm">' + esc(d.printed_at) + '</p>' + reprinted
-                + '<p class="text-xs text-base-content/50">' + (esc(d.printed_by) || '—') + '</p></div>';
+            const reprinted = d.print_count > 1
+                ? '<p class="text-xs text-base-content/50" title="In gần nhất ' + esc(d.last_printed_at) + '">In ' + d.print_count + ' lần · ' + esc(d.last_printed_at) + '</p>'
+                : '';
+            return '<div class="leading-snug"><p class="text-sm flex items-center gap-1.5">' + by + '<span>' + esc(d.printed_at) + '</span></p>' + reprinted + '</div>';
         },
     },
     {
-        title: 'Trạng thái', field: 'status', width: 130, hozAlign: 'center', sorter: 'string',
+        title: 'Trạng thái', field: 'status', width: 120, hozAlign: 'center', sorter: 'string',
         formatter(cell) {
             const d = cell.getRow().getData();
-            return '<span class="badge badge-sm badge-soft ' + esc(d.status_badge) + '">' + esc(d.status_label) + '</span>';
+            return '<span class="badge badge-sm badge-soft whitespace-nowrap ' + esc(d.status_badge) + '">' + esc(d.status_label) + '</span>';
         },
     },
     {
-        title: 'Thao tác', field: 'id', width: 130, hozAlign: 'center', headerSort: false, frozen: true,
-        formatter() {
-            return '<button type="button" title="Xem chi tiết tem" '
-                + 'class="btn btn-xs btn-outline border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-500 gap-1 whitespace-nowrap">'
-                + EYE + 'Chi tiết</button>';
+        title: 'Thao tác', field: 'id', width: 90, minWidth: 90, hozAlign: 'center', headerSort: false, frozen: true, cssClass: 'whitespace-nowrap',
+        formatter(cell) {
+            const d = cell.getRow().getData();
+            const editable = d.status === 'active';
+            return '<div class="flex items-center justify-center gap-0.5 whitespace-nowrap">'
+                + '<button type="button" data-action="detail" title="Xem chi tiết tem" class="btn btn-sm btn-ghost btn-square text-info">' + EYE + '</button>'
+                + (d.can_edit
+                    ? '<button type="button" data-action="edit" ' + (editable ? '' : 'disabled ')
+                        + 'title="' + (editable ? 'Sửa thông tin TXNG (giữ nguyên mã QR)' : 'Chỉ sửa được tem đang lưu hành') + '" '
+                        + 'class="btn btn-sm btn-ghost btn-square text-warning">' + PEN + '</button>'
+                    : '')
+                + '</div>';
         },
-        cellClick(_e, cell) { openDetail(cell.getRow().getData()); },
+        cellClick(e, cell) {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn || btn.disabled) return;
+            const d = cell.getRow().getData();
+            btn.dataset.action === 'edit' ? openEdit(d) : openDetail(d);
+        },
     },
 ];
 
@@ -142,6 +172,7 @@ document.addEventListener('alpine:init', () => {
             init() {
                 this.loadState();
                 try { this.hiddenCols = JSON.parse(localStorage.getItem(LS_COLS) || '[]'); } catch (_) {}
+                this.hiddenCols = this.hiddenCols.filter(f => this.toggleableCols.some(c => c.field === f));
                 this.$nextTick(() => {
                     this._setup();
                     this._initTomSelects();
@@ -238,7 +269,6 @@ document.addEventListener('alpine:init', () => {
                     initialSort: [{ column: 'last_printed_at', dir: 'desc' }],
 
                     layout: 'fitColumns',
-                    responsiveLayout: 'collapse',
                     movableColumns: true,
                     height: '68vh',
 
@@ -333,6 +363,156 @@ document.addEventListener('alpine:init', () => {
                     tableInst?.hideColumn(field);
                 }
                 try { localStorage.setItem(LS_COLS, JSON.stringify(this.hiddenCols)); } catch (_) {}
+            },
+        };
+    });
+
+    Alpine.data('traceLogEditModal', (serverData = {}) => {
+        const { vendors = [] } = serverData;
+        const cascade = printSourceCascade({ vendors, logTag: 'trace-edit', dropdownParent: 'body' });
+        let mfgPicker = null;
+        let expPicker = null;
+        let reqId = 0;
+        let uid = 0;
+
+        return {
+            ...cascade,
+            open: false,
+            loading: false,
+            loadError: '',
+            saving: false,
+            errors: {},
+            data: null,
+            row: null,
+            form: { mfg: '', exp: '', batchCode: '' },
+
+            get sourceError() {
+                const e = this.errors;
+                return e.product_batch_id || e.vendor_id || e.partner_product_id || e.supplier_name || '';
+            },
+
+            init() {
+                this.$nextTick(() => {
+                    if (!window.initDatePicker) return;
+                    const opts = { dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: true, disableMobile: true, static: true };
+                    mfgPicker = window.initDatePicker('#te-mfg', {
+                        ...opts,
+                        onChange: (_s, dateStr) => { this.form.mfg = dateStr; this.recalcBatchCode(); },
+                    });
+                    expPicker = window.initDatePicker('#te-exp', {
+                        ...opts,
+                        onChange: (_s, dateStr) => { this.form.exp = dateStr; this.recalcBatchCode(); },
+                    });
+                });
+            },
+
+            recalcBatchCode() {
+                const mfg = toDdMmYy(this.form.mfg);
+                const exp = toDdMmYy(this.form.exp);
+                this.form.batchCode = (mfg && exp) ? `LOT-${mfg}-${exp}` : '';
+            },
+
+            async openFor(listRow) {
+                const id = ++reqId;
+                this.open = true;
+                this.loading = true;
+                this.loadError = '';
+                this.errors = {};
+                this.data = null;
+                this.row = null;
+                try {
+                    const res = await fetch(listRow.edit_url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const d = await res.json();
+                    if (id !== reqId) return;
+                    if (d.status !== 'active') {
+                        this.loadError = 'Chỉ sửa được tem đang lưu hành (tem này: ' + d.status_label + ').';
+                        return;
+                    }
+                    this._fill(d);
+                } catch (e) {
+                    console.error('[trace-log] edit load failed', e);
+                    if (id === reqId) this.loadError = 'Không tải được thông tin tem. Vui lòng thử lại.';
+                } finally {
+                    if (id === reqId) this.loading = false;
+                }
+            },
+
+            _fill(d) {
+                const batches = d.batches ?? [];
+                this.data = d;
+                this.form = { mfg: d.mfg_date || '', exp: d.exp_date || '', batchCode: d.batch_code || '' };
+                if (this.form.mfg) mfgPicker?.setDate(this.form.mfg, false); else mfgPicker?.clear(false);
+                if (this.form.exp) expPicker?.setDate(this.form.exp, false); else expPicker?.clear(false);
+                if (!this.form.batchCode) this.recalcBatchCode();
+
+                this.row = printSourceState({
+                    id: 'trace-edit',
+                    uid: ++uid,
+                    partnerProductsUrl: d.partner_products_url,
+                    hasBatches: d.has_batches,
+                    batches,
+                    batchesLoaded: true,
+                    batchId: d.product_batch_id || '',
+                    batchText: d.batch_text || '',
+                    batchPartnerId: batches.find((b) => b.value === d.product_batch_id)?.partner_product_id ?? '',
+                    vendorId: d.vendor_id || '',
+                    vendorName: d.vendor_name || '',
+                    partnerProductId: d.partner_product_id || '',
+                    supplierManual: !d.vendor_id && !!d.supplier_name,
+                    supplierText: d.vendor_id ? '' : (d.supplier_name || ''),
+                });
+                this.$nextTick(() => this.loadRowPartners(this.row));
+            },
+
+            close() {
+                if (this.saving) return;
+                this.open = false;
+            },
+
+            async save() {
+                if (!this.data || !this.row || this.saving) return;
+                this.errors = {};
+                if (!this.form.exp) {
+                    this.errors.exp_date = 'HSD là bắt buộc.';
+                    return;
+                }
+
+                this.saving = true;
+                try {
+                    const res = await fetch(this.data.update_url, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+                        },
+                        body: JSON.stringify({
+                            mfg_date: this.form.mfg || null,
+                            exp_date: this.form.exp,
+                            batch_code: this.form.batchCode || null,
+                            ...printSourcePayload(this.row),
+                        }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (res.status === 422) {
+                        Object.entries(data.errors ?? {}).forEach(([k, v]) => { this.errors[k] = v[0]; });
+                        return;
+                    }
+                    if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+
+                    window.Toast?.success?.(data.message, { duration: 4000 });
+                    window.traceLogTable?.replaceData();
+                    this.saving = false;
+                    this.close();
+                } catch (e) {
+                    console.error('[trace-log] update failed', e);
+                    this.errors.general = 'Không cập nhật được thông tin TXNG: ' + e.message;
+                } finally {
+                    this.saving = false;
+                }
             },
         };
     });

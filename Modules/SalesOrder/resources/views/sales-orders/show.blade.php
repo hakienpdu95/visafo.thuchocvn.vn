@@ -215,64 +215,23 @@
                                             <span class="badge badge-sm badge-error badge-outline" x-show="!rowHasSource(row)"
                                                   x-text="row.hasBatches ? 'Chưa chọn lô xuất kho / nguồn cung' : 'Chưa chọn nguồn cung'"></span>
                                             <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'history' && !sourceChanged(row)">Theo lần in trước</span>
-                                            <span class="badge badge-sm badge-info badge-outline text-[11px]" x-show="row.printed > 0 && !sourceChanged(row)"
+                                            <span class="badge badge-sm badge-info badge-outline text-[11px]" x-show="row.printed > 0 && !sourceChanged(row) && !splitChanged(row)"
                                                   x-text="'Đã in ' + row.printed + ' tem · in lại mã cũ'"></span>
-                                            <span class="badge badge-sm badge-info text-[11px]" x-show="row.printed > 0 && sourceChanged(row)"
+                                            <span class="badge badge-sm badge-info text-[11px]" x-show="row.printed > 0 && sourceChanged(row) && !splitChanged(row)"
                                                   :title="'Ghi nhận NCC mới cho ' + row.printed + ' tem đã in, giữ nguyên mã QR'">Cập nhật NCC &amp; In lại mã cũ</span>
+                                            <span class="badge badge-sm badge-warning text-[11px]" x-show="splitChanged(row)"
+                                                  :title="'Hủy ' + row.printed + ' mã cũ, tạo ' + rowLabelCount(row) + ' mã TXNG mới'">Cấu hình thay đổi - Sẽ tạo mã tem mới</span>
                                         </div>
 
                                         <div x-show="row.editing" class="px-3 pb-3 bg-base-200/40">
-                                            <p class="text-xs text-info mb-2" x-show="row.printed > 0">
-                                                Mặt hàng đã có tem — bấm In luôn in lại đúng mã cũ. Đổi lô / nguồn cung sẽ cập nhật thông tin của chính các tem đó
-                                                (quét mã QR cũ thấy ngay nguồn mới); cách chia tem không áp dụng cho tem đã in.
+                                            <p class="text-xs text-info mb-2" x-show="row.printed > 0 && !splitChanged(row)">
+                                                Mặt hàng đã có tem — giữ nguyên cách chia tem thì bấm In sẽ in lại đúng mã cũ; đổi lô / nguồn cung sẽ cập nhật thông tin của chính các tem đó
+                                                (quét mã QR cũ thấy ngay nguồn mới). Đổi khối lượng / số tem sẽ tạo mã mới.
                                             </p>
+                                            <p class="text-xs text-warning mb-2" x-show="splitChanged(row)"
+                                               x-text="'Cách chia tem đã thay đổi so với lần in trước — khi bấm In, ' + row.printed + ' mã cũ sẽ bị hủy (quét mã cũ thấy cảnh báo) và tạo ' + rowLabelCount(row) + ' mã TXNG mới. Bấm Đặt lại để giữ cách chia cũ.'"></p>
                                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                                                <div class="form-control" x-show="row.hasBatches">
-                                                    <label class="label py-0 pb-1">
-                                                        <span class="label-text text-xs font-medium">Lô xuất kho</span>
-                                                        <span class="label-text-alt text-base-content/40 text-xs" x-show="row.loadingBatches">Đang tải…</span>
-                                                    </label>
-                                                    <select class="select select-bordered select-sm w-full" x-init="initRowBatch(row, $el)">
-                                                        <option value="">— Không chọn lô —</option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-control" x-show="row.hasBatches && row.batchId">
-                                                    <label class="label py-0 pb-1">
-                                                        <span class="label-text text-xs font-medium">Nhà cung cấp</span>
-                                                        <span class="label-text-alt text-base-content/40 text-xs">Theo lô — không sửa</span>
-                                                    </label>
-                                                    <input type="text" readonly disabled :value="supplierOf(row) || 'Chưa rõ NCC'"
-                                                           class="input input-bordered input-sm w-full bg-base-200 text-base-content/70 cursor-not-allowed">
-                                                </div>
-                                                <div class="form-control" x-show="!row.hasBatches || !row.batchId">
-                                                    <label class="label py-0 pb-1">
-                                                        <span class="label-text text-xs font-medium">Nguồn cung</span>
-                                                        <span class="label-text-alt text-base-content/40 text-xs" x-text="row.hasBatches ? 'Không chọn lô — chọn nguồn cung thủ công' : 'Sản phẩm không quản lý theo lô'"></span>
-                                                    </label>
-                                                    <div x-show="!row.supplierManual">
-                                                        <select class="select select-bordered select-sm w-full" x-init="initRowSupplier(row, $el)">
-                                                            <option value="">— Chọn nhà cung cấp —</option>
-                                                        </select>
-                                                    </div>
-                                                    <div x-show="row.supplierManual">
-                                                        <input type="text" maxlength="255" x-model="row.supplierText" @input="row.dirty = true" placeholder="VD: HTX Rau sạch Đà Lạt"
-                                                               class="input input-bordered input-sm w-full">
-                                                    </div>
-                                                    <label class="label cursor-pointer justify-start gap-2 py-1">
-                                                        <input type="checkbox" x-model="row.supplierManual" @change="onRowSupplierManualToggle(row)" class="checkbox checkbox-xs">
-                                                        <span class="label-text text-xs">Khác / Nhập tay</span>
-                                                    </label>
-                                                </div>
-                                                <div class="form-control" x-show="!row.supplierManual">
-                                                    <label class="label py-0 pb-1">
-                                                        <span class="label-text text-xs font-medium">Hàng hóa nhà cung cấp</span>
-                                                        <span class="label-text-alt text-base-content/40 text-xs" x-show="row.loadingPartners">Đang tải…</span>
-                                                        <span class="label-text-alt text-base-content/40 text-xs" x-show="!row.loadingPartners && row.vendorId && row.partnerProductsVendorId === row.vendorId && row.partnerProducts.length === 0">NCC chưa kê khai hàng hóa này</span>
-                                                    </label>
-                                                    <select class="select select-bordered select-sm w-full" x-init="initRowPartner(row, $el)">
-                                                        <option value="">— Chọn nguồn cung trước —</option>
-                                                    </select>
-                                                </div>
+                                                @include('salesorder::partials.print-source-fields')
                                             </div>
                                             <div class="rounded-lg border border-base-200 bg-base-100 overflow-hidden">
                                                 <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-1.5 bg-base-200/50 text-xs font-medium text-base-content/60">
@@ -494,9 +453,14 @@
                     </div>
 
                     <div class="form-control sm:col-span-2">
-                        <div class="flex items-center justify-between pb-1.5">
+                        <div class="flex flex-wrap items-center justify-between gap-2 pb-1.5">
                             <span class="label-text font-medium">Nhóm tem <span class="text-error">*</span></span>
+                            <span class="badge badge-sm badge-info badge-outline text-[11px]" x-show="printedGroups.length > 0 && !splitChanged"
+                                  x-text="'Đã in ' + (item?.print_prefill?.printed ?? 0) + ' tem · in lại mã cũ'"></span>
+                            <span class="badge badge-sm badge-warning text-[11px]" x-show="splitChanged">Cấu hình thay đổi - Sẽ tạo mã tem mới</span>
                         </div>
+                        <p class="text-xs text-warning mb-2" x-show="splitChanged"
+                           x-text="'Khi bấm In, ' + (item?.print_prefill?.printed ?? 0) + ' mã cũ sẽ bị hủy (quét mã cũ thấy cảnh báo) và tạo ' + labelCount + ' mã TXNG mới. Bấm Đặt lại để giữ cách chia cũ.'"></p>
 
                         <div class="rounded-lg border border-base-200 overflow-hidden">
                             <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-2 bg-base-200/50 text-xs font-medium text-base-content/60">

@@ -15,16 +15,17 @@ class PrintLog extends TenantAwareModel
 {
     use HasCreator;
 
-    /** Chỉ các cột này được phép đổi sau khi in (QC thu hồi / đánh dấu lỗi, theo dõi in lại, cập nhật nguồn cung / lô). */
+    /** Chỉ các cột này được phép đổi sau khi in (QC thu hồi / đánh dấu lỗi, theo dõi in lại, cập nhật nguồn cung / lô, sửa NSX/HSD/mã lô ở Nhật ký TXNG). */
     private const MUTABLE_COLUMNS = [
         'status', 'status_reason', 'status_changed_by', 'status_changed_at',
         'print_count', 'last_printed_at', 'last_print_session_id', 'updated_at',
         'vendor_id', 'partner_product_id', 'product_batch_id', 'supplier_name',
+        'mfg_date', 'exp_date', 'batch_code',
     ];
 
     /**
-     * Log in tem: chỉ được tạo mới, không được xóa; sau khi in chỉ được đổi trạng thái, bộ đếm in lại và nguồn cung / lô —
-     * dữ liệu in trên tem (khối lượng, NSX/HSD, mã truy xuất...) không được sửa.
+     * Log in tem: chỉ được tạo mới, không được xóa; sau khi in chỉ được đổi trạng thái, bộ đếm in lại, nguồn cung / lô và NSX/HSD/mã lô —
+     * khối lượng, mã truy xuất... không được sửa.
      */
     protected static function booted(): void
     {
@@ -177,6 +178,40 @@ class PrintLog extends TenantAwareModel
                     : ($log->vendor_id === $vendorId ? $log->partner_product_id : null),
                 'product_batch_id'   => $source['product_batch_id'] ?? null,
                 'supplier_name'    => $source['supplier_name'] ?? null,
+            ]);
+        }
+    }
+
+    /** @return array<string, int> khối lượng/tem (3 số lẻ) => số tem */
+    public static function splitOf(iterable $groups): array
+    {
+        $split = [];
+        foreach ($groups as $group) {
+            [$weight, $qty] = $group instanceof self
+                ? [$group->weight_per_label, 1]
+                : [$group['weight'] ?? $group['weight_per_label'], $group['qty'] ?? $group['label_count']];
+            $key = number_format((float) $weight, 3, '.', '');
+            $split[$key] = ($split[$key] ?? 0) + (int) $qty;
+        }
+        ksort($split);
+
+        return $split;
+    }
+
+    public static function splitDiffers(iterable $logs, iterable $groups): bool
+    {
+        return self::splitOf($logs) !== self::splitOf($groups);
+    }
+
+    /** Đổi cách chia tem: hủy toàn bộ tem đang lưu hành của dòng hàng để thay bằng bộ mã mới. */
+    public static function revokeForResplit(iterable $logs, ?string $userId, int $newCount): void
+    {
+        foreach ($logs as $log) {
+            $log->update([
+                'status'            => PrintLogStatus::Revoked,
+                'status_reason'     => "Đã thay bằng {$newCount} tem mới do đổi cách chia tem.",
+                'status_changed_by' => $userId,
+                'status_changed_at' => now(),
             ]);
         }
     }

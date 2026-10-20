@@ -32,6 +32,8 @@ class TraceLogListResource extends JsonResource
             'status_label'  => $this->status->label(),
             'status_badge'  => $this->status->badgeClass(),
             'detail_url'    => route('backend.api.trace-logs.show', $this->resource),
+            'can_edit'      => $request->user()?->can('update', $this->resource) ?? false,
+            'edit_url'      => route('backend.trace-logs.edit', $this->resource),
         ];
     }
 }

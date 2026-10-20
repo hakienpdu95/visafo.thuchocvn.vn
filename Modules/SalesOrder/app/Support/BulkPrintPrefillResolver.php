@@ -31,8 +31,11 @@ class BulkPrintPrefillResolver
 
         return $items->mapWithKeys(function (SalesOrderItem $item) use ($logs, $productsWithBatches) {
             $itemLogs = $logs->get($item->id, collect());
+            $active = $itemLogs->where('status', PrintLogStatus::Active);
             $base = [
-                'printed'     => $itemLogs->where('status', PrintLogStatus::Active)->count(),
+                'printed'     => $active->count(),
+                'printed_groups' => collect(PrintLog::splitOf($active))
+                    ->map(fn (int $qty, string $weight) => ['weight' => (float) $weight, 'qty' => $qty])->values()->all(),
                 'has_batches' => $item->product_id !== null && $productsWithBatches->has($item->product_id),
             ];
 
