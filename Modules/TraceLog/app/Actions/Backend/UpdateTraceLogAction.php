@@ -20,11 +20,11 @@ class UpdateTraceLogAction
 
     public function __construct(private readonly PrintSourceResolver $sourceResolver) {}
 
-    public function handle(PrintLog $printLog, UpdateTraceLogData $data, ?string $userId): PrintLog
+    public function handle(PrintLog $printLog, UpdateTraceLogData $data, ?string $userId): int
     {
         return DB::transaction(function () use ($printLog, $data, $userId) {
             /** @var PrintLog $log */
-            $log = PrintLog::query()->with('orderItem')->lockForUpdate()->findOrFail($printLog->id);
+            $log = PrintLog::query()->with('orderItem.product')->lockForUpdate()->findOrFail($printLog->id);
 
             if ($log->status !== PrintLogStatus::Active) {
                 throw ValidationException::withMessages([
@@ -40,8 +40,7 @@ class UpdateTraceLogAction
             ], $log->orderItem);
 
             $before = $this->snapshot($log);
-
-            $log->update([
+            $values = [
                 'mfg_date'           => $data->mfg_date,
                 'exp_date'           => $data->exp_date,
                 'batch_code'         => trim((string) $data->batch_code) ?: null,
@@ -49,10 +48,11 @@ class UpdateTraceLogAction
                 'vendor_id'          => $source['vendor_id'],
                 'partner_product_id' => $source['partner_product_id'] ?? null,
                 'supplier_name'      => $source['supplier_name'],
-            ]);
+            ];
+
+            $count = ($data->update_all_related ? self::relatedActive($log) : PrintLog::query()->whereKey($log->id))->update($values);
 
             $after = $this->snapshot($log->fresh());
-
             $context = ['trace_code' => strtoupper($log->trace_code), 'updated_by' => $userId];
             foreach (self::TRACKED as $key) {
                 if ($before[$key] !== $after[$key]) {
@@ -61,13 +61,29 @@ class UpdateTraceLogAction
                 }
             }
 
-            if (count($context) > 2) {
+            if ($data->update_all_related) {
+                $productName = $log->orderItem?->product?->name ?? $log->orderItem?->product_name_raw;
+                ActivityLogger::log('TraceLog', 'trace_log_bulk_updated', $log, $context + [
+                    'order_item_id' => $log->order_item_id,
+                    'updated_count' => $count,
+                    'new_vendor_id' => $after['vendor_id'],
+                    'new_product_batch_id' => $after['product_batch_id'],
+                ], LogLevel::Warning,
+                    "Đã cập nhật Nguồn cung/Lô hàng loạt cho {$count} tem của mặt hàng {$productName} (Order Item ID: {$log->order_item_id}). ID Nguồn mới: " . ($after['vendor_id'] ?? $after['supplier_name'] ?? '—'));
+            } elseif (count($context) > 2) {
                 ActivityLogger::log('TraceLog', 'trace_log_updated', $log, $context, LogLevel::Warning,
                     'Sửa thông tin TXNG tem ' . strtoupper($log->trace_code));
             }
 
-            return $log;
+            return $count;
         });
+    }
+
+    public static function relatedActive(PrintLog $log)
+    {
+        return PrintLog::query()
+            ->where('order_item_id', $log->order_item_id)
+            ->where('status', PrintLogStatus::Active);
     }
 
     private function snapshot(PrintLog $log): array

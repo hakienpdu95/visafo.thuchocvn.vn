@@ -90,6 +90,7 @@ class TraceLogController extends Controller
             'vendor_name'        => $printLog->vendor?->name,
             'partner_product_id' => $printLog->partner_product_id,
             'supplier_name'      => $printLog->supplier_name,
+            'related_count'      => UpdateTraceLogAction::relatedActive($printLog)->count(),
             'has_batches'        => $item?->product_id !== null && ProductBatch::query()->where('product_id', $item->product_id)->exists(),
             'batches'            => $item?->product_id !== null ? $sourceResolver->batchOptions($item) : [],
             'update_url'         => route('backend.trace-logs.update', $printLog),
@@ -112,11 +113,15 @@ class TraceLogController extends Controller
 
         $data = UpdateTraceLogData::validateAndCreate($request->all());
 
-        $log = $action->handle($printLog, $data, $request->user()?->id);
+        $count = $action->handle($printLog, $data, $request->user()?->id);
+        $productName = $printLog->orderItem?->product?->name ?? $printLog->orderItem?->product_name_raw;
 
         return response()->json([
-            'message' => 'Đã cập nhật thông tin truy xuất. Mã QR giữ nguyên.',
-            'detail'  => $detail->handle(new GetTraceLogDetailQuery($log->fresh())),
+            'message' => $data->update_all_related
+                ? "Đã cập nhật thành công {$count} tem của mặt hàng {$productName}. Mã QR giữ nguyên."
+                : 'Đã cập nhật thông tin truy xuất. Mã QR giữ nguyên.',
+            'updated' => $count,
+            'detail'  => $detail->handle(new GetTraceLogDetailQuery($printLog->fresh())),
         ]);
     }
 

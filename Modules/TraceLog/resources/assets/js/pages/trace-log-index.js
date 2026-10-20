@@ -384,7 +384,7 @@ document.addEventListener('alpine:init', () => {
             errors: {},
             data: null,
             row: null,
-            form: { mfg: '', exp: '', batchCode: '' },
+            form: { mfg: '', exp: '', batchCode: '', applyAll: false },
 
             get sourceError() {
                 const e = this.errors;
@@ -441,7 +441,7 @@ document.addEventListener('alpine:init', () => {
             _fill(d) {
                 const batches = d.batches ?? [];
                 this.data = d;
-                this.form = { mfg: d.mfg_date || '', exp: d.exp_date || '', batchCode: d.batch_code || '' };
+                this.form = { mfg: d.mfg_date || '', exp: d.exp_date || '', batchCode: d.batch_code || '', applyAll: false };
                 if (this.form.mfg) mfgPicker?.setDate(this.form.mfg, false); else mfgPicker?.clear(false);
                 if (this.form.exp) expPicker?.setDate(this.form.exp, false); else expPicker?.clear(false);
                 if (!this.form.batchCode) this.recalcBatchCode();
@@ -493,6 +493,7 @@ document.addEventListener('alpine:init', () => {
                             exp_date: this.form.exp,
                             batch_code: this.form.batchCode || null,
                             ...printSourcePayload(this.row),
+                            update_all_related: this.form.applyAll && (this.data.related_count ?? 0) > 1,
                         }),
                     });
                     const data = await res.json().catch(() => ({}));

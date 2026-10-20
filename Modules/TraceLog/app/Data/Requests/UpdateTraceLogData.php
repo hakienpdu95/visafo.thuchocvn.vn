@@ -16,6 +16,7 @@ class UpdateTraceLogData extends Data
         public readonly ?string $vendor_id = null,
         public readonly ?string $partner_product_id = null,
         public readonly ?string $supplier_name = null,
+        public readonly bool $update_all_related = false,
     ) {}
 
     public static function rules(ValidationContext $context): array
@@ -32,6 +33,7 @@ class UpdateTraceLogData extends Data
             'vendor_id'          => ['nullable', 'string', Rule::exists('vendors', 'id')->whereNull('deleted_at')],
             'partner_product_id' => ['nullable', 'string', Rule::exists('partner_products', 'id')->whereNull('deleted_at')],
             'supplier_name'      => ['nullable', 'string', 'max:255'],
+            'update_all_related' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -48,6 +50,7 @@ class UpdateTraceLogData extends Data
             'vendor_id.exists'          => 'Nhà cung cấp không hợp lệ.',
             'partner_product_id.exists' => 'Hàng hóa nhà cung cấp không hợp lệ.',
             'supplier_name.max'         => 'Nguồn cung không được vượt quá 255 ký tự.',
+            'update_all_related.boolean' => 'Tùy chọn cập nhật hàng loạt không hợp lệ.',
         ];
     }
 }

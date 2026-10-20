@@ -182,8 +182,15 @@
             <p class="py-10 text-center text-sm text-error" x-show="loadError" x-text="loadError"></p>
 
             <form x-show="data && !loading" @submit.prevent="save()" novalidate class="space-y-4">
-                <div class="alert alert-info alert-soft py-2 px-3 text-xs">
-                    Chỉ cập nhật đúng tem này, giữ nguyên mã TXNG / QR — người quét mã đã dán sẽ thấy ngay thông tin mới.
+                <div class="space-y-2">
+                    <div class="alert alert-soft py-2 px-3 text-xs" :class="form.applyAll ? 'alert-warning' : 'alert-info'">
+                        <span x-show="!form.applyAll">Chỉ cập nhật đúng tem này, giữ nguyên mã TXNG / QR — người quét mã đã dán sẽ thấy ngay thông tin mới.</span>
+                        <span x-show="form.applyAll">Lưu ý: Bạn đang chọn cập nhật hàng loạt. Thông tin mới sẽ ghi đè lên toàn bộ <strong x-text="data?.related_count"></strong> mã QR đã in của mặt hàng này.</span>
+                    </div>
+                    <label class="flex items-start gap-2 cursor-pointer text-sm" x-show="(data?.related_count ?? 0) > 1">
+                        <input type="checkbox" class="checkbox checkbox-sm checkbox-warning mt-0.5" x-model="form.applyAll">
+                        <span>Áp dụng cập nhật cho tất cả <strong x-text="data?.related_count"></strong> mã tem của <strong x-text="data?.product_name"></strong> thuộc đơn hàng này.</span>
+                    </label>
                 </div>
 
                 <div>
@@ -225,7 +232,7 @@
                     <button type="button" class="btn btn-ghost btn-sm" @click="close()" :disabled="saving">Hủy</button>
                     <button type="submit" class="btn btn-primary btn-sm gap-1.5" :disabled="saving || !form.exp">
                         <span class="loading loading-spinner loading-xs" x-show="saving"></span>
-                        <span x-text="saving ? 'Đang lưu...' : 'Lưu thông tin TXNG'"></span>
+                        <span x-text="saving ? 'Đang lưu...' : (form.applyAll ? `Lưu cho ${data?.related_count} tem` : 'Lưu thông tin TXNG')"></span>
                     </button>
                 </div>
             </form>
