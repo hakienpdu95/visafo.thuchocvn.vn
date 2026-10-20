@@ -91,7 +91,6 @@ class StoreEmployeeData extends Data
         return [
             'department_ids'   => ['nullable', 'array'],
             'department_ids.*' => ['string', 'exists:departments,id'],
-            'id_card_issue_date' => ['before_or_equal:today', 'after_or_equal:dob'],
         ];
     }
 
@@ -122,8 +121,6 @@ class StoreEmployeeData extends Data
             'id_card_number.regex' => 'Số CCCD phải đủ 12 chữ số.',
 
             'id_card_issue_date.date'            => 'Ngày cấp CCCD không hợp lệ.',
-            'id_card_issue_date.before_or_equal' => 'Ngày cấp CCCD không được sau ngày hôm nay.',
-            'id_card_issue_date.after_or_equal'  => 'Ngày cấp CCCD không được trước ngày sinh.',
 
             'id_card_issue_place.max' => 'Nơi cấp không được vượt quá 255 ký tự.',
 
