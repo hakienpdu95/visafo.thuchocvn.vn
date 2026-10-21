@@ -203,6 +203,26 @@ class PrintLog extends TenantAwareModel
         return self::splitOf($logs) !== self::splitOf($groups);
     }
 
+    public static function appendedGroups(iterable $logs, iterable $groups): array
+    {
+        $current = self::splitOf($logs);
+        $added = [];
+        $target = self::splitOf($groups);
+        foreach ($current as $weight => $qty) {
+            if (($target[$weight] ?? 0) < $qty) {
+                return [];
+            }
+        }
+        foreach ($target as $weight => $qty) {
+            $extra = $qty - ($current[$weight] ?? 0);
+            if ($extra > 0) {
+                $added[] = ['weight_per_label' => (float) $weight, 'label_count' => $extra];
+            }
+        }
+
+        return $added;
+    }
+
     /** Đổi cách chia tem: hủy toàn bộ tem đang lưu hành của dòng hàng để thay bằng bộ mã mới. */
     public static function revokeForResplit(iterable $logs, ?string $userId, int $newCount): void
     {

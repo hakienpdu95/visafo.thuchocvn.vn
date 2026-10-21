@@ -219,8 +219,11 @@
                                                   x-text="'Đã in ' + row.printed + ' tem · in lại mã cũ'"></span>
                                             <span class="badge badge-sm badge-info text-[11px]" x-show="row.printed > 0 && sourceChanged(row) && !splitChanged(row)"
                                                   :title="'Ghi nhận NCC mới cho ' + row.printed + ' tem đã in, giữ nguyên mã QR'">Cập nhật NCC &amp; In lại mã cũ</span>
-                                            <span class="badge badge-sm badge-warning text-[11px]" x-show="splitChanged(row)"
-                                                  :title="'Hủy ' + row.printed + ' mã cũ, tạo ' + rowLabelCount(row) + ' mã TXNG mới'">Cấu hình thay đổi - Sẽ tạo mã tem mới</span>
+                                            <span class="badge badge-sm badge-primary text-[11px]" x-show="splitChanged(row) && row.printMode === 'append' && appendCount(row) > 0"
+                                                  x-text="'In bổ sung · giữ ' + row.printed + ' tem cũ, thêm ' + appendCount(row) + ' mã mới'"></span>
+                                            <span class="badge badge-sm badge-error text-[11px]" x-show="splitChanged(row) && row.printMode === 'append' && appendCount(row) === 0">Không thể in bổ sung - chọn In thay thế</span>
+                                            <span class="badge badge-sm badge-warning text-[11px]" x-show="splitChanged(row) && row.printMode === 'replace'"
+                                                  x-text="'In thay thế · hủy ' + row.printed + ' mã cũ, tạo ' + rowLabelCount(row) + ' mã mới'"></span>
                                         </div>
 
                                         <div x-show="row.editing" class="px-3 pb-3 bg-base-200/40">
@@ -228,8 +231,6 @@
                                                 Mặt hàng đã có tem — giữ nguyên cách chia tem thì bấm In sẽ in lại đúng mã cũ; đổi lô / nguồn cung sẽ cập nhật thông tin của chính các tem đó
                                                 (quét mã QR cũ thấy ngay nguồn mới). Đổi khối lượng / số tem sẽ tạo mã mới.
                                             </p>
-                                            <p class="text-xs text-warning mb-2" x-show="splitChanged(row)"
-                                               x-text="'Cách chia tem đã thay đổi so với lần in trước — khi bấm In, ' + row.printed + ' mã cũ sẽ bị hủy (quét mã cũ thấy cảnh báo) và tạo ' + rowLabelCount(row) + ' mã TXNG mới. Bấm Đặt lại để giữ cách chia cũ.'"></p>
                                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                                                 @include('salesorder::partials.print-source-fields')
                                             </div>
@@ -266,6 +267,34 @@
                                                     </p>
                                                     <button type="button" class="btn btn-primary btn-xs" @click="row.editing = false">Xong</button>
                                                 </div>
+                                            </div>
+                                            <div class="mt-3 grid gap-2" x-show="splitChanged(row)">
+                                                <label class="flex items-start gap-3 rounded-lg border bg-base-100 p-3 cursor-pointer"
+                                                       :class="row.printMode === 'append' ? 'border-primary bg-primary/5' : 'border-base-200'">
+                                                    <input type="radio" class="radio radio-primary radio-sm mt-0.5" value="append" x-model="row.printMode">
+                                                    <span class="flex-1">
+                                                        <span class="block text-sm font-medium">In bổ sung</span>
+                                                        <span class="block text-xs text-base-content/60">Tạo thêm mã tem mới. Các mã tem cũ đã in trước đó vẫn giữ nguyên hiệu lực.</span>
+                                                        <span class="block text-xs mt-1" x-show="row.printMode === 'append'"
+                                                              :class="appendCount(row) > 0 ? 'text-primary' : 'text-error'"
+                                                              x-text="appendCount(row) > 0
+                                                                  ? 'Khi bấm In: giữ ' + row.printed + ' tem cũ, tạo thêm ' + appendCount(row) + ' mã TXNG mới.'
+                                                                  : 'Không thể in bổ sung khi giảm số lượng hoặc đổi quy cách cũ — chỉ được tăng số lượng / thêm quy cách mới. Hãy chọn In thay thế.'"></span>
+                                                    </span>
+                                                </label>
+                                                <label class="flex items-start gap-3 rounded-lg border bg-base-100 p-3 cursor-pointer"
+                                                       :class="row.printMode === 'replace' ? 'border-warning bg-warning/5' : 'border-base-200'">
+                                                    <input type="radio" class="radio radio-warning radio-sm mt-0.5" value="replace" x-model="row.printMode">
+                                                    <span class="flex-1">
+                                                        <span class="flex flex-wrap items-center gap-2 text-sm font-medium">
+                                                            In thay thế (Hủy tem cũ)
+                                                            <span class="badge badge-sm badge-warning text-[11px]">Chú ý: Quét mã cũ sẽ báo lỗi</span>
+                                                        </span>
+                                                        <span class="block text-xs text-base-content/60">Hủy toàn bộ các mã tem cũ của mặt hàng này và tạo bộ mã mới hoàn toàn.</span>
+                                                        <span class="block text-xs text-warning mt-1" x-show="row.printMode === 'replace'"
+                                                              x-text="'Khi bấm In: hủy ' + row.printed + ' mã cũ, tạo ' + rowLabelCount(row) + ' mã TXNG mới.'"></span>
+                                                    </span>
+                                                </label>
                                             </div>
                                         </div>
                                     </div>
@@ -459,8 +488,6 @@
                                   x-text="'Đã in ' + (item?.print_prefill?.printed ?? 0) + ' tem · in lại mã cũ'"></span>
                             <span class="badge badge-sm badge-warning text-[11px]" x-show="splitChanged">Cấu hình thay đổi - Sẽ tạo mã tem mới</span>
                         </div>
-                        <p class="text-xs text-warning mb-2" x-show="splitChanged"
-                           x-text="'Khi bấm In, ' + (item?.print_prefill?.printed ?? 0) + ' mã cũ sẽ bị hủy (quét mã cũ thấy cảnh báo) và tạo ' + labelCount + ' mã TXNG mới. Bấm Đặt lại để giữ cách chia cũ.'"></p>
 
                         <div class="rounded-lg border border-base-200 overflow-hidden">
                             <div class="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center px-3 py-2 bg-base-200/50 text-xs font-medium text-base-content/60">
@@ -495,6 +522,35 @@
                                 <span class="text-base-content/50 font-normal" x-text="'(' + labelCount + ' tem)'"></span>
                             </p>
                         </div>
+                        <div class="mt-3 grid gap-2" x-show="splitChanged">
+                            <label class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer"
+                                   :class="form.printMode === 'append' ? 'border-primary bg-primary/5' : 'border-base-200'">
+                                <input type="radio" class="radio radio-primary radio-sm mt-0.5" value="append" x-model="form.printMode">
+                                <span class="flex-1">
+                                    <span class="block text-sm font-medium">In bổ sung</span>
+                                    <span class="block text-xs text-base-content/60">Tạo thêm mã tem mới. Các mã tem cũ đã in trước đó vẫn giữ nguyên hiệu lực.</span>
+                                    <span class="block text-xs mt-1" x-show="form.printMode === 'append'"
+                                          :class="appendCount > 0 ? 'text-primary' : 'text-error'"
+                                          x-text="appendCount > 0
+                                              ? 'Khi bấm In: giữ ' + (item?.print_prefill?.printed ?? 0) + ' tem cũ, tạo thêm ' + appendCount + ' mã TXNG mới.'
+                                              : 'Không thể in bổ sung khi giảm số lượng hoặc đổi quy cách cũ — chỉ được tăng số lượng / thêm quy cách mới. Hãy chọn In thay thế.'"></span>
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer"
+                                   :class="form.printMode === 'replace' ? 'border-warning bg-warning/5' : 'border-base-200'">
+                                <input type="radio" class="radio radio-warning radio-sm mt-0.5" value="replace" x-model="form.printMode">
+                                <span class="flex-1">
+                                    <span class="flex flex-wrap items-center gap-2 text-sm font-medium">
+                                        In thay thế (Hủy tem cũ)
+                                        <span class="badge badge-sm badge-warning text-[11px]">Chú ý: Quét mã cũ sẽ báo lỗi</span>
+                                    </span>
+                                    <span class="block text-xs text-base-content/60">Hủy toàn bộ các mã tem cũ của mặt hàng này và tạo bộ mã mới hoàn toàn.</span>
+                                    <span class="block text-xs text-warning mt-1" x-show="form.printMode === 'replace'"
+                                          x-text="'Khi bấm In: hủy ' + (item?.print_prefill?.printed ?? 0) + ' mã cũ, tạo ' + labelCount + ' mã TXNG mới.'"></span>
+                                </span>
+                            </label>
+                        </div>
+
                         <p class="mt-1 text-xs text-error" x-show="!groupsMatch">Tổng số lượng tem đang lệch so với yêu cầu — vẫn có thể in nếu cố ý (hao hụt, chia lại tem).</p>
                         <p class="mt-1 text-xs text-error" x-show="labelCount > 200">Mỗi lần chỉ in tối đa 200 tem.</p>
                         <p class="mt-1 text-xs text-error" x-show="errors.label_groups" x-text="errors.label_groups"></p>

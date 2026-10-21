@@ -4,6 +4,7 @@ namespace Modules\SalesOrder\Actions\Backend;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\LabelPrintEvent;
@@ -44,6 +45,7 @@ class BulkPrintSalesOrderLabelsAction
             $reusedItems = 0;
             $sourceChanged = 0;
             $resplitItems = 0;
+            $appendedItems = 0;
 
             $customGroups = isset($data['items'])
                 ? collect($data['items'])->mapWithKeys(fn ($i) => [$i['order_item_id'] => collect($i['label_groups'])
@@ -73,7 +75,16 @@ class BulkPrintSalesOrderLabelsAction
 
                 // Check & Reuse (xem PrintSalesOrderItemLabelAction): đã có tem đang lưu hành, cách chia giữ nguyên → in lại mã cũ; đổi cách chia → hủy mã cũ, tạo mã mới
                 $existing = PrintLog::query()->activeForItem($item->id)->get();
-                if ($existing->isNotEmpty() && $customGroups !== null && PrintLog::splitDiffers($existing, $groups)) {
+                if ($existing->isNotEmpty() && $customGroups !== null && PrintLog::splitDiffers($existing, $groups)
+                    && ($itemSources->get($item->id)['print_mode'] ?? 'replace') === 'append') {
+                    $groups = collect(PrintLog::appendedGroups($existing, $groups))
+                        ->map(fn ($g) => ['weight' => round($g['weight_per_label'], 3), 'qty' => $g['label_count']])
+                        ->all();
+                    if ($groups === []) {
+                        throw ValidationException::withMessages(['items' => "Mặt hàng \"{$item->product?->name}\" không thể in bổ sung: cần giữ nguyên các tem cũ và chỉ tăng số lượng / thêm quy cách mới. Muốn giảm hoặc đổi quy cách, hãy chọn \"In thay thế\"."]);
+                    }
+                    $appendedItems++;
+                } elseif ($existing->isNotEmpty() && $customGroups !== null && PrintLog::splitDiffers($existing, $groups)) {
                     PrintLog::revokeForResplit($existing, $printedBy, array_sum(PrintLog::splitOf($groups)));
                     $resplitItems++;
                 } elseif ($existing->isNotEmpty()) {
@@ -137,6 +148,7 @@ class BulkPrintSalesOrderLabelsAction
                 'reused'  => $reusedItems,
                 'source_changed' => $sourceChanged,
                 'resplit' => $resplitItems,
+                'appended' => $appendedItems,
             ];
         });
     }

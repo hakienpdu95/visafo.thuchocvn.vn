@@ -39,6 +39,7 @@ class PrintLabelController extends Controller
             'label_groups'                    => ['required', 'array', 'min:1', 'max:20'],
             'label_groups.*.weight_per_label' => ['required', 'numeric', 'gt:0', 'max:99999'],
             'label_groups.*.label_count'      => ['required', 'integer', 'min:1', 'max:200'],
+            'print_mode'       => ['nullable', Rule::in(['append', 'replace'])],
             'mfg_date'         => ['nullable', 'date'],
             'exp_date'         => array_filter([
                 'required', 'date',
@@ -64,6 +65,7 @@ class PrintLabelController extends Controller
             'label_groups.*.label_count.integer'       => 'Số lượng tem phải là số nguyên.',
             'label_groups.*.label_count.min'           => 'Mỗi dòng cần in tối thiểu 1 tem.',
             'label_groups.*.label_count.max'           => 'Mỗi lần chỉ in tối đa 200 tem.',
+            'print_mode.in'             => 'Kiểu in không hợp lệ.',
             'mfg_date.date'             => 'NSX không hợp lệ.',
             'exp_date.required'         => 'HSD là bắt buộc để in tem.',
             'exp_date.date'             => 'HSD không hợp lệ.',
@@ -93,13 +95,16 @@ class PrintLabelController extends Controller
             'session_id'  => $result['session_id'],
             'label_count' => $result['logs']->count(),
             'reused'      => $result['reused'],
+            'appended'    => $result['appended'],
             'message'     => $result['reused']
                 ? "Mặt hàng đã có {$result['logs']->count()} tem đang lưu hành — in lại đúng mã TXNG cũ, không tạo mã mới. "
                     . ($result['source_changed'] ? 'Đã cập nhật nguồn cung / lô mới cho các tem này. ' : '')
                     . 'Muốn chia lại tem: đổi khối lượng / số tem rồi In; sửa NSX / HSD: dùng "Sửa" ở Nhật ký TXNG; thay tem bị mất: "Hủy mã & Cấp lại".'
-                : ($result['resplit'] > 0
+                : ($result['appended']
+                    ? null
+                    : ($result['resplit'] > 0
                     ? "Cách chia tem đã thay đổi — đã hủy {$result['resplit']} mã cũ và tạo {$result['logs']->count()} mã TXNG mới."
-                    : null),
+                    : null)),
             // Trang in cả phiên: mỗi tem một bản ghi + một trace_code/QR riêng.
             'print_url'   => route('print.render_session', $result['session_id']),
         ]);
@@ -205,6 +210,7 @@ class PrintLabelController extends Controller
             'items.*.label_groups'                   => ['required', 'array', 'min:1', 'max:20'],
             'items.*.label_groups.*.weight_per_label' => ['required', 'numeric', 'gt:0', 'max:99999'],
             'items.*.label_groups.*.label_count'      => ['required', 'integer', 'min:1', 'max:200'],
+            'items.*.print_mode'                      => ['nullable', Rule::in(['append', 'replace'])],
             'items.*.vendor_id'        => ['nullable', 'string', Rule::exists('vendors', 'id')->whereNull('deleted_at')],
             'items.*.supplier_name'    => ['nullable', 'string', 'max:255'],
             'items.*.product_batch_id' => ['nullable', 'string', Rule::exists('product_batches', 'id')->whereNull('deleted_at')],
@@ -238,6 +244,7 @@ class PrintLabelController extends Controller
             'items.*.label_groups.*.label_count.integer'       => 'Số lượng tem phải là số nguyên.',
             'items.*.label_groups.*.label_count.min'           => 'Mỗi dòng cần in tối thiểu 1 tem.',
             'items.*.label_groups.*.label_count.max'           => 'Mỗi dòng tối đa 200 tem.',
+            'items.*.print_mode.in'                            => 'Kiểu in không hợp lệ.',
             'items.*.vendor_id.exists'        => 'Nhà cung cấp của mặt hàng không hợp lệ.',
             'items.*.supplier_name.max'       => 'Nguồn cung của mặt hàng không được vượt quá 255 ký tự.',
             'items.*.product_batch_id.exists' => 'Lô nhập kho của mặt hàng không hợp lệ.',
@@ -258,6 +265,9 @@ class PrintLabelController extends Controller
                     : '')
                 . ($result['source_changed'] > 0
                     ? " Đã cập nhật nguồn cung / lô mới cho tem của {$result['source_changed']} mặt hàng (giữ nguyên mã TXNG)."
+                    : '')
+                . ($result['appended'] > 0
+                    ? " {$result['appended']} mặt hàng được in bổ sung (giữ nguyên tem cũ, chỉ tạo thêm mã TXNG mới)."
                     : '')
                 . ($result['resplit'] > 0
                     ? " {$result['resplit']} mặt hàng đổi cách chia tem nên đã hủy mã cũ và tạo mã TXNG mới."

@@ -71,6 +71,20 @@ const splitKey = (groups) => {
     });
     return Object.keys(m).sort().filter((k) => m[k] > 0).map((k) => k + 'x' + m[k]).join('|');
 };
+const splitMap = (groups) => {
+    const m = {};
+    (groups ?? []).forEach((g) => {
+        const k = (Math.round((Number(g.weight) || 0) * 1000) / 1000).toFixed(3);
+        m[k] = (m[k] ?? 0) + groupQty(g);
+    });
+    return m;
+};
+const appendCountOf = (printed, groups) => {
+    const current = splitMap(printed);
+    const target = splitMap(groups);
+    if (Object.entries(current).some(([k, qty]) => (target[k] ?? 0) < qty)) return 0;
+    return Object.entries(target).reduce((sum, [k, qty]) => sum + Math.max(0, qty - (current[k] ?? 0)), 0);
+};
 const groupsFrom = (printed, nextUid) => printed.map((g) => ({ uid: nextUid(), weight: g.weight, qty: g.qty }));
 const groupsTotalOf = (groups) => groups.reduce((sum, g) => sum + Math.round((Number(g.weight) || 0) * 1000) * groupQty(g), 0) / 1000;
 const toDdMmYy = (ymd) => {
@@ -102,12 +116,13 @@ document.addEventListener('alpine:init', () => {
             loadingBatches: false,
             batchCount: 0,
             batchVendors: {},
-            form: { groups: [], mfg: '', exp: '', supplierManual: false, supplierText: '', vendorId: '', batchId: '', batchCode: '', template: '' },
+            form: { groups: [], printMode: 'append', mfg: '', exp: '', supplierManual: false, supplierText: '', vendorId: '', batchId: '', batchCode: '', template: '' },
 
             get canSubmit() {
                 return !this.submitting
                     && this.groupsValid
                     && this.labelCount <= 200
+                    && !(this.splitChanged && this.form.printMode === 'append' && this.appendCount === 0)
                     && !!this.form.exp;
             },
 
@@ -138,6 +153,10 @@ document.addEventListener('alpine:init', () => {
 
             get splitChanged() {
                 return this.printedGroups.length > 0 && splitKey(this.form.groups) !== splitKey(this.printedGroups);
+            },
+
+            get appendCount() {
+                return appendCountOf(this.printedGroups, this.form.groups);
             },
 
             autoSplit() {
@@ -274,6 +293,7 @@ document.addEventListener('alpine:init', () => {
                 this.requiredTotal = Math.round(Number(row.requested_qty_raw) * 1000) / 1000;
                 this.form = {
                     groups: [],
+                    printMode: 'append',
                     mfg: toYmd(new Date()),
                     exp: '',
                     supplierManual: false,
@@ -350,6 +370,7 @@ document.addEventListener('alpine:init', () => {
                                 weight_per_label: Number(g.weight),
                                 label_count: Number(g.qty),
                             })),
+                            print_mode: this.splitChanged ? this.form.printMode : null,
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             supplier_name: this.form.supplierText.trim() || null,
@@ -383,7 +404,7 @@ document.addEventListener('alpine:init', () => {
                     if (!data.reused && this.item) {
                         this.item.print_prefill = {
                             ...(this.item.print_prefill ?? {}),
-                            printed: data.label_count,
+                            printed: data.appended ? (this.item.print_prefill?.printed ?? 0) + data.label_count : data.label_count,
                             printed_groups: this.form.groups.map((g) => ({ weight: Number(g.weight), qty: groupQty(g) })),
                         };
                     }
@@ -579,7 +600,8 @@ document.addEventListener('alpine:init', () => {
             get canRun() {
                 return !this.submitting && this.items.length > 0 && !!this.form.exp && !!this.form.template
                     && this.totalLabels <= 2000
-                    && this.items.every((row) => row.groups.length > 0 && row.groups.every((g) => this.groupValid(g)));
+                    && this.items.every((row) => row.groups.length > 0 && row.groups.every((g) => this.groupValid(g)))
+                    && !this.items.some((row) => this.splitChanged(row) && row.printMode === 'append' && this.appendCount(row) === 0);
             },
 
             groupValid(g) {
@@ -602,6 +624,10 @@ document.addEventListener('alpine:init', () => {
 
             splitChanged(row) {
                 return row.printed > 0 && row.printedGroups?.length > 0 && splitKey(row.groups) !== splitKey(row.printedGroups);
+            },
+
+            appendCount(row) {
+                return appendCountOf(row.printedGroups, row.groups);
             },
 
             rowLabelCount(row) {
@@ -649,6 +675,7 @@ document.addEventListener('alpine:init', () => {
                         unit: r.unit,
                         total,
                         groups: [],
+                        printMode: 'append',
                         editing: false,
                         batchesUrl: r.batches_url,
                         partnerProductsUrl: r.partner_products_url,
@@ -791,6 +818,7 @@ document.addEventListener('alpine:init', () => {
                                 order_item_id: row.id,
                                 ...printSourcePayload(row),
                                 label_groups: row.groups.map((g) => ({ weight_per_label: Number(g.weight), label_count: Number(g.qty) })),
+                                print_mode: this.splitChanged(row) ? row.printMode : null,
                             })),
                         }),
                     });

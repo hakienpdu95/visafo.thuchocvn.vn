@@ -5,6 +5,7 @@ namespace Modules\SalesOrder\Actions\Backend;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\LabelPrintEvent;
@@ -18,9 +19,11 @@ class PrintSalesOrderItemLabelAction
 
     /**
      * Check & Reuse: dòng hàng đã có tem đang lưu hành và cách chia tem giữ nguyên → in lại đúng các mã đó (chọn nguồn / lô khác thì cập nhật nguồn của chính các tem đó).
-     * Cách chia tem (khối lượng/tem, số tem) khác lần in trước → hủy các mã cũ và tạo bộ mã mới đúng theo số nhập trên form.
+     * Cách chia tem khác lần in trước:
+     *  - print_mode = append  → giữ nguyên tem cũ, chỉ tạo thêm phần tem tăng lên so với lần in trước (theo từng mức khối lượng/tem).
+     *  - print_mode = replace → hủy các mã cũ và tạo bộ mã mới đúng theo số nhập trên form.
      *
-     * @return array{session_id: string, logs: Collection<int, PrintLog>, reused: bool, source_changed: bool, resplit: int}
+     * @return array{session_id: string, logs: Collection<int, PrintLog>, reused: bool, source_changed: bool, resplit: int, appended: bool}
      */
     public function handle(SalesOrderItem $item, array $data, ?string $printedBy): array
     {
@@ -32,8 +35,16 @@ class PrintSalesOrderItemLabelAction
 
             $existing = PrintLog::query()->activeForItem($item->id)->get();
             $resplit = 0;
-            if ($existing->isNotEmpty() && PrintLog::splitDiffers($existing, $data['label_groups'])) {
-                PrintLog::revokeForResplit($existing, $printedBy, array_sum(PrintLog::splitOf($data['label_groups'])));
+            $groups = $data['label_groups'];
+            $appended = false;
+            if ($existing->isNotEmpty() && PrintLog::splitDiffers($existing, $groups) && ($data['print_mode'] ?? 'replace') === 'append') {
+                $groups = PrintLog::appendedGroups($existing, $groups);
+                if ($groups === []) {
+                    throw ValidationException::withMessages(['label_groups' => 'Không thể in bổ sung: cần giữ nguyên các tem cũ và chỉ tăng số lượng / thêm quy cách mới. Muốn giảm hoặc đổi quy cách, hãy chọn "In thay thế".']);
+                }
+                $appended = true;
+            } elseif ($existing->isNotEmpty() && PrintLog::splitDiffers($existing, $groups)) {
+                PrintLog::revokeForResplit($existing, $printedBy, array_sum(PrintLog::splitOf($groups)));
                 $resplit = $existing->count();
             } elseif ($existing->isNotEmpty()) {
                 $sourceChanged = PrintLog::sourceDiffers($existing, $data);
@@ -43,12 +54,12 @@ class PrintSalesOrderItemLabelAction
                 $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
                 LabelPrintEvent::record($existing, $sessionId, $printedBy, true);
 
-                return ['session_id' => $sessionId, 'logs' => $existing, 'reused' => true, 'source_changed' => $sourceChanged, 'resplit' => 0];
+                return ['session_id' => $sessionId, 'logs' => $existing, 'reused' => true, 'source_changed' => $sourceChanged, 'resplit' => 0, 'appended' => false];
             }
 
             $logs = new Collection();
 
-            foreach ($data['label_groups'] as $group) {
+            foreach ($groups as $group) {
                 $weight = round((float) $group['weight_per_label'], 3);
 
                 for ($i = 0; $i < (int) $group['label_count']; $i++) {
@@ -82,7 +93,7 @@ class PrintSalesOrderItemLabelAction
 
             LabelPrintEvent::record($logs, $sessionId, $printedBy, false);
 
-            return ['session_id' => $sessionId, 'logs' => $logs, 'reused' => false, 'source_changed' => false, 'resplit' => $resplit];
+            return ['session_id' => $sessionId, 'logs' => $logs, 'reused' => false, 'source_changed' => false, 'resplit' => $resplit, 'appended' => $appended];
         });
     }
 }
