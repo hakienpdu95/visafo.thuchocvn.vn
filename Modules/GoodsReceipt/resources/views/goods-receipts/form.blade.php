@@ -104,6 +104,7 @@
                                 <td>
                                     <select :name="'items[' + row.uid + '][product_id]'" x-init="initProductSelect($el, row)"></select>
                                     <span class="text-xs text-error" x-show="err('items.' + row.uid + '.product_id')" x-text="err('items.' + row.uid + '.product_id')"></span>
+                                    <span class="text-xs text-warning block" x-show="row.raw_name && row.product && String(row.product.id) === String(row.orig_product_id)" x-cloak x-text="'⚠ Tên trên phiếu: ' + row.raw_name + ' — khác tên sản phẩm trong danh mục, kiểm tra lại mã hàng.'"></span>
                                 </td>
                                 <td class="pt-3 font-mono text-xs" x-text="row.product?.sku || '—'"></td>
                                 <td class="pt-3 text-sm" x-text="row.product?.unit || '—'"></td>

@@ -137,6 +137,7 @@
                                         <input type="hidden" :name="'items[' + row.uid + '][product_id]'" :value="row.orig_product_id">
                                     </template>
                                     <span class="text-xs text-error" x-show="err('items.' + row.uid + '.product_id')" x-text="err('items.' + row.uid + '.product_id')"></span>
+                                    <span class="text-xs text-warning block" x-show="row.raw_name && !productChanged(row)" x-cloak x-text="'⚠ Tên trên phiếu: ' + row.raw_name + ' — khác tên sản phẩm trong danh mục, kiểm tra lại mã hàng.'"></span>
                                     <span class="text-xs text-base-content/50" x-show="row.qc" x-cloak>Đã có biên bản QC trước xuất — khóa sản phẩm và số lượng.</span>
                                     <span class="text-xs text-base-content/50" x-show="!row.qc && row.printed && !productChanged(row)" x-cloak x-text="'Đã in ' + row.printed + ' tem'"></span>
                                     <span class="text-xs text-warning" x-show="row.printed && productChanged(row)" x-cloak x-text="'Đổi sản phẩm sẽ hủy ' + row.printed + ' tem đã in của sản phẩm cũ.'"></span>

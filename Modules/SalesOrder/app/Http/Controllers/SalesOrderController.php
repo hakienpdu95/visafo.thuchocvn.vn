@@ -26,6 +26,7 @@ use Modules\SalesOrder\Models\SalesOrderItem;
 use Modules\SalesOrder\Support\BulkPrintPrefillResolver;
 use Modules\SalesOrder\Support\SalesOrderItemRemover;
 use App\Support\ManualRefIdGenerator;
+use App\Support\ProductNameMismatch;
 use App\Support\QuantityUnit;
 use Modules\Vendor\Queries\ListVendorOptionsHandler;
 use Modules\Vendor\Queries\ListVendorOptionsQuery;
@@ -176,14 +177,14 @@ class SalesOrderController extends Controller
         ];
     }
 
-    /** @return array<string, array{orig_product_id: string, orig_qty: string, printed: int, qc: bool}> */
+    /** @return array<string, array{orig_product_id: string, orig_qty: string, printed: int, qc: bool, raw_name: ?string}> */
     private function itemMeta(?SalesOrder $order): array
     {
         if ($order === null) {
             return [];
         }
 
-        $items = $order->items()->get(['id', 'product_id', 'requested_qty']);
+        $items = $order->items()->with('product:id,name')->get(['id', 'product_id', 'product_name_raw', 'requested_qty']);
         $ids = $items->pluck('id')->all();
         $printed = PrintLog::query()->whereIn('order_item_id', $ids)->where('status', PrintLogStatus::Active->value)
             ->selectRaw('order_item_id, COUNT(*) as total')->groupBy('order_item_id')->pluck('total', 'order_item_id');
@@ -194,6 +195,7 @@ class SalesOrderController extends Controller
             'orig_qty'        => rtrim(rtrim((string) $item->requested_qty, '0'), '.'),
             'printed'         => (int) ($printed[$item->id] ?? 0),
             'qc'              => in_array($item->id, $qc, true),
+            'raw_name'        => $item->product && ProductNameMismatch::isSuspicious($item->product->name, $item->product_name_raw) ? $item->product_name_raw : null,
         ]])->all();
     }
 

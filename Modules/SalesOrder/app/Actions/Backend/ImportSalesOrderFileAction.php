@@ -2,6 +2,7 @@
 
 namespace Modules\SalesOrder\Actions\Backend;
 
+use App\Support\ProductNameMismatch;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Lorisleiva\Actions\Concerns\AsAction;
@@ -39,6 +40,16 @@ class ImportSalesOrderFileAction
         // withTrashed: unique index trên misa_ref_id vẫn chặn cả phiếu đã xóa mềm.
         if (SalesOrder::withTrashed()->where('misa_ref_id', $parsed->misaRefId)->exists()) {
             return ImportFileResult::duplicate($originalName, $parsed->misaRefId);
+        }
+
+        $mismatches = ProductNameMismatch::findInLines(array_map(fn ($item) => ['sku' => $item->sku, 'name' => $item->name], $parsed->items));
+
+        if ($mismatches !== []) {
+            return ImportFileResult::failed(
+                $originalName,
+                'Không import vì có dòng nghi sai mã hàng: ' . implode('; ', $mismatches) . '. Sửa lại mã hàng (hoặc tên hàng) trong file cho khớp danh mục rồi import lại.',
+                $parsed->misaRefId,
+            );
         }
 
         try {

@@ -6,7 +6,7 @@ const esc = (v) => String(v ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-const blankRow = () => ({ uid: uid(), product: null, requested_qty: '', orig_product_id: null, printed: 0, qc: false });
+const blankRow = () => ({ uid: uid(), product: null, requested_qty: '', orig_product_id: null, printed: 0, qc: false, raw_name: null });
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('salesOrderForm', ({ fields = {}, customer = null, rows = [], errors = {}, urls = {} }) => {

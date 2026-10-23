@@ -12,7 +12,14 @@ const EMPTY = '<span class="text-base-content/25 text-xs">—</span>';
 
 const COLUMNS = [
     { title: 'STT', field: 'line_no', width: 70, hozAlign: 'center', headerSort: false },
-    { title: 'Tên hàng', field: 'name', minWidth: 240, sorter: 'string' },
+    {
+        title: 'Tên hàng', field: 'name', minWidth: 240, sorter: 'string',
+        formatter(cell) {
+            const d = cell.getRow().getData();
+            cell.getElement().style.whiteSpace = 'normal';
+            return esc(d.name) + (d.name_raw ? '<div class="text-xs text-warning mt-0.5" title="Tên trên phiếu khác tên sản phẩm trong danh mục — kiểm tra lại mã hàng">⚠ Tên trên phiếu: ' + esc(d.name_raw) + '</div>' : '');
+        },
+    },
     {
         title: 'Mã hàng', field: 'sku', width: 140, sorter: 'string',
         formatter: (cell) => '<span class="font-mono text-xs">' + esc(cell.getValue()) + '</span>',

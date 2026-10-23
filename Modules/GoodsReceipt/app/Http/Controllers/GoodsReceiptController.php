@@ -4,6 +4,7 @@ namespace Modules\GoodsReceipt\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Support\ManualRefIdGenerator;
+use App\Support\ProductNameMismatch;
 use Illuminate\Http\RedirectResponse;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\GoodsReceipt\Actions\Backend\CreateGoodsReceiptAction;
@@ -153,6 +154,9 @@ class GoodsReceiptController extends Controller
                     'uid'      => (string) $group->first()->id,
                     'product'  => $group->first()->product ? GoodsReceiptOptionApiController::productOption($group->first()->product) : null,
                     'quantity' => rtrim(rtrim(number_format((float) $group->sum('quantity'), 3, '.', ''), '0'), '.'),
+                    'orig_product_id' => $group->first()->product_id,
+                    'raw_name' => $group->map(fn ($i) => trim((string) $i->product_name_raw))
+                        ->filter(fn ($n) => ProductNameMismatch::isSuspicious($group->first()->product?->name, $n))->unique()->implode('; ') ?: null,
                 ])->values()->all();
         }
 

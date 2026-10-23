@@ -10,7 +10,8 @@
 
         return [
             'line_no'    => $item->line_no,
-            'name'       => $item->product_name_raw,
+            'name'       => $item->product?->name ?? $item->product_name_raw,
+            'name_raw'   => $item->product && \App\Support\ProductNameMismatch::isSuspicious($item->product->name, $item->product_name_raw) ? $item->product_name_raw : null,
             'sku'        => $item->product?->sku,
             'unit'       => $item->unit_raw,
             'quantity'   => number_format((float) $item->quantity, 3),
