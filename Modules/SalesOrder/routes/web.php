@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\SalesOrder\Http\Controllers\Api\SalesOrderApiController;
+use Modules\SalesOrder\Http\Controllers\Api\SalesOrderOptionApiController;
 use Modules\SalesOrder\Http\Controllers\PrintLabelController;
 use Modules\SalesOrder\Http\Controllers\SalesOrderController;
 use Modules\SalesOrder\Http\Controllers\TraceController;
@@ -32,14 +33,19 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::get('sales-orders/items/{item}/batch-attributes', [PrintLabelController::class, 'batchAttributes'])->name('sales-orders.items.batch-attributes');
     Route::get('sales-orders/items/{item}/batches', [PrintLabelController::class, 'batches'])->name('sales-orders.items.batches');
     Route::get('sales-orders/items/{item}/partner-products', [PrintLabelController::class, 'partnerProducts'])->name('sales-orders.items.partner-products');
-    Route::get('sales-orders/items/{item}/print-logs', [PrintLabelController::class, 'history'])->name('sales-orders.items.print-logs');
+    Route::get('sales-orders/items/{item}/print-logs', [PrintLabelController::class, 'history'])->name('sales-orders.items.print-logs')->withTrashed();
     Route::post('sales-orders/items/{item}/print-logs/{session_id}/reprint', [PrintLabelController::class, 'reprint'])
         ->where('session_id', '[A-Za-z0-9]{26}')
         ->name('sales-orders.items.reprint');
     Route::post('sales-orders/{sales_order}/print-all', [PrintLabelController::class, 'storeAll'])->name('sales-orders.print-all');
 
     Route::get('sales-orders', [SalesOrderController::class, 'index'])->name('sales-orders.index');
-    Route::get('sales-orders/{sales_order}', [SalesOrderController::class, 'show'])->name('sales-orders.show');
+    Route::get('sales-orders/create', [SalesOrderController::class, 'create'])->name('sales-orders.create');
+    Route::post('sales-orders', [SalesOrderController::class, 'store'])->name('sales-orders.store');
+    Route::get('sales-orders/{sales_order}', [SalesOrderController::class, 'show'])->name('sales-orders.show')->withTrashed();
+    Route::get('sales-orders/{sales_order}/edit', [SalesOrderController::class, 'edit'])->name('sales-orders.edit');
+    Route::put('sales-orders/{sales_order}', [SalesOrderController::class, 'update'])->name('sales-orders.update');
+    Route::delete('sales-orders/{sales_order}', [SalesOrderController::class, 'destroy'])->name('sales-orders.destroy');
     Route::post('sales-orders/{sales_order}/ship', [SalesOrderController::class, 'ship'])->name('sales-orders.ship');
     Route::post('sales-orders/{sales_order}/deliver', [SalesOrderController::class, 'deliver'])->name('sales-orders.deliver');
     Route::post('sales-orders/items/{item}/quality-checks', [SalesOrderController::class, 'storeItemQualityCheck'])->name('sales-orders.items.quality-checks.store');
@@ -56,4 +62,7 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
 
 Route::middleware(['auth'])->prefix('backend/api')->name('backend.api.')->group(function () {
     Route::get('sales-orders', [SalesOrderApiController::class, 'index'])->name('sales-orders');
+    Route::get('sales-orders/options/products', [SalesOrderOptionApiController::class, 'products'])->name('sales-orders.product-options');
+    Route::get('sales-orders/options/customers', [SalesOrderOptionApiController::class, 'customers'])->name('sales-orders.customer-options');
+    Route::get('sales-orders/options/customers/{customer}/delivery-points', [SalesOrderOptionApiController::class, 'deliveryPoints'])->name('sales-orders.delivery-point-options');
 });

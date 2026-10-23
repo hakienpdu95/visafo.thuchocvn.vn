@@ -31,7 +31,7 @@ class SalesOrderItem extends TenantAwareModel
 
     public function order(): BelongsTo
     {
-        return $this->belongsTo(SalesOrder::class, 'order_id');
+        return $this->belongsTo(SalesOrder::class, 'order_id')->withTrashed();
     }
 
     public function printLogs(): HasMany

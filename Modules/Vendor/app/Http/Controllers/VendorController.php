@@ -16,6 +16,7 @@ use Modules\Vendor\Actions\Backend\UpdateVendorAction;
 use Modules\Vendor\Data\Requests\StoreVendorData;
 use Modules\Vendor\Data\Requests\UpdateVendorData;
 use Modules\Vendor\Enums\VendorSourceGroup;
+use Modules\Vendor\Enums\VendorSupplyGroup;
 use Modules\Vendor\Enums\VendorStatus;
 use Modules\Vendor\Models\Vendor;
 use Modules\Vendor\Queries\GetVendorHandler;
@@ -45,7 +46,11 @@ class VendorController extends Controller
             ->map(fn ($g) => ['value' => $g->value, 'text' => $g->label()])
             ->all();
 
-        return view('vendor::index', compact('statuses', 'provinces', 'sourceGroups'));
+        $supplyGroups = collect(VendorSupplyGroup::cases())
+            ->map(fn ($g) => ['value' => $g->value, 'text' => $g->label()])
+            ->all();
+
+        return view('vendor::index', compact('statuses', 'provinces', 'sourceGroups', 'supplyGroups'));
     }
 
     public function create()

@@ -8,6 +8,7 @@
     'statuses'     => $statuses,
     'provinces'    => $provinces,
     'sourceGroups' => $sourceGroups,
+    'supplyGroups' => $supplyGroups,
     'canDelete'    => auth()->user()->can('delete', new \Modules\Vendor\Models\Vendor),
 ]) }})">
 
@@ -60,7 +61,7 @@
     <div class="section-page">
         <div class="card bg-base-100 mb-4">
             <div class="card-body py-3 px-3">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-3 items-end">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 items-end">
 
                     <div class="form-control lg:col-span-2">
                         <label class="label mb-2">
@@ -151,6 +152,20 @@
 
                     <div class="form-control">
                         <label class="label py-0.5">
+                            <span class="label-text text-xs font-medium">Nhóm hàng cung cấp</span>
+                        </label>
+                        <select id="ts-supply-group" x-model="filters.supplyGroup" @change="onFilterChange()"
+                                data-ts-placeholder="Tất cả nhóm hàng"
+                                class="select select-sm select-bordered w-full">
+                            <option value="">Tất cả</option>
+                            @foreach($supplyGroups as $group)
+                            <option value="{{ $group['value'] }}">{{ $group['text'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label py-0.5">
                             <span class="label-text text-xs font-medium">Hồ sơ/chứng chỉ</span>
                         </label>
                         <select id="ts-has-documents" x-model="filters.hasDocuments" @change="onFilterChange()"
@@ -165,7 +180,7 @@
                 </div>
 
                 <div class="flex justify-end">
-                    <button @click="reset()" x-show="hasFilters" x-transition
+                    <button @click="reset()" x-show="hasFilters" x-cloak x-transition
                             class="btn btn-ghost btn-sm gap-1.5 text-error mt-1">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -175,7 +190,7 @@
                     </button>
                 </div>
 
-                <div x-show="activeChips.length > 0" x-transition
+                <div x-show="activeChips.length > 0" x-cloak x-transition
                      class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-base-200">
                     <span class="text-xs text-base-content/40 self-center">Đang lọc:</span>
                     <template x-for="chip in activeChips" :key="chip.key">

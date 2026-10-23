@@ -389,14 +389,15 @@
         </section>
         @endif
 
-        {{-- 4c. Giao vận & điểm nhận (chỉ khi đã xuất kho). Tên điểm nhận đã che, địa chỉ chỉ cấp phường/quận + tỉnh — xử lý ở backend --}}
-        @if($trace->delivery)
-        @php $dl = $trace->delivery; @endphp
+        {{-- 4c. Khách hàng, điểm giao & giao vận: khách hàng/điểm giao hiện ngay khi có tem, chặng xuất kho chỉ khi đã xuất --}}
+        @if($trace->customer || $trace->delivery)
+        @php $dl = $trace->delivery; $cu = $trace->customer; @endphp
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
-                <span class="h-4 w-1 rounded bg-green-600"></span> Giao vận &amp; điểm nhận
+                <span class="h-4 w-1 rounded bg-green-600"></span> Khách hàng &amp; điểm giao
             </h3>
-            <div class="rounded-lg bg-[#f8f9fa] p-3.5 text-sm">
+            <div class="rounded-xs text-sm">
+                @if($dl)
                 <p class="font-bold text-slate-900">🏢 Kho {{ $trace->brand }}</p>
                 <p class="mt-0.5 text-gray-600">{{ implode(' • ', array_filter([$dl['warehouse'], 'Xuất ' . $dl['shippedAt']->format('H:i • d/m/Y')])) }}</p>
 
@@ -406,14 +407,19 @@
                 <p class="mt-0.5 {{ $dl['deliveredAt'] ? 'text-green-700' : 'text-amber-600' }}">{{ $dl['status'] }}</p>
 
                 <p class="my-1.5 pl-2 text-lg leading-none text-green-600" aria-hidden="true">↓</p>
+                @endif
 
                 <div class="rounded-lg border border-green-200 bg-white p-3">
-                    <p class="font-bold text-slate-900">📍 {{ $dl['recipient'] ?? 'Điểm nhận' }}</p>
-                    @if($dl['deliveredAt'])
-                    <p class="mt-0.5 font-medium text-green-700">✓ Đã nhận hàng • {{ $dl['deliveredAt']->format('H:i • d/m/Y') }}</p>
+                    <p class="text-xs uppercase tracking-wide text-gray-500">Khách hàng</p>
+                    <p class="font-bold text-slate-900">{{ $cu['name'] ?? 'Điểm nhận' }}</p>
+                    @if($cu && $cu['deliveryPoint'])
+                    <p class="mt-2 text-xs uppercase tracking-wide text-gray-500">Điểm giao</p>
+                    <p class="text-gray-800">📍 {{ $cu['deliveryPoint'] }}</p>
                     @endif
-                    @if($dl['area'])
-                    <p class="mt-0.5 text-gray-600">Điểm giao: {{ $dl['area'] }}</p>
+                    @if($dl && $dl['deliveredAt'])
+                    <p class="mt-2 font-medium text-green-700">✓ Đã nhận hàng • {{ $dl['deliveredAt']->format('H:i • d/m/Y') }}</p>
+                    @elseif($cu && $cu['deliveryDate'])
+                    <p class="mt-2 text-gray-600">Ngày giao: <span class="font-medium text-gray-900">{{ $cu['deliveryDate']->format('d/m/Y') }}</span></p>
                     @endif
                 </div>
             </div>

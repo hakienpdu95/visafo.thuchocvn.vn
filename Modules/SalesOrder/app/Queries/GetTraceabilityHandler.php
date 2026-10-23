@@ -135,6 +135,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
                 ? $batch->created_at : ($receipt?->receipt_date ?? $batch?->created_at), $order, $qualityChecks),
             journey: $this->journey($log, $farmingBatch, $receipt?->receipt_date ?? $batch?->created_at, $order, $qualityChecks, $item),
             delivery: $this->delivery($order, $company),
+            customer: $this->customer($order),
         );
     }
 
@@ -531,10 +532,22 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         return $checks->contains(fn (BatchQualityCheck $c) => $c->result->value === 'fail') ? 'fail' : 'pass';
     }
 
+    /** @return array{name: string, deliveryPoint: ?string, deliveryDate: mixed}|null */
+    private function customer(?SalesOrder $order): ?array
+    {
+        $name = trim((string) $order?->customer_name);
+
+        return $name === '' ? null : [
+            'name'          => $name,
+            'deliveryPoint' => trim((string) $order->delivery_address) ?: null,
+            'deliveryDate'  => $order->delivery_date,
+        ];
+    }
+
     /**
-     * Giao vận & điểm nhận (null = chưa xuất kho). Tên điểm nhận đã che; địa chỉ chỉ giữ cấp phường/quận + tỉnh.
+     * Giao vận (null = chưa xuất kho).
      *
-     * @return array{code: string, status: string, shippedAt: mixed, deliveredAt: mixed, recipient: ?string, area: ?string, warehouse: ?string}|null
+     * @return array{code: string, status: string, shippedAt: mixed, deliveredAt: mixed, warehouse: ?string}|null
      */
     private function delivery(?SalesOrder $order, array $company): ?array
     {
@@ -547,8 +560,6 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             'status'      => $order->delivered_at ? 'Đã hoàn thành' : 'Đang giao',
             'shippedAt'   => $order->shipped_at,
             'deliveredAt' => $order->delivered_at,
-            'recipient'   => $this->maskName($order->customer_name),
-            'area'        => $this->publicArea($order->delivery_address),
             'warehouse'   => $company['area'] ?: null,
         ];
     }

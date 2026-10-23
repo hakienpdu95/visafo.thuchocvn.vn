@@ -10,7 +10,6 @@ use Modules\Product\Enums\ProductType;
 use Modules\Product\Models\Product;
 use Modules\SalesOrder\Exceptions\SalesOrderParseException;
 use Modules\SalesOrder\Models\SalesOrder;
-use Modules\SalesOrder\Models\SalesOrderItem;
 use Modules\SalesOrder\Support\ImportFileResult;
 use Modules\SalesOrder\Support\MisaSalesOrderParser;
 use Modules\SalesOrder\Support\ParsedSalesOrder;
@@ -20,7 +19,10 @@ class ImportSalesOrderFileAction
 {
     use AsAction;
 
-    public function __construct(private readonly MisaSalesOrderParser $parser) {}
+    public function __construct(
+        private readonly MisaSalesOrderParser $parser,
+        private readonly CreateSalesOrderAction $createOrder,
+    ) {}
 
     public function handle(UploadedFile $file, ?string $importedById, ?string $deliveryDate = null): ImportFileResult
     {
@@ -72,27 +74,23 @@ class ImportSalesOrderFileAction
             $productIds[$item->sku] = $product->id;
         }
 
-        $order = SalesOrder::create([
-            'misa_ref_id'      => $parsed->misaRefId,
-            'customer_name'    => $parsed->customerName,
-            'delivery_address' => $parsed->deliveryAddress,
-            'delivery_date'    => $deliveryDate,
-            'status'           => SalesOrder::STATUS_PENDING,
-            'source_file_name' => $originalName,
-            'imported_by'      => $importedById,
-        ]);
-
-        foreach ($parsed->items as $item) {
-            SalesOrderItem::create([
-                'order_id'         => $order->id,
+        $this->createOrder->handle(
+            [
+                'misa_ref_id'      => $parsed->misaRefId,
+                'customer_name'    => $parsed->customerName,
+                'delivery_address' => $parsed->deliveryAddress,
+                'delivery_date'    => $deliveryDate,
+                'source_file_name' => $originalName,
+                'imported_by'      => $importedById,
+            ],
+            array_map(fn ($item) => [
                 'product_id'       => $productIds[$item->sku],
                 'line_no'          => $item->lineNo,
                 'product_name_raw' => $item->name,
                 'unit_raw'         => $item->unit,
                 'requested_qty'    => $item->requestedQty,
-                'actual_qty'       => null,
-            ]);
-        }
+            ], $parsed->items),
+        );
 
         return ['itemsCount' => count($parsed->items), 'newProducts' => $newProducts];
     }

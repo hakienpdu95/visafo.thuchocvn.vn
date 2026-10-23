@@ -7,6 +7,28 @@ function esc(v) {
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+const ICONS = {
+    view: '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>',
+    edit: '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.232-6.232a2.5 2.5 0 113.536 3.536L12.536 16.536 8 18l1.464-4.536z"/></svg>',
+    trash: '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>',
+};
+
+document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-delete-url]');
+    if (!el) return;
+    const msg = el.dataset.printed
+        ? 'Xóa đơn ' + el.dataset.ref + '? Đơn đã in tem: toàn bộ tem của đơn sẽ bị hủy (quét QR báo mã đã bị hủy). Lịch sử in vẫn được lưu.'
+        : 'Xóa đơn ' + el.dataset.ref + '? Đơn và các dòng hàng sẽ bị xóa hẳn, không thể hoàn tác.';
+    if (!confirm(msg)) return;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = el.dataset.deleteUrl;
+    form.innerHTML = '<input type="hidden" name="_method" value="DELETE">'
+        + '<input type="hidden" name="_token" value="' + esc(document.querySelector('meta[name=csrf-token]')?.content) + '">';
+    document.body.appendChild(form);
+    form.submit();
+});
+
 const COLUMNS = [
     {
         title: 'Số phiếu', field: 'misa_ref_id', minWidth: 160, sorter: 'string', frozen: true,
@@ -37,7 +59,10 @@ const COLUMNS = [
     },
     {
         title: 'File nguồn', field: 'source_file_name', minWidth: 200, headerSort: false,
-        formatter(cell) { return '<span class="text-xs text-base-content/60">' + esc(cell.getValue()) + '</span>'; },
+        formatter(cell) {
+            const v = cell.getValue();
+            return v ? '<span class="text-xs text-base-content/60">' + esc(v) + '</span>' : '<span class="badge badge-sm badge-ghost">Nhập tay</span>';
+        },
     },
     {
         title: 'Ngày giao', field: 'delivery_date', width: 120, hozAlign: 'center', sorter: 'string',
@@ -46,12 +71,25 @@ const COLUMNS = [
         title: 'Nhập lúc', field: 'created_at', width: 140, hozAlign: 'center', sorter: 'string',
     },
     {
-        title: 'Thao tác', field: 'id', width: 90, hozAlign: 'center', headerSort: false, frozen: true,
+        title: 'Thao tác', field: 'id', width: 110, hozAlign: 'center', headerSort: false, frozen: true, responsive: 0,
         formatter(cell) {
             const d = cell.getRow().getData();
-            return '<a href="' + esc(d.show_url) + '" class="btn btn-ghost btn-xs btn-square text-base-content/40 hover:text-info" title="Xem">'
-                + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>'
-                + '</a>';
+            const btn = 'btn btn-ghost btn-xs btn-square';
+            const off = btn + ' text-base-content/20 cursor-not-allowed';
+            const locked = (reason, action) => '<span class="' + off + '" title="' + esc('Không thể ' + action + ': ' + reason) + '">';
+            let html = '<div class="flex items-center justify-center gap-0.5">'
+                + '<a href="' + esc(d.show_url) + '" class="' + btn + ' text-base-content/40 hover:text-info" title="Xem">' + ICONS.view + '</a>';
+            if (d.edit_url) {
+                html += d.lock_reason
+                    ? locked(d.lock_reason, 'sửa') + ICONS.edit + '</span>'
+                    : '<a href="' + esc(d.edit_url) + '" class="' + btn + ' text-base-content/40 hover:text-primary" title="Sửa đơn">' + ICONS.edit + '</a>';
+            }
+            if (d.delete_url) {
+                html += d.delete_reason
+                    ? locked(d.delete_reason, 'xóa') + ICONS.trash + '</span>'
+                    : '<button type="button" class="' + btn + ' text-base-content/40 hover:text-error" title="Xóa đơn" data-delete-url="' + esc(d.delete_url) + '" data-ref="' + esc(d.misa_ref_id) + '"' + (d.has_prints ? ' data-printed="1"' : '') + '>' + ICONS.trash + '</button>';
+            }
+            return html + '</div>';
         },
     },
 ];

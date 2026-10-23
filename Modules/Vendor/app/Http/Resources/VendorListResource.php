@@ -20,6 +20,7 @@ class VendorListResource extends JsonResource
             'representative_name'  => $this->representative_name,
             'email'                => $this->email,
             'phone_number'         => $this->phone_number,
+            'supply_groups'        => $this->supplyGroupLabels(),
 
             'status_value' => $status->value,
             'status_label' => $status->label(),

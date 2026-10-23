@@ -10,7 +10,7 @@
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
             <h1 class="text-2xl font-bold text-base-content">Đơn xuất hàng</h1>
-            <p class="text-sm text-base-content/50 mt-0.5">Phiếu xuất kho MISA đã import — chờ kho cân và xác nhận thực xuất</p>
+            <p class="text-sm text-base-content/50 mt-0.5">Phiếu xuất kho import từ MISA hoặc nhập tay — chờ kho cân và xác nhận thực xuất</p>
         </div>
         <div class="flex items-center gap-2">
 
@@ -36,6 +36,12 @@
             </div>
 
             @can('create', \Modules\SalesOrder\Models\SalesOrder::class)
+            <a href="{{ route('backend.sales-orders.create') }}" class="btn btn-outline btn-primary btn-sm gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Thêm mới đơn xuất hàng
+            </a>
             <a href="{{ route('backend.sales-orders.import') }}" class="btn btn-primary btn-sm gap-1.5">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3"/>
@@ -49,6 +55,9 @@
 
     @if(session('success'))
     <div class="alert alert-success py-2.5 px-4 mb-5 text-sm">{{ session('success') }}</div>
+    @endif
+    @if($errors->has('order'))
+    <div class="alert alert-error py-2.5 px-4 mb-5 text-sm">{{ $errors->first('order') }}</div>
     @endif
 
     <div class="section-page">
@@ -112,7 +121,7 @@
                 </div>
 
                 <div class="flex justify-end">
-                    <button @click="reset()" x-show="hasFilters" x-transition
+                    <button @click="reset()" x-show="hasFilters" x-cloak x-transition
                             class="btn btn-ghost btn-sm gap-1.5 text-error mt-1">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -122,7 +131,7 @@
                     </button>
                 </div>
 
-                <div x-show="activeChips.length > 0" x-transition
+                <div x-show="activeChips.length > 0" x-cloak x-transition
                      class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-base-200">
                     <span class="text-xs text-base-content/40 self-center">Đang lọc:</span>
                     <template x-for="chip in activeChips" :key="chip.key">

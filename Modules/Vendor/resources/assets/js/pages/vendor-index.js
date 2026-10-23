@@ -47,6 +47,15 @@ function buildColumns(canDelete) {
             },
         },
         {
+            title: 'Nhóm hàng cung cấp', field: 'supply_groups', minWidth: 170, headerSort: false, responsive: 3,
+            formatter(cell) {
+                const groups = cell.getValue() || [];
+                return groups.length
+                    ? groups.map(g => '<span class="badge badge-sm badge-ghost mr-1 my-0.5">' + esc(g) + '</span>').join('')
+                    : '<span class="text-base-content/25 text-xs">—</span>';
+            },
+        },
+        {
             title: 'Chứng chỉ mới nhất', field: 'certificate_type', minWidth: 220, headerSort: false, responsive: 0,
             formatter(cell) {
                 const d = cell.getRow().getData();
@@ -175,6 +184,7 @@ document.addEventListener('alpine:init', () => {
             statuses     = [],
             provinces    = [],
             sourceGroups = [],
+            supplyGroups = [],
             canDelete    = false,
         } = serverData;
 
@@ -185,10 +195,11 @@ document.addEventListener('alpine:init', () => {
         let tsProvince    = null;
         let tsWard        = null;
         let tsSourceGroup = null;
+        let tsSupplyGroup = null;
         let tsHasDocuments = null;
 
         return {
-            filters: { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '', hasDocuments: '' },
+            filters: { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '', supplyGroup: '', hasDocuments: '' },
             hiddenCols: [],
 
             get toggleableCols() {
@@ -199,7 +210,7 @@ document.addEventListener('alpine:init', () => {
 
             get hasFilters() {
                 const f = this.filters;
-                return !!(f.search || f.status || f.province || f.ward || f.phone || f.sourceGroup || f.hasDocuments);
+                return !!(f.search || f.status || f.province || f.ward || f.phone || f.sourceGroup || f.supplyGroup || f.hasDocuments);
             },
 
             get activeChips() {
@@ -221,6 +232,10 @@ document.addEventListener('alpine:init', () => {
                 if (f.sourceGroup) {
                     const sg = sourceGroups.find(g => g.value === f.sourceGroup);
                     chips.push({ key: 'sourceGroup', label: sg ? sg.text : f.sourceGroup });
+                }
+                if (f.supplyGroup) {
+                    const pg = supplyGroups.find(g => g.value === f.supplyGroup);
+                    chips.push({ key: 'supplyGroup', label: pg ? pg.text : f.supplyGroup });
                 }
                 if (f.hasDocuments) {
                     chips.push({ key: 'hasDocuments', label: f.hasDocuments === 'yes' ? 'Đã có hồ sơ' : 'Chưa có hồ sơ' });
@@ -256,6 +271,12 @@ document.addEventListener('alpine:init', () => {
                     placeholder: 'Tất cả nhóm nguồn',
                     onChange() { sourceGroupEl.dispatchEvent(new Event('change', { bubbles: true })); },
                 });
+
+                const supplyGroupEl = document.getElementById('ts-supply-group');
+                tsSupplyGroup = supplyGroupEl ? createTs(supplyGroupEl, {
+                    placeholder: 'Tất cả nhóm hàng',
+                    onChange() { supplyGroupEl.dispatchEvent(new Event('change', { bubbles: true })); },
+                }) : null;
 
                 tsWard = createTs(wardEl, {
                     placeholder: 'Chọn tỉnh / thành phố trước',
@@ -327,6 +348,7 @@ document.addEventListener('alpine:init', () => {
                         if (f.ward)        p.ward_code     = f.ward;
                         if (f.phone)       p.phone_number  = f.phone;
                         if (f.sourceGroup) p.source_group  = f.sourceGroup;
+                        if (f.supplyGroup) p.supply_group  = f.supplyGroup;
                         if (f.hasDocuments) p.has_documents = f.hasDocuments;
                         return p;
                     },
@@ -378,6 +400,7 @@ document.addEventListener('alpine:init', () => {
                 if (p.has('ward')) this.filters.ward        = p.get('ward');
                 if (p.has('ph'))   this.filters.phone       = p.get('ph');
                 if (p.has('sg'))   this.filters.sourceGroup = p.get('sg');
+                if (p.has('pg'))   this.filters.supplyGroup = p.get('pg');
                 if (p.has('doc'))  this.filters.hasDocuments = p.get('doc');
             },
 
@@ -389,6 +412,7 @@ document.addEventListener('alpine:init', () => {
                 if (f.ward)        p.set('ward', f.ward);
                 if (f.phone)       p.set('ph', f.phone);
                 if (f.sourceGroup) p.set('sg', f.sourceGroup);
+                if (f.supplyGroup) p.set('pg', f.supplyGroup);
                 if (f.hasDocuments) p.set('doc', f.hasDocuments);
                 const qs = p.toString();
                 history.replaceState(null, '', qs ? '?' + qs : location.pathname);
@@ -404,6 +428,7 @@ document.addEventListener('alpine:init', () => {
                 if (key === 'status')      { this.filters.status = ''; tsStatus?.setValue('', true); }
                 if (key === 'ward')        { this.filters.ward = ''; tsWard?.setValue('', true); }
                 if (key === 'sourceGroup') { this.filters.sourceGroup = ''; tsSourceGroup?.setValue('', true); }
+                if (key === 'supplyGroup') { this.filters.supplyGroup = ''; tsSupplyGroup?.setValue('', true); }
                 if (key === 'hasDocuments') { this.filters.hasDocuments = ''; tsHasDocuments?.setValue('', true); }
                 if (key === 'province') {
                     this.filters.province = '';
@@ -415,10 +440,11 @@ document.addEventListener('alpine:init', () => {
             },
 
             reset() {
-                this.filters = { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '', hasDocuments: '' };
+                this.filters = { search: '', status: '', province: '', ward: '', phone: '', sourceGroup: '', supplyGroup: '', hasDocuments: '' };
                 tsStatus?.setValue('', true);
                 tsProvince?.setValue('', true);
                 tsSourceGroup?.setValue('', true);
+                tsSupplyGroup?.setValue('', true);
                 tsHasDocuments?.setValue('', true);
                 this.loadWardOptions('');
                 history.replaceState(null, '', location.pathname);

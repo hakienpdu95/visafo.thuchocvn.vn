@@ -6,8 +6,8 @@ use Illuminate\Support\Carbon;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 
 /**
- * Dữ liệu trang truy xuất công khai — chỉ chứa thông tin an toàn để công bố
- * (không có khách hàng, địa chỉ giao hàng, số phiếu nội bộ).
+ * Dữ liệu trang truy xuất công khai. Có tên khách hàng và điểm giao của đơn (công khai đầy đủ theo yêu cầu vận hành),
+ * không có số phiếu nội bộ, SĐT người nhận.
  *
  * Các trường tối thiểu theo Thông tư 02/2024/TT-BKHCN:
  *  tên SP (productName) · hình ảnh (productImages) · đơn vị SXKD + địa chỉ (company, location) · công đoạn (journey)
@@ -24,7 +24,8 @@ readonly class TraceabilityData
      * @param  array<int, array{label: string, documents: array<int, array{name: string, number: ?string, issuedBy: ?string, issuedAt: ?Carbon, expiresAt: ?Carbon, files: array<int, array{url: string, thumb: string, preview: string, isPdf: bool}>}>}>  $documentGroups  hồ sơ doanh nghiệp công khai theo nhóm (tab "Thương hiệu")
      * @param  array<int, array{label: string, result: ?string, at: ?Carbon}>  $qualityChecks  3 khâu QC của doanh nghiệp (result null = chưa ghi nhận)
      * @param  ?string  $qcConclusion  kết luận lô: pass = đủ điều kiện xuất, fail = không đạt, null = chưa kết luận
-     * @param  array{code: string, status: string, shippedAt: Carbon, deliveredAt: ?Carbon, recipient: ?string, area: ?string, warehouse: ?string}|null  $delivery  giao vận (null = chưa xuất kho); recipient đã che tên, area chỉ phường/quận + tỉnh
+     * @param  array{code: string, status: string, shippedAt: Carbon, deliveredAt: ?Carbon, warehouse: ?string}|null  $delivery  giao vận (null = chưa xuất kho)
+     * @param  array{name: string, deliveryPoint: ?string, deliveryDate: ?Carbon}|null  $customer  khách hàng & điểm giao của đơn (null = tem không gắn đơn)
      */
     public function __construct(
         public string $traceCode,
@@ -51,6 +52,7 @@ readonly class TraceabilityData
         public array $qualityChecks = [],
         public ?string $qcConclusion = null,
         public ?array $delivery = null,
+        public ?array $customer = null,
         /** @var array<int, array{title: string, time: ?string, meta: ?string, done: bool, ok: ?bool}> khối "Hành trình hàng hóa" (5 mốc tóm tắt) */
         public array $journey = [],
         /** @var array<int, array{label: string, time: ?string, state: string, result: string}> khối "VISAFO đã thực hiện với lô này" (tab VISAFO) */

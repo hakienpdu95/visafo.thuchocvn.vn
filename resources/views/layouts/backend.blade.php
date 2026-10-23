@@ -10,7 +10,7 @@
     @endif
     <title>@yield('title', 'Dashboard') — {{ config('app.name', 'AdminPanel') }}</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'], 'build/backend')
+    @vite(['resources/css/app.css', 'resources/css/vendor-widgets.css', 'resources/js/app.js'], 'build/backend')
 
     @stack('styles')
 </head>
@@ -21,6 +21,7 @@
 <div class="admin-shell">
     @include('layouts.partials.sidebar')
     <div class="main-area" id="mainArea">
+        <script>try{if(localStorage.getItem('ap_sidebar_collapsed')==='1')document.currentScript.parentElement.classList.add('sidebar-collapsed')}catch(e){}</script>
         @include('layouts.partials.header')
         <main class="page-content">
             @section('breadcrumb')

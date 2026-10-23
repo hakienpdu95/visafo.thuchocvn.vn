@@ -100,7 +100,8 @@
 
                         </div>
 
-                        <div class="form-control sm:max-w-[calc(50%-0.5rem)]">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="form-control">
                             <label class="label py-0 pb-1.5">
                                 <span class="label-text font-medium">Nhóm nguồn</span>
                             </label>
@@ -113,6 +114,24 @@
                                 @endforeach
                             </select>
                             @error('source_group')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label py-0 pb-1.5">
+                                <span class="label-text font-medium">Nhóm hàng cung cấp <span class="text-error">*</span></span>
+                                <span class="label-text-alt text-xs text-base-content/40">Chọn 1 hoặc nhiều nhóm</span>
+                            </label>
+                            <select id="ts-supply_groups" name="supply_groups[]" multiple
+                                    data-req="Vui lòng chọn ít nhất 1 nhóm hàng cung cấp"
+                                    class="select select-bordered select-sm w-full ts-init {{ $errors->has('supply_groups') || $errors->has('supply_groups.*') ? 'select-error' : '' }}"
+                                    data-ts-placeholder="— Chọn nhóm hàng cung cấp —">
+                                @foreach(\Modules\Vendor\Enums\VendorSupplyGroup::cases() as $supply)
+                                <option value="{{ $supply->value }}" @selected(in_array($supply->value, (array) old('supply_groups', $vendor->supply_groups ?? []), true))>{{ $supply->label() }}</option>
+                                @endforeach
+                            </select>
+                            @error('supply_groups')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                            @error('supply_groups.*')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
+                        </div>
                         </div>
 
                         <x-address-picker

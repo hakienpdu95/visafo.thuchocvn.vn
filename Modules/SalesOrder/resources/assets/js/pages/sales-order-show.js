@@ -17,6 +17,10 @@ const COLUMNS = [
         title: 'Mã hàng', field: 'sku', width: 140, sorter: 'string',
         formatter: (cell) => '<span class="font-mono text-xs">' + esc(cell.getValue()) + '</span>',
     },
+    {
+        title: 'Ngành hàng', field: 'category_name', minWidth: 140, headerSort: false,
+        formatter: (cell) => cell.getValue() ? esc(cell.getValue()) : '<span class="text-base-content/25 text-xs">—</span>',
+    },
     { title: 'ĐVT', field: 'unit', width: 90, headerSort: false },
     {
         title: 'Số lượng', field: 'requested_qty', width: 150, hozAlign: 'right', headerSort: false,

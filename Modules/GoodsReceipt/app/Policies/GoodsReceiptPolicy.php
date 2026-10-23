@@ -27,4 +27,9 @@ class GoodsReceiptPolicy
     {
         return ModuleAccess::update($user, 'goods_receipt', $goodsReceipt);
     }
+
+    public function delete(User $user, GoodsReceipt $goodsReceipt): bool
+    {
+        return ModuleAccess::delete($user, 'goods_receipt', $goodsReceipt);
+    }
 }

@@ -4,6 +4,7 @@ namespace Modules\Vendor\Data\Requests;
 
 use Illuminate\Validation\Rule;
 use Modules\Vendor\Enums\VendorSourceGroup;
+use Modules\Vendor\Enums\VendorSupplyGroup;
 use Modules\Vendor\Enums\VendorStatus;
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Exists;
@@ -66,6 +67,8 @@ class UpdateVendorData extends Data
         public readonly VendorStatus $status,
 
         public readonly ?VendorSourceGroup $source_group = null,
+
+        public readonly ?array $supply_groups = null,
     ) {}
 
     public static function rules(): array
@@ -77,6 +80,8 @@ class UpdateVendorData extends Data
                 'required', 'string', 'regex:/^\d{10,13}$/',
                 Rule::unique('vendors', 'tax_code')->ignore($currentId),
             ],
+            'supply_groups'   => ['required', 'array', 'min:1'],
+            'supply_groups.*' => [Rule::enum(VendorSupplyGroup::class)],
         ];
     }
 
@@ -120,6 +125,11 @@ class UpdateVendorData extends Data
 
             'status.required' => 'Vui lòng chọn trạng thái.',
             'status.enum'     => 'Trạng thái không hợp lệ.',
+
+            'supply_groups.required' => 'Vui lòng chọn ít nhất 1 nhóm hàng cung cấp.',
+            'supply_groups.min'      => 'Vui lòng chọn ít nhất 1 nhóm hàng cung cấp.',
+            'supply_groups.array'    => 'Nhóm hàng cung cấp không hợp lệ.',
+            'supply_groups.*'        => 'Nhóm hàng cung cấp không hợp lệ.',
         ];
     }
 }

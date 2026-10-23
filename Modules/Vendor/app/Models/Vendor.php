@@ -19,6 +19,7 @@ use Modules\Product\Models\FarmingSource;
 use Modules\Product\Models\PartnerProduct;
 use Modules\Product\Models\VendorFarmingStep;
 use Modules\Vendor\Enums\VendorSourceGroup;
+use Modules\Vendor\Enums\VendorSupplyGroup;
 use Modules\Vendor\Enums\VendorStatus;
 
 class Vendor extends TenantAwareModel
@@ -42,6 +43,7 @@ class Vendor extends TenantAwareModel
         'name',
         'tax_code',
         'source_group',
+        'supply_groups',
         'address',
         'province_code',
         'ward_code',
@@ -63,10 +65,21 @@ class Vendor extends TenantAwareModel
         return [
             'status'       => VendorStatus::class,
             'source_group' => VendorSourceGroup::class,
+            'supply_groups' => 'array',
         ];
     }
 
-    public function province(): BelongsTo
+    /** @return string[] */
+    public function supplyGroupLabels(): array
+    {
+        return collect($this->supply_groups ?? [])
+            ->map(fn (string $value) => VendorSupplyGroup::tryFrom($value)?->label())
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+        public function province(): BelongsTo
     {
         return $this->belongsTo(Province::class, 'province_code', 'province_code');
     }

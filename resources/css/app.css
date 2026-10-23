@@ -35,6 +35,16 @@
  * ─────────────────────────────────────────────────────────────────── */
 [x-cloak] { display: none !important; }
 
+.ts-wrapper.multi.select { height: auto; min-height: var(--size); }
+.ts-dropdown .spinner.spinner { display: flex; align-items: center; gap: 8px; width: auto; height: auto; margin: 0; padding: 10px 12px; }
+.ts-dropdown .spinner.spinner::before { content: "Đang tải…"; order: 2; font-size: 12.5px; line-height: 1; color: rgba(100, 116, 139, .7); }
+.ts-dropdown .spinner.spinner::after {
+    width: 14px; height: 14px; margin: 0;
+    border: 1.5px solid rgba(100, 116, 139, .18);
+    border-top-color: var(--color-primary);
+    animation: lds-dual-ring .7s linear infinite;
+}
+
 /* ── Admin Layout ─────────────────────────────── */
 body { margin: 0; padding: 0; background: #fff; font-family: 'Open Sans', sans-serif; }
 .admin-shell { display: flex; overflow: hidden; }

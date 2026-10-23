@@ -3,6 +3,7 @@
 namespace Modules\Vendor\Data\Requests;
 
 use Modules\Vendor\Enums\VendorSourceGroup;
+use Modules\Vendor\Enums\VendorSupplyGroup;
 use Modules\Vendor\Enums\VendorStatus;
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Exists;
@@ -13,6 +14,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\Size;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Attributes\Validation\Unique;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 
 class StoreVendorData extends Data
@@ -69,7 +71,17 @@ class StoreVendorData extends Data
         public readonly VendorStatus $status = VendorStatus::Active,
 
         public readonly ?VendorSourceGroup $source_group = null,
+
+        public readonly ?array $supply_groups = null,
     ) {}
+
+    public static function rules(): array
+    {
+        return [
+            'supply_groups'   => ['required', 'array', 'min:1'],
+            'supply_groups.*' => [Rule::enum(VendorSupplyGroup::class)],
+        ];
+    }
 
     public static function messages(): array
     {
@@ -113,6 +125,11 @@ class StoreVendorData extends Data
             'status.enum'     => 'Trạng thái không hợp lệ.',
 
             'source_group.enum' => 'Nhóm nguồn không hợp lệ.',
+
+            'supply_groups.required' => 'Vui lòng chọn ít nhất 1 nhóm hàng cung cấp.',
+            'supply_groups.min'      => 'Vui lòng chọn ít nhất 1 nhóm hàng cung cấp.',
+            'supply_groups.array'    => 'Nhóm hàng cung cấp không hợp lệ.',
+            'supply_groups.*'        => 'Nhóm hàng cung cấp không hợp lệ.',
         ];
     }
 }

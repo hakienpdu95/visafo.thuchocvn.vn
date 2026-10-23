@@ -46,6 +46,7 @@ const JS_OUTPUT = {
 const CSS_OUTPUT = {
   // Core
   'app.css': 'assets/app.[hash].css',
+  'vendor-widgets.css': 'assets/vendor-widgets.[hash].css',
   // Widget libs CSS
   'filepond.css':                  'assets/filepond.[hash].css',
   'flatpickr.css':                 'assets/flatpickr.[hash].css',
@@ -148,6 +149,7 @@ export default defineConfig(({ mode }) => {
         input: [
           /* ── CORE ─────────────────────────────────────────────── */
           'resources/css/app.css',
+          'resources/css/vendor-widgets.css',
           'resources/js/app.js',
 
           /* ── WIDGET LIBS (lazy per-page) ──────────────────────── */

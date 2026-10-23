@@ -19,6 +19,7 @@
 
 const DEFAULTS = {
     create:         false,
+    loadingClass:   'ts-loading',
     maxOptions:     200,
     dropdownParent: 'body',
     plugins:        ['clear_button'],
@@ -161,7 +162,7 @@ export function initAllTomSelects(container = document, afterInit) {
         if (remoteUrl) {
             createTsRemote(el, { url: remoteUrl, placeholder });
         } else {
-            createTs(el, { placeholder });
+            createTs(el, el.multiple ? { placeholder, plugins: ['remove_button', 'clear_button'] } : { placeholder });
         }
     }
     afterInit?.();

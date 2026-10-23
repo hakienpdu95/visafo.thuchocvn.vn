@@ -84,7 +84,7 @@ class PrintLog extends TenantAwareModel
 
     public function item(): BelongsTo
     {
-        return $this->belongsTo(SalesOrderItem::class, 'order_item_id');
+        return $this->belongsTo(SalesOrderItem::class, 'order_item_id')->withTrashed();
     }
 
     /** Mẫu tem đã chọn khi in (null = theo sản phẩm / mặc định). */

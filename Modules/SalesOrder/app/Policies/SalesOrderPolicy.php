@@ -20,11 +20,21 @@ class SalesOrderPolicy
 
     public function print(User $user, SalesOrder $salesOrder): bool
     {
-        return ModuleAccess::update($user, 'sales_order', $salesOrder);
+        return ModuleAccess::update($user, 'sales_order', $salesOrder) && ! $salesOrder->trashed();
     }
 
     public function create(User $user): bool
     {
         return ModuleAccess::create($user, 'sales_order');
+    }
+
+    public function update(User $user, SalesOrder $salesOrder): bool
+    {
+        return ModuleAccess::update($user, 'sales_order', $salesOrder) && $salesOrder->isEditable();
+    }
+
+    public function delete(User $user, SalesOrder $salesOrder): bool
+    {
+        return ModuleAccess::delete($user, 'sales_order', $salesOrder) && $salesOrder->deleteBlockReason() === null;
     }
 }

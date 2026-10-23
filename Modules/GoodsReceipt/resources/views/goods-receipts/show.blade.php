@@ -36,7 +36,23 @@
         <h1 class="text-2xl font-bold text-base-content font-mono">{{ $goodsReceipt->misa_ref_id }}</h1>
         <p class="text-sm text-base-content/50 mt-0.5">{{ $goodsReceipt->vendor?->name ?? $goodsReceipt->supplier_name ?? '—' }}</p>
     </div>
-    <a href="{{ route('backend.goods-receipts.index') }}" class="btn btn-ghost btn-sm">Danh sách</a>
+    <div class="flex items-center gap-2">
+        @php $editable = $goodsReceipt->isEditable(); @endphp
+        @if($editable)
+        @can('update', $goodsReceipt)
+        <a href="{{ route('backend.goods-receipts.edit', $goodsReceipt) }}" class="btn btn-sm btn-outline gap-1.5">Sửa phiếu</a>
+        @endcan
+        @can('delete', $goodsReceipt)
+        <form method="POST" action="{{ route('backend.goods-receipts.destroy', $goodsReceipt) }}"
+              onsubmit="return confirm('Xóa phiếu {{ $goodsReceipt->misa_ref_id }} và toàn bộ lô hàng của phiếu? Thao tác này không thể hoàn tác.')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-sm btn-outline btn-error gap-1.5">Xóa phiếu</button>
+        </form>
+        @endcan
+        @endif
+        <a href="{{ route('backend.goods-receipts.index') }}" class="btn btn-ghost btn-sm">Danh sách</a>
+    </div>
 </div>
 
 @if(session('success'))
@@ -65,6 +81,12 @@
                 </div>
 
                 <div class="space-y-4">
+                    @if($goodsReceipt->isManual())
+                    <div>
+                        <dt class="text-xs text-base-content/50 mb-0.5">Nhà cung cấp</dt>
+                        <dd>{{ $goodsReceipt->vendor?->name ?? $goodsReceipt->supplier_name ?? '—' }}</dd>
+                    </div>
+                    @else
                     <div>
                         <dt class="text-xs text-base-content/50 mb-0.5">Nhà cung cấp (Excel)</dt>
                         <dd>{{ $goodsReceipt->supplier_name ?? '—' }}</dd>
@@ -73,15 +95,16 @@
                         <dt class="text-xs text-base-content/50 mb-0.5">Nhà cung cấp (khớp hệ thống)</dt>
                         <dd>{{ $goodsReceipt->vendor?->name ?? '— (chưa khớp)' }}</dd>
                     </div>
+                    @endif
                 </div>
 
                 <div class="space-y-4">
                     <div>
                         <dt class="text-xs text-base-content/50 mb-0.5">File nguồn</dt>
-                        <dd class="font-mono text-xs break-all">{{ $goodsReceipt->source_file_name ?? '—' }}</dd>
+                        <dd class="font-mono text-xs break-all">{{ $goodsReceipt->source_file_name ?? 'Nhập tay' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs text-base-content/50 mb-0.5">Người import</dt>
+                        <dt class="text-xs text-base-content/50 mb-0.5">{{ $goodsReceipt->isManual() ? 'Người tạo' : 'Người import' }}</dt>
                         <dd>{{ $goodsReceipt->importedBy?->name ?? '—' }}</dd>
                     </div>
                 </div>

@@ -55,7 +55,7 @@
                         <option value="failed">Đã kiểm tra — Không đạt</option>
                     </select>
                 </div>
-                <button @click="reset()" x-show="hasFilters" x-transition class="btn btn-ghost btn-sm gap-1.5 text-error">Đặt lại</button>
+                <button @click="reset()" x-show="hasFilters" x-cloak x-transition class="btn btn-ghost btn-sm gap-1.5 text-error">Đặt lại</button>
             </div>
         </div>
     </div>

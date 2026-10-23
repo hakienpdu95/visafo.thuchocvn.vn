@@ -11,6 +11,7 @@ import 'tom-select/dist/css/tom-select.css';
 
 const DEFAULTS = {
     create:          false,
+    loadingClass:    'ts-loading',
     sortField:       { field: 'text', direction: 'asc' },
     placeholder:     'Chọn...',
     searchField:     ['text', 'value'],

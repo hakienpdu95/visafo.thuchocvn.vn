@@ -17,6 +17,7 @@ class ListVendorsQuery implements QueryInterface
         public readonly ?string $wardCode     = null,
         public readonly ?string $phoneNumber  = null,
         public readonly ?string $sourceGroup  = null,
+        public readonly ?string $supplyGroup  = null,
         public readonly ?string $hasDocuments = null,
     ) {}
 }

@@ -67,6 +67,15 @@
                     <h2 class="text-base font-semibold mb-3">Thông tin pháp nhân</h2>
                     <dl class="text-sm space-y-2">
                         <div><dt class="text-base-content/50 text-xs">Nhóm nguồn</dt><dd>{{ $vendor->source_group?->label() ?? '—' }}</dd></div>
+                        <div><dt class="text-base-content/50 text-xs">Nhóm hàng cung cấp</dt>
+                            <dd>
+                                @forelse($vendor->supplyGroupLabels() as $label)
+                                <span class="badge badge-sm badge-ghost mr-1 mb-1">{{ $label }}</span>
+                                @empty
+                                —
+                                @endforelse
+                            </dd>
+                        </div>
                         <div><dt class="text-base-content/50 text-xs">Địa chỉ</dt>
                             <dd>
                                 {{ $vendor->address ?? '—' }}

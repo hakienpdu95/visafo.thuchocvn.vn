@@ -52,6 +52,10 @@ class ListVendorsHandler implements QueryHandlerInterface
             $q->where('source_group', $query->sourceGroup);
         }
 
+        if ($query->supplyGroup !== null && $query->supplyGroup !== '') {
+            $q->whereJsonContains('supply_groups', $query->supplyGroup);
+        }
+
         if ($query->hasDocuments === 'yes') {
             $q->has('documents');
         } elseif ($query->hasDocuments === 'no') {

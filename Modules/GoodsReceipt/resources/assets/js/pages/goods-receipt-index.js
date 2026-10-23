@@ -31,7 +31,10 @@ const COLUMNS = [
     },
     {
         title: 'File nguồn', field: 'source_file_name', minWidth: 200, headerSort: false,
-        formatter(cell) { return '<span class="text-xs text-base-content/60">' + esc(cell.getValue()) + '</span>'; },
+        formatter(cell) {
+            const v = cell.getValue();
+            return v ? '<span class="text-xs text-base-content/60">' + esc(v) + '</span>' : '<span class="badge badge-sm badge-ghost">Nhập tay</span>';
+        },
     },
     {
         title: 'Nhập lúc', field: 'created_at', width: 140, hozAlign: 'center', sorter: 'string',

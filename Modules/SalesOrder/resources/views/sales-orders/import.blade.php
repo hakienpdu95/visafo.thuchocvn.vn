@@ -118,9 +118,9 @@
                 <label for="delivery_date" class="block text-sm font-medium text-gray-800 mb-2">
                     <span class="text-red-600">*</span> Ngày giao hàng
                 </label>
-                <input type="date" id="delivery_date" name="delivery_date" required
+                <input type="text" id="delivery_date" name="delivery_date" required
                        value="{{ old('delivery_date', $defaultDeliveryDate) }}"
-                       class="input input-bordered w-full @error('delivery_date') input-error @enderror">
+                       class="input input-bordered w-full fp-init @error('delivery_date') input-error @enderror">
                 <span class="block text-xs text-gray-500 mt-1">Áp dụng cho mọi phiếu trong lần nhập này.</span>
                 @error('delivery_date')
                 <span class="block text-error text-xs mt-1">{{ $message }}</span>
@@ -160,5 +160,5 @@
 @endsection
 
 @push('scripts')
-    @vite(['Modules/SalesOrder/resources/assets/js/salesorder.js'], 'build/backend')
+    @vite(['resources/js/modules/flatpickr.js', 'Modules/SalesOrder/resources/assets/js/salesorder.js'], 'build/backend')
 @endpush

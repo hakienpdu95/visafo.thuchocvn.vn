@@ -61,7 +61,7 @@ class TraceReview extends TenantAwareModel
 
     public function salesOrder(): BelongsTo
     {
-        return $this->belongsTo(SalesOrder::class);
+        return $this->belongsTo(SalesOrder::class)->withTrashed();
     }
 
     public function product(): BelongsTo
