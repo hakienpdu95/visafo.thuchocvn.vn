@@ -14,6 +14,7 @@ class SetProductCategoryCommand extends Command
 {
     protected $signature = 'app:set-product-category
         {--auto : Tự xác định nhóm theo tên sản phẩm trong DB (thịt/thủy sản, rau củ quả, chế biến, gia vị & đồ khô) — mặc định áp dụng cho nhóm fresh_food}
+        {--only= : Dùng với --auto: chỉ áp dụng khi nhóm tự xác định trùng mã này (VD: dry_goods_spices)}
         {--to= : Mã nhóm hàng đích (categories.code); "none" = bỏ nhóm}
         {--from= : Chỉ lấy sản phẩm đang ở nhóm này; "none" = chưa có nhóm}
         {--sku=* : SKU cần đổi (lặp lại option hoặc ngăn cách bằng dấu phẩy)}
@@ -33,6 +34,12 @@ class SetProductCategoryCommand extends Command
         $auto = (bool) $this->option('auto');
         $to   = $this->option('to');
         $from = $this->option('from') ?? ($auto ? self::DEFAULT_AUTO_FROM : null);
+        $only = $this->option('only');
+
+        if ($only !== null && ! $auto) {
+            $this->error('--only chỉ dùng cùng --auto.');
+            return self::FAILURE;
+        }
 
         if ($auto && $to !== null) {
             $this->error('Chỉ dùng một trong hai: --auto hoặc --to.');
@@ -56,7 +63,7 @@ class SetProductCategoryCommand extends Command
         $codeById    = Category::withTrashed()->pluck('code', 'id');
 
         $required = $auto
-            ? [ProductCategoryClassifier::MEAT_SEAFOOD, ProductCategoryClassifier::PRODUCE, ProductCategoryClassifier::PROCESSED, ProductCategoryClassifier::DRY_GOODS, $from]
+            ? [ProductCategoryClassifier::MEAT_SEAFOOD, ProductCategoryClassifier::PRODUCE, ProductCategoryClassifier::PROCESSED, ProductCategoryClassifier::DRY_GOODS, $from, $only]
             : [$to, $from];
         $unknown = array_filter(
             array_unique($required),
@@ -83,6 +90,10 @@ class SetProductCategoryCommand extends Command
         foreach ($products as $product) {
             $current = $product->category_id !== null ? ($codeById[$product->category_id] ?? '?') : null;
             $target  = $auto ? $classifier->suggest($product->name) : $fixedTarget;
+
+            if ($only !== null && $target !== $only) {
+                continue;
+            }
 
             if ($auto && $target === null) {
                 $undecided[] = [$product->sku, $product->name, $current ?? '—'];

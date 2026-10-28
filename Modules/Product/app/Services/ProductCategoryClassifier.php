@@ -15,10 +15,14 @@ class ProductCategoryClassifier
         'dầu ăn', 'dầu hào', 'dầu điều', 'dầu vừng', 'dầu mè', 'dầu oliu', 'dầu đậu nành', 'tương ớt', 'tương cà', 'tương đen', 'tương bần',
         'sốt', 'mù tạt', 'tiêu đen', 'tiêu trắng', 'tiêu sọ', 'tiêu xay', 'tiêu bột', 'hạt tiêu', 'ớt bột', 'ớt khô', 'quế', 'hoa hồi', 'đại hồi', 'thảo quả', 'hạt dổi', 'mắc khén', 'ngũ vị hương', 'cà ri', 'cari',
         'gạo', 'nếp', 'lạc', 'đậu phộng', 'vừng', 'mè', 'hạt điều', 'hạt sen', 'đậu xanh', 'đậu đen', 'đậu đỏ', 'đậu tương',
-        'miến', 'mì tôm', 'mì gói', 'mỳ', 'mì sợi', 'mì ý', 'nui', 'bún khô', 'phở khô', 'bánh đa khô', 'mộc nhĩ', 'nấm hương khô', 'hành phi', 'tỏi phi',
+        'miến ', 'mì tôm', 'mì gói', 'mỳ', 'mì sợi', 'mì ý', 'nui', 'bún khô', 'phở khô', 'bánh đa khô', 'mộc nhĩ', 'nấm hương khô', 'hành phi', 'tỏi phi',
     ];
 
     private const DRY_GOODS_KEYWORDS = ['khô', 'sấy', 'gia vị'];
+
+    private const NON_FOOD_PREFIXES = [
+        'bột giặt', 'nước giặt', 'nước rửa', 'nước lau', 'miếng', 'cước', 'khăn', 'lọ', 'hũ', 'hộp', 'túi', 'găng', 'giấy', 'chổi', 'xà phòng',
+    ];
 
     private const PROCESSED_PREFIXES = [
         'phở', 'bún', 'bánh', 'xôi', 'đậu phụ', 'đậu hũ', 'váng đậu', 'mề chay',
@@ -70,6 +74,12 @@ class ProductCategoryClassifier
     public function isDryGoods(string $name): bool
     {
         $name = mb_strtolower(trim($name));
+
+        foreach (self::NON_FOOD_PREFIXES as $prefix) {
+            if (str_starts_with($name, $prefix)) {
+                return false;
+            }
+        }
 
         foreach (self::DRY_GOODS_PREFIXES as $prefix) {
             if (str_starts_with($name, $prefix)) {

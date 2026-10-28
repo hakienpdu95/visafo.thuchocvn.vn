@@ -137,5 +137,10 @@ sudo systemctl reload nginx
      nếu cần seed lại role/permission + demo data sau khi fresh.
 
 
-php artisan migrate --path=Modules/Compliance/database/migrations/2026_10_28_100000_add_trace_visibility_to_compliance_documents_table.php
-php artisan migrate --path=Modules/Product/database/migrations/2026_10_28_100000_add_vas_traceability_master_data.php
+3. Phân loại sản phẩm Gia vị & Đồ khô. Chạy xem trước, chưa ghi DB:
+php artisan app:set-product-category --auto --only=dry_goods_spices --from=processed_food --dry-run
+php artisan app:set-product-category --auto --only=dry_goods_spices --from=fresh_produce --dry-run
+php artisan app:set-product-category --auto --only=dry_goods_spices --from=additives_spices --dry-run
+php artisan app:set-product-category --auto --only=dry_goods_spices --from=prepackaged_food --dry-run
+php artisan app:set-product-category --auto --only=dry_goods_spices --from=none --dry-run
+Danh sách in ra đúng thì chạy lại lệnh nào có thay đổi, bỏ --dry-run. Lệnh sẽ hỏi xác nhận trước khi ghi.
