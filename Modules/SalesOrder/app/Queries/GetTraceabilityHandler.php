@@ -9,11 +9,13 @@ use App\Shared\Contracts\QueryInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
+use Modules\Compliance\Enums\TraceVisibility;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\Compliance\Models\InternalFacility;
 use Modules\GoodsReceipt\Enums\QualityCheckStage;
 use Modules\GoodsReceipt\Models\BatchQualityCheck;
 use Modules\GoodsReceipt\Models\ProductBatch;
+use Modules\GoodsReceipt\Services\BatchDocumentGate;
 use Modules\Product\Enums\DocumentGroupType;
 use Modules\Product\Models\FarmingBatch;
 use Modules\Product\Models\FarmingSource;
@@ -36,7 +38,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         'product_declaration', 'product_test_report', 'product_production_process',
     ];
 
-    private const BATCH_PUBLIC_DOCUMENT_CODES = ['receipt_delivery_record', 'batch_residue_test', 'product_test_report', 'supplier_test_report', 'supplier_vet'];
+    private const BATCH_PUBLIC_DOCUMENT_CODES = ['receipt_delivery_record', 'batch_residue_test', 'product_test_report', 'supplier_test_report', 'supplier_vet', 'supplier_delivery_note', 'supplier_attp'];
 
     /** Định dạng file hồ sơ doanh nghiệp được phát ra trang công khai (xem trực tiếp trên trình duyệt). */
     public const PUBLIC_DOCUMENT_MIMES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -122,8 +124,9 @@ class GetTraceabilityHandler implements QueryHandlerInterface
             statusReason: $log->status_reason,
             brandStory: trim((string) config('trace.brand_story')),
             documentGroups: $this->documentGroups($log->trace_code),
-            supplier: $vendor ? $this->supplier($log, $vendor, $isOwnFarm, $company) : null,
-            batchDocuments: $this->documentRows(self::batchDocumentQuery($batch), $log->trace_code),
+            supplier: $vendor ? $this->supplier($log, $vendor, $isOwnFarm, $company) : $this->manualSupplier($log),
+            batchDocuments: $this->documentRows(self::batchDocumentQuery($batch), $log->trace_code, true),
+            quarantineVerified: $batch !== null && BatchDocumentGate::requiresQuarantine($batch->product) && app(BatchDocumentGate::class)->hasQuarantine($batch),
             hasBatch: $batch !== null,
             qualityChecks: $this->qualityCheckRows($qualityChecks),
             qcConclusion: $this->qcConclusion($qualityChecks),
@@ -200,6 +203,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
 
         return ComplianceDocument::query()
             ->where('status', ComplianceDocumentStatus::Active->value)
+            ->where('trace_visibility', '!=', TraceVisibility::Hidden->value)
             ->where(fn (Builder $q) => $q->whereNull('expiration_date')->orWhereDate('expiration_date', '>=', today()))
             ->whereHas('documentType', fn (Builder $t) => $t->whereIn('code', self::BATCH_PUBLIC_DOCUMENT_CODES))
             ->where(fn (Builder $q) => $q
@@ -251,6 +255,7 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         return [
             'name'      => $isOwn ? $company['name'] : $vendor->name,
             'isOwn'     => $isOwn,
+            'linked'    => true,
             'taxCode'   => $vendor->tax_code ?: null,
             'area'      => implode(', ', array_filter([$vendor->ward?->name, $vendor->province?->name])) ?: null,
             'address'   => $isOwn ? ($company['address'] ?: null) : (implode(', ', array_unique(array_filter([
@@ -270,27 +275,56 @@ class GetTraceabilityHandler implements QueryHandlerInterface
         ];
     }
 
-    private function documentRows(?Builder $query, string $traceCode): array
+    private function documentRows(?Builder $query, string $traceCode, bool $honorVisibility = false): array
     {
         return ($query?->with(['documentType', 'media'])->orderBy('issue_date')->get() ?? collect())
-            ->map(fn (ComplianceDocument $doc) => [
-                'name'    => $doc->custom_name ?: ($doc->documentType?->name ?? 'Hồ sơ'),
-                'caption' => implode(' · ', array_filter([
-                    $doc->custom_name ?: $doc->documentType?->name,
-                    $doc->document_number ? 'Số ' . $doc->document_number : null,
-                    $doc->issued_by ? 'Cấp bởi ' . $doc->issued_by : null,
-                    $doc->expiration_date ? 'Hiệu lực đến ' . $doc->expiration_date->format('d/m/Y') : null,
-                ])),
-                'files'   => $doc->getMedia('attachments_private')
-                    ->filter(fn (Media $m) => in_array($m->mime_type, self::PUBLIC_DOCUMENT_MIMES, true))
-                    ->map(fn (Media $m) => [
-                        'url'     => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id]),
-                        'preview' => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id, 'variant' => 'preview']),
-                        'isPdf'   => $m->mime_type === 'application/pdf',
-                    ])->values()->all(),
-            ])
-            ->filter(fn ($d) => $d['files'] !== [])
+            ->map(function (ComplianceDocument $doc) use ($traceCode, $honorVisibility) {
+                $statusOnly = $honorVisibility && $doc->trace_visibility !== TraceVisibility::Full;
+                if ($statusOnly && $doc->getMedia('attachments_private')->isEmpty()) {
+                    return null;
+                }
+
+                return [
+                    'name'       => $doc->custom_name ?: ($doc->documentType?->name ?? 'Hồ sơ'),
+                    'statusOnly' => $statusOnly,
+                    'caption'    => implode(' · ', array_filter($statusOnly ? [
+                        'Đã đạt kiểm định',
+                        $doc->custom_name ?: $doc->documentType?->name,
+                        $doc->issued_by ? 'Cấp bởi ' . $doc->issued_by : null,
+                        $doc->issue_date ? 'Ngày ' . $doc->issue_date->format('d/m/Y') : null,
+                    ] : [
+                        $doc->custom_name ?: $doc->documentType?->name,
+                        $doc->document_number ? 'Số ' . $doc->document_number : null,
+                        $doc->issued_by ? 'Cấp bởi ' . $doc->issued_by : null,
+                        $doc->expiration_date ? 'Hiệu lực đến ' . $doc->expiration_date->format('d/m/Y') : null,
+                    ])),
+                    'files'      => $statusOnly ? [] : $doc->getMedia('attachments_private')
+                        ->filter(fn (Media $m) => in_array($m->mime_type, self::PUBLIC_DOCUMENT_MIMES, true))
+                        ->map(fn (Media $m) => [
+                            'url'     => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id]),
+                            'preview' => route('trace.document', ['trace_code' => $traceCode, 'media' => $m->id, 'variant' => 'preview']),
+                            'isPdf'   => $m->mime_type === 'application/pdf',
+                        ])->values()->all(),
+                ];
+            })
+            ->filter(fn ($d) => $d !== null && ($d['statusOnly'] || $d['files'] !== []))
             ->values()->all();
+    }
+
+    private function manualSupplier(PrintLog $log): ?array
+    {
+        $name = trim((string) $log->supplier_name);
+
+        return $name === '' ? null : [
+            'name'           => $name,
+            'isOwn'          => false,
+            'linked'         => false,
+            'taxCode'        => null,
+            'area'           => null,
+            'address'        => null,
+            'documents'      => [],
+            'partnerProduct' => null,
+        ];
     }
 
     /** Mô tả dự phòng khi sản phẩm chưa nhập mô tả: ghép từ dữ liệu thật (nguồn cung, vùng trồng), không bịa thông tin. */

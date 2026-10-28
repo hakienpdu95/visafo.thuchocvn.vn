@@ -4,6 +4,7 @@ namespace Modules\SalesOrder\Support;
 
 use Illuminate\Validation\ValidationException;
 use Modules\GoodsReceipt\Models\ProductBatch;
+use Modules\GoodsReceipt\Services\BatchDocumentGate;
 use Modules\Product\Enums\PartnerProductStatus;
 use Modules\Product\Models\PartnerProduct;
 use Modules\SalesOrder\Models\SalesOrderItem;
@@ -78,12 +79,15 @@ class PrintSourceResolver
     /** Lô nhập kho của sản phẩm (mới nhất trước) — ô "Lô xuất kho" của modal in tem / sửa thông tin TXNG. */
     public function batchOptions(SalesOrderItem $item): array
     {
-        return ProductBatch::query()
+        $batches = ProductBatch::query()
             ->where('product_id', $item->product_id)
             ->with('goodsReceipt:id,misa_ref_id,receipt_date,vendor_id,supplier_name', 'goodsReceipt.vendor:id,name', 'farmingBatch:id,partner_product_id')
             ->latest('created_at')->latest('id')
             ->limit(50)
-            ->get()
+            ->get();
+        $quarantined = BatchDocumentGate::requiresQuarantine($item->product) ? app(BatchDocumentGate::class)->quarantinedBatchIds($batches) : null;
+
+        return $batches
             ->map(fn (ProductBatch $b) => [
                 'value'         => $b->id,
                 'text'          => BulkPrintPrefillResolver::batchText($b),
@@ -93,6 +97,9 @@ class PrintSourceResolver
                 'partner_product_id' => $b->goodsReceipt?->vendor_id ? $b->farmingBatch?->partner_product_id : null,
                 'supplier_name' => $b->goodsReceipt?->vendor_id ? null : $b->goodsReceipt?->supplier_name,
                 'in_stock'      => (float) $b->current_qty > 0,
+                'mfg_date'      => $b->mfg_date?->toDateString(),
+                'exp_date'      => $b->exp_date?->toDateString(),
+                'has_quarantine' => $quarantined === null || in_array($b->id, $quarantined, true),
             ])
             ->all();
     }

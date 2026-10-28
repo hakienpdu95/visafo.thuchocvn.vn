@@ -12,6 +12,7 @@ use Modules\GoodsReceipt\Data\Requests\UpdateProductBatchData;
 use Modules\GoodsReceipt\Enums\QualityCheckResult;
 use Modules\GoodsReceipt\Enums\QualityCheckStage;
 use Modules\GoodsReceipt\Models\ProductBatch;
+use Modules\GoodsReceipt\Services\BatchDocumentGate;
 
 class ProductBatchController extends Controller
 {
@@ -22,11 +23,17 @@ class ProductBatchController extends Controller
         // NCC có lô canh tác cho mặt hàng này → bắt buộc chọn đúng lô nguồn (trang truy xuất đi theo khóa này).
         $candidateIds = ProductBatch::farmingBatchCandidates($productBatch->goodsReceipt?->vendor_id, [$productBatch->product_id])
             ->pluck('farming_batches.id')->all();
+        $dated = BatchDocumentGate::enforced() && BatchDocumentGate::requiresDates($productBatch->product);
         $request->validate([
             'farming_batch_id' => [$candidateIds ? 'required' : 'nullable', Rule::in($candidateIds)],
+            'mfg_date'         => [$dated ? 'required' : 'nullable', 'date'],
+            'exp_date'         => array_filter([$dated ? 'required' : 'nullable', 'date', $request->filled('mfg_date') ? 'after_or_equal:mfg_date' : null]),
         ], [
             'farming_batch_id.required' => 'Nhà cung cấp có nhật ký canh tác cho mặt hàng này — vui lòng chọn lô canh tác nguồn.',
             'farming_batch_id.in'       => 'Lô canh tác không thuộc nhà cung cấp / mặt hàng của lô nhập này.',
+            'mfg_date.required'         => BatchDocumentGate::MFG_MISSING,
+            'exp_date.required'         => BatchDocumentGate::EXP_MISSING,
+            'exp_date.after_or_equal'   => 'HSD phải sau hoặc bằng NSX.',
         ]);
 
         // Bỏ các dòng thông tin bổ sung trống hoàn toàn.

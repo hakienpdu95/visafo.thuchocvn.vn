@@ -137,14 +137,14 @@
                         <td class="lbl" style="font-weight: 600;">NSX</td><td class="colon">:</td>
                         <td class="val">
                             <div style="display: flex; gap: 3mm; align-items: center;">
-                                <span>{{ $log->mfg_date?->format('d/m/Y') ?? '—' }}</span>
+                                <span style="font-weight: 700;">{{ $log->mfg_date?->format('d/m/Y') ?? '—' }}</span>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td class="lbl" style="font-weight: 700;">HSD</td><td class="colon">:</td>
                         <td class="val">
-                            <div class="one-line">
+                            <div class="one-line" style="font-weight: 700;">
                                 {{ $log->exp_date?->format('d/m/Y') ?? '—' }}
                             </div>
                         </td>

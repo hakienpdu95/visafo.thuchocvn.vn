@@ -20,6 +20,8 @@ return [
 
     // Vendor đại diện "VISAFO - Vùng trồng tự quản" (ID, cách nhau dấu phẩy). Vùng trồng/lô canh tác gắn vendor này
     // hiển thị là "Vùng trồng của VISAFO". Không khai báo thì nhận diện theo MST trùng MST trụ sở chính.
+    'document_gate' => (bool) env('TRACE_DOCUMENT_GATE', false),
+
     'own_vendor_ids' => array_values(array_filter(array_map('trim', explode(',', (string) env('TRACE_OWN_VENDOR_IDS', ''))))),
 
     // Khối "Câu chuyện thương hiệu" ở tab Thương hiệu (tạm cấu hình tại đây; xuống dòng = tách đoạn).

@@ -21,6 +21,7 @@
     .tpl-produce .info-table td { padding-left: 1mm; word-break: break-word; }
     .tpl-produce .info-table .product td { font-size: 7pt; font-weight: 700; text-transform: uppercase; }
     .tpl-produce .info-table .weight td { font-size: 7pt; font-weight: 700; }
+    .tpl-produce .info-table .dates td { font-weight: 700; }
     /* Dòng kẻ liền phân cách khối "sản phẩm/khách hàng/giao/khối lượng" với khối "NSX/HSD/nguồn cung/mã lô" */
     .tpl-produce .info-table .block-divider th,
     .tpl-produce .info-table .block-divider td { border-top: .75pt solid #000; padding-top: .6mm; }
@@ -58,11 +59,11 @@
                     <th>SL/KL</th>
                     <td>{{ str_replace('.', ',', rtrim(rtrim(number_format((float) $log->weight_per_label, 3, '.', ''), '0'), '.')) }} {{ $unit }}</td>
                 </tr>
-                <tr class="block-divider">
+                <tr class="block-divider dates">
                     <th>NSX</th>
                     <td>{{ $log->mfg_date?->format('d/m/Y') ?? '—' }}</td>
                 </tr>
-                <tr>
+                <tr class="dates">
                     <th>HSD</th>
                     <td>{{ $log->exp_date?->format('d/m/Y') ?? '—' }}</td>
                 </tr>

@@ -4,9 +4,12 @@
 @section('content')
 @php
     $batchesByProduct = $goodsReceipt->batches->keyBy('product_id');
-    $itemRows = $goodsReceipt->items->map(function ($item) use ($batchesByProduct, $farmingBatchOptions) {
+    $gateEnforced = \Modules\GoodsReceipt\Services\BatchDocumentGate::enforced();
+    $itemRows = $goodsReceipt->items->map(function ($item) use ($batchesByProduct, $farmingBatchOptions, $quarantinedBatchIds) {
         $batch = $batchesByProduct->get($item->product_id);
         $canEdit = $batch && auth()->user()->can('update', $batch);
+        $requiresDates = \Modules\GoodsReceipt\Services\BatchDocumentGate::requiresDates($batch?->product ?? $item->product);
+        $enforced = \Modules\GoodsReceipt\Services\BatchDocumentGate::enforced();
 
         return [
             'line_no'    => $item->line_no,
@@ -19,6 +22,9 @@
             'mfg_date'   => $batch?->mfg_date?->format('Y-m-d'),
             'exp_date'   => $batch?->exp_date?->format('Y-m-d'),
             'shelf_life_days' => $item->product?->shelf_life_days,
+            'requires_dates' => $enforced && $requiresDates,
+            'missing_dates' => $batch !== null && $requiresDates && ($batch->mfg_date === null || $batch->exp_date === null),
+            'missing_quarantine' => $batch !== null && \Modules\GoodsReceipt\Services\BatchDocumentGate::requiresQuarantine($batch->product) && ! in_array($batch->id, $quarantinedBatchIds, true),
             'attributes' => $batch?->extraAttributes->map(fn ($a) => ['key' => $a->attribute_key, 'value' => (string) $a->attribute_value])->values() ?? [],
             'update_url' => $canEdit ? route('backend.product-batches.update', $batch) : null,
             'farming_batch_id'      => $batch?->farming_batch_id,
@@ -31,6 +37,8 @@
             'qc_url' => $canEdit ? route('backend.product-batches.quality-checks.store', $batch) : null,
         ];
     })->values();
+    $missingQuarantine = $itemRows->where('missing_quarantine', true)->count();
+    $missingDates = $itemRows->where('missing_dates', true)->count();
 @endphp
 <div class="flex items-center justify-between mb-6">
     <div>
@@ -64,6 +72,17 @@
 @endif
 
 <div class="flex flex-col gap-6">
+
+    @if($missingQuarantine > 0 || $missingDates > 0)
+    <div class="alert {{ $gateEnforced ? 'alert-error' : 'alert-warning' }} py-3 px-4 text-sm flex flex-col items-start gap-1">
+        @if($missingQuarantine > 0)
+        <p><strong>{{ $missingQuarantine }} lô Thịt / Thủy sản chưa có Phiếu kiểm dịch Thú y</strong> (Thông báo 26/TB-VAS){{ $gateEnforced ? ' — bắt buộc bổ sung hồ sơ trước khi in tem xuất kho.' : '.' }}</p>
+        @endif
+        @if($missingDates > 0)
+        <p><strong>{{ $missingDates }} lô Gia vị / Đồ khô chưa có đủ NSX và HSD</strong>{{ $gateEnforced ? ' — không thể in tem cho đến khi bổ sung.' : '.' }}</p>
+        @endif
+    </div>
+    @endif
 
     <div class="card w-full bg-base-100 shadow-sm border border-base-200">
         <div class="card-body p-5">
@@ -122,12 +141,12 @@
     <div class="card w-full bg-base-100 shadow-sm border border-base-200">
         <div class="card-body p-5">
             <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide">Hồ sơ lô hàng</p>
-            <p class="text-xs text-base-content/50 mb-4">Biên bản giao nhận, phiếu test dư lượng, kiểm nghiệm… của chuyến hàng này — hiển thị công khai ở khối "Hành trình hàng hóa" trên trang truy xuất của tem gắn lô tương ứng.</p>
+            <p class="text-xs text-base-content/50 mb-4">Phiếu kiểm dịch, phiếu xuất kho NCC, biên bản giao nhận, phiếu test dư lượng… của chuyến hàng này. Trên trang truy xuất của tem gắn lô tương ứng, mỗi hồ sơ hiển thị theo mức đã chọn: chỉ trạng thái "Đã đạt kiểm định" (mặc định), công khai cả file, hoặc ẩn.</p>
 
             @if($documents->isNotEmpty())
             <div class="overflow-x-auto mb-5">
                 <table class="table table-sm">
-                    <thead><tr><th>Loại hồ sơ</th><th>Áp dụng cho</th><th>Số hiệu / Ngày</th><th>File</th><th></th></tr></thead>
+                    <thead><tr><th>Loại hồ sơ</th><th>Áp dụng cho</th><th>Số hiệu / Ngày</th><th>File</th><th>Trang truy xuất</th><th></th></tr></thead>
                     <tbody>
                         @foreach($documents as $doc)
                         <tr>
@@ -138,6 +157,21 @@
                                 @foreach($doc->getMedia('attachments_private') as $m)
                                 <a href="{{ app(\App\Services\Media\MediaUrlService::class)->url($m) }}" target="_blank" class="link link-primary block truncate max-w-56">{{ $m->file_name }}</a>
                                 @endforeach
+                            </td>
+                            <td>
+                                @php $visibility = $doc->trace_visibility ?? \Modules\Compliance\Enums\TraceVisibility::Status; @endphp
+                                @can('update', $goodsReceipt)
+                                <form method="POST" action="{{ route('backend.goods-receipts.documents.update', [$goodsReceipt, $doc]) }}">
+                                    @csrf @method('PATCH')
+                                    <select name="trace_visibility" onchange="this.form.submit()" class="select select-bordered select-xs w-full min-w-52">
+                                        @foreach(\Modules\Compliance\Enums\TraceVisibility::cases() as $option)
+                                        <option value="{{ $option->value }}" @selected($visibility === $option)>{{ $option->label() }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                                @else
+                                <span class="badge badge-sm {{ $visibility->badgeClass() }} whitespace-nowrap">{{ $visibility->label() }}</span>
+                                @endcan
                             </td>
                             <td class="text-right">
                                 @can('update', $goodsReceipt)
@@ -183,7 +217,15 @@
                     <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Ngày lập</span></label>
                     <input type="date" name="issue_date" value="{{ old('issue_date', $goodsReceipt->receipt_date?->format('Y-m-d')) }}" class="input input-bordered input-sm w-full">
                 </div>
-                <div class="form-control md:col-span-2 lg:col-span-4">
+                <div class="form-control md:col-span-2 lg:col-span-2">
+                    <label class="label py-0 pb-1"><span class="label-text text-xs font-medium">Hiển thị trên trang truy xuất</span></label>
+                    <select name="trace_visibility" class="select select-bordered select-sm w-full">
+                        @foreach(\Modules\Compliance\Enums\TraceVisibility::cases() as $visibility)
+                        <option value="{{ $visibility->value }}" @selected(old('trace_visibility', \Modules\Compliance\Enums\TraceVisibility::Status->value) === $visibility->value)>{{ $visibility->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-control md:col-span-2 lg:col-span-2">
                     <label class="label py-0 pb-1">
                         <span class="label-text text-xs font-medium">File <span class="text-error">*</span></span>
                         <span class="label-text-alt text-xs text-base-content/40">PDF, JPG, PNG — chọn được nhiều file</span>
@@ -211,17 +253,18 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="form-control">
-                    <label class="label py-0.5" for="fp-batch-mfg"><span class="label-text text-xs font-medium">Ngày sản xuất (NSX)</span></label>
+                    <label class="label py-0.5" for="fp-batch-mfg"><span class="label-text text-xs font-medium">Ngày sản xuất (NSX) <span class="batch-date-required text-error hidden">*</span></span></label>
                     <input id="fp-batch-mfg" name="mfg_date" type="text" placeholder="dd/mm/yyyy" autocomplete="off"
                            class="input input-sm input-bordered w-full"/>
                 </div>
                 <div class="form-control">
-                    <label class="label py-0.5" for="fp-batch-exp"><span class="label-text text-xs font-medium">Hạn sử dụng (HSD)</span></label>
+                    <label class="label py-0.5" for="fp-batch-exp"><span class="label-text text-xs font-medium">Hạn sử dụng (HSD) <span class="batch-date-required text-error hidden">*</span></span></label>
                     <input id="fp-batch-exp" name="exp_date" type="text" placeholder="dd/mm/yyyy" autocomplete="off"
                            class="input input-sm input-bordered w-full"/>
                     <p id="batchShelfLifeHint" class="mt-1 text-xs text-base-content/40 hidden"></p>
                 </div>
             </div>
+            <p id="batchDatedHint" class="mt-2 text-xs text-warning hidden">Gia vị / Đồ khô: bắt buộc nhập đúng NSX và HSD in trên bao bì — thiếu sẽ không in được tem.</p>
 
             <div id="batchFarmingWrap" class="form-control mt-4 hidden">
                 <label class="label py-0.5" for="batch-farming"><span class="label-text text-xs font-medium">Lô canh tác nguồn <span class="text-error">*</span></span></label>

@@ -13,7 +13,7 @@ use Modules\Product\Services\ProductCategoryClassifier;
 class SetProductCategoryCommand extends Command
 {
     protected $signature = 'app:set-product-category
-        {--auto : Tự xác định nhóm theo tên sản phẩm trong DB (thịt/thủy sản, rau củ quả, chế biến) — mặc định áp dụng cho nhóm fresh_food}
+        {--auto : Tự xác định nhóm theo tên sản phẩm trong DB (thịt/thủy sản, rau củ quả, chế biến, gia vị & đồ khô) — mặc định áp dụng cho nhóm fresh_food}
         {--to= : Mã nhóm hàng đích (categories.code); "none" = bỏ nhóm}
         {--from= : Chỉ lấy sản phẩm đang ở nhóm này; "none" = chưa có nhóm}
         {--sku=* : SKU cần đổi (lặp lại option hoặc ngăn cách bằng dấu phẩy)}
@@ -56,7 +56,7 @@ class SetProductCategoryCommand extends Command
         $codeById    = Category::withTrashed()->pluck('code', 'id');
 
         $required = $auto
-            ? [ProductCategoryClassifier::MEAT_SEAFOOD, ProductCategoryClassifier::PRODUCE, ProductCategoryClassifier::PROCESSED, $from]
+            ? [ProductCategoryClassifier::MEAT_SEAFOOD, ProductCategoryClassifier::PRODUCE, ProductCategoryClassifier::PROCESSED, ProductCategoryClassifier::DRY_GOODS, $from]
             : [$to, $from];
         $unknown = array_filter(
             array_unique($required),

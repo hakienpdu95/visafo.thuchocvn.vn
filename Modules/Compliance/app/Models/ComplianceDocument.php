@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Compliance\Enums\ComplianceDocumentStatus;
 use Modules\Compliance\Enums\SharedDocumentCategory;
+use Modules\Compliance\Enums\TraceVisibility;
 use Modules\Product\Models\DocumentMasterType;
 use Spatie\MediaLibrary\HasMedia;
 
@@ -33,6 +34,7 @@ class ComplianceDocument extends Model implements HasMedia
         'expiration_date',
         'issued_by',
         'status',
+        'trace_visibility',
         'notes',
         'custom_name',
         'custom_category',
@@ -44,6 +46,7 @@ class ComplianceDocument extends Model implements HasMedia
             'issue_date'       => 'date',
             'expiration_date'  => 'date',
             'status'           => ComplianceDocumentStatus::class,
+            'trace_visibility' => TraceVisibility::class,
             'custom_category'  => SharedDocumentCategory::class,
         ];
     }

@@ -5,6 +5,7 @@ namespace Modules\SalesOrder\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use Illuminate\Support\Facades\Storage;
+use Modules\Compliance\Enums\TraceVisibility;
 use Modules\Compliance\Models\ComplianceDocument;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Queries\GetTraceabilityHandler;
@@ -40,7 +41,7 @@ class TraceController extends Controller
 
         // Whitelist: hồ sơ doanh nghiệp công khai + hồ sơ NCC / hàng hóa NCC thuộc ĐÚNG tem này (không mở hồ sơ NCC khác)
         $sourceDocs = GetTraceabilityHandler::supplierDocumentQuery(GetTraceabilityHandler::supplierDocumentOwners($log));
-        $batchDocs = GetTraceabilityHandler::batchDocumentQuery($log->productBatch);
+        $batchDocs = GetTraceabilityHandler::batchDocumentQuery($log->productBatch)?->where('trace_visibility', TraceVisibility::Full->value);
         $media = Media::query()
             ->whereKey($mediaId)
             ->where('collection_name', 'attachments_private')

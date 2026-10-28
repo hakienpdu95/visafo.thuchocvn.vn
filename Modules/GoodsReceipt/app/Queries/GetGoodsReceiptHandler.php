@@ -17,7 +17,7 @@ class GetGoodsReceiptHandler implements QueryHandlerInterface
             'vendor',
             'importedBy',
             'items.product',
-            'batches.product',
+            'batches.product.category',
             'batches.extraAttributes',
             'batches.farmingBatch.farmingSource',
             'batches.qualityChecks',

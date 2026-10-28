@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Modules\GoodsReceipt\Services\BatchDocumentGate;
 use Modules\SalesOrder\Actions\Backend\BulkPrintSalesOrderLabelsAction;
 use Modules\SalesOrder\Actions\Backend\PrintSalesOrderItemLabelAction;
 use Modules\SalesOrder\Enums\PrintLogStatus;
@@ -25,7 +26,7 @@ use Modules\SalesOrder\Support\PrintSourceResolver;
 
 class PrintLabelController extends Controller
 {
-    public function store(Request $request, SalesOrderItem $item, PrintSalesOrderItemLabelAction $action, PrintSourceResolver $sourceResolver): JsonResponse
+    public function store(Request $request, SalesOrderItem $item, PrintSalesOrderItemLabelAction $action, PrintSourceResolver $sourceResolver, BatchDocumentGate $gate): JsonResponse
     {
         $this->authorize('print', $item->order);
 
@@ -88,6 +89,8 @@ class PrintLabelController extends Controller
         }
 
         $data = array_merge($data, $sourceResolver->resolve($data, $item));
+
+        $gate->assertPrintable($item->product, $data['product_batch_id'], $data['mfg_date'] ?? null, $data['exp_date']);
 
         $result = $action->handle($item, $data, $request->user()?->id);
 

@@ -54,6 +54,7 @@
     .tpl-visafo-rcq80 .info-table td.lbl.strong { font-weight: 700; }
     .tpl-visafo-rcq80 .info-table td.colon { text-align: center; padding-right: 1.2mm; }
     .tpl-visafo-rcq80 .info-table td.val { word-wrap: break-word; overflow-wrap: break-word; width: 28mm; font-weight: 600;}
+    .tpl-visafo-rcq80 .info-table td.val.strong { font-weight: 800; }
     .tpl-visafo-rcq80 .info-table tr.weight td { font-weight: 500; }
     .tpl-visafo-rcq80 .info-table tr.weight td.val { font-weight: 600; font-size: 7.5pt; }
     .tpl-visafo-rcq80 .info-table tr.batch td { font-weight: 500; }
@@ -109,11 +110,11 @@
                     </colgroup>
                     <tr>
                         <td class="lbl">Ngày sản xuất: </td><td class="colon">:</td>
-                        <td class="val">{{ $log->mfg_date?->format('d/m/Y') ?? '—' }}</td>
+                        <td class="val strong">{{ $log->mfg_date?->format('d/m/Y') ?? '—' }}</td>
                     </tr>
                     <tr>
                         <td class="lbl">Hạn sử dụng:</td><td class="colon">:</td>
-                        <td class="val">{{ $log->exp_date?->format('d/m/Y') ?? '—' }}</td>
+                        <td class="val strong">{{ $log->exp_date?->format('d/m/Y') ?? '—' }}</td>
                     </tr>
                     <tr class="weight">
                         <td class="lbl">SL/KL</td><td class="colon">:</td>

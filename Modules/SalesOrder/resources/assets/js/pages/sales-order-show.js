@@ -127,6 +127,7 @@ document.addEventListener('alpine:init', () => {
             loadingBatches: false,
             batchCount: 0,
             batchVendors: {},
+            batchInfo: {},
             form: { groups: [], printMode: 'append', mfg: '', exp: '', supplierManual: false, supplierText: '', vendorId: '', batchId: '', batchCode: '', template: '' },
 
             get canSubmit() {
@@ -134,7 +135,24 @@ document.addEventListener('alpine:init', () => {
                     && this.groupsValid
                     && this.labelCount <= 200
                     && !(this.splitChanged && this.form.printMode === 'append' && this.appendCount === 0)
-                    && !!this.form.exp;
+                    && !!this.form.exp
+                    && !this.quarantineBlocked
+                    && !this.datesMissing;
+            },
+
+            get quarantineBlocked() {
+                return !!this.item?.requires_quarantine
+                    && !(this.form.batchId && this.batchInfo[this.form.batchId]?.has_quarantine);
+            },
+
+            get quarantineMessage() {
+                return this.form.batchId
+                    ? 'Lô hàng chưa có Phiếu kiểm dịch Thú y. Bắt buộc bổ sung hồ sơ trước khi in tem xuất kho.'
+                    : 'Mặt hàng thuộc nhóm Thịt / Thủy sản: bắt buộc chọn Lô nhập kho đã có Phiếu kiểm dịch Thú y trước khi in tem xuất kho.';
+            },
+
+            get datesMissing() {
+                return !!this.item?.requires_dates && (!this.form.mfg || !this.form.exp);
             },
 
             fmtKg,
@@ -222,6 +240,7 @@ document.addEventListener('alpine:init', () => {
                             dropdownParent: 'body',
                             onChange: (value) => {
                                 this.form.batchId = value || '';
+                                this.applyBatchDates(value);
                                 const vendorId = this.batchVendors[value];
                                 if (vendorId && supplierTs?.options[vendorId]) {
                                     this.form.supplierManual = false;
@@ -248,7 +267,7 @@ document.addEventListener('alpine:init', () => {
             // HSD = NSX + shelf_life_days (nếu sản phẩm có cấu hình riêng), mặc định NSX + 2 ngày nếu chưa cấu hình.
             // Chỉ tính lại khi NSX đổi — người dùng vẫn sửa tay HSD sau đó mà không bị ghi đè.
             recalcExp() {
-                if (!this.form.mfg) return;
+                if (!this.form.mfg || this.item?.requires_dates) return;
                 const days = Number(this.item?.shelf_life_days) || 2;
                 const d = fromYmd(this.form.mfg);
                 d.setDate(d.getDate() + days);
@@ -264,6 +283,16 @@ document.addEventListener('alpine:init', () => {
                 this.form.batchCode = (mfg && exp) ? `LOT-${mfg}-${exp}` : '';
             },
 
+            applyBatchDates(batchId) {
+                const info = this.batchInfo[batchId];
+                if (!this.item?.requires_dates || !info) return;
+                this.form.mfg = info.mfg_date || '';
+                this.form.exp = info.exp_date || '';
+                if (this.form.mfg) mfgPicker?.setDate(this.form.mfg, false); else mfgPicker?.clear(false);
+                if (this.form.exp) expPicker?.setDate(this.form.exp, false); else expPicker?.clear(false);
+                this.recalcBatchCode();
+            },
+
             // Bật/tắt "Khác / Nhập tay": đổi chế độ thì xoá lựa chọn của chế độ kia để tránh lẫn dữ liệu.
             onSupplierManualToggle() {
                 supplierTs?.clear(true);
@@ -275,6 +304,7 @@ document.addEventListener('alpine:init', () => {
                 batchTs?.clear(true);
                 batchTs?.clearOptions();
                 this.batchVendors = {};
+                this.batchInfo = {};
                 this.batchCount = 0;
                 if (!row.batches_url) return;
                 this.loadingBatches = true;
@@ -286,6 +316,7 @@ document.addEventListener('alpine:init', () => {
                     (data.data ?? []).forEach((b) => {
                         batchTs?.addOption({ value: b.value, text: b.text });
                         this.batchVendors[b.value] = b.vendor_id;
+                        this.batchInfo[b.value] = { has_quarantine: !!b.has_quarantine, mfg_date: b.mfg_date, exp_date: b.exp_date };
                     });
                     this.batchCount = (data.data ?? []).length;
                     batchTs?.refreshOptions(false);
@@ -305,7 +336,7 @@ document.addEventListener('alpine:init', () => {
                 this.form = {
                     groups: [],
                     printMode: 'append',
-                    mfg: toYmd(new Date()),
+                    mfg: row.requires_dates ? '' : toYmd(new Date()),
                     exp: '',
                     supplierManual: false,
                     supplierText: '',
@@ -317,7 +348,7 @@ document.addEventListener('alpine:init', () => {
                 };
                 templateTs?.setValue(this.form.template, true);
                 supplierTs?.clear(true);
-                mfgPicker?.setDate(this.form.mfg, false);
+                if (this.form.mfg) mfgPicker?.setDate(this.form.mfg, false); else mfgPicker?.clear(false);
                 expPicker?.clear(false);
                 this.autoSplit();
                 this.recalcExp();

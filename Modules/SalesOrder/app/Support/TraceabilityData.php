@@ -64,5 +64,6 @@ readonly class TraceabilityData
         public ?array $supplier = null,
         public array $batchDocuments = [],
         public bool $hasBatch = false, // tem gắn lô nhập thật (nút "Phiếu lô")
+        public bool $quarantineVerified = false,
     ) {}
 }

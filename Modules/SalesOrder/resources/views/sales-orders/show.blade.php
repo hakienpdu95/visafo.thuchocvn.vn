@@ -120,6 +120,8 @@
         'partner_products_url' => route('backend.sales-orders.items.partner-products', $item),
         'print_prefill' => $printPrefill[$item->id] ?? null,
         'shelf_life_days' => $item->product?->shelf_life_days,
+        'requires_quarantine' => \Modules\GoodsReceipt\Services\BatchDocumentGate::enforced() && \Modules\GoodsReceipt\Services\BatchDocumentGate::requiresQuarantine($item->product),
+        'requires_dates' => \Modules\GoodsReceipt\Services\BatchDocumentGate::enforced() && \Modules\GoodsReceipt\Services\BatchDocumentGate::requiresDates($item->product),
         'print_url'     => $canPrint ? route('backend.sales-orders.items.print', $item) : null,
         'qc_url'        => $canPrint ? route('backend.sales-orders.items.quality-checks.store', $item) : null,
         'qc'            => ($last = $item->qualityChecks->last())
@@ -602,7 +604,8 @@
 
                         <div class="flex flex-col">
                             <label class="block text-sm font-medium text-base-content mb-1" for="fp-label-mfg">
-                                NSX <span class="text-xs font-normal text-base-content/40 ml-1">Mặc định hôm nay</span>
+                                NSX <span class="text-error" x-show="item?.requires_dates">*</span>
+                                <span class="text-xs font-normal text-base-content/40 ml-1" x-text="item?.requires_dates ? 'Theo bao bì / lô nhập kho' : 'Mặc định hôm nay'"></span>
                             </label>
                             <input id="fp-label-mfg" type="text" name="mfg_date" autocomplete="off" placeholder="DD/MM/YYYY"
                                    class="input input-bordered input-sm w-full"
@@ -619,11 +622,15 @@
                             <input id="fp-label-exp" type="text" name="exp_date" autocomplete="off" placeholder="DD/MM/YYYY"
                                    class="input input-bordered input-sm w-full"
                                    :class="{ 'input-error': errors.exp_date }">
-                            <p class="mt-1 text-xs text-base-content/40" x-show="item?.shelf_life_days && !errors.exp_date">
+                            <p class="mt-1 text-xs text-base-content/40" x-show="item?.shelf_life_days && !item?.requires_dates && !errors.exp_date">
                                 Tự tính theo số ngày bảo quản của sản phẩm, vẫn có thể chỉnh tay.
                             </p>
                             <p class="mt-1 text-xs text-error" x-show="errors.exp_date" x-text="errors.exp_date"></p>
                         </div>
+
+                        <p class="md:col-span-2 text-xs text-warning" x-show="item?.requires_dates">
+                            Gia vị / Đồ khô: bắt buộc ghi đúng NSX và HSD in trên bao bì (Thông báo 26/TB-VAS) — chọn lô nhập kho để điền tự động.
+                        </p>
 
                     </div>
 
@@ -711,6 +718,7 @@
                     </button>
                 </div>
 
+                <div class="alert alert-error py-2 px-3 mt-4 text-xs font-medium" x-show="quarantineBlocked && !loadingBatches" x-text="quarantineMessage"></div>
                 <div class="alert alert-warning py-2 px-3 mt-4 text-xs" x-show="message" x-text="message"></div>
                 <div class="alert alert-warning py-2 px-3 mt-4 text-xs" x-show="blockedUrl">
                     Trình duyệt đã chặn cửa sổ in. <a :href="blockedUrl" target="_blank" class="link font-semibold">Bấm vào đây để mở tem</a>.
@@ -719,7 +727,9 @@
 
                 <div class="flex items-center gap-3 pt-4 mt-4 border-t border-base-200 shrink-0">
                     <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting">
-                        Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem
+                        <span x-show="quarantineBlocked" class="text-error">Thiếu Phiếu kiểm dịch Thú y — không thể in tem</span>
+                        <span x-show="!quarantineBlocked && datesMissing" class="text-error">Gia vị / Đồ khô: nhập đủ NSX và HSD để in tem</span>
+                        <span x-show="!quarantineBlocked && !datesMissing">Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem</span>
                     </p>
                     <div class="ml-auto flex gap-2">
                         <button type="button" class="btn btn-ghost btn-sm" @click="close()">Hủy</button>

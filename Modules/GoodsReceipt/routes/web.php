@@ -21,6 +21,7 @@ Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(functi
     Route::put('goods-receipts/{goods_receipt}', [GoodsReceiptController::class, 'update'])->name('goods-receipts.update');
     Route::delete('goods-receipts/{goods_receipt}', [GoodsReceiptController::class, 'destroy'])->name('goods-receipts.destroy');
     Route::post('goods-receipts/{goods_receipt}/documents', [GoodsReceiptDocumentController::class, 'store'])->name('goods-receipts.documents.store');
+    Route::patch('goods-receipts/{goods_receipt}/documents/{document}', [GoodsReceiptDocumentController::class, 'update'])->name('goods-receipts.documents.update');
     Route::delete('goods-receipts/{goods_receipt}/documents/{document}', [GoodsReceiptDocumentController::class, 'destroy'])->name('goods-receipts.documents.destroy');
 
     Route::put('product-batches/{product_batch}', [ProductBatchController::class, 'update'])->name('product-batches.update');

@@ -135,3 +135,7 @@ sudo systemctl reload nginx
      foreignUlid(...)->constrained(...)->nullOnDelete()/restrictOnDelete()/cascadeOnDelete() có được ghi đúng vào cột mod không, vì đây là kiểu cột đặc biệt so với foreignId).
   5. Cảnh báo trước khi chạy migration:generate --fresh: lệnh này drop toàn bộ DB rồi tạo lại thuần từ JSON. Chỉ chạy ở local/staging, backup DB hiện tại trước nếu có dữ liệu cần giữ, và dùng kèm --seed
      nếu cần seed lại role/permission + demo data sau khi fresh.
+
+
+php artisan migrate --path=Modules/Compliance/database/migrations/2026_10_28_100000_add_trace_visibility_to_compliance_documents_table.php
+php artisan migrate --path=Modules/Product/database/migrations/2026_10_28_100000_add_vas_traceability_master_data.php

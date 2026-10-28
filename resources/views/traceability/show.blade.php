@@ -225,11 +225,13 @@
                 <span class="h-4 w-1 rounded bg-green-600"></span> Nguồn gốc sản phẩm
             </h3>
             <div class="ml-1.5 border-l-2 border-green-200 pl-4">
+                @if($sup['linked'])
                 <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs text-green-700 ring-1 ring-green-200">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                     Đã liên kết nguồn
                 </span>
-                <p class="mt-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Nhà cung cấp</p>
+                @endif
+                <p class="@if($sup['linked']) mt-2 @endif text-xs font-semibold uppercase tracking-wide text-gray-500">Nhà cung cấp</p>
                 <p class="mt-1 text-md font-medium leading-snug text-green-700">{{ $sup['name'] }}</p>
                 <dl class="mt-2 space-y-1.5 text-sm leading-snug">
                     @foreach(array_filter([
@@ -349,7 +351,15 @@
                 <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Hồ sơ lô hàng</p>
                 <div class="flex flex-wrap gap-2">
                     @foreach($trace->batchDocuments as $doc)
+                    @if($doc['statusOnly'])
+                    <span title="{{ $doc['caption'] }}" class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-green-200 bg-green-50 py-1.5 pl-2.5 pr-3 text-[13px] font-medium text-green-800">
+                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        <span class="truncate">{{ $doc['name'] }}</span>
+                        <span class="shrink-0 text-[11px] font-semibold uppercase text-green-700">· Đã đạt kiểm định</span>
+                    </span>
+                    @else
                     @include('traceability.partials.doc-pill', ['label' => $doc['name'], 'iconHtml' => '📎', 'files' => $doc['files'], 'caption' => $doc['caption']])
+                    @endif
                     @endforeach
                 </div>
             </div>
@@ -358,12 +368,18 @@
         @endif
 
         {{-- 4b. Kiểm soát chất lượng: 3 khâu QC của doanh nghiệp + kết luận lô --}}
-        @if($trace->qualityChecks)
+        @if($trace->qualityChecks || $trace->quarantineVerified)
         <section class="rounded-md bg-white p-4 shadow-sm ring-1 ring-black/5">
             <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                 <span class="h-4 w-1 rounded bg-green-600"></span> Kiểm soát chất lượng
             </h3>
             <dl>
+                @if($trace->quarantineVerified)
+                <div class="flex items-baseline justify-between gap-3 py-2">
+                    <dt class="text-sm text-gray-700">Phiếu kiểm dịch thú y</dt>
+                    <dd class="shrink-0 text-sm font-semibold text-green-700">✓ Đã đạt kiểm định</dd>
+                </div>
+                @endif
                 @foreach($trace->qualityChecks as $qc)
                 <div class="flex items-baseline justify-between gap-3 py-2">
                     <dt class="text-sm text-gray-700">{{ $qc['label'] }}</dt>

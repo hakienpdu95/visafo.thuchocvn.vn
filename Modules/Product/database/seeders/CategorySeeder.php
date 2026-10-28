@@ -34,6 +34,7 @@ class CategorySeeder extends Seeder
             ['code' => 'additives_spices',          'name' => 'Phụ gia thực phẩm & Chất hỗ trợ chế biến',     'description' => null, 'is_active' => true],
             ['code' => 'functional_fortified_food', 'name' => 'Thực phẩm chức năng & Tăng cường vi chất',     'description' => null, 'is_active' => true],
             ['code' => 'beverages_water',           'name' => 'Nước khoáng & Đồ uống',                        'description' => null, 'is_active' => true],
+            ['code' => 'dry_goods_spices',          'name' => 'Gia vị & Đồ khô',                              'description' => null, 'is_active' => true],
         ];
     }
 }

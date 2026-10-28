@@ -7,6 +7,18 @@ class ProductCategoryClassifier
     public const MEAT_SEAFOOD = 'fresh_meat_seafood';
     public const PRODUCE      = 'fresh_produce';
     public const PROCESSED    = 'processed_food';
+    public const DRY_GOODS    = 'dry_goods_spices';
+
+    private const DRY_GOODS_PREFIXES = [
+        'muối i', 'muối tinh', 'muối hạt', 'muối biển', 'muối ớt', 'muối tiêu', 'muối trắng',
+        'đường', 'mì chính', 'bột ngọt', 'hạt nêm', 'bột canh', 'bột', 'nước mắm', 'nước tương', 'xì dầu', 'magi', 'maggi',
+        'dầu ăn', 'dầu hào', 'dầu điều', 'dầu vừng', 'dầu mè', 'dầu oliu', 'dầu đậu nành', 'tương ớt', 'tương cà', 'tương đen', 'tương bần',
+        'sốt', 'mù tạt', 'tiêu đen', 'tiêu trắng', 'tiêu sọ', 'tiêu xay', 'tiêu bột', 'hạt tiêu', 'ớt bột', 'ớt khô', 'quế', 'hoa hồi', 'đại hồi', 'thảo quả', 'hạt dổi', 'mắc khén', 'ngũ vị hương', 'cà ri', 'cari',
+        'gạo', 'nếp', 'lạc', 'đậu phộng', 'vừng', 'mè', 'hạt điều', 'hạt sen', 'đậu xanh', 'đậu đen', 'đậu đỏ', 'đậu tương',
+        'miến', 'mì tôm', 'mì gói', 'mỳ', 'mì sợi', 'mì ý', 'nui', 'bún khô', 'phở khô', 'bánh đa khô', 'mộc nhĩ', 'nấm hương khô', 'hành phi', 'tỏi phi',
+    ];
+
+    private const DRY_GOODS_KEYWORDS = ['khô', 'sấy', 'gia vị'];
 
     private const PROCESSED_PREFIXES = [
         'phở', 'bún', 'bánh', 'xôi', 'đậu phụ', 'đậu hũ', 'váng đậu', 'mề chay',
@@ -55,8 +67,31 @@ class ProductCategoryClassifier
         return false;
     }
 
+    public function isDryGoods(string $name): bool
+    {
+        $name = mb_strtolower(trim($name));
+
+        foreach (self::DRY_GOODS_PREFIXES as $prefix) {
+            if (str_starts_with($name, $prefix)) {
+                return true;
+            }
+        }
+
+        foreach (self::DRY_GOODS_KEYWORDS as $keyword) {
+            if (preg_match('/(?<![\p{L}\p{N}])' . preg_quote($keyword, '/') . '(?![\p{L}\p{N}])/u', $name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function suggest(string $name): ?string
     {
+        if ($this->isDryGoods($name)) {
+            return self::DRY_GOODS;
+        }
+
         if ($this->isProcessed($name)) {
             return self::PROCESSED;
         }

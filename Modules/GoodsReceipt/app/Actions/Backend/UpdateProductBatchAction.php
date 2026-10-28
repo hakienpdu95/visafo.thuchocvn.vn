@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\GoodsReceipt\Data\Requests\UpdateProductBatchData;
 use Modules\GoodsReceipt\Models\ProductBatch;
+use Modules\GoodsReceipt\Services\BatchDocumentGate;
 
 class UpdateProductBatchAction
 {
@@ -14,7 +15,7 @@ class UpdateProductBatchAction
     public function handle(ProductBatch $productBatch, UpdateProductBatchData $data): ProductBatch
     {
         // HSD người dùng đã nhập luôn được giữ nguyên; chỉ tự tính khi để trống.
-        $expDate = $data->exp_date ?: $productBatch->calculateExpDate($data->mfg_date)?->toDateString();
+        $expDate = $data->exp_date ?: (BatchDocumentGate::enforced() && BatchDocumentGate::requiresDates($productBatch->product) ? null : $productBatch->calculateExpDate($data->mfg_date)?->toDateString());
 
         $productBatch->update([
             'mfg_date' => $data->mfg_date,

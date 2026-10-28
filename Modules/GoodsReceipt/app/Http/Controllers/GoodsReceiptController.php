@@ -16,6 +16,7 @@ use Modules\GoodsReceipt\Models\GoodsReceipt;
 use Modules\GoodsReceipt\Models\ProductBatch;
 use Modules\GoodsReceipt\Queries\GetGoodsReceiptHandler;
 use Modules\GoodsReceipt\Queries\GetGoodsReceiptQuery;
+use Modules\GoodsReceipt\Services\BatchDocumentGate;
 use Modules\Product\Models\DocumentMasterType;
 use Modules\Product\Models\Product;
 use Modules\Vendor\Models\Vendor;
@@ -38,9 +39,10 @@ class GoodsReceiptController extends Controller
         return view('goodsreceipt::goods-receipts.index', compact('vendors'));
     }
 
-    public function show(GoodsReceipt $goodsReceipt, GetGoodsReceiptHandler $handler)
+    public function show(GoodsReceipt $goodsReceipt, GetGoodsReceiptHandler $handler, BatchDocumentGate $gate)
     {
         $goodsReceipt = $handler->handle(new GetGoodsReceiptQuery($goodsReceipt));
+        $quarantinedBatchIds = $gate->quarantinedBatchIds($goodsReceipt->batches);
 
         // Lô canh tác chọn được cho từng sản phẩm của phiếu (một query cho cả phiếu)
         $farmingBatchOptions = ProductBatch::farmingBatchCandidates($goodsReceipt->vendor_id, $goodsReceipt->batches->pluck('product_id')->all())
@@ -62,7 +64,7 @@ class GoodsReceiptController extends Controller
             ->latest()
             ->get();
 
-        return view('goodsreceipt::goods-receipts.show', compact('goodsReceipt', 'farmingBatchOptions', 'documentTypes', 'documents'));
+        return view('goodsreceipt::goods-receipts.show', compact('goodsReceipt', 'farmingBatchOptions', 'documentTypes', 'documents', 'quarantinedBatchIds'));
     }
 
     public function create(ManualRefIdGenerator $refIds)

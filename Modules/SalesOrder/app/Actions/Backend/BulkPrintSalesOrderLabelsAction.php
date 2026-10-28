@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsAction;
+use Modules\GoodsReceipt\Models\ProductBatch;
+use Modules\GoodsReceipt\Services\BatchDocumentGate;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\LabelPrintEvent;
 use Modules\SalesOrder\Models\PrintLog;
@@ -22,18 +24,20 @@ class BulkPrintSalesOrderLabelsAction
     public function __construct(
         private readonly BatchAttributeResolver $resolver,
         private readonly PrintSourceResolver $sourceResolver,
+        private readonly BatchDocumentGate $gate,
     ) {}
 
     public function handle(SalesOrder $order, array $data, ?string $printedBy): array
     {
         $resolver = $this->resolver;
         $sourceResolver = $this->sourceResolver;
+        $gate = $this->gate;
 
-        return DB::transaction(function () use ($order, $data, $printedBy, $resolver, $sourceResolver) {
+        return DB::transaction(function () use ($order, $data, $printedBy, $resolver, $sourceResolver, $gate) {
             // Khóa các dòng hàng của đơn: 2 lượt in toàn bộ đơn chạy song song không sinh trùng mã
             $items = SalesOrderItem::query()
                 ->where('order_id', $order->id)
-                ->with('product')
+                ->with('product.category')
                 ->orderBy('line_no')
                 ->lockForUpdate()
                 ->get();
@@ -46,6 +50,7 @@ class BulkPrintSalesOrderLabelsAction
             $sourceChanged = 0;
             $resplitItems = 0;
             $appendedItems = 0;
+            $blocked = [];
 
             $customGroups = isset($data['items'])
                 ? collect($data['items'])->mapWithKeys(fn ($i) => [$i['order_item_id'] => collect($i['label_groups'])
@@ -72,6 +77,14 @@ class BulkPrintSalesOrderLabelsAction
 
                 $total++;
                 $source = $sourceResolver->forBulkItem($item, $itemSources->get($item->id, []), $data);
+                $dates = $this->datesFor($item, $source, $data);
+                try {
+                    $gate->assertPrintable($item->product, $source['product_batch_id'], $dates['mfg_date'], $dates['exp_date'], 'items');
+                } catch (ValidationException $e) {
+                    array_push($blocked, ...$e->errors()['items']);
+
+                    continue;
+                }
 
                 // Check & Reuse (xem PrintSalesOrderItemLabelAction): đã có tem đang lưu hành, cách chia giữ nguyên → in lại mã cũ; đổi cách chia → hủy mã cũ, tạo mã mới
                 $existing = PrintLog::query()->activeForItem($item->id)->get();
@@ -111,8 +124,8 @@ class BulkPrintSalesOrderLabelsAction
                             'order_item_id'     => $item->id,
                             'label_template_id' => $data['label_template_id'] ?? null,
                             'weight_per_label'  => $group['weight'],
-                            'mfg_date'          => $data['mfg_date'] ?? null,
-                            'exp_date'          => $data['exp_date'],
+                            'mfg_date'          => $dates['mfg_date'],
+                            'exp_date'          => $dates['exp_date'],
                             'supplier_name'     => $source['supplier_name'],
                             'vendor_id'         => $source['vendor_id'],
                             'partner_product_id' => $source['partner_product_id'] ?? null,
@@ -140,6 +153,10 @@ class BulkPrintSalesOrderLabelsAction
                 $printedItems++;
             }
 
+            if ($blocked !== []) {
+                throw ValidationException::withMessages(['items' => implode(' ', $blocked)]);
+            }
+
             return [
                 'session_id' => $sessionId,
                 'logs'    => $logs,
@@ -151,5 +168,16 @@ class BulkPrintSalesOrderLabelsAction
                 'appended' => $appendedItems,
             ];
         });
+    }
+
+    private function datesFor(SalesOrderItem $item, array $source, array $data): array
+    {
+        if (! BatchDocumentGate::enforced() || ! BatchDocumentGate::requiresDates($item->product)) {
+            return ['mfg_date' => $data['mfg_date'] ?? null, 'exp_date' => $data['exp_date']];
+        }
+
+        $batch = $source['product_batch_id'] !== null ? ProductBatch::query()->find($source['product_batch_id']) : null;
+
+        return ['mfg_date' => $batch?->mfg_date?->toDateString(), 'exp_date' => $batch?->exp_date?->toDateString()];
     }
 }

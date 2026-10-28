@@ -7,6 +7,7 @@ use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\ActivityLog\Core\ActivityLogger;
 use Modules\ActivityLog\Enums\LogLevel;
+use Modules\GoodsReceipt\Services\BatchDocumentGate;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Support\PrintSourceResolver;
@@ -18,13 +19,16 @@ class UpdateTraceLogAction
 
     private const TRACKED = ['mfg_date', 'exp_date', 'batch_code', 'product_batch_id', 'vendor_id', 'partner_product_id', 'supplier_name'];
 
-    public function __construct(private readonly PrintSourceResolver $sourceResolver) {}
+    public function __construct(
+        private readonly PrintSourceResolver $sourceResolver,
+        private readonly BatchDocumentGate $gate,
+    ) {}
 
     public function handle(PrintLog $printLog, UpdateTraceLogData $data, ?string $userId): int
     {
         return DB::transaction(function () use ($printLog, $data, $userId) {
             /** @var PrintLog $log */
-            $log = PrintLog::query()->with('orderItem.product')->lockForUpdate()->findOrFail($printLog->id);
+            $log = PrintLog::query()->with('orderItem.product.category')->lockForUpdate()->findOrFail($printLog->id);
 
             if ($log->status !== PrintLogStatus::Active) {
                 throw ValidationException::withMessages([
@@ -38,6 +42,10 @@ class UpdateTraceLogAction
                 'partner_product_id' => $data->partner_product_id,
                 'supplier_name'      => $data->supplier_name,
             ], $log->orderItem);
+
+            if ($source['product_batch_id'] !== $log->product_batch_id || BatchDocumentGate::requiresDates($log->orderItem?->product)) {
+                $this->gate->assertPrintable($log->orderItem?->product, $source['product_batch_id'], $data->mfg_date, $data->exp_date);
+            }
 
             $before = $this->snapshot($log);
             $values = [

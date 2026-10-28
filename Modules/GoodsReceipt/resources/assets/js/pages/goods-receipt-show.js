@@ -46,7 +46,9 @@ window.openBatchDateModal = function (row) {
 
     document.getElementById('batchDateForm').action = row.update_url;
     document.getElementById('batchDateModalCode').textContent = row.batch_code || '';
-    shelfLifeDays = row.shelf_life_days || null;
+    shelfLifeDays = row.requires_dates ? null : (row.shelf_life_days || null);
+    document.querySelectorAll('.batch-date-required').forEach((el) => el.classList.toggle('hidden', !row.requires_dates));
+    document.getElementById('batchDatedHint')?.classList.toggle('hidden', !row.requires_dates);
     mfgPicker?.setDate(row.mfg_date || null, false);
     expPicker?.setDate(row.exp_date || null, false);
 
@@ -104,9 +106,16 @@ const COLUMNS = [
         formatter: (cell) => '<span class="font-mono">' + esc(cell.getValue()) + '</span>',
     },
     {
-        title: 'Mã lô', field: 'batch_code', minWidth: 160, headerSort: false,
-        formatter: (cell) => cell.getValue()
-            ? '<span class="font-mono text-xs">' + esc(cell.getValue()) + '</span>' : EMPTY,
+        title: 'Mã lô', field: 'batch_code', minWidth: 180, headerSort: false,
+        formatter: (cell) => {
+            const d = cell.getRow().getData();
+            if (!cell.getValue()) return EMPTY;
+            const flags = [
+                d.missing_quarantine ? '<span class="badge badge-error badge-sm whitespace-nowrap">Thiếu phiếu kiểm dịch</span>' : '',
+                d.missing_dates ? '<span class="badge badge-error badge-sm whitespace-nowrap">Thiếu NSX/HSD</span>' : '',
+            ].join('');
+            return '<div class="flex flex-wrap items-center gap-1"><span class="font-mono text-xs">' + esc(cell.getValue()) + '</span>' + flags + '</div>';
+        },
     },
     {
         title: 'NSX', field: 'mfg_date', width: 110, hozAlign: 'center', headerSort: false,
