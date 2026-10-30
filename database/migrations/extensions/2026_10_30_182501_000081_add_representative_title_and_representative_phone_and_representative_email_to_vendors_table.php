@@ -52,6 +52,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('vendors', 'created_by')) {
                 $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->after('source_group')->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
             }
+            if (!Schema::hasColumn('vendors', 'supply_groups')) {
+                $table->json('supply_groups')->nullable()->after('created_by')->comment('Nhóm hàng cung cấp (nhiều giá trị): produce | fresh_food | dry_goods | processed_food');
+            }
         });
     }
 
@@ -61,7 +64,7 @@ return new class extends Migration {
             if (Schema::hasColumn('vendors', 'province_code')) $table->dropForeign(['province_code']);
             if (Schema::hasColumn('vendors', 'ward_code')) $table->dropForeign(['ward_code']);
             if (Schema::hasColumn('vendors', 'created_by')) $table->dropForeign(['created_by']);
-            $cols = array_filter(['representative_title', 'representative_phone', 'representative_email', 'contact_person_name', 'contact_person_title', 'contact_person_phone', 'contact_person_email', 'province_code', 'ward_code', 'source_group', 'created_by'], fn($c) => Schema::hasColumn('vendors', $c));
+            $cols = array_filter(['representative_title', 'representative_phone', 'representative_email', 'contact_person_name', 'contact_person_title', 'contact_person_phone', 'contact_person_email', 'province_code', 'ward_code', 'source_group', 'created_by', 'supply_groups'], fn($c) => Schema::hasColumn('vendors', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

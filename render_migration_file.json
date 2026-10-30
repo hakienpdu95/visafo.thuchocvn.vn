@@ -630,7 +630,7 @@
         "vendor_id///unsignedBigInteger///__///NOT_NULL///__///->constrained('vendors')->onDelete('restrict')///Nông hộ sở hữu vùng trồng",
         "source_code///string///60///NOT_NULL///__///->unique()///Mã vùng trồng (SOURCE_ID)",
         "name///string///255///NOT_NULL///__///__///Tên/mô tả vùng trồng — VD: Thửa ruộng số 3",
-        "area_hectare///decimal///8,2///_NULL///NULL///__///Diện tích canh tác (ha)",
+        "area_hectare///decimal///12,4///_NULL///NULL///__///Diện tích canh tác quy đổi (ha) — tính từ area_value × area_unit",
         "water_source///string///255///_NULL///NULL///__///Nguồn nước tưới tiêu",
         "address///string///500///_NULL///NULL///__///Địa chỉ / vị trí vùng trồng",
         "status///string///20///NOT_NULL///'pending'///->index()///pending | passed | failed — trạng thái phê duyệt trước vụ (BM-NH-02)",

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignUlid('vendor_id')->constrained('vendors')->restrictOnDelete()->comment('Nông hộ sở hữu vùng trồng');
             $table->string('source_code', 60)->unique()->comment('Mã vùng trồng (SOURCE_ID)');
             $table->string('name', 255)->comment('Tên/mô tả vùng trồng — VD: Thửa ruộng số 3');
-            $table->decimal('area_hectare', 8, 2)->nullable()->comment('Diện tích canh tác (ha)');
+            $table->decimal('area_hectare', 12, 4)->nullable()->comment('Diện tích canh tác quy đổi (ha) — tính từ area_value × area_unit');
             $table->string('water_source', 255)->nullable()->comment('Nguồn nước tưới tiêu');
             $table->string('address', 500)->nullable()->comment('Địa chỉ / vị trí vùng trồng');
             $table->string('status', 20)->default('pending')->index()->comment('pending | passed | failed — trạng thái phê duyệt trước vụ (BM-NH-02)');

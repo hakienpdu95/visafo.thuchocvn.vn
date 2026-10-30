@@ -54,7 +54,8 @@
         "__index///index///__///__///__///province_code,ward_code|idx_vendors_address///__",
         "source_group///string///10///_NULL///NULL///__///n1 = Tự sản xuất | n2 = Thu gom | n3 = Chợ đầu mối / siêu thị | n4 = Doanh nghiệp/ thương mại",
         "__index///index///__///__///__///source_group|idx_vendors_source_group///__",
-        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "supply_groups///json///__///_NULL///NULL///__///Nhóm hàng cung cấp (nhiều giá trị): produce | fresh_food | dry_goods | processed_food"
     ],
     [
         "products///add///__///",
@@ -99,7 +100,8 @@
         "ulid///ulid///__///_NULL///NULL///__///__",
         "custom_name///string///255///_NULL///NULL///__///Tên tự do — chỉ dùng khi documentable null (tài liệu nội bộ dùng chung)",
         "custom_category///string///30///_NULL///NULL///__///policy | template | training | other — chỉ dùng khi documentable null",
-        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "trace_visibility///string///10///NOT_NULL///'status'///__///full | status | hidden — mức công khai hồ sơ lô hàng trên trang truy xuất"
     ],
     [
         "sales_packages///add///__///",
@@ -184,7 +186,8 @@
         "__index///index///__///__///__///customer_name///__",
         "delivery_code///string///30///_NULL///NULL///->unique()///Mã vận đơn GH-yymmdd-XXXX, sinh khi bấm Xuất kho",
         "shipped_at///timestamp///__///_NULL///NULL///__///Thời điểm xuất kho",
-        "delivered_at///timestamp///__///_NULL///NULL///__///Thời điểm giao thành công"
+        "delivered_at///timestamp///__///_NULL///NULL///__///Thời điểm giao thành công",
+        "customer_id///unsignedBigInteger///__///_NULL///NULL///->constrained('customers')->onDelete('set null')///Khách hàng liên kết (đơn nhập tay) — customer_name/delivery_address vẫn lưu snapshot"
     ],
     [
         "partner_products///add///__///",
@@ -233,7 +236,9 @@
     ],
     [
         "farming_sources///add///__///",
-        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "area_value///decimal///12,2///_NULL///NULL///__///Diện tích theo đơn vị người dùng nhập (VD: 2)",
+        "area_unit///string///20///_NULL///NULL///__///sao_bac_bo | sao_trung_bo | m2 | ha"
     ],
     [
         "vendor_farming_steps///add///__///",
@@ -241,7 +246,14 @@
     ],
     [
         "employees///add///__///",
-        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo"
+        "created_by///unsignedBigInteger///__///_NULL///NULL///->constrained('users')->onDelete('set null')///Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo",
+        "gender///string///10///_NULL///NULL///__///nam | nu | khac",
+        "dob///date///__///_NULL///NULL///__///Ngày sinh",
+        "start_date///date///__///_NULL///NULL///__///Ngày bắt đầu làm việc",
+        "address///string///500///_NULL///NULL///__///Địa chỉ liên hệ",
+        "id_card_number///string///20///_NULL///NULL///->index()///Số CCCD (12 số)",
+        "id_card_issue_date///date///__///_NULL///NULL///__///Ngày cấp CCCD",
+        "id_card_issue_place///string///255///_NULL///NULL///__///Nơi cấp CCCD"
     ],
     [
         "departments///add///__///",
@@ -256,5 +268,14 @@
     [
         "vendors///change///__///Cho phép NCC được tạo nhanh từ Sổ kiểm thực (chưa có MST)",
         "tax_code///string///50///_NULL///NULL///__///__"
+    ],
+    [
+        "farming_logs///add///__///",
+        "material_name///string///255///_NULL///NULL///__///Loại vật tư sử dụng (phân bón, thuốc BVTV) — theo biểu mẫu Nhật ký VietGAP",
+        "dosage///string///100///_NULL///NULL///__///Liều lượng sử dụng (VD: 200kg, 10ml/1 bình)",
+        "isolation_days///unsignedSmallInteger///__///_NULL///NULL///__///Thời gian cách ly trên bao bì (ngày) — dùng tính safe_harvest_date",
+        "harvest_yield///string///100///_NULL///NULL///__///Sản lượng thu hoạch (VD: 500 kg)",
+        "buyer_name///string///255///_NULL///NULL///__///Cơ sở tiêu thụ",
+        "operator_name///string///150///_NULL///NULL///__///Người thực hiện"
     ]
 ]

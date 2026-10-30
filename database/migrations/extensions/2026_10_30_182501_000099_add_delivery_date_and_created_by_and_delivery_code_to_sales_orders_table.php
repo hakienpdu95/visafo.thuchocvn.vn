@@ -35,6 +35,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('sales_orders', 'delivered_at')) {
                 $table->timestamp('delivered_at')->nullable()->after('shipped_at')->comment('Thời điểm giao thành công');
             }
+            if (!Schema::hasColumn('sales_orders', 'customer_id')) {
+                $table->foreignUlid('customer_id')->nullable()->constrained('customers')->nullOnDelete()->after('delivered_at')->comment('Khách hàng liên kết (đơn nhập tay) — customer_name/delivery_address vẫn lưu snapshot');
+            }
         });
     }
 
@@ -42,7 +45,8 @@ return new class extends Migration {
     {
         Schema::table('sales_orders', function (Blueprint $table) {
             if (Schema::hasColumn('sales_orders', 'created_by')) $table->dropForeign(['created_by']);
-            $cols = array_filter(['delivery_date', 'created_by', 'delivery_code', 'shipped_at', 'delivered_at'], fn($c) => Schema::hasColumn('sales_orders', $c));
+            if (Schema::hasColumn('sales_orders', 'customer_id')) $table->dropForeign(['customer_id']);
+            $cols = array_filter(['delivery_date', 'created_by', 'delivery_code', 'shipped_at', 'delivered_at', 'customer_id'], fn($c) => Schema::hasColumn('sales_orders', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }

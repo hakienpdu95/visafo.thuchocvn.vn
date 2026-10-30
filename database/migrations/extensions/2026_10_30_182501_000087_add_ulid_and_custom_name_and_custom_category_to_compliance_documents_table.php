@@ -23,6 +23,9 @@ return new class extends Migration {
             if (!Schema::hasColumn('compliance_documents', 'created_by')) {
                 $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete()->after('custom_category')->comment('Người tạo bản ghi — dùng cho quyền Xem dữ liệu tự tạo');
             }
+            if (!Schema::hasColumn('compliance_documents', 'trace_visibility')) {
+                $table->string('trace_visibility', 10)->default('status')->after('created_by')->comment('full | status | hidden — mức công khai hồ sơ lô hàng trên trang truy xuất');
+            }
         });
     }
 
@@ -30,7 +33,7 @@ return new class extends Migration {
     {
         Schema::table('compliance_documents', function (Blueprint $table) {
             if (Schema::hasColumn('compliance_documents', 'created_by')) $table->dropForeign(['created_by']);
-            $cols = array_filter(['ulid', 'custom_name', 'custom_category', 'created_by'], fn($c) => Schema::hasColumn('compliance_documents', $c));
+            $cols = array_filter(['ulid', 'custom_name', 'custom_category', 'created_by', 'trace_visibility'], fn($c) => Schema::hasColumn('compliance_documents', $c));
             if (!empty($cols)) $table->dropColumn(array_values($cols));
         });
     }
