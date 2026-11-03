@@ -171,9 +171,21 @@ class MisaSalesOrderParser
                 continue;
             }
 
+            // File nhiều trang: MISA chèn footer ("MISA SME", tên/địa chỉ công ty, số trang) và
+            // tiêu đề bảng của trang mới vào giữa bảng, trước dòng "Cộng".
+            if ($this->isRepeatedTableHeaderRow($stt, $name, $sku)) {
+                continue;
+            }
+
             if ($sku === '') {
+                // Không có Mã số thì chỉ coi là dòng hàng khi có dấu hiệu hàng hóa (STT là số hoặc có SL),
+                // còn lại là chữ footer/ghi chú. Dòng hàng thật thiếu Mã số vẫn báo lỗi, không bỏ qua im lặng.
+                if (! $this->isLineNumber($stt) && ! $this->hasQty($sheet, $row, $columns['qty'])) {
+                    continue;
+                }
+
                 throw new SalesOrderParseException(
-                    "Dòng \"$name\" (STT $stt) thiếu Mã số hàng hóa — không thể xác định sản phẩm."
+                    "Dòng \"$name\" (STT $stt, dòng $row trong file) thiếu Mã số hàng hóa — không thể xác định sản phẩm."
                 );
             }
 
@@ -187,7 +199,7 @@ class MisaSalesOrderParser
 
             $unit = trim($this->cellText($sheet, $row, $columns['unit']));
             $aggregated[$sku] = [
-                'lineNo' => $stt !== '' ? (int) $stt : null,
+                'lineNo' => $this->isLineNumber($stt) ? (int) $stt : null,
                 'name'   => $name,
                 'unit'   => $unit !== '' ? $unit : null,
                 'qty'    => $qty,
@@ -264,9 +276,34 @@ class MisaSalesOrderParser
         );
     }
 
+    /** "Cộng", "Cộng:", "Tổng cộng", "TỔNG CỘNG". */
     private function isTotalRow(string $value): bool
     {
-        return mb_strtolower($value) === 'cộng';
+        return (bool) preg_match('/^(tổng\s+)?cộng\s*:?$/u', $this->normalizeHeader($value));
+    }
+
+    /** Dòng ký hiệu cột ("A", "B", "C"...) hoặc dòng tiêu đề bảng ("STT", "Mã số"...) lặp lại ở đầu trang mới. */
+    private function isRepeatedTableHeaderRow(string $stt, string $name, string $sku): bool
+    {
+        if ($stt === 'A' && $name === 'B') {
+            return true;
+        }
+
+        return preg_match(self::COLUMN_HEADERS['stt'], $this->normalizeHeader($stt))
+            || preg_match(self::COLUMN_HEADERS['sku'], $this->normalizeHeader($sku));
+    }
+
+    /** STT hợp lệ: "1", "12", "3." */
+    private function isLineNumber(string $stt): bool
+    {
+        return (bool) preg_match('/^\d+\.?$/', $stt);
+    }
+
+    private function hasQty(Worksheet $sheet, int $row, string $column): bool
+    {
+        $value = $this->cellValue($sheet, $row, $column);
+
+        return is_numeric($value) && (float) $value != 0.0;
     }
 
     private function cellQty(Worksheet $sheet, int $row, string $column, string $name): float
