@@ -199,7 +199,7 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['high', 'default', 'low', 'workflows', 'webhooks', 'ai', 'actlog', 'passport'],
+            'queue' => ['high', 'default', 'low', 'workflows', 'webhooks', 'ai', 'actlog', 'passport', 'hanoicheck'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,

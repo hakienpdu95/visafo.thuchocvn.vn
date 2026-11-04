@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/hanoicheckorder",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\HanoiCheckOrder\\": "app/",
+            "Modules\\HanoiCheckOrder\\Database\\Factories\\": "database/factories/",
+            "Modules\\HanoiCheckOrder\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\HanoiCheckOrder\\Tests\\": "tests/"
+        }
+    }
+}

@@ -15,5 +15,7 @@
     "TraceLog": true,
     "FoodInspection": true,
     "Menu": true,
-    "Report": true
+    "Report": true,
+    "HanoiCheck": true,
+    "HanoiCheckOrder": true
 }

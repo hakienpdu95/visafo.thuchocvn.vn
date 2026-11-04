@@ -15,7 +15,7 @@ return [
      * When the clean command is executed, all recording activities older than
      * the number of days specified here will be deleted.
      */
-    'clean_after_days' => env('ACTIVITYLOG_RETAIN_DAYS', 90),
+    'clean_after_days' => env('ACTIVITYLOG_RETAIN_DAYS', 730),
 
     /*
      * If no log name is passed to the activity() helper

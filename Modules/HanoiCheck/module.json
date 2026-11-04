@@ -1,0 +1,11 @@
+{
+    "name": "HanoiCheck",
+    "alias": "hanoicheck",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\HanoiCheck\\Providers\\HanoiCheckServiceProvider"
+    ],
+    "files": []
+}

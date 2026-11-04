@@ -58,6 +58,14 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        'hanoicheck' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/hanoicheck.log'),
+            'level' => 'info',
+            'days' => 730,
+            'replace_placeholders' => true,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
@@ -69,7 +77,7 @@ return [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
+            'days' => env('LOG_DAILY_DAYS', 30),
             'replace_placeholders' => true,
         ],
 

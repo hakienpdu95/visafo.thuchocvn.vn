@@ -90,4 +90,33 @@ return [
         'redirect'      => env('LINKEDIN_REDIRECT_URI', '/auth/social/linkedin/callback'),
     ],
 
+    'hanoicheck' => [
+        'enabled'          => (bool) env('HANOICHECK_ENABLED', false),
+        'fake'             => (bool) env('HANOICHECK_FAKE', true),
+        'environment'      => env('HANOICHECK_ENV', 'sandbox'),
+        'base_url'         => rtrim((string) env('HANOICHECK_BASE_URL', ''), '/'),
+        'client_id'        => env('HANOICHECK_CLIENT_ID'),
+        'client_secret'    => env('HANOICHECK_CLIENT_SECRET'),
+        'hmac_secret'      => env('HANOICHECK_HMAC_SECRET'),
+        'timeout'          => (int) env('HANOICHECK_TIMEOUT', 30),
+        'token_expiry_buffer' => (int) env('HANOICHECK_TOKEN_EXPIRY_BUFFER', 300),
+        'refresh_token_ttl'   => 30 * 24 * 3600,
+        'queue'            => env('HANOICHECK_QUEUE', 'hanoicheck'),
+        'debounce_seconds' => (int) env('HANOICHECK_DEBOUNCE_SECONDS', 15),
+        'settle_seconds'   => (int) env('HANOICHECK_SETTLE_SECONDS', 5),
+        'backoff'          => [60, 300, 1800, 7200],
+        'defaults' => [
+            'ma_co_so'        => env('HANOICHECK_FACILITY_CODE', 'CS_VISAFO'),
+            'ma_kho'          => env('HANOICHECK_WAREHOUSE_CODE', 'KHO_VISAFO'),
+            'ma_khau'         => env('HANOICHECK_STEP_CODE', 'NHAP_KHO'),
+            'ten_khau'        => env('HANOICHECK_STEP_NAME', 'Nhập kho'),
+            'ma_quy_trinh'    => env('HANOICHECK_PROCESS_CODE', 'QT_CUNG_UNG_THUC_PHAM'),
+            'ten_quy_trinh'   => env('HANOICHECK_PROCESS_NAME', 'Quy trình cung ứng thực phẩm'),
+            'ma_loai_sp'      => env('HANOICHECK_DEFAULT_FOOD_CATEGORY_ID'),
+            'nhom_thuc_pham'  => array_values(array_filter(array_map('intval', explode(',', (string) env('HANOICHECK_DEFAULT_FOOD_GROUP_IDS', ''))))),
+            'warehouse_area'  => env('HANOICHECK_WAREHOUSE_AREA'),
+            'category_map'    => json_decode((string) env('HANOICHECK_CATEGORY_MAP', '{}'), true) ?: [],
+        ],
+    ],
+
 ];

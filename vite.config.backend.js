@@ -119,6 +119,9 @@ const MODULE_ENTRIES = [
   // TraceLog
   'Modules/TraceLog/resources/assets/sass/tracelog.scss',
   'Modules/TraceLog/resources/assets/js/tracelog.js',
+  // HanoiCheckOrder
+  'Modules/HanoiCheckOrder/resources/assets/sass/hanoicheckorder.scss',
+  'Modules/HanoiCheckOrder/resources/assets/js/hanoicheckorder.js',
   // FoodInspection
   'Modules/FoodInspection/resources/assets/sass/foodinspection.scss',
   'Modules/FoodInspection/resources/assets/js/foodinspection.js',
