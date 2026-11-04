@@ -51,7 +51,8 @@ class BulkPrintSalesOrderLabelsAction
             $sourceChanged = 0;
             $resplitItems = 0;
             $appendedItems = 0;
-            $blocked = [];
+            $skipped = [];
+            $mismatchNames = [];
             $needsMode = [];
             $needsModeNames = [];
 
@@ -84,7 +85,7 @@ class BulkPrintSalesOrderLabelsAction
                 try {
                     $gate->assertPrintable($item->product, $source['product_batch_id'], $dates['mfg_date'], $dates['exp_date'], 'items');
                 } catch (ValidationException $e) {
-                    array_push($blocked, ...$e->errors()['items']);
+                    $skipped[$item->id] = implode(' ', $e->errors()['items'] ?? $e->errors()[array_key_first($e->errors())] ?? []);
 
                     continue;
                 }
@@ -96,6 +97,12 @@ class BulkPrintSalesOrderLabelsAction
                 if ($splitDiffers && $mode === null) {
                     $needsMode[$item->id] = PrintLog::prefillOf($existing);
                     $needsModeNames[] = $item->product?->name ?? $item->product_name_raw;
+
+                    continue;
+                }
+                if (($existing->isEmpty() || $splitDiffers) && $customGroups !== null && ! ($data['confirm_weight_mismatch'] ?? false)
+                    && ! PrintLog::splitMatchesWeight($groups, (float) $item->requested_qty)) {
+                    $mismatchNames[] = $item->product?->name ?? $item->product_name_raw;
 
                     continue;
                 }
@@ -172,8 +179,8 @@ class BulkPrintSalesOrderLabelsAction
                 );
             }
 
-            if ($blocked !== []) {
-                throw ValidationException::withMessages(['items' => implode(' ', $blocked)]);
+            if ($mismatchNames !== []) {
+                throw ValidationException::withMessages(['items' => 'Tổng khối lượng tem lệch khối lượng yêu cầu ở: ' . implode(', ', array_filter($mismatchNames)) . ' — chia lại khối lượng/tem hoặc tick xác nhận in lệch.']);
             }
 
             return [
@@ -185,6 +192,7 @@ class BulkPrintSalesOrderLabelsAction
                 'source_changed' => $sourceChanged,
                 'resplit' => $resplitItems,
                 'appended' => $appendedItems,
+                'skipped'  => $skipped,
             ];
         });
     }

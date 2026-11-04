@@ -214,18 +214,26 @@
                         </div>
 
                         <div class="mt-5">
-                            <div class="flex items-center justify-between pb-1.5">
-                                <span class="label-text font-medium">Danh sách mặt hàng</span>
+                            <div class="flex flex-wrap items-center justify-between gap-2 pb-1.5">
+                                <div class="flex items-center gap-3">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" class="checkbox checkbox-sm checkbox-primary" :checked="allSelected" @change="toggleAll($event.target.checked)">
+                                        <span class="label-text font-medium">Danh sách mặt hàng</span>
+                                    </label>
+                                    <button type="button" class="btn btn-ghost btn-xs text-primary" @click="selectNeeded()" title="Chỉ tick các mặt hàng chưa in hoặc có thay đổi">Chỉ chọn dòng cần in</button>
+                                </div>
                                 <span class="text-xs text-base-content/50">
-                                    <span x-text="items.length"></span> mặt hàng · <span class="font-mono" x-text="totalLabels"></span> tem
+                                    Đã chọn <span x-text="selectedItems.length"></span>/<span x-text="items.length"></span> mặt hàng · <span class="font-mono" x-text="totalLabels"></span> tem
                                 </span>
                             </div>
+                            <p class="text-xs text-base-content/50 pb-2">Mặc định chỉ tick các mặt hàng chưa in hoặc có thay đổi (cách chia tem, nguồn cung). Mặt hàng đã in ổn định không cần in lại thì để trống.</p>
 
                             <div class="rounded-lg border border-base-200">
                                 <template x-for="row in items" :key="row.id">
-                                    <div class="border-b border-base-200 last:border-b-0">
-                                        <div class="grid grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)_auto] gap-3 items-center px-3 py-2"
-                                             :class="{ 'bg-base-200/40': row.editing }">
+                                    <div class="border-b border-base-200 last:border-b-0" :class="{ 'bg-error/5': row.blocked }">
+                                        <div class="grid grid-cols-[auto_minmax(0,1.3fr)_minmax(0,2fr)_auto] gap-3 items-center px-3 py-2"
+                                             :class="{ 'bg-base-200/40': row.editing, 'opacity-60': !row.selected && !row.editing }">
+                                            <input type="checkbox" class="checkbox checkbox-sm checkbox-primary" x-model="row.selected" :title="row.selected ? 'Bỏ chọn — không in mặt hàng này' : 'Chọn để in mặt hàng này'">
                                             <div class="min-w-0">
                                                 <p class="text-sm font-medium truncate" x-text="row.name" :title="row.name"></p>
                                                 <p class="text-xs text-base-content/50 font-mono">
@@ -247,6 +255,7 @@
                                                 <svg x-show="row.editing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
                                             </button>
                                         </div>
+                                        <p class="px-3 pb-1 -mt-1 text-xs text-error font-medium" x-show="row.blocked" x-text="'Bị chặn, chưa in: ' + row.blocked"></p>
                                         <div class="flex flex-wrap items-center gap-1 px-3 pb-2 -mt-1">
                                             <span class="badge badge-sm badge-success badge-outline font-mono max-w-full truncate" x-show="row.batchId"
                                                   :title="row.batchText" x-text="'Lô ' + batchCodeOf(row)"></span>
@@ -341,6 +350,7 @@
                                 </template>
                             </div>
                             <p class="mt-1 text-xs text-error" x-show="errors.items" x-text="errors.items"></p>
+                            <p class="mt-2 alert alert-warning py-2 px-3 text-xs" x-show="notice" x-text="notice"></p>
                             <label class="mt-2 flex items-start gap-2 cursor-pointer text-xs rounded-lg border border-error/40 bg-error/5 p-3" x-show="mismatchCount > 0">
                                 <input type="checkbox" class="checkbox checkbox-xs checkbox-error mt-0.5" x-model="confirmMismatch">
                                 <span class="text-error">
@@ -361,7 +371,7 @@
                             <button type="submit" class="btn btn-sm border-0 bg-blue-800 text-white hover:bg-blue-900"
                                     :disabled="!canRun">
                                 <span class="loading loading-spinner loading-xs" x-show="submitting"></span>
-                                In tem
+                                <span x-text="selectedItems.length > 0 ? 'In ' + selectedItems.length + ' mặt hàng (' + totalLabels + ' tem)' : 'Chọn mặt hàng để in'"></span>
                             </button>
                             <button type="button" class="btn btn-ghost btn-sm" @click="confirming = false">Hủy</button>
                         </div>
@@ -601,7 +611,7 @@
                             </label>
                         </div>
 
-                        <div class="mt-2 rounded-lg border border-error/40 bg-error/5 p-3 space-y-2" x-show="!groupsMatch">
+                        <div class="mt-2 rounded-lg border border-error/40 bg-error/5 p-3 space-y-2" x-show="!groupsMatch && createsCodes">
                             <p class="text-xs text-error font-medium">
                                 Tổng khối lượng các tem (<span class="font-mono" x-text="fmtKg(groupsTotal)"></span>) đang lệch khối lượng yêu cầu (<span class="font-mono" x-text="fmtKg(requiredTotal)"></span>)
                                 — mỗi tem sẽ in đúng số "Số lượng/Tem", trang truy xuất sẽ hiển thị khối lượng này.
@@ -745,8 +755,8 @@
                     <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting">
                         <span x-show="quarantineBlocked" class="text-error">Thiếu Phiếu kiểm dịch Thú y — không thể in tem</span>
                         <span x-show="!quarantineBlocked && datesMissing" class="text-error">Gia vị / Đồ khô: nhập đủ NSX và HSD để in tem</span>
-                        <span x-show="!quarantineBlocked && !datesMissing && !groupsMatch && !form.confirmMismatch" class="text-error">Tổng khối lượng tem lệch yêu cầu — chia lại hoặc tick xác nhận in lệch</span>
-                        <span x-show="!quarantineBlocked && !datesMissing && (groupsMatch || form.confirmMismatch)">Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem</span>
+                        <span x-show="!quarantineBlocked && !datesMissing && createsCodes && !groupsMatch && !form.confirmMismatch" class="text-error">Tổng khối lượng tem lệch yêu cầu — chia lại hoặc tick xác nhận in lệch</span>
+                        <span x-show="!quarantineBlocked && !datesMissing && (groupsMatch || !createsCodes || form.confirmMismatch)">Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem</span>
                     </p>
                     <div class="ml-auto flex gap-2">
                         <button type="button" class="btn btn-ghost btn-sm" @click="close()">Hủy</button>

@@ -165,7 +165,7 @@ document.addEventListener('alpine:init', () => {
             get canSubmit() {
                 return !this.submitting
                     && this.groupsValid
-                    && (this.groupsMatch || this.form.confirmMismatch)
+                    && (this.groupsMatch || !this.createsCodes || this.form.confirmMismatch)
                     && this.labelCount <= 200
                     && !(this.splitChanged && this.form.printMode === 'append' && this.appendCount === 0)
                     && !!this.form.exp
@@ -219,6 +219,10 @@ document.addEventListener('alpine:init', () => {
 
             get appendCount() {
                 return appendCountOf(this.printedGroups, this.form.groups);
+            },
+
+            get createsCodes() {
+                return this.printedGroups.length === 0 || this.splitChanged;
             },
 
             get canAutoDivide() {
@@ -468,7 +472,7 @@ document.addEventListener('alpine:init', () => {
                                 label_count: Number(g.qty),
                             })),
                             print_mode: this.splitChanged ? this.form.printMode : null,
-                            confirm_weight_mismatch: !this.groupsMatch && this.form.confirmMismatch,
+                            confirm_weight_mismatch: !this.groupsMatch && this.createsCodes && this.form.confirmMismatch,
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             supplier_name: this.form.supplierText.trim() || null,
@@ -504,6 +508,8 @@ document.addEventListener('alpine:init', () => {
                     }
 
                     if (!data.reused && this.item) emitPrefill({ [this.item.id]: prefillOfGroups(this.form.groups) });
+
+                    if (data.toast) window.Toast?.success?.(data.toast, { duration: 6000 });
 
                     if (win) {
                         win.location = data.print_url;
@@ -635,9 +641,42 @@ document.addEventListener('alpine:init', () => {
             form: { template: '', mfg: '', exp: '', batchCode: '' },
             globalVendorId: '',
             confirmMismatch: false,
+            notice: '',
+
+            get selectedItems() {
+                return this.items.filter((row) => row.selected);
+            },
+
+            get allSelected() {
+                return this.items.length > 0 && this.items.every((row) => row.selected);
+            },
+
+            toggleAll(value) {
+                this.items.forEach((row) => { row.selected = value; });
+            },
+
+            selectNeeded() {
+                this.items.forEach((row) => { row.selected = this.needsPrint(row); });
+            },
+
+            createsCodes(row) {
+                return row.printed === 0 || this.splitChanged(row);
+            },
+
+            needsPrint(row) {
+                return this.createsCodes(row) || this.sourceChanged(row);
+            },
+
+            rowSig(row) {
+                return [splitKey(row.groups), row.printMode, row.batchId || '', row.supplierManual ? 'm:' + (row.supplierText || '') : (row.vendorId || ''), row.partnerProductId || ''].join('|');
+            },
+
+            get selectedLabels() {
+                return this.selectedItems.reduce((sum, row) => sum + this.rowLabelCount(row), 0);
+            },
 
             get mismatchCount() {
-                return this.items.filter((row) => !this.rowMatch(row)).length;
+                return this.selectedItems.filter((row) => this.createsCodes(row) && !this.rowMatch(row)).length;
             },
 
             canAutoDivideRow(row) {
@@ -702,7 +741,7 @@ document.addEventListener('alpine:init', () => {
 
 
             get totalLabels() {
-                return this.items.reduce((sum, row) => sum + row.groups.reduce((s, g) => s + groupQty(g), 0), 0);
+                return this.selectedLabels;
             },
 
             // Nguồn của dòng đúng như trên màn hình: lô, NCC hoặc tên nhập tay — server không tự gán mặc định; thiếu nguồn vẫn in được (chỉ cảnh báo).
@@ -711,15 +750,16 @@ document.addEventListener('alpine:init', () => {
             },
 
             get missingSourceCount() {
-                return this.items.filter((row) => !this.rowHasSource(row)).length;
+                return this.selectedItems.filter((row) => !this.rowHasSource(row)).length;
             },
 
             get canRun() {
-                return !this.submitting && this.items.length > 0 && !!this.form.exp && !!this.form.template
+                const rows = this.selectedItems;
+                return !this.submitting && rows.length > 0 && !!this.form.exp && !!this.form.template
                     && this.totalLabels <= 2000
-                    && this.items.every((row) => row.groups.length > 0 && row.groups.every((g) => this.groupValid(g)))
+                    && rows.every((row) => row.groups.length > 0 && row.groups.every((g) => this.groupValid(g)))
                     && (this.mismatchCount === 0 || this.confirmMismatch)
-                    && !this.items.some((row) => this.splitChanged(row) && row.printMode === 'append' && this.appendCount(row) === 0);
+                    && !rows.some((row) => this.splitChanged(row) && row.printMode === 'append' && this.appendCount(row) === 0);
             },
 
             groupValid(g) {
@@ -824,6 +864,9 @@ document.addEventListener('alpine:init', () => {
                     } else {
                         this.autoSplit(row);
                     }
+                    row.blocked = '';
+                    row.selected = this.needsPrint(row);
+                    row.lastSig = this.rowSig(row);
                     return row;
                 }).filter((row) => row.total > 0);
                 this.preview = { total: this.items.length };
@@ -832,7 +875,16 @@ document.addEventListener('alpine:init', () => {
             get alertClass() { return this.ok ? 'alert-success' : 'alert-warning'; },
 
             init() {
-                this.$watch('items', () => saveDraft(this.items), { deep: true });
+                this.$watch('items', () => {
+                    this.items.forEach((row) => {
+                        const sig = this.rowSig(row);
+                        if (sig === row.lastSig) return;
+                        row.lastSig = sig;
+                        row.blocked = '';
+                        if (this.needsPrint(row)) row.selected = true;
+                    });
+                    saveDraft(this.items);
+                }, { deep: true });
 
                 this.$nextTick(() => {
                     const tplEl = document.getElementById('bp-label-template');
@@ -919,6 +971,8 @@ document.addEventListener('alpine:init', () => {
                 const win = window.open('', '_blank');
                 this.submitting = true;
                 this.errors = {};
+                this.notice = '';
+                const sent = this.selectedItems;
 
                 try {
                     const res = await fetch(url, {
@@ -935,7 +989,7 @@ document.addEventListener('alpine:init', () => {
                             exp_date: this.form.exp,
                             batch_code: this.form.batchCode || null,
                             confirm_weight_mismatch: this.mismatchCount > 0 && this.confirmMismatch,
-                            items: this.items.map((row) => ({
+                            items: sent.map((row) => ({
                                 order_item_id: row.id,
                                 ...printSourcePayload(row),
                                 label_groups: row.groups.map((g) => ({ weight_per_label: Number(g.weight), label_count: Number(g.qty) })),
@@ -965,8 +1019,15 @@ document.addEventListener('alpine:init', () => {
                     }
                     if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
 
+                    const skipped = data.skipped ?? {};
                     const changed = {};
-                    this.items.forEach((row) => {
+                    sent.forEach((row) => {
+                        if (skipped[row.id]) {
+                            row.blocked = skipped[row.id];
+                            row.selected = false;
+                            return;
+                        }
+                        row.selected = false;
                         if (row.printed === 0 || this.splitChanged(row)) {
                             row.printed = this.rowLabelCount(row);
                             row.printedGroups = row.groups.map((g) => ({ weight: Number(g.weight), qty: groupQty(g) }));
@@ -977,6 +1038,7 @@ document.addEventListener('alpine:init', () => {
                         row.dirty = false;
                         row.viaGlobal = false;
                         row.manual = false;
+                        row.lastSig = this.rowSig(row);
                     });
                     this.globalVendorId = '';
                     this.confirmMismatch = false;
@@ -984,9 +1046,11 @@ document.addEventListener('alpine:init', () => {
                     clearDraft();
                     emitPrefill(changed);
 
-                    this.confirming = false;
-                    this.ok = true;
+                    const skippedCount = Object.keys(skipped).length;
+                    this.confirming = skippedCount > 0;
+                    this.ok = skippedCount === 0;
                     this.message = data.message;
+                    this.notice = skippedCount > 0 ? data.message : '';
 
                     if (data.url && win) {
                         win.location = data.url;

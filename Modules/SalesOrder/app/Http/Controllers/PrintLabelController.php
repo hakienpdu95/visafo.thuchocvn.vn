@@ -89,15 +89,12 @@ class PrintLabelController extends Controller
             throw ValidationException::withMessages(['label_groups' => 'Mỗi lần chỉ in tối đa 200 tem.']);
         }
 
-        if (! ($data['confirm_weight_mismatch'] ?? false) && ! PrintLog::splitMatchesWeight($data['label_groups'], (float) $item->requested_qty)) {
-            throw ValidationException::withMessages(['label_groups' => 'Tổng khối lượng các tem lệch khối lượng yêu cầu của mặt hàng — chia lại khối lượng/tem hoặc tick xác nhận in lệch.']);
-        }
-
         $data = array_merge($data, $sourceResolver->resolve($data, $item));
 
         $gate->assertPrintable($item->product, $data['product_batch_id'], $data['mfg_date'] ?? null, $data['exp_date']);
 
         $result = $action->handle($item, $data, $request->user()?->id);
+        $created = $result['logs']->count();
 
         return response()->json([
             'session_id'  => $result['session_id'],
@@ -108,11 +105,12 @@ class PrintLabelController extends Controller
                 ? "Mặt hàng đã có {$result['logs']->count()} tem đang lưu hành — in lại đúng mã TXNG cũ, không tạo mã mới. "
                     . ($result['source_changed'] ? 'Đã cập nhật nguồn cung / lô mới cho các tem này. ' : '')
                     . 'Muốn chia lại tem: đổi khối lượng / số tem rồi In; sửa NSX / HSD: dùng "Sửa" ở Nhật ký TXNG; thay tem bị mất: "Hủy mã & Cấp lại".'
-                : ($result['appended']
-                    ? null
-                    : ($result['resplit'] > 0
-                    ? "Cách chia tem đã thay đổi — đã hủy {$result['resplit']} mã cũ và tạo {$result['logs']->count()} mã TXNG mới."
-                    : null)),
+                : null,
+            'toast'       => $result['reused'] ? null : match (true) {
+                $result['appended']    => "Đã in bổ sung {$created} tem mới, giữ nguyên {$result['kept']} tem cũ. Tổng: " . ($result['kept'] + $created) . ' tem đang lưu hành.',
+                $result['resplit'] > 0 => "Đã hủy {$result['resplit']} mã cũ và tạo {$created} mã TXNG mới.",
+                default                => "Đã tạo {$created} mã TXNG mới.",
+            },
             // Trang in cả phiên: mỗi tem một bản ghi + một trace_code/QR riêng.
             'print_url'   => route('print.render_session', $result['session_id']),
         ]);
@@ -264,17 +262,6 @@ class PrintLabelController extends Controller
             throw ValidationException::withMessages(['items' => 'Mỗi lần in toàn bộ đơn tối đa 2000 tem.']);
         }
 
-        if (! ($data['confirm_weight_mismatch'] ?? false) && isset($data['items'])) {
-            $orderItems = $salesOrder->items()->with('product:id,name')->get()->keyBy('id');
-            $mismatched = collect($data['items'])
-                ->filter(fn ($i) => ($orderItem = $orderItems->get($i['order_item_id'])) !== null
-                    && ! PrintLog::splitMatchesWeight($i['label_groups'], (float) $orderItem->requested_qty))
-                ->map(fn ($i) => $orderItems->get($i['order_item_id'])->product?->name ?? $orderItems->get($i['order_item_id'])->product_name_raw);
-            if ($mismatched->isNotEmpty()) {
-                throw ValidationException::withMessages(['items' => 'Tổng khối lượng tem lệch khối lượng yêu cầu ở: ' . $mismatched->filter()->implode(', ') . ' — chia lại khối lượng/tem hoặc tick xác nhận in lệch.']);
-            }
-        }
-
         $result = $action->handle($salesOrder, $data, $request->user()?->id);
 
         $message = $result['total'] === 0
@@ -291,12 +278,16 @@ class PrintLabelController extends Controller
                     : '')
                 . ($result['resplit'] > 0
                     ? " {$result['resplit']} mặt hàng đổi cách chia tem nên đã hủy mã cũ và tạo mã TXNG mới."
+                    : '')
+                . ($result['skipped'] !== []
+                    ? ' Bỏ qua ' . count($result['skipped']) . ' mặt hàng bị chặn (xem lý do trên từng dòng).'
                     : '');
 
         return response()->json([
             'printed' => $result['printed'],
             'total'   => $result['total'],
             'reused'  => $result['reused'],
+            'skipped' => (object) $result['skipped'],
             'message' => $message,
             'url'     => $result['logs'] === [] ? null : route('print.render_session', $result['session_id']),
         ]);

@@ -24,7 +24,7 @@ class PrintSalesOrderItemLabelAction
      *  - print_mode = append  → giữ nguyên tem cũ, chỉ tạo thêm phần tem tăng lên so với lần in trước (theo từng mức khối lượng/tem).
      *  - print_mode = replace → hủy các mã cũ và tạo bộ mã mới đúng theo số nhập trên form.
      *
-     * @return array{session_id: string, logs: Collection<int, PrintLog>, reused: bool, source_changed: bool, resplit: int, appended: bool}
+     * @return array{session_id: string, logs: Collection<int, PrintLog>, reused: bool, source_changed: bool, resplit: int, appended: bool, kept: int}
      */
     public function handle(SalesOrderItem $item, array $data, ?string $printedBy): array
     {
@@ -47,6 +47,10 @@ class PrintSalesOrderItemLabelAction
                     "Mặt hàng đang có {$existing->count()} tem lưu hành với cách chia khác — vui lòng chọn \"In bổ sung\" hoặc \"In thay thế\" rồi bấm In lại.",
                 );
             }
+            if (($existing->isEmpty() || $splitDiffers) && ! ($data['confirm_weight_mismatch'] ?? false)
+                && ! PrintLog::splitMatchesWeight($groups, (float) $item->requested_qty)) {
+                throw ValidationException::withMessages(['label_groups' => 'Tổng khối lượng các tem lệch khối lượng yêu cầu của mặt hàng — chia lại khối lượng/tem hoặc tick xác nhận in lệch.']);
+            }
             if ($splitDiffers && $mode === 'append') {
                 $groups = PrintLog::appendedGroups($existing, $groups);
                 if ($groups === []) {
@@ -64,7 +68,7 @@ class PrintSalesOrderItemLabelAction
                 $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
                 LabelPrintEvent::record($existing, $sessionId, $printedBy, true);
 
-                return ['session_id' => $sessionId, 'logs' => $existing, 'reused' => true, 'source_changed' => $sourceChanged, 'resplit' => 0, 'appended' => false];
+                return ['session_id' => $sessionId, 'logs' => $existing, 'reused' => true, 'source_changed' => $sourceChanged, 'resplit' => 0, 'appended' => false, 'kept' => 0];
             }
 
             $logs = new Collection();
@@ -103,7 +107,7 @@ class PrintSalesOrderItemLabelAction
 
             LabelPrintEvent::record($logs, $sessionId, $printedBy, false);
 
-            return ['session_id' => $sessionId, 'logs' => $logs, 'reused' => false, 'source_changed' => false, 'resplit' => $resplit, 'appended' => $appended];
+            return ['session_id' => $sessionId, 'logs' => $logs, 'reused' => false, 'source_changed' => false, 'resplit' => $resplit, 'appended' => $appended, 'kept' => $appended ? $existing->count() : 0];
         });
     }
 }
