@@ -96,6 +96,38 @@ const appendCountOf = (printed, groups) => {
     if (Object.entries(current).some(([k, qty]) => (target[k] ?? 0) < qty)) return 0;
     return Object.entries(target).reduce((sum, [k, qty]) => sum + Math.max(0, qty - (current[k] ?? 0)), 0);
 };
+const toMilli = (w) => Math.round((Number(w) || 0) * 1000);
+const evenParts = (milli, n) => {
+    const base = Math.floor(milli / n);
+    if (n < 1 || base <= 0) return null;
+    const rest = milli - base * n;
+    return rest === 0 ? [{ weight: base / 1000, qty: n }] : [{ weight: base / 1000, qty: n - 1 }, { weight: (base + rest) / 1000, qty: 1 }];
+};
+const withUids = (parts, firstUid, nextUid) => parts.map((p, k) => ({ uid: k === 0 && firstUid ? firstUid : nextUid(), weight: p.weight, qty: p.qty }));
+const isEvenSplit = (groups) => {
+    const ws = groups.map((g) => toMilli(g.weight));
+    const n = groups.reduce((s, g) => s + groupQty(g), 0);
+    return groups.length > 0 && groups.length <= 2 && n > 0 && Math.max(...ws) - Math.min(...ws) < n;
+};
+const rebalanceAll = (groups, totalKg, nextUid) => {
+    const n = groups.reduce((s, g) => s + groupQty(g), 0);
+    const parts = evenParts(toMilli(totalKg), n);
+    return parts ? withUids(parts, groups[0]?.uid, nextUid) : groups;
+};
+const redistributeAt = (groups, index, totalKg, nextUid) => {
+    if (isEvenSplit(groups)) return rebalanceAll(groups, totalKg, nextUid);
+    const others = groups.reduce((s, g, i) => (i === index ? s : s + toMilli(g.weight) * groupQty(g)), 0);
+    const parts = evenParts(toMilli(totalKg) - others, groupQty(groups[index]));
+    if (!parts) return groups;
+    const next = [...groups];
+    next.splice(index, 1, ...withUids(parts, groups[index].uid, nextUid));
+    return next;
+};
+const emitPrefill = (map) => window.dispatchEvent(new CustomEvent('sales-order-prefill', { detail: map }));
+const prefillOfGroups = (groups) => ({
+    printed: groups.reduce((s, g) => s + groupQty(g), 0),
+    printed_groups: groups.map((g) => ({ weight: Number(g.weight), qty: groupQty(g) })),
+});
 const groupsFrom = (printed, nextUid) => printed.map((g) => ({ uid: nextUid(), weight: g.weight, qty: g.qty }));
 const groupsTotalOf = (groups) => groups.reduce((sum, g) => sum + Math.round((Number(g.weight) || 0) * 1000) * groupQty(g), 0) / 1000;
 const toDdMmYy = (ymd) => {
@@ -128,11 +160,12 @@ document.addEventListener('alpine:init', () => {
             batchCount: 0,
             batchVendors: {},
             batchInfo: {},
-            form: { groups: [], printMode: 'append', mfg: '', exp: '', supplierManual: false, supplierText: '', vendorId: '', batchId: '', batchCode: '', template: '' },
+            form: { groups: [], printMode: 'append', confirmMismatch: false, mfg: '', exp: '', supplierManual: false, supplierText: '', vendorId: '', batchId: '', batchCode: '', template: '' },
 
             get canSubmit() {
                 return !this.submitting
                     && this.groupsValid
+                    && (this.groupsMatch || this.form.confirmMismatch)
                     && this.labelCount <= 200
                     && !(this.splitChanged && this.form.printMode === 'append' && this.appendCount === 0)
                     && !!this.form.exp
@@ -186,6 +219,27 @@ document.addEventListener('alpine:init', () => {
 
             get appendCount() {
                 return appendCountOf(this.printedGroups, this.form.groups);
+            },
+
+            get canAutoDivide() {
+                return this.printedGroups.length === 0 || this.form.printMode === 'replace';
+            },
+
+            onQtyChange(index) {
+                if (!this.canAutoDivide || !(this.requiredTotal > 0) || groupQty(this.form.groups[index]) < 1) return;
+                this.form.groups = redistributeAt(this.form.groups, index, this.requiredTotal, () => ++this._uid);
+            },
+
+            onModeChange() {
+                if (this.form.printMode === 'replace' && !this.groupsMatch && this.requiredTotal > 0 && this.groupsValid
+                    && new Set(this.form.groups.map((g) => toMilli(g.weight))).size === 1) {
+                    this.form.groups = rebalanceAll(this.form.groups, this.requiredTotal, () => ++this._uid);
+                }
+            },
+
+            applyPrefill(map) {
+                const pf = this.item ? map?.[this.item.id] : null;
+                if (pf) this.item.print_prefill = { ...(this.item.print_prefill ?? {}), ...pf };
             },
 
             autoSplit() {
@@ -336,6 +390,7 @@ document.addEventListener('alpine:init', () => {
                 this.form = {
                     groups: [],
                     printMode: 'append',
+                    confirmMismatch: false,
                     mfg: row.requires_dates ? '' : toYmd(new Date()),
                     exp: '',
                     supplierManual: false,
@@ -413,6 +468,7 @@ document.addEventListener('alpine:init', () => {
                                 label_count: Number(g.qty),
                             })),
                             print_mode: this.splitChanged ? this.form.printMode : null,
+                            confirm_weight_mismatch: !this.groupsMatch && this.form.confirmMismatch,
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             supplier_name: this.form.supplierText.trim() || null,
@@ -429,6 +485,10 @@ document.addEventListener('alpine:init', () => {
 
                     if (res.status === 422) {
                         win?.close();
+                        if (data.print_prefill) {
+                            emitPrefill(data.print_prefill);
+                            this.message = data.message;
+                        }
                         Object.entries(data.errors ?? {}).forEach(([k, v]) => {
                             // extra_attributes.2.key → gom về một thông báo chung của khu vực thông tin bổ sung
                             const field = k.startsWith('extra_attributes') ? 'extra_attributes'
@@ -443,13 +503,7 @@ document.addEventListener('alpine:init', () => {
                         return;
                     }
 
-                    if (!data.reused && this.item) {
-                        this.item.print_prefill = {
-                            ...(this.item.print_prefill ?? {}),
-                            printed: data.appended ? (this.item.print_prefill?.printed ?? 0) + data.label_count : data.label_count,
-                            printed_groups: this.form.groups.map((g) => ({ weight: Number(g.weight), qty: groupQty(g) })),
-                        };
-                    }
+                    if (!data.reused && this.item) emitPrefill({ [this.item.id]: prefillOfGroups(this.form.groups) });
 
                     if (win) {
                         win.location = data.print_url;
@@ -580,6 +634,27 @@ document.addEventListener('alpine:init', () => {
             _uid: 0,
             form: { template: '', mfg: '', exp: '', batchCode: '' },
             globalVendorId: '',
+            confirmMismatch: false,
+
+            get mismatchCount() {
+                return this.items.filter((row) => !this.rowMatch(row)).length;
+            },
+
+            canAutoDivideRow(row) {
+                return row.printed === 0 || !(row.printedGroups?.length > 0) || row.printMode === 'replace';
+            },
+
+            onRowQtyChange(row, index) {
+                if (!this.canAutoDivideRow(row) || !(row.total > 0) || groupQty(row.groups[index]) < 1) return;
+                row.groups = redistributeAt(row.groups, index, row.total, () => ++this._uid);
+            },
+
+            onRowModeChange(row) {
+                if (row.printMode === 'replace' && !this.rowMatch(row) && row.total > 0 && row.groups.every((g) => this.groupValid(g))
+                    && new Set(row.groups.map((g) => toMilli(g.weight))).size === 1) {
+                    row.groups = rebalanceAll(row.groups, row.total, () => ++this._uid);
+                }
+            },
 
             fmtKg,
             ...cascade,
@@ -643,6 +718,7 @@ document.addEventListener('alpine:init', () => {
                 return !this.submitting && this.items.length > 0 && !!this.form.exp && !!this.form.template
                     && this.totalLabels <= 2000
                     && this.items.every((row) => row.groups.length > 0 && row.groups.every((g) => this.groupValid(g)))
+                    && (this.mismatchCount === 0 || this.confirmMismatch)
                     && !this.items.some((row) => this.splitChanged(row) && row.printMode === 'append' && this.appendCount(row) === 0);
             },
 
@@ -698,7 +774,9 @@ document.addEventListener('alpine:init', () => {
                 this.items = rows.map((r) => {
                     const total = Math.round(Number(r.requested_qty_raw) * 1000) / 1000;
                     const old = prev.get(r.id);
-                    if (old && old.total === total) {
+                    const pfNow = r.print_prefill ?? {};
+                    if (old && old.total === total && old.printed === (pfNow.printed ?? 0)
+                        && splitKey(old.printedGroups) === splitKey(pfNow.printed_groups ?? [])) {
                         old.editing = false;
                         return old;
                     }
@@ -856,6 +934,7 @@ document.addEventListener('alpine:init', () => {
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             batch_code: this.form.batchCode || null,
+                            confirm_weight_mismatch: this.mismatchCount > 0 && this.confirmMismatch,
                             items: this.items.map((row) => ({
                                 order_item_id: row.id,
                                 ...printSourcePayload(row),
@@ -868,6 +947,16 @@ document.addEventListener('alpine:init', () => {
 
                     if (res.status === 422) {
                         win?.close();
+                        if (data.print_prefill) {
+                            this.items.forEach((row) => {
+                                const pf = data.print_prefill[row.id];
+                                if (!pf) return;
+                                row.printed = pf.printed;
+                                row.printedGroups = pf.printed_groups;
+                                row.editing = true;
+                            });
+                            emitPrefill(data.print_prefill);
+                        }
                         Object.entries(data.errors ?? {}).forEach(([k, v]) => {
                             const field = k.startsWith('items') ? 'items' : k;
                             this.errors[field] ??= v[0];
@@ -876,10 +965,12 @@ document.addEventListener('alpine:init', () => {
                     }
                     if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
 
+                    const changed = {};
                     this.items.forEach((row) => {
                         if (row.printed === 0 || this.splitChanged(row)) {
                             row.printed = this.rowLabelCount(row);
                             row.printedGroups = row.groups.map((g) => ({ weight: Number(g.weight), qty: groupQty(g) }));
+                            changed[row.id] = { printed: row.printed, printed_groups: row.printedGroups };
                         }
                         row.printedSource = { batchId: row.batchId || '', vendorId: row.supplierManual ? '' : row.vendorId, partnerProductId: row.supplierManual || !row.vendorId ? '' : (row.partnerProductId || ''), supplierText: row.supplierManual ? row.supplierText.trim() : '' };
                         row.origin = 'history';
@@ -888,8 +979,10 @@ document.addEventListener('alpine:init', () => {
                         row.manual = false;
                     });
                     this.globalVendorId = '';
+                    this.confirmMismatch = false;
                     globalTs?.clear(true);
                     clearDraft();
+                    emitPrefill(changed);
 
                     this.confirming = false;
                     this.ok = true;
@@ -933,6 +1026,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const rows = JSON.parse(el.dataset.rows || '[]');
     const rowsById = new Map(rows.map((r) => [String(r.id), r]));
+
+    window.addEventListener('sales-order-prefill', (e) => {
+        Object.entries(e.detail ?? {}).forEach(([id, pf]) => {
+            const row = rowsById.get(String(id));
+            if (!row) return;
+            row.print_prefill = { ...(row.print_prefill ?? {}), ...pf };
+            window.salesOrderItemsTable?.updateData([{ id: row.id, print_prefill: row.print_prefill }]).catch(() => {});
+        });
+    });
 
     el.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-action][data-item-id]');

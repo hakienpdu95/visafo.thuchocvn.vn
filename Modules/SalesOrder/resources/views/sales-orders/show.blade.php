@@ -284,7 +284,7 @@
                                                                class="input input-bordered input-sm w-full font-mono"
                                                                :class="{ 'input-error': !(Number(group.weight) > 0) }">
                                                         <span class="text-base-content/40">×</span>
-                                                        <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty"
+                                                        <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty" @change="onRowQtyChange(row, index)"
                                                                class="input input-bordered input-sm w-full font-mono"
                                                                :class="{ 'input-error': !(Number.isInteger(Number(group.qty)) && Number(group.qty) >= 1) }">
                                                         <button type="button" class="btn btn-ghost btn-sm text-error w-14" @click="removeGroup(row, index)"
@@ -311,7 +311,7 @@
                                             <div class="mt-3 grid gap-2" x-show="splitChanged(row)">
                                                 <label class="flex items-start gap-3 rounded-lg border bg-base-100 p-3 cursor-pointer"
                                                        :class="row.printMode === 'append' ? 'border-primary bg-primary/5' : 'border-base-200'">
-                                                    <input type="radio" class="radio radio-primary radio-sm mt-0.5" value="append" x-model="row.printMode">
+                                                    <input type="radio" class="radio radio-primary radio-sm mt-0.5" value="append" x-model="row.printMode" @change="onRowModeChange(row)">
                                                     <span class="flex-1">
                                                         <span class="block text-sm font-medium">In bổ sung</span>
                                                         <span class="block text-xs text-base-content/60">Tạo thêm mã tem mới. Các mã tem cũ đã in trước đó vẫn giữ nguyên hiệu lực.</span>
@@ -324,7 +324,7 @@
                                                 </label>
                                                 <label class="flex items-start gap-3 rounded-lg border bg-base-100 p-3 cursor-pointer"
                                                        :class="row.printMode === 'replace' ? 'border-warning bg-warning/5' : 'border-base-200'">
-                                                    <input type="radio" class="radio radio-warning radio-sm mt-0.5" value="replace" x-model="row.printMode">
+                                                    <input type="radio" class="radio radio-warning radio-sm mt-0.5" value="replace" x-model="row.printMode" @change="onRowModeChange(row)">
                                                     <span class="flex-1">
                                                         <span class="flex flex-wrap items-center gap-2 text-sm font-medium">
                                                             In thay thế (Hủy tem cũ)
@@ -341,6 +341,13 @@
                                 </template>
                             </div>
                             <p class="mt-1 text-xs text-error" x-show="errors.items" x-text="errors.items"></p>
+                            <label class="mt-2 flex items-start gap-2 cursor-pointer text-xs rounded-lg border border-error/40 bg-error/5 p-3" x-show="mismatchCount > 0">
+                                <input type="checkbox" class="checkbox checkbox-xs checkbox-error mt-0.5" x-model="confirmMismatch">
+                                <span class="text-error">
+                                    <span class="font-medium" x-text="mismatchCount + ' mặt hàng có tổng khối lượng tem lệch khối lượng yêu cầu.'"></span>
+                                    Tôi xác nhận cố ý in lệch (hao hụt, chia lại tem).
+                                </span>
+                            </label>
                         </div>
 
                     </div>
@@ -489,7 +496,7 @@
 @endcan
 
 @if($printable)
-<div x-data="printLabelModal()" @open-print-label.window="openFor($event.detail)" x-cloak>
+<div x-data="printLabelModal()" @open-print-label.window="openFor($event.detail)" @sales-order-prefill.window="applyPrefill($event.detail)" x-cloak>
     <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">
         <div class="modal-box max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
 
@@ -542,7 +549,7 @@
                                            class="input input-bordered input-sm w-full font-mono"
                                            :class="{ 'input-error': !(Number(group.weight) > 0) }">
                                     <span class="text-base-content/40">×</span>
-                                    <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty"
+                                    <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty" @change="onQtyChange(index)"
                                            class="input input-bordered input-sm w-full font-mono"
                                            :class="{ 'input-error': !(Number.isInteger(Number(group.qty)) && Number(group.qty) >= 1) }">
                                     <button type="button" class="btn btn-ghost btn-sm text-error w-14" @click="removeGroup(index)"
@@ -568,7 +575,7 @@
                         <div class="mt-3 grid gap-2" x-show="splitChanged">
                             <label class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer"
                                    :class="form.printMode === 'append' ? 'border-primary bg-primary/5' : 'border-base-200'">
-                                <input type="radio" class="radio radio-primary radio-sm mt-0.5" value="append" x-model="form.printMode">
+                                <input type="radio" class="radio radio-primary radio-sm mt-0.5" value="append" x-model="form.printMode" @change="onModeChange()">
                                 <span class="flex-1">
                                     <span class="block text-sm font-medium">In bổ sung</span>
                                     <span class="block text-xs text-base-content/60">Tạo thêm mã tem mới. Các mã tem cũ đã in trước đó vẫn giữ nguyên hiệu lực.</span>
@@ -581,7 +588,7 @@
                             </label>
                             <label class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer"
                                    :class="form.printMode === 'replace' ? 'border-warning bg-warning/5' : 'border-base-200'">
-                                <input type="radio" class="radio radio-warning radio-sm mt-0.5" value="replace" x-model="form.printMode">
+                                <input type="radio" class="radio radio-warning radio-sm mt-0.5" value="replace" x-model="form.printMode" @change="onModeChange()">
                                 <span class="flex-1">
                                     <span class="flex flex-wrap items-center gap-2 text-sm font-medium">
                                         In thay thế (Hủy tem cũ)
@@ -594,7 +601,16 @@
                             </label>
                         </div>
 
-                        <p class="mt-1 text-xs text-error" x-show="!groupsMatch">Tổng số lượng tem đang lệch so với yêu cầu — vẫn có thể in nếu cố ý (hao hụt, chia lại tem).</p>
+                        <div class="mt-2 rounded-lg border border-error/40 bg-error/5 p-3 space-y-2" x-show="!groupsMatch">
+                            <p class="text-xs text-error font-medium">
+                                Tổng khối lượng các tem (<span class="font-mono" x-text="fmtKg(groupsTotal)"></span>) đang lệch khối lượng yêu cầu (<span class="font-mono" x-text="fmtKg(requiredTotal)"></span>)
+                                — mỗi tem sẽ in đúng số "Số lượng/Tem", trang truy xuất sẽ hiển thị khối lượng này.
+                            </p>
+                            <label class="flex items-start gap-2 cursor-pointer text-xs">
+                                <input type="checkbox" class="checkbox checkbox-xs checkbox-error mt-0.5" x-model="form.confirmMismatch">
+                                <span>Tôi xác nhận cố ý in lệch khối lượng (hao hụt, chia lại tem).</span>
+                            </label>
+                        </div>
                         <p class="mt-1 text-xs text-error" x-show="labelCount > 200">Mỗi lần chỉ in tối đa 200 tem.</p>
                         <p class="mt-1 text-xs text-error" x-show="errors.label_groups" x-text="errors.label_groups"></p>
                     </div>
@@ -729,7 +745,8 @@
                     <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting">
                         <span x-show="quarantineBlocked" class="text-error">Thiếu Phiếu kiểm dịch Thú y — không thể in tem</span>
                         <span x-show="!quarantineBlocked && datesMissing" class="text-error">Gia vị / Đồ khô: nhập đủ NSX và HSD để in tem</span>
-                        <span x-show="!quarantineBlocked && !datesMissing">Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem</span>
+                        <span x-show="!quarantineBlocked && !datesMissing && !groupsMatch && !form.confirmMismatch" class="text-error">Tổng khối lượng tem lệch yêu cầu — chia lại hoặc tick xác nhận in lệch</span>
+                        <span x-show="!quarantineBlocked && !datesMissing && (groupsMatch || form.confirmMismatch)">Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem</span>
                     </p>
                     <div class="ml-auto flex gap-2">
                         <button type="button" class="btn btn-ghost btn-sm" @click="close()">Hủy</button>

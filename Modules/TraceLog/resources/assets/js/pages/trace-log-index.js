@@ -16,6 +16,15 @@ function openDetail(row) {
     window.dispatchEvent(new CustomEvent('open-trace-detail', { detail: row }));
 }
 
+function openRestore(ids) {
+    window.dispatchEvent(new CustomEvent('open-trace-restore', { detail: { ids } }));
+}
+
+const SELECT_COLUMN = {
+    formatter: 'rowSelection', titleFormatter: 'rowSelection', field: '_select', width: 44, minWidth: 44,
+    hozAlign: 'center', headerHozAlign: 'center', headerSort: false, frozen: true,
+};
+
 function openEdit(row) {
     window.dispatchEvent(new CustomEvent('open-trace-edit', { detail: row }));
 }
@@ -125,7 +134,7 @@ document.addEventListener('alpine:init', () => {
 
     // ── Danh sách + bộ lọc ─────────────────────────────────────────────
     Alpine.data('traceLogListPage', (serverData = {}) => {
-        const { apiUrl = '', customers = [], statuses = [], vendors = [] } = serverData;
+        const { apiUrl = '', customers = [], statuses = [], vendors = [], canRestore = false } = serverData;
 
         let tableInst = null;
         let tsCustomer = null;
@@ -138,6 +147,13 @@ document.addEventListener('alpine:init', () => {
         return {
             filters: { search: '', customer: '', status: '', dateFrom: '', dateTo: '', vendor: '', batch: '' },
             hiddenCols: [],
+            selectedIds: [],
+
+            clearSelection() { tableInst?.deselectRow(); },
+
+            restoreSelected() {
+                if (this.selectedIds.length > 0) openRestore([...this.selectedIds]);
+            },
 
             get toggleableCols() {
                 return COLUMNS
@@ -283,7 +299,16 @@ document.addEventListener('alpine:init', () => {
                         },
                     },
 
-                    columns: COLUMNS,
+                    columns: canRestore ? [SELECT_COLUMN, ...COLUMNS] : COLUMNS,
+                    ...(canRestore ? {
+                        selectableRows: 'highlight',
+                        selectableRowsCheck: (row) => row.getData().status === 'revoked',
+                        rowFormatter(row) {
+                            if (row.getData().status === 'revoked') return;
+                            const box = row.getElement().querySelector('.tabulator-cell[tabulator-field="_select"] input[type=checkbox]');
+                            if (box) { box.disabled = true; box.title = 'Chỉ khôi phục được mã "Đã hủy (cấp lại)"'; }
+                        },
+                    } : { selectableRows: false }),
                     placeholder: '<div class="py-16 text-center opacity-40"><p class="text-sm">Không tìm thấy tem nào</p></div>',
                 });
 
@@ -292,6 +317,9 @@ document.addEventListener('alpine:init', () => {
                     if (openIfSingle && Array.isArray(data) && data.length === 1) openDetail(data[0]);
                     openIfSingle = false;
                 });
+
+                tableInst.on('rowSelectionChanged', (data) => { self.selectedIds = data.map((d) => d.id); });
+                window.addEventListener('trace-restored', () => { tableInst?.deselectRow(); tableInst?.replaceData(); });
 
                 window.traceLogTable = tableInst;
                 self.hiddenCols.forEach(field => tableInst.hideColumn(field));
@@ -529,6 +557,15 @@ document.addEventListener('alpine:init', () => {
         detail: null,
         form: { status: 'active', reason: '', applySession: false },
         reissue: { confirming: false, reason: '', saving: false, error: '' },
+        _lastRow: null,
+
+        init() {
+            window.addEventListener('trace-restored', () => {
+                if (this.open && this._lastRow) this.openFor(this._lastRow);
+            });
+        },
+
+        openRestore(ids) { openRestore(ids); },
 
         get statusOptions() {
             return [
@@ -539,6 +576,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         async openFor(row) {
+            this._lastRow = row;
             this.open = true;
             this.loading = true;
             this.error = '';
@@ -664,4 +702,94 @@ document.addEventListener('alpine:init', () => {
             }
         },
     }));
+
+    Alpine.data('traceLogRestoreModal', ({ url, previewUrl }) => {
+        let reqId = 0;
+        const headers = () => ({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+        });
+
+        return {
+            open: false,
+            loading: false,
+            saving: false,
+            error: '',
+            ids: [],
+            groups: [],
+            reason: '',
+            replaceActive: true,
+
+            get restoreTotal() {
+                return this.groups.filter((g) => !g.item_deleted).reduce((s, g) => s + g.restore_codes.length, 0);
+            },
+
+            get activeTotal() {
+                return this.groups.reduce((s, g) => s + g.active_codes.length, 0);
+            },
+
+            get canSubmit() {
+                return !this.saving && !this.loading && this.restoreTotal > 0
+                    && !this.groups.some((g) => g.item_deleted) && this.reason.trim() !== '';
+            },
+
+            async openFor({ ids = [] } = {}) {
+                const id = ++reqId;
+                this.open = true;
+                this.loading = true;
+                this.error = '';
+                this.groups = [];
+                this.reason = '';
+                this.replaceActive = true;
+                this.ids = ids;
+                try {
+                    const res = await fetch(previewUrl, { method: 'POST', headers: headers(), body: JSON.stringify({ ids }) });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+                    if (id !== reqId) return;
+                    this.groups = data.data ?? [];
+                } catch (e) {
+                    console.error('[trace-restore] preview failed', e);
+                    if (id === reqId) this.error = 'Không kiểm tra được các mã: ' + e.message;
+                } finally {
+                    if (id === reqId) this.loading = false;
+                }
+            },
+
+            close() {
+                if (!this.saving) this.open = false;
+            },
+
+            async submit() {
+                if (!this.canSubmit) return;
+                this.saving = true;
+                this.error = '';
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: headers(),
+                        body: JSON.stringify({ ids: this.ids, reason: this.reason.trim(), replace_active: this.replaceActive && this.activeTotal > 0 }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (res.status === 422) {
+                        this.error = Object.values(data.errors ?? {})[0]?.[0] ?? data.message ?? 'Dữ liệu không hợp lệ.';
+                        return;
+                    }
+                    if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+
+                    window.Toast?.success?.(data.message, { duration: 5000 });
+                    this.saving = false;
+                    this.open = false;
+                    window.dispatchEvent(new CustomEvent('trace-restored'));
+                } catch (e) {
+                    console.error('[trace-restore] failed', e);
+                    this.error = 'Không khôi phục được mã: ' + e.message;
+                } finally {
+                    this.saving = false;
+                }
+            },
+        };
+    });
 });

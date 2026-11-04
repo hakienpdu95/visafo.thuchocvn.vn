@@ -28,4 +28,9 @@ class TraceLogPolicy
     {
         return ModuleAccess::update($user, 'trace_log', $printLog);
     }
+
+    public function restore(User $user): bool
+    {
+        return $user->hasRole('super-admin');
+    }
 }

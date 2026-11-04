@@ -203,6 +203,27 @@ class PrintLog extends TenantAwareModel
         return self::splitOf($logs) !== self::splitOf($groups);
     }
 
+    /** @return array{printed: int, printed_groups: list<array{weight: float, qty: int}>} */
+    public static function prefillOf(iterable $logs): array
+    {
+        $split = self::splitOf($logs);
+
+        return [
+            'printed'        => array_sum($split),
+            'printed_groups' => collect($split)->map(fn (int $qty, string $weight) => ['weight' => (float) $weight, 'qty' => $qty])->values()->all(),
+        ];
+    }
+
+    public static function splitMatchesWeight(iterable $groups, float $requested): bool
+    {
+        $milli = 0;
+        foreach (self::splitOf($groups) as $weight => $qty) {
+            $milli += (int) round((float) $weight * 1000) * $qty;
+        }
+
+        return $requested <= 0 || $milli === (int) round($requested * 1000);
+    }
+
     public static function appendedGroups(iterable $logs, iterable $groups): array
     {
         $current = self::splitOf($logs);

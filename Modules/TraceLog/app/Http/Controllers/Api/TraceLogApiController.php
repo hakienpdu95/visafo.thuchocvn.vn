@@ -61,8 +61,17 @@ class TraceLogApiController extends Controller
     {
         $this->authorize('view', $printLog);
 
+        $canRestore = $printLog->status === PrintLogStatus::Revoked && (request()->user()?->can('restore', PrintLog::class) ?? false);
+
         return response()->json($handler->handle(new GetTraceLogDetailQuery($printLog)) + [
-            'can_manage' => request()->user()?->can('changeStatus', $printLog) ?? false,
+            'can_manage'  => request()->user()?->can('changeStatus', $printLog) ?? false,
+            'can_restore' => $canRestore,
+            'restore_sibling_ids' => $canRestore && $printLog->print_session_id
+                ? PrintLog::query()->where('order_item_id', $printLog->order_item_id)
+                    ->where('print_session_id', $printLog->print_session_id)
+                    ->where('status', PrintLogStatus::Revoked->value)
+                    ->orderBy('created_at')->orderBy('id')->pluck('id')->all()
+                : [],
         ]);
     }
 }

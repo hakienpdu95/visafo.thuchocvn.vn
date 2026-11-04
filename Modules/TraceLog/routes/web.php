@@ -7,6 +7,8 @@ use Modules\TraceLog\Http\Controllers\TraceReviewController;
 
 Route::middleware(['auth'])->prefix('dashboard')->name('backend.')->group(function () {
     Route::get('trace-logs', [TraceLogController::class, 'index'])->name('trace-logs.index');
+    Route::post('trace-logs/restore/preview', [TraceLogController::class, 'restorePreview'])->name('trace-logs.restore-preview');
+    Route::post('trace-logs/restore', [TraceLogController::class, 'restore'])->name('trace-logs.restore');
     Route::get('trace-logs/{print_log}/preview', [TraceLogController::class, 'preview'])->name('trace-logs.preview');
     Route::get('trace-logs/{print_log}/edit', [TraceLogController::class, 'edit'])->name('trace-logs.edit');
     Route::put('trace-logs/{print_log}', [TraceLogController::class, 'update'])->name('trace-logs.update');

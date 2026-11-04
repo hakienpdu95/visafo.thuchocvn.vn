@@ -41,6 +41,7 @@ class PrintLabelController extends Controller
             'label_groups.*.weight_per_label' => ['required', 'numeric', 'gt:0', 'max:99999'],
             'label_groups.*.label_count'      => ['required', 'integer', 'min:1', 'max:200'],
             'print_mode'       => ['nullable', Rule::in(['append', 'replace'])],
+            'confirm_weight_mismatch' => ['nullable', 'boolean'],
             'mfg_date'         => ['nullable', 'date'],
             'exp_date'         => array_filter([
                 'required', 'date',
@@ -86,6 +87,10 @@ class PrintLabelController extends Controller
 
         if (collect($data['label_groups'])->sum('label_count') > 200) {
             throw ValidationException::withMessages(['label_groups' => 'Mỗi lần chỉ in tối đa 200 tem.']);
+        }
+
+        if (! ($data['confirm_weight_mismatch'] ?? false) && ! PrintLog::splitMatchesWeight($data['label_groups'], (float) $item->requested_qty)) {
+            throw ValidationException::withMessages(['label_groups' => 'Tổng khối lượng các tem lệch khối lượng yêu cầu của mặt hàng — chia lại khối lượng/tem hoặc tick xác nhận in lệch.']);
         }
 
         $data = array_merge($data, $sourceResolver->resolve($data, $item));
@@ -227,6 +232,7 @@ class PrintLabelController extends Controller
             'vendor_id'        => ['nullable', 'string', Rule::exists('vendors', 'id')->whereNull('deleted_at')],
             'batch_code'       => ['nullable', 'string', 'max:100'],
             'label_template_id' => ['required', 'string', Rule::exists('label_templates', 'id')->whereNull('deleted_at')],
+            'confirm_weight_mismatch' => ['nullable', 'boolean'],
         ], [
             'mfg_date.date'             => 'NSX không hợp lệ.',
             'exp_date.required'         => 'HSD là bắt buộc để in tem.',
@@ -256,6 +262,17 @@ class PrintLabelController extends Controller
 
         if (collect($data['items'] ?? [])->flatMap(fn ($i) => $i['label_groups'])->sum('label_count') > 2000) {
             throw ValidationException::withMessages(['items' => 'Mỗi lần in toàn bộ đơn tối đa 2000 tem.']);
+        }
+
+        if (! ($data['confirm_weight_mismatch'] ?? false) && isset($data['items'])) {
+            $orderItems = $salesOrder->items()->with('product:id,name')->get()->keyBy('id');
+            $mismatched = collect($data['items'])
+                ->filter(fn ($i) => ($orderItem = $orderItems->get($i['order_item_id'])) !== null
+                    && ! PrintLog::splitMatchesWeight($i['label_groups'], (float) $orderItem->requested_qty))
+                ->map(fn ($i) => $orderItems->get($i['order_item_id'])->product?->name ?? $orderItems->get($i['order_item_id'])->product_name_raw);
+            if ($mismatched->isNotEmpty()) {
+                throw ValidationException::withMessages(['items' => 'Tổng khối lượng tem lệch khối lượng yêu cầu ở: ' . $mismatched->filter()->implode(', ') . ' — chia lại khối lượng/tem hoặc tick xác nhận in lệch.']);
+            }
         }
 
         $result = $action->handle($salesOrder, $data, $request->user()?->id);

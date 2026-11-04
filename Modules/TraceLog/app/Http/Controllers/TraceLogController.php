@@ -15,6 +15,7 @@ use Modules\SalesOrder\Support\LabelViewResolver;
 use Modules\SalesOrder\Support\PrintSourceResolver;
 use Modules\TraceLog\Actions\Backend\ChangeTraceLogStatusAction;
 use Modules\TraceLog\Actions\Backend\ReissueTraceLogAction;
+use Modules\TraceLog\Actions\Backend\RestoreTraceLogsAction;
 use Modules\TraceLog\Actions\Backend\UpdateTraceLogAction;
 use Modules\TraceLog\Data\Requests\ChangeTraceLogStatusData;
 use Modules\TraceLog\Data\Requests\UpdateTraceLogData;
@@ -40,6 +41,7 @@ class TraceLogController extends Controller
             ->values()->all();
 
         return view('tracelog::index', [
+            'canRestore' => request()->user()?->can('restore', PrintLog::class) ?? false,
             'vendors'   => $vendors,
             'customers' => $customers->handle(new ListTraceLogCustomersQuery()),
             'vendorOptions' => $vendorOptions->handle(new ListVendorOptionsQuery()),
@@ -126,13 +128,27 @@ class TraceLogController extends Controller
     }
 
     /** QC đổi trạng thái tem: thu hồi / lỗi / phục hồi. */
-    public function changeStatus(Request $request, PrintLog $printLog, ChangeTraceLogStatusAction $action, GetTraceLogDetailHandler $detail): JsonResponse
+    public function changeStatus(Request $request, PrintLog $printLog, ChangeTraceLogStatusAction $action, GetTraceLogDetailHandler $detail, RestoreTraceLogsAction $restore): JsonResponse
     {
         $this->authorize('changeStatus', $printLog);
 
-        // Mã đã hủy đã có mã thay thế đang lưu hành → phục hồi sẽ tạo 2 mã cho cùng một tem
+        // Mã đã hủy đã có mã thay thế đang lưu hành → phục hồi sẽ tạo 2 mã cho cùng một tem; chỉ Super Admin được khôi phục.
         if ($printLog->status === PrintLogStatus::Revoked) {
-            throw ValidationException::withMessages(['status' => 'Tem đã hủy & cấp lại mã mới, không thể đổi trạng thái.']);
+            if (! $request->user()?->can('restore', PrintLog::class)) {
+                throw ValidationException::withMessages(['status' => 'Tem đã hủy & cấp lại mã mới, không thể đổi trạng thái.']);
+            }
+            if ($request->input('status') !== PrintLogStatus::Active->value) {
+                throw ValidationException::withMessages(['status' => 'Mã đã hủy chỉ có thể khôi phục về "Đang lưu hành".']);
+            }
+
+            $data = $request->validate(['reason' => ['required', 'string', 'max:200']], ['reason.required' => 'Vui lòng nhập lý do khôi phục mã.']);
+            $restore->handle([$printLog->id], trim($data['reason']), false, $request->user()?->id);
+
+            return response()->json([
+                'message' => 'Đã khôi phục mã ' . strtoupper($printLog->trace_code) . '.',
+                'changed' => 1,
+                'detail'  => $detail->handle(new GetTraceLogDetailQuery($printLog->fresh())),
+            ]);
         }
 
         $data = ChangeTraceLogStatusData::validateAndCreate($request->all());
@@ -164,6 +180,41 @@ class TraceLogController extends Controller
             'message'   => 'Đã hủy mã ' . strtoupper($printLog->trace_code) . ' và cấp mã mới ' . strtoupper($new->trace_code) . '.',
             'print_url' => route('print.render_session', $new->print_session_id),
             'detail'    => $detail->handle(new GetTraceLogDetailQuery($new)),
+        ]);
+    }
+
+    public function restorePreview(Request $request, RestoreTraceLogsAction $action): JsonResponse
+    {
+        $this->authorize('restore', PrintLog::class);
+
+        $ids = $request->validate(['ids' => ['required', 'array', 'min:1', 'max:500'], 'ids.*' => ['string', 'max:26']])['ids'];
+
+        return response()->json(['data' => $action->preview($ids)]);
+    }
+
+    public function restore(Request $request, RestoreTraceLogsAction $action): JsonResponse
+    {
+        $this->authorize('restore', PrintLog::class);
+
+        $data = $request->validate([
+            'ids'            => ['required', 'array', 'min:1', 'max:500'],
+            'ids.*'          => ['string', 'max:26'],
+            'reason'         => ['required', 'string', 'max:200'],
+            'replace_active' => ['nullable', 'boolean'],
+        ], [
+            'ids.required'    => 'Vui lòng chọn ít nhất một mã đã hủy.',
+            'ids.max'         => 'Mỗi lần khôi phục tối đa :max mã.',
+            'reason.required' => 'Vui lòng nhập lý do khôi phục mã.',
+            'reason.max'      => 'Lý do tối đa :max ký tự.',
+        ]);
+
+        $result = $action->handle($data['ids'], trim($data['reason']), (bool) ($data['replace_active'] ?? false), $request->user()?->id);
+
+        return response()->json([
+            'message'  => "Đã khôi phục {$result['restored']} mã về \"Đang lưu hành\"."
+                . ($result['replaced'] > 0 ? " Đã hủy {$result['replaced']} mã đang lưu hành được thay thế." : ''),
+            'restored' => $result['restored'],
+            'replaced' => $result['replaced'],
         ]);
     }
 }

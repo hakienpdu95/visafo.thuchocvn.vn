@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\SalesOrder\Enums\PrintLogStatus;
+use Modules\SalesOrder\Exceptions\PrintModeRequiredException;
 use Modules\SalesOrder\Models\LabelPrintEvent;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\PrintLogAttribute;
@@ -37,13 +38,22 @@ class PrintSalesOrderItemLabelAction
             $resplit = 0;
             $groups = $data['label_groups'];
             $appended = false;
-            if ($existing->isNotEmpty() && PrintLog::splitDiffers($existing, $groups) && ($data['print_mode'] ?? 'replace') === 'append') {
+            $splitDiffers = $existing->isNotEmpty() && PrintLog::splitDiffers($existing, $groups);
+            $mode = $data['print_mode'] ?? null;
+            if ($splitDiffers && $mode === null) {
+                throw new PrintModeRequiredException(
+                    [$item->id => PrintLog::prefillOf($existing)],
+                    'print_mode',
+                    "Mặt hàng đang có {$existing->count()} tem lưu hành với cách chia khác — vui lòng chọn \"In bổ sung\" hoặc \"In thay thế\" rồi bấm In lại.",
+                );
+            }
+            if ($splitDiffers && $mode === 'append') {
                 $groups = PrintLog::appendedGroups($existing, $groups);
                 if ($groups === []) {
                     throw ValidationException::withMessages(['label_groups' => 'Không thể in bổ sung: cần giữ nguyên các tem cũ và chỉ tăng số lượng / thêm quy cách mới. Muốn giảm hoặc đổi quy cách, hãy chọn "In thay thế".']);
                 }
                 $appended = true;
-            } elseif ($existing->isNotEmpty() && PrintLog::splitDiffers($existing, $groups)) {
+            } elseif ($splitDiffers) {
                 PrintLog::revokeForResplit($existing, $printedBy, array_sum(PrintLog::splitOf($groups)));
                 $resplit = $existing->count();
             } elseif ($existing->isNotEmpty()) {

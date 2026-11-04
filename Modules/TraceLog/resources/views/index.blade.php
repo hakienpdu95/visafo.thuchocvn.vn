@@ -7,6 +7,7 @@
     'customers' => $customers,
     'vendors'   => $vendors,
     'statuses'  => $statuses,
+    'canRestore' => $canRestore,
 ]) }})">
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -153,6 +154,19 @@
                 </div>
             </div>
         </div>
+
+        @if($canRestore)
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
+            <p class="text-xs text-base-content/50">
+                <span x-show="selectedIds.length === 0">Super Admin: tick chọn các mã <strong>Đã hủy (cấp lại)</strong> để khôi phục — lọc Trạng thái = "Đã hủy (cấp lại)" để chọn nhanh.</span>
+                <span x-show="selectedIds.length > 0" x-cloak>Đã chọn <strong x-text="selectedIds.length"></strong> mã đã hủy.</span>
+            </p>
+            <div class="flex gap-2" x-show="selectedIds.length > 0" x-cloak>
+                <button type="button" class="btn btn-ghost btn-sm" @click="clearSelection()">Bỏ chọn</button>
+                <button type="button" class="btn btn-success btn-sm" @click="restoreSelected()" x-text="'Khôi phục ' + selectedIds.length + ' mã đã chọn'"></button>
+            </div>
+        </div>
+        @endif
 
         <div class="card">
             <div class="card-body p-0 overflow-hidden tabulator-daisy">
@@ -341,8 +355,22 @@
                 </div>
 
                 {{-- Đổi trạng thái (chỉ QC có quyền quản lý) --}}
-                <template x-if="detail && detail.can_manage && detail.status === 'revoked'">
+                <template x-if="detail && detail.can_manage && detail.status === 'revoked' && !detail.can_restore">
                     <div class="alert alert-soft py-3 text-sm">Tem đã hủy &amp; cấp lại mã mới — không thể đổi trạng thái.</div>
+                </template>
+                <template x-if="detail && detail.can_restore">
+                    <div class="rounded-lg border border-success/40 bg-success/5 p-4 space-y-3">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-success">Khôi phục mã (Super Admin)</p>
+                            <p class="text-xs text-base-content/60 mt-1">Đưa mã đã hủy về "Đang lưu hành" — tem đã dán trên hàng quét lại sẽ hợp lệ, giữ nguyên mã TXNG / QR.</p>
+                        </div>
+                        <div class="flex flex-wrap justify-end gap-2">
+                            <button type="button" class="btn btn-success btn-outline btn-sm" @click="openRestore([detail.id])">Khôi phục mã này…</button>
+                            <button type="button" class="btn btn-success btn-sm" x-show="(detail.restore_sibling_ids?.length ?? 0) > 1"
+                                    @click="openRestore(detail.restore_sibling_ids)"
+                                    x-text="'Khôi phục cả ' + detail.restore_sibling_ids.length + ' mã đã hủy cùng lần in…'"></button>
+                        </div>
+                    </div>
                 </template>
                 <template x-if="detail && detail.can_manage && detail.status !== 'revoked'">
                     <form class="rounded-lg border border-base-200 p-4 space-y-3" @submit.prevent="saveStatus()" novalidate>
@@ -423,6 +451,72 @@
         <div class="modal-backdrop" @click="close()"></div>
     </div>
 </div>
+
+@if($canRestore)
+<div x-data="traceLogRestoreModal({{ Js::from([
+    'url'        => route('backend.trace-logs.restore'),
+    'previewUrl' => route('backend.trace-logs.restore-preview'),
+]) }})" @open-trace-restore.window="openFor($event.detail)" x-cloak>
+    <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">
+        <div class="modal-box max-w-2xl">
+            <div class="flex items-start justify-between gap-3 mb-3">
+                <div>
+                    <h3 class="font-bold text-lg">Khôi phục mã đã hủy</h3>
+                    <p class="text-xs text-base-content/60 mt-0.5">Mã được chọn chuyển về "Đang lưu hành", giữ nguyên mã TXNG / QR.</p>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm btn-square" @click="close()" title="Đóng">✕</button>
+            </div>
+
+            <p class="py-8 text-center text-sm text-base-content/40" x-show="loading">Đang kiểm tra các mã...</p>
+
+            <form x-show="!loading" @submit.prevent="submit()" novalidate class="space-y-4">
+                <div class="rounded-lg border border-base-200 divide-y divide-base-200 max-h-72 overflow-y-auto text-sm" x-show="groups.length > 0">
+                    <template x-for="g in groups" :key="g.order_item_id">
+                        <div class="p-3 space-y-1">
+                            <p class="font-medium">
+                                <span x-text="g.product_name || '—'"></span>
+                                <template x-if="g.order_ref"><span class="text-base-content/50 font-normal"> · Đơn <span class="font-mono" x-text="g.order_ref"></span></span></template>
+                            </p>
+                            <p class="text-xs text-error" x-show="g.item_deleted">Dòng hàng đã bị xóa khỏi đơn — không thể khôi phục.</p>
+                            <p class="text-xs"><span class="text-success font-medium" x-text="'Khôi phục ' + g.restore_codes.length + ' mã: '"></span><span class="font-mono break-all" x-text="g.restore_codes.join(', ')"></span></p>
+                            <p class="text-xs" x-show="g.active_codes.length > 0">
+                                <span class="text-warning font-medium" x-text="'Đang lưu hành ' + g.active_codes.length + ' mã khác: '"></span><span class="font-mono break-all" x-text="g.active_codes.join(', ')"></span>
+                            </p>
+                        </div>
+                    </template>
+                </div>
+                <p class="text-sm text-error" x-show="!loading && groups.length === 0 && !error">Không có mã nào ở trạng thái "Đã hủy" trong các mã đã chọn.</p>
+
+                <label class="flex items-start gap-2 cursor-pointer text-sm rounded-lg border p-3"
+                       :class="replaceActive ? 'border-warning bg-warning/5' : 'border-base-200'" x-show="activeTotal > 0">
+                    <input type="checkbox" class="checkbox checkbox-sm checkbox-warning mt-0.5" x-model="replaceActive">
+                    <span>
+                        Đồng thời <strong>hủy <span x-text="activeTotal"></span> mã đang lưu hành</strong> của các mặt hàng này (thay bằng mã cũ được khôi phục).
+                        <span class="block text-xs text-base-content/60 mt-0.5">Bỏ chọn nếu muốn giữ cả hai bộ mã — khi đó mặt hàng sẽ có nhiều tem lưu hành hơn khối lượng thực tế.</span>
+                    </span>
+                </label>
+
+                <div class="form-control">
+                    <label class="label py-0 pb-1.5" for="tr-reason"><span class="label-text font-medium">Lý do khôi phục <span class="text-error">*</span></span></label>
+                    <input id="tr-reason" type="text" maxlength="200" x-model="reason" class="input input-bordered input-sm w-full"
+                           placeholder="VD: Hủy nhầm khi in lẻ — tem cũ đã dán lên hàng">
+                </div>
+
+                <p class="text-xs text-error" x-show="error" x-text="error"></p>
+
+                <div class="modal-action mt-2">
+                    <button type="button" class="btn btn-ghost btn-sm" @click="close()" :disabled="saving">Hủy</button>
+                    <button type="submit" class="btn btn-success btn-sm gap-1.5" :disabled="!canSubmit">
+                        <span class="loading loading-spinner loading-xs" x-show="saving"></span>
+                        <span x-text="saving ? 'Đang khôi phục...' : 'Khôi phục ' + restoreTotal + ' mã'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-backdrop" @click="close()"></div>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('styles')
