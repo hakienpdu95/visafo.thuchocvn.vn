@@ -17,6 +17,8 @@ enum SyncEntity: string
     case ProductBatch = 'product_batch';
     case GoodsReceipt = 'goods_receipt';
     case PrintLog = 'print_log';
+    case Transporter = 'transporter';
+    case Order = 'order';
 
     public function modelClass(): ?string
     {
@@ -27,6 +29,7 @@ enum SyncEntity: string
             self::ProductBatch => ProductBatch::class,
             self::GoodsReceipt => GoodsReceipt::class,
             self::PrintLog     => PrintLog::class,
+            self::Transporter, self::Order => null,
         };
     }
 
@@ -39,6 +42,8 @@ enum SyncEntity: string
             self::ProductBatch => 'Lô sản xuất',
             self::GoodsReceipt => 'Phiếu nhập kho',
             self::PrintLog     => 'Tem truy xuất',
+            self::Transporter  => 'Nhân sự giao hàng',
+            self::Order        => 'Đơn hàng HanoiCheck',
         };
     }
 
@@ -54,7 +59,7 @@ enum SyncEntity: string
 
     public function observed(): bool
     {
-        return $this !== self::Master;
+        return $this->modelClass() !== null;
     }
 
     public static function fromModel(Model $model): ?self

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Modules\HanoiCheckOrder\Enums\OrderSyncStatus;
 use Modules\HanoiCheckOrder\Http\Resources\HanoiCheckOrderListResource;
 use Modules\HanoiCheckOrder\Models\HanoiCheckOrderLink;
 use Modules\HanoiCheckOrder\Queries\ListHanoiCheckOrdersHandler;
@@ -26,6 +27,7 @@ class HanoiCheckOrderApiController extends Controller
             'status'    => ['nullable', Rule::in(array_keys(SalesOrder::statusLabels()))],
             'date_from' => ['nullable', 'date'],
             'date_to'   => ['nullable', 'date'],
+            'sync'      => ['nullable', Rule::enum(OrderSyncStatus::class)],
         ]);
 
         $sortRaw = $request->input('sort.0');
@@ -42,6 +44,7 @@ class HanoiCheckOrderApiController extends Controller
             status: $validated['status'] ?? null,
             dateFrom: $validated['date_from'] ?? null,
             dateTo: $validated['date_to'] ?? null,
+            syncStatus: $validated['sync'] ?? null,
         ));
 
         return response()->json([

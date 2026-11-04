@@ -17,7 +17,7 @@ class HanoiCheckSyncCommand extends Command
     public function handle(SyncHanoiCheckRecordAction $action): int
     {
         $entity = SyncEntity::tryFrom($this->argument('entity'));
-        if ($entity === null || in_array($entity, [SyncEntity::GoodsReceipt, SyncEntity::PrintLog], true)) {
+        if ($entity === null || in_array($entity, [SyncEntity::GoodsReceipt, SyncEntity::PrintLog, SyncEntity::Transporter, SyncEntity::Order], true)) {
             $this->error('Entity hợp lệ: master, vendor, product, product_batch');
 
             return self::INVALID;

@@ -33,6 +33,10 @@ class ListHanoiCheckOrdersHandler implements QueryHandlerInterface
                 'hcl.note as hanoicheck_note',
                 'hcl.linked_at as hanoicheck_linked_at',
                 'hcl_user.name as hanoicheck_linked_by_name',
+                'hcl.remote_status as hanoicheck_remote_status',
+                'hcl.sync_status as hanoicheck_sync_status',
+                'hcl.sync_message as hanoicheck_sync_message',
+                'hcl.school_name as hanoicheck_school_name',
             ])
             ->when(filled($query->search), function ($q) use ($query) {
                 $term = '%' . addcslashes(trim($query->search), '%_\\') . '%';
@@ -44,6 +48,7 @@ class ListHanoiCheckOrdersHandler implements QueryHandlerInterface
             ->when($query->link === ListHanoiCheckOrdersQuery::LINK_LINKED, fn ($q) => $q->whereNotNull('hcl.id'))
             ->when($query->link === ListHanoiCheckOrdersQuery::LINK_UNLINKED, fn ($q) => $q->whereNull('hcl.id'))
             ->when(filled($query->status), fn ($q) => $q->where('sales_orders.status', $query->status))
+            ->when(filled($query->syncStatus), fn ($q) => $q->where('hcl.sync_status', $query->syncStatus))
             ->when(filled($query->dateFrom), fn ($q) => $q->whereDate('sales_orders.delivery_date', '>=', $query->dateFrom))
             ->when(filled($query->dateTo), fn ($q) => $q->whereDate('sales_orders.delivery_date', '<=', $query->dateTo))
             ->orderBy($sort, $dir)

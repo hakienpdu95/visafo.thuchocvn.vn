@@ -8,13 +8,14 @@ use Modules\GoodsReceipt\Models\GoodsReceipt;
 use Modules\HanoiCheck\Enums\SyncEntity;
 use Modules\HanoiCheck\Jobs\SyncToHanoiCheckJob;
 use Modules\HanoiCheck\Services\HanoiCheckClient;
+use Modules\HanoiCheck\Support\HanoiCheckDispatchGuard;
 use Modules\SalesOrder\Models\PrintLog;
 
 class QueueHanoiCheckSyncAction
 {
     use AsAction;
 
-    private static array $queued = [];
+    public function __construct(private readonly HanoiCheckDispatchGuard $guard) {}
 
     public function handle(Model $model): int
     {
@@ -24,11 +25,9 @@ class QueueHanoiCheckSyncAction
 
         $count = 0;
         foreach ($this->targets($model) as [$entity, $id]) {
-            $key = $entity->value . ':' . $id;
-            if (isset(self::$queued[$key])) {
+            if (! $this->guard->once($entity->value . ':' . $id)) {
                 continue;
             }
-            self::$queued[$key] = true;
 
             SyncToHanoiCheckJob::dispatch($entity->value, (string) $id)
                 ->delay(now()->addSeconds((int) config('services.hanoicheck.debounce_seconds', 15)));
@@ -36,11 +35,6 @@ class QueueHanoiCheckSyncAction
         }
 
         return $count;
-    }
-
-    public static function resetQueued(): void
-    {
-        self::$queued = [];
     }
 
     private function targets(Model $model): array

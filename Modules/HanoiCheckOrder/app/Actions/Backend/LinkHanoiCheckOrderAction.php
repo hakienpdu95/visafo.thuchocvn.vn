@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\HanoiCheckOrder\Data\Requests\LinkHanoiCheckOrderData;
+use Modules\HanoiCheckOrder\Enums\OrderSyncStatus;
 use Modules\HanoiCheckOrder\Models\HanoiCheckOrderLink;
 use Modules\SalesOrder\Models\SalesOrder;
 
@@ -44,10 +45,22 @@ class LinkHanoiCheckOrderAction
                 'note'                  => trim((string) $data->note) ?: null,
             ]);
             if ($changed) {
-                $link->linked_by = $userId;
-                $link->linked_at = now();
+                $link->forceFill([
+                    'linked_by'     => $userId,
+                    'linked_at'     => now(),
+                    'remote_status' => null,
+                    'school_name'   => null,
+                    'sync_status'   => OrderSyncStatus::Idle,
+                    'sync_message'  => null,
+                    'process_hash'  => null,
+                    'snapshot'      => null,
+                ]);
             }
             $link->save();
+
+            if ($changed) {
+                QueueHanoiCheckOrderSyncAction::run($order->id, true);
+            }
 
             return $link;
         });

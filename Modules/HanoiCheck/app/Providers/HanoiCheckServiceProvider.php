@@ -7,6 +7,7 @@ use Modules\HanoiCheck\Console\Commands\HanoiCheckSyncCommand;
 use Modules\HanoiCheck\Console\Commands\HanoiCheckTokenCommand;
 use Modules\HanoiCheck\Enums\SyncEntity;
 use Modules\HanoiCheck\Observers\HanoiCheckObserver;
+use Modules\HanoiCheck\Support\HanoiCheckDispatchGuard;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class HanoiCheckServiceProvider extends ModuleServiceProvider
@@ -20,6 +21,13 @@ class HanoiCheckServiceProvider extends ModuleServiceProvider
         HanoiCheckLookupCommand::class,
         HanoiCheckSyncCommand::class,
     ];
+
+    public function register(): void
+    {
+        parent::register();
+
+        $this->app->scoped(HanoiCheckDispatchGuard::class);
+    }
 
     public function boot(): void
     {

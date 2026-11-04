@@ -6,6 +6,7 @@
     'apiUrl'   => route('backend.api.hanoicheck-orders'),
     'statuses' => $statuses,
     'links'    => $links,
+    'syncStatuses' => $syncStatuses,
 ]) }})">
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -13,6 +14,15 @@
             <h1 class="text-2xl font-bold text-base-content">Liên kết đơn HanoiCheck</h1>
             <p class="text-sm text-base-content/50 mt-0.5">Dán mã đơn từ cổng HanoiCheck vào đơn xuất hàng VISAFO tương ứng — đã liên kết <strong class="text-base-content">{{ number_format($stats['linked']) }}</strong> / {{ number_format($stats['total']) }} đơn</p>
         </div>
+        <div class="flex items-center gap-2">
+        @if($live)
+        <span class="badge badge-success badge-sm gap-1" title="Đang kết nối thật tới HanoiCheck">● Đang kết nối Sở</span>
+        @else
+        <span class="badge badge-ghost badge-sm" title="HANOICHECK_ENABLED=false hoặc HANOICHECK_FAKE=true">Chưa kết nối Sở</span>
+        @endif
+        @if($canManageTransporters)
+        <a href="{{ route('backend.hanoicheck-transporters.index') }}" class="btn btn-outline btn-sm">Người giao hàng</a>
+        @endif
         <div class="dropdown dropdown-end">
             <label tabindex="0" class="btn btn-ghost btn-sm gap-1.5">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
@@ -28,6 +38,7 @@
                     </li>
                 </template>
             </ul>
+        </div>
         </div>
     </div>
 
@@ -56,6 +67,16 @@
                             <option value="">Tất cả</option>
                             @foreach($links as $link)
                             <option value="{{ $link['value'] }}">{{ $link['text'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label py-0.5"><span class="label-text text-xs font-medium">Đồng bộ Sở</span></label>
+                        <select id="ts-sync" x-model="filters.sync" @change="onFilterChange()" class="select select-sm select-bordered w-full">
+                            <option value="">Tất cả</option>
+                            @foreach($syncStatuses as $sync)
+                            <option value="{{ $sync['value'] }}">{{ $sync['text'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -108,7 +129,7 @@
     </div>
 </div>
 
-<div x-data="hanoiCheckLinkModal()" @open-hanoicheck-link.window="show($event.detail)" x-cloak>
+<div x-data="hanoiCheckLinkModal({{ Js::from(['live' => $live, 'remoteUrl' => $remoteUrl]) }})" @open-hanoicheck-link.window="show($event.detail)" x-cloak>
     <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="open = false">
         <div class="modal-box max-w-lg">
             <div class="flex items-start justify-between gap-3 mb-4">
@@ -119,6 +140,34 @@
                     </p>
                 </div>
                 <button type="button" class="btn btn-ghost btn-sm btn-square" @click="open = false" title="Đóng">✕</button>
+            </div>
+
+            <div x-show="live" class="mb-4 rounded-lg border border-base-200 p-3 space-y-2">
+                <div class="flex flex-wrap items-end gap-2">
+                    <div class="form-control">
+                        <label class="label py-0.5"><span class="label-text text-xs font-medium">Ngày giao trên HanoiCheck</span></label>
+                        <input type="date" x-model="remote.date" class="input input-bordered input-sm"/>
+                    </div>
+                    <div class="form-control grow">
+                        <label class="label py-0.5"><span class="label-text text-xs font-medium">Từ khóa (mã đơn, tên trường, thực phẩm)</span></label>
+                        <input type="text" x-model="remote.keyword" @keydown.enter.prevent="searchRemote()" class="input input-bordered input-sm w-full"/>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline" @click="searchRemote()" :disabled="remote.loading">
+                        <span x-show="remote.loading" class="loading loading-spinner loading-xs"></span> Tìm trên cổng
+                    </button>
+                </div>
+                <p class="text-xs text-base-content/50" x-show="remote.message" x-text="remote.message"></p>
+                <div class="max-h-48 overflow-y-auto divide-y divide-base-200 text-sm" x-show="remote.rows.length > 0">
+                    <template x-for="r in remote.rows" :key="r.code">
+                        <button type="button" @click="pick(r)" class="w-full text-left px-2 py-1.5 hover:bg-base-200 rounded"
+                                :class="{ 'opacity-50 cursor-not-allowed': r.linked_to && r.linked_to !== row?.misa_ref_id, 'bg-primary/10': form.code === r.code }">
+                            <p><span class="font-mono font-semibold" x-text="r.code"></span> · <span x-text="r.school_name || '—'"></span>
+                                <span class="text-xs text-base-content/50" x-text="r.status_label ? '· ' + r.status_label : ''"></span></p>
+                            <p class="text-xs text-base-content/50 truncate" x-text="r.products.join(', ')"></p>
+                            <p class="text-xs text-warning" x-show="r.linked_to" x-text="'Đã liên kết với đơn ' + r.linked_to"></p>
+                        </button>
+                    </template>
+                </div>
             </div>
 
             <form @submit.prevent="save()" novalidate class="space-y-4">
@@ -141,6 +190,112 @@
                     </button>
                 </div>
             </form>
+        </div>
+        <div class="modal-backdrop" @click="open = false"></div>
+    </div>
+</div>
+<div x-data="hanoiCheckDetailModal()" @open-hanoicheck-detail.window="show($event.detail)" x-cloak>
+    <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="open = false">
+        <div class="modal-box max-w-4xl">
+            <div class="flex items-start justify-between gap-3 mb-3">
+                <div>
+                    <h3 class="font-bold text-lg">Xử lý đơn trên HanoiCheck</h3>
+                    <p class="text-xs text-base-content/60 mt-0.5" x-show="data">
+                        Đơn <span class="font-mono font-semibold" x-text="data?.order.misa_ref_id"></span> ↔ HanoiCheck <span class="font-mono font-semibold" x-text="data?.link.code"></span>
+                        · <span x-text="data?.link.school_name || data?.order.customer || '—'"></span>
+                    </p>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm btn-square" @click="open = false" title="Đóng">✕</button>
+            </div>
+
+            <p class="py-8 text-center text-sm text-base-content/40" x-show="loading">Đang tải...</p>
+            <p class="text-sm text-error mb-2" x-show="error" x-text="error"></p>
+
+            <template x-if="data && !loading">
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                        <div class="rounded-lg border border-base-200 p-3">
+                            <p class="text-xs text-base-content/50">Trạng thái VISAFO</p>
+                            <p class="font-medium" x-text="data.order.status_label"></p>
+                            <p class="text-xs text-base-content/50 mt-1" x-show="data.order.target_label" x-text="'→ Cần đưa Sở về: ' + data.order.target_label"></p>
+                        </div>
+                        <div class="rounded-lg border border-base-200 p-3">
+                            <p class="text-xs text-base-content/50">Trạng thái trên HanoiCheck</p>
+                            <span class="badge badge-sm" :class="data.link.remote_badge || 'badge-ghost'" x-text="data.link.remote_status || 'Chưa đọc'"></span>
+                            <p class="text-xs text-base-content/50 mt-1" x-show="data.link.fetched_at" x-text="'Đọc lúc ' + data.link.fetched_at"></p>
+                        </div>
+                        <div class="rounded-lg border border-base-200 p-3">
+                            <p class="text-xs text-base-content/50">Đồng bộ</p>
+                            <span class="badge badge-sm" :class="data.link.sync_status_badge" x-text="data.link.sync_status_label"></span>
+                            <p class="text-xs text-base-content/50 mt-1" x-show="data.link.synced_at" x-text="'Lần cuối ' + data.link.synced_at"></p>
+                        </div>
+                    </div>
+
+                    <div class="alert text-sm py-2" :class="data.link.sync_status === 'synced' ? 'alert-success' : (data.link.sync_status === 'failed' ? 'alert-error' : 'alert-warning')" x-show="data.link.sync_message">
+                        <span x-text="data.link.sync_message"></span>
+                    </div>
+                    <div class="alert alert-info text-sm py-2" x-show="!data.live">
+                        <span>Chưa kết nối HanoiCheck thật — thông tin giao hàng vẫn được lưu và sẽ tự đồng bộ khi bật kết nối.</span>
+                    </div>
+
+                    <div>
+                        <p class="text-sm font-semibold mb-1">Nguồn hàng khai cho từng dòng (lấy từ tem đã in + lô nhập)</p>
+                        <div class="overflow-x-auto rounded-lg border border-base-200">
+                            <table class="table table-sm">
+                                <thead><tr><th>Mã dòng (Sở)</th><th>Thực phẩm</th><th class="text-right">Trường đặt</th><th class="text-right">Đã khai</th><th>Lô / Kho</th><th>Ghi chú</th></tr></thead>
+                                <tbody>
+                                    <template x-for="l in data.link.lines" :key="l.trace_code">
+                                        <tr>
+                                            <td class="font-mono text-xs" x-text="l.trace_code"></td>
+                                            <td><span x-text="l.food_name || l.food_code"></span><p class="font-mono text-xs text-base-content/50" x-text="l.food_code"></p></td>
+                                            <td class="text-right font-mono" x-text="l.requested_amount"></td>
+                                            <td class="text-right font-mono" :class="l.error ? 'text-warning' : 'text-success'" x-text="l.allocated_amount"></td>
+                                            <td class="text-xs"><template x-for="p in l.phan_bo"><p class="font-mono" x-text="p.ma_lo + ' @ ' + p.ma_kho + ' : ' + p.so_luong"></p></template></td>
+                                            <td class="text-xs" :class="l.error ? 'text-warning' : 'text-success'" x-text="l.error || 'Đủ'"></td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="data.link.lines.length === 0"><td colspan="6" class="text-center text-base-content/40 py-4">Chưa đọc dòng hàng từ HanoiCheck.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-xs text-warning mt-1" x-show="Object.keys(data.link.leftover || {}).length > 0"
+                           x-text="'Tem in dư so với số lượng trường đặt: ' + Object.entries(data.link.leftover).map(([k, v]) => k + ' ' + v).join(', ')"></p>
+                    </div>
+
+                    <form @submit.prevent="save()" class="grid grid-cols-1 md:grid-cols-2 gap-4" x-show="data.can_edit && !data.link.locked">
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-sm font-medium">Người giao hàng</span><span class="label-text-alt text-xs">Bắt buộc trước khi "Đang giao"</span></label>
+                            <select x-model="form.transporter_id" class="select select-bordered select-sm w-full">
+                                <option value="">— Chưa chọn —</option>
+                                <template x-for="t in data.transporters" :key="t.value"><option :value="t.value" x-text="t.text" :selected="t.value === form.transporter_id"></option></template>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-sm font-medium">Ảnh tổng quan đơn (1–3)</span><span class="label-text-alt text-xs">Bắt buộc trước khi "Đã giao"</span></label>
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                <template x-for="p in data.link.photos" :key="p.id">
+                                    <label class="relative cursor-pointer" :title="form.remove.includes(String(p.id)) ? 'Sẽ xóa — bấm để giữ' : 'Bấm để đánh dấu xóa'">
+                                        <img :src="p.url" class="w-16 h-16 object-cover rounded border" :class="form.remove.includes(String(p.id)) ? 'opacity-30 border-error' : 'border-base-200'">
+                                        <input type="checkbox" class="hidden" @change="toggleRemove(p.id)">
+                                    </label>
+                                </template>
+                            </div>
+                            <input type="file" x-ref="photos" accept="image/jpeg,image/png,image/webp" multiple @change="onFiles($event)" class="file-input file-input-bordered file-input-sm w-full" :disabled="photoSlots <= 0">
+                        </div>
+                        <div class="md:col-span-2 flex justify-end gap-2">
+                            <button type="button" class="btn btn-sm btn-outline" @click="syncNow()" :disabled="saving || !data.live">Đồng bộ ngay</button>
+                            <button type="submit" class="btn btn-sm btn-primary" :disabled="saving"><span x-show="saving" class="loading loading-spinner loading-xs"></span> Lưu thông tin giao hàng</button>
+                        </div>
+                    </form>
+
+                    <details class="text-xs" x-show="data.logs.length > 0">
+                        <summary class="cursor-pointer text-base-content/60">Nhật ký gọi API đơn này (10 lần gần nhất)</summary>
+                        <div class="mt-2 space-y-1 font-mono">
+                            <template x-for="l in data.logs"><p><span x-text="l.at"></span> · <span x-text="l.status"></span> · <span x-text="l.path"></span> <span x-text="l.http ? '(' + l.http + ')' : ''"></span> <span class="text-error" x-text="l.message || ''"></span></p></template>
+                        </div>
+                    </details>
+                </div>
+            </template>
         </div>
         <div class="modal-backdrop" @click="open = false"></div>
     </div>

@@ -104,6 +104,8 @@ return [
         'queue'            => env('HANOICHECK_QUEUE', 'hanoicheck'),
         'debounce_seconds' => (int) env('HANOICHECK_DEBOUNCE_SECONDS', 15),
         'settle_seconds'   => (int) env('HANOICHECK_SETTLE_SECONDS', 5),
+        'allocation_tolerance' => (float) env('HANOICHECK_ALLOCATION_TOLERANCE', 0),
+        'order_refresh_days'   => (int) env('HANOICHECK_ORDER_REFRESH_DAYS', 14),
         'backoff'          => [60, 300, 1800, 7200],
         'defaults' => [
             'ma_co_so'        => env('HANOICHECK_FACILITY_CODE', 'CS_VISAFO'),
