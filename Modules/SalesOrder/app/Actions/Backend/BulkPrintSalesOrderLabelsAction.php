@@ -9,7 +9,6 @@ use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\GoodsReceipt\Models\ProductBatch;
 use Modules\GoodsReceipt\Services\BatchDocumentGate;
 use Modules\SalesOrder\Enums\PrintLogStatus;
-use Modules\SalesOrder\Exceptions\PrintModeRequiredException;
 use Modules\SalesOrder\Models\LabelPrintEvent;
 use Modules\SalesOrder\Models\PrintLog;
 use Modules\SalesOrder\Models\PrintLogAttribute;
@@ -49,12 +48,8 @@ class BulkPrintSalesOrderLabelsAction
             $printedItems = 0;
             $reusedItems = 0;
             $sourceChanged = 0;
-            $resplitItems = 0;
             $appendedItems = 0;
             $skipped = [];
-            $mismatchNames = [];
-            $needsMode = [];
-            $needsModeNames = [];
 
             $customGroups = isset($data['items'])
                 ? collect($data['items'])->mapWithKeys(fn ($i) => [$i['order_item_id'] => collect($i['label_groups'])
@@ -90,45 +85,25 @@ class BulkPrintSalesOrderLabelsAction
                     continue;
                 }
 
-                // Check & Reuse (xem PrintSalesOrderItemLabelAction): đã có tem đang lưu hành, cách chia giữ nguyên → in lại mã cũ; đổi cách chia → hủy mã cũ, tạo mã mới
+                // Tem trùng khối lượng/tem dùng lại mã cũ, phần không trùng tạo mã mới (xem PrintLog::matchExisting)
                 $existing = PrintLog::query()->activeForItem($item->id)->get();
-                $splitDiffers = $existing->isNotEmpty() && $customGroups !== null && PrintLog::splitDiffers($existing, $groups);
-                $mode = $itemSources->get($item->id)['print_mode'] ?? null;
-                if ($splitDiffers && $mode === null) {
-                    $needsMode[$item->id] = PrintLog::prefillOf($existing);
-                    $needsModeNames[] = $item->product?->name ?? $item->product_name_raw;
+                if ($existing->isNotEmpty()) {
+                    [$reuse, $newGroups] = $customGroups !== null ? PrintLog::matchExisting($existing, $groups) : [$existing, []];
+                    if ($newGroups === []) {
+                        if (PrintLog::sourceDiffers($reuse, $source)) {
+                            PrintLog::updateSource($reuse, $source);
+                            $sourceChanged++;
+                        }
+                        $reuse->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
+                        LabelPrintEvent::record($reuse, $sessionId, $printedBy, true);
+                        array_push($logs, ...$reuse->all());
+                        $printedItems++;
+                        $reusedItems++;
 
-                    continue;
-                }
-                if (($existing->isEmpty() || $splitDiffers) && $customGroups !== null && ! ($data['confirm_weight_mismatch'] ?? false)
-                    && ! PrintLog::splitMatchesWeight($groups, (float) $item->requested_qty)) {
-                    $mismatchNames[] = $item->product?->name ?? $item->product_name_raw;
-
-                    continue;
-                }
-                if ($splitDiffers && $mode === 'append') {
-                    $groups = collect(PrintLog::appendedGroups($existing, $groups))
-                        ->map(fn ($g) => ['weight' => round($g['weight_per_label'], 3), 'qty' => $g['label_count']])
-                        ->all();
-                    if ($groups === []) {
-                        throw ValidationException::withMessages(['items' => "Mặt hàng \"{$item->product?->name}\" không thể in bổ sung: cần giữ nguyên các tem cũ và chỉ tăng số lượng / thêm quy cách mới. Muốn giảm hoặc đổi quy cách, hãy chọn \"In thay thế\"."]);
+                        continue;
                     }
+                    $groups = collect($newGroups)->map(fn ($g) => ['weight' => round($g['weight'], 3), 'qty' => $g['qty']])->all();
                     $appendedItems++;
-                } elseif ($splitDiffers) {
-                    PrintLog::revokeForResplit($existing, $printedBy, array_sum(PrintLog::splitOf($groups)));
-                    $resplitItems++;
-                } elseif ($existing->isNotEmpty()) {
-                    if (PrintLog::sourceDiffers($existing, $source)) {
-                        PrintLog::updateSource($existing, $source);
-                        $sourceChanged++;
-                    }
-                    $existing->each(fn (PrintLog $log) => $log->markReprinted($sessionId));
-                    LabelPrintEvent::record($existing, $sessionId, $printedBy, true);
-                    array_push($logs, ...$existing->all());
-                    $printedItems++;
-                    $reusedItems++;
-
-                    continue;
                 }
 
                 $attributes = $resolver->forItem($item)['attributes'];
@@ -170,19 +145,6 @@ class BulkPrintSalesOrderLabelsAction
                 $printedItems++;
             }
 
-            if ($needsMode !== []) {
-                throw new PrintModeRequiredException(
-                    $needsMode,
-                    'items',
-                    'Các mặt hàng sau đang có tem lưu hành với cách chia khác — vui lòng chọn "In bổ sung" hoặc "In thay thế" cho từng mặt hàng rồi bấm In lại: '
-                        . implode(', ', array_filter($needsModeNames)) . '.',
-                );
-            }
-
-            if ($mismatchNames !== []) {
-                throw ValidationException::withMessages(['items' => 'Tổng khối lượng tem lệch khối lượng yêu cầu ở: ' . implode(', ', array_filter($mismatchNames)) . ' — chia lại khối lượng/tem hoặc tick xác nhận in lệch.']);
-            }
-
             return [
                 'session_id' => $sessionId,
                 'logs'    => $logs,
@@ -190,7 +152,6 @@ class BulkPrintSalesOrderLabelsAction
                 'printed' => $printedItems,
                 'reused'  => $reusedItems,
                 'source_changed' => $sourceChanged,
-                'resplit' => $resplitItems,
                 'appended' => $appendedItems,
                 'skipped'  => $skipped,
             ];

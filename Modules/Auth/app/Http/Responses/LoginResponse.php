@@ -3,6 +3,7 @@
 namespace Modules\Auth\Http\Responses;
 
 use App\Enums\RoleEnum;
+use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 
 class LoginResponse implements LoginResponseContract
@@ -24,8 +25,10 @@ class LoginResponse implements LoginResponseContract
         // khác với remember token của Laravel dùng để tự động đăng nhập lại.
         if ($request->boolean('remember')) {
             $redirect->withCookie(cookie('pref_remember', '1', 60 * 24 * 365));
+            $redirect->withCookie(cookie('pref_email', Str::lower($request->string('email')), 60 * 24 * 365));
         } else {
             $redirect->withCookie(cookie()->forget('pref_remember'));
+            $redirect->withCookie(cookie()->forget('pref_email'));
         }
 
         return $redirect;

@@ -2,6 +2,7 @@
 
 namespace Modules\SalesOrder\Support;
 
+use Illuminate\Support\Collection;
 use Modules\GoodsReceipt\Models\ProductBatch;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 use Modules\SalesOrder\Models\PrintLog;
@@ -10,7 +11,7 @@ use Modules\SalesOrder\Models\SalesOrderItem;
 
 class BulkPrintPrefillResolver
 {
-    /** @return array<string, array{origin: ?string, batch_id: ?string, batch_text: ?string, vendor_id: ?string, vendor_name: ?string, partner_product_id: ?string, supplier_name: ?string, printed: int, has_batches: bool}> */
+    /** @return array<string, array{origin: 'history'|'customer'|null, batch_id: ?string, batch_text: ?string, vendor_id: ?string, vendor_name: ?string, partner_product_id: ?string, supplier_name: ?string, printed: int, has_batches: bool}> */
     public function forOrder(SalesOrder $order): array
     {
         $items = $order->items;
@@ -29,7 +30,9 @@ class BulkPrintPrefillResolver
             ->pluck('product_id')
             ->flip();
 
-        return $items->mapWithKeys(function (SalesOrderItem $item) use ($logs, $productsWithBatches) {
+        $customerSources = $this->customerSources($order, $productIds);
+
+        return $items->mapWithKeys(function (SalesOrderItem $item) use ($logs, $productsWithBatches, $customerSources) {
             $itemLogs = $logs->get($item->id, collect());
             $active = $itemLogs->where('status', PrintLogStatus::Active);
             $base = [
@@ -52,7 +55,19 @@ class BulkPrintPrefillResolver
                 ]];
             }
 
-            // Chưa in lần nào: không tự điền lô / nguồn cung — nhân viên kho phải tự chọn đúng lô thực tế.
+            // Chưa in lần nào: điền nguồn cung theo lần in gần nhất cùng khách hàng + cùng sản phẩm; lô không điền — nhân viên kho tự chọn đúng lô thực tế.
+            if ($item->product_id !== null && ($prev = $customerSources->get($item->product_id))) {
+                return [$item->id => $base + [
+                    'origin'        => 'customer',
+                    'batch_id'      => null,
+                    'batch_text'    => null,
+                    'vendor_id'     => $prev->vendor_id,
+                    'vendor_name'   => $prev->vendor?->name,
+                    'partner_product_id' => $prev->partnerProduct?->vendor_id === $prev->vendor_id ? $prev->partner_product_id : null,
+                    'supplier_name' => $prev->vendor_id ? null : $prev->supplier_name,
+                ]];
+            }
+
             return [$item->id => $base + [
                 'origin'        => null,
                 'batch_id'      => null,
@@ -63,6 +78,41 @@ class BulkPrintPrefillResolver
                 'supplier_name' => null,
             ]];
         })->all();
+    }
+
+    /** @return Collection<string, PrintLog> product_id => tem đang lưu hành mới nhất có nguồn cung, ở các đơn khác của cùng khách hàng (theo customer_id, đơn import chưa liên kết thì theo tên khách hàng) */
+    private function customerSources(SalesOrder $order, Collection $productIds): Collection
+    {
+        $customerName = trim((string) $order->customer_name);
+        if (($order->customer_id === null && $customerName === '') || $productIds->isEmpty()) {
+            return new Collection();
+        }
+
+        $latest = PrintLog::query()
+            ->join('sales_order_items as soi', 'soi.id', '=', 'print_logs.order_item_id')
+            ->join('sales_orders as so', 'so.id', '=', 'soi.order_id')
+            ->when(
+                $order->customer_id !== null,
+                fn ($q) => $q->where('so.customer_id', $order->customer_id),
+                fn ($q) => $q->where('so.customer_name', $customerName),
+            )
+            ->where('so.id', '!=', $order->id)
+            ->whereNull('so.deleted_at')
+            ->whereNull('soi.deleted_at')
+            ->whereIn('soi.product_id', $productIds)
+            ->where('print_logs.status', PrintLogStatus::Active->value)
+            ->where(fn ($q) => $q->whereNotNull('print_logs.vendor_id')->orWhereNotNull('print_logs.supplier_name'))
+            ->groupBy('soi.product_id')
+            ->selectRaw('soi.product_id, max(print_logs.id) as log_id')
+            ->pluck('log_id', 'product_id');
+
+        $logs = PrintLog::query()
+            ->whereIn('id', $latest->values())
+            ->with(['vendor:id,name', 'partnerProduct:id,vendor_id'])
+            ->get()
+            ->keyBy('id');
+
+        return $latest->map(fn (string $logId) => $logs->get($logId))->filter();
     }
 
     public static function batchText(ProductBatch $batch): string

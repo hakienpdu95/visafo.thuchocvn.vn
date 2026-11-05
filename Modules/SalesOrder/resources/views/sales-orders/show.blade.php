@@ -114,7 +114,6 @@
         'requested_qty_raw' => (float) $item->requested_qty,
         'actual_qty'    => $item->actual_qty !== null ? number_format((float) $item->actual_qty, 3) : null,
         'attributes_url' => route('backend.sales-orders.items.batch-attributes', $item),
-        'history_url'   => route('backend.sales-orders.items.print-logs', $item),
         'label_template_id' => $item->product?->label_template_id,
         'batches_url'   => route('backend.sales-orders.items.batches', $item),
         'partner_products_url' => route('backend.sales-orders.items.partner-products', $item),
@@ -226,7 +225,7 @@
                                     Đã chọn <span x-text="selectedItems.length"></span>/<span x-text="items.length"></span> mặt hàng · <span class="font-mono" x-text="totalLabels"></span> tem
                                 </span>
                             </div>
-                            <p class="text-xs text-base-content/50 pb-2">Mặc định chỉ tick các mặt hàng chưa in hoặc có thay đổi (cách chia tem, nguồn cung). Mặt hàng đã in ổn định không cần in lại thì để trống.</p>
+                            <p class="text-xs text-base-content/50 pb-2">Mặc định chỉ tick các mặt hàng chưa in hoặc đổi nguồn cung; sửa số tem / khối lượng của mặt hàng nào thì mặt hàng đó tự được tick.</p>
 
                             <div class="rounded-lg border border-base-200">
                                 <template x-for="row in items" :key="row.id">
@@ -246,8 +245,8 @@
                                                           :class="{ 'badge-error': !groupValid(g) }"
                                                           x-text="fmtKg(g.weight) + ' ' + row.unit + ' × ' + (g.qty || 0) + ' tem'"></span>
                                                 </template>
-                                                <span class="text-xs text-error" x-show="!rowMatch(row)"
-                                                      x-text="'Lệch: ' + fmtKg(rowTotal(row)) + '/' + fmtKg(row.total)"></span>
+                                                <span class="text-xs text-base-content/50" x-show="!rowMatch(row)"
+                                                      x-text="'Tổng tem: ' + fmtKg(rowTotal(row)) + '/' + fmtKg(row.total)"></span>
                                             </div>
                                             <button type="button" class="btn btn-ghost btn-xs btn-square" @click="toggleRow(row)"
                                                     :title="row.editing ? 'Thu gọn' : 'Đổi lô xuất kho / cách chia tem'">
@@ -263,22 +262,21 @@
                                                   :title="supplierOf(row)" x-text="(row.viaGlobal ? 'Theo cấu hình chung - ' : '') + supplierOf(row)"></span>
                                             <span class="badge badge-sm badge-error badge-outline" x-show="!rowHasSource(row)"
                                                   x-text="row.hasBatches ? 'Chưa chọn lô xuất kho / nguồn cung' : 'Chưa chọn nguồn cung'"></span>
-                                            <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'history' && !sourceChanged(row)">Theo lần in trước</span>
-                                            <span class="badge badge-sm badge-info badge-outline text-[11px]" x-show="row.printed > 0 && !sourceChanged(row) && !splitChanged(row)"
-                                                  x-text="'Đã in ' + row.printed + ' tem · in lại mã cũ'"></span>
-                                            <span class="badge badge-sm badge-info text-[11px]" x-show="row.printed > 0 && sourceChanged(row) && !splitChanged(row)"
-                                                  :title="'Ghi nhận NCC mới cho ' + row.printed + ' tem đã in, giữ nguyên mã QR'">Cập nhật NCC &amp; In lại mã cũ</span>
-                                            <span class="badge badge-sm badge-primary text-[11px]" x-show="splitChanged(row) && row.printMode === 'append' && appendCount(row) > 0"
-                                                  x-text="'In bổ sung · giữ ' + row.printed + ' tem cũ, thêm ' + appendCount(row) + ' mã mới'"></span>
-                                            <span class="badge badge-sm badge-error text-[11px]" x-show="splitChanged(row) && row.printMode === 'append' && appendCount(row) === 0">Không thể in bổ sung - chọn In thay thế</span>
-                                            <span class="badge badge-sm badge-warning text-[11px]" x-show="splitChanged(row) && row.printMode === 'replace'"
-                                                  x-text="'In thay thế · hủy ' + row.printed + ' mã cũ, tạo ' + rowLabelCount(row) + ' mã mới'"></span>
+                                            <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'history' && !sourceChanged(row)">Nguồn theo lần in trước</span>
+                                            <span class="badge badge-sm badge-ghost text-[11px]" x-show="row.origin === 'customer' && !row.dirty && !row.viaGlobal"
+                                                  title="Nhà cung cấp / hàng hóa NCC của lần in gần nhất cùng mặt hàng, cùng khách hàng — có thể đổi">Nguồn theo đơn trước của khách</span>
+                                            <span class="badge badge-sm badge-ghost font-mono text-[11px]" x-show="row.printed > 0" x-text="'Đã in: ' + printedSummary(row)"></span>
+                                            <span class="badge badge-sm badge-info text-[11px]" x-show="row.printed > 0 && sourceChanged(row)">Cập nhật NCC cho tem trùng khối lượng</span>
+                                            <span class="badge badge-sm badge-primary text-[11px]" x-show="row.printed > 0 && appendCount(row) > 0"
+                                                  x-text="'+' + appendCount(row) + ' mã mới' + (reuseCount(row) > 0 ? ' · dùng lại ' + reuseCount(row) + ' mã cũ' : '')"></span>
+                                            <span class="badge badge-sm badge-info badge-outline text-[11px]" x-show="row.printed > 0 && appendCount(row) === 0"
+                                                  x-text="'Trùng tem đã in · in lại ' + reuseCount(row) + ' mã cũ'"></span>
                                         </div>
 
                                         <div x-show="row.editing" class="px-3 pb-3 bg-base-200/40">
-                                            <p class="text-xs text-info mb-2" x-show="row.printed > 0 && !splitChanged(row)">
-                                                Mặt hàng đã có tem — giữ nguyên cách chia tem thì bấm In sẽ in lại đúng mã cũ; đổi lô / nguồn cung sẽ cập nhật thông tin của chính các tem đó
-                                                (quét mã QR cũ thấy ngay nguồn mới). Đổi khối lượng / số tem sẽ tạo mã mới.
+                                            <p class="text-xs text-info mb-2" x-show="row.printed > 0">
+                                                Đã in <span class="font-mono" x-text="printedSummary(row)"></span>. Dòng nào trùng khối lượng/tem với tem đã in thì dùng lại mã cũ (đã dán lên hàng);
+                                                phần không trùng sẽ tạo mã TXNG mới để in. Tem cũ không bao giờ tự bị hủy.
                                             </p>
                                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                                                 @include('salesorder::partials.print-source-fields')
@@ -293,11 +291,13 @@
                                                                class="input input-bordered input-sm w-full font-mono"
                                                                :class="{ 'input-error': !(Number(group.weight) > 0) }">
                                                         <span class="text-base-content/40">×</span>
-                                                        <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty" @change="onRowQtyChange(row, index)"
+                                                        <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty"
                                                                class="input input-bordered input-sm w-full font-mono"
                                                                :class="{ 'input-error': !(Number.isInteger(Number(group.qty)) && Number(group.qty) >= 1) }">
-                                                        <button type="button" class="btn btn-ghost btn-sm text-error w-14" @click="removeGroup(row, index)"
-                                                                :disabled="row.groups.length <= 1">Xóa</button>
+                                                        <button type="button" class="btn btn-ghost btn-sm text-error w-14" @click="removeGroup(row, index)">Xóa</button>
+                                                        <span class="col-span-4 -mt-1 text-[11px]" x-show="groupNote(row, group)"
+                                                              :class="groupNote(row, group) === 'Mã cũ' ? 'text-base-content/50' : 'text-primary'"
+                                                              x-text="groupNote(row, group)"></span>
                                                     </div>
                                                 </template>
                                             </div>
@@ -310,54 +310,23 @@
                                                     <button type="button" class="btn btn-ghost btn-xs text-base-content/60" @click="autoSplit(row)">Đặt lại</button>
                                                 </div>
                                                 <div class="flex items-center gap-3">
-                                                    <p class="text-xs" :class="rowMatch(row) ? 'text-success' : 'text-error font-medium'">
+                                                    <p class="text-xs" :class="rowMatch(row) ? 'text-success' : 'text-base-content/60'">
                                                         Tổng số lượng tem: <span class="font-mono" x-text="fmtKg(rowTotal(row))"></span> <span x-text="row.unit"></span>
                                                         / Tổng yêu cầu: <span class="font-mono" x-text="fmtKg(row.total)"></span> <span x-text="row.unit"></span>
                                                     </p>
                                                     <button type="button" class="btn btn-primary btn-xs" @click="row.editing = false">Xong</button>
                                                 </div>
                                             </div>
-                                            <div class="mt-3 grid gap-2" x-show="splitChanged(row)">
-                                                <label class="flex items-start gap-3 rounded-lg border bg-base-100 p-3 cursor-pointer"
-                                                       :class="row.printMode === 'append' ? 'border-primary bg-primary/5' : 'border-base-200'">
-                                                    <input type="radio" class="radio radio-primary radio-sm mt-0.5" value="append" x-model="row.printMode" @change="onRowModeChange(row)">
-                                                    <span class="flex-1">
-                                                        <span class="block text-sm font-medium">In bổ sung</span>
-                                                        <span class="block text-xs text-base-content/60">Tạo thêm mã tem mới. Các mã tem cũ đã in trước đó vẫn giữ nguyên hiệu lực.</span>
-                                                        <span class="block text-xs mt-1" x-show="row.printMode === 'append'"
-                                                              :class="appendCount(row) > 0 ? 'text-primary' : 'text-error'"
-                                                              x-text="appendCount(row) > 0
-                                                                  ? 'Khi bấm In: giữ ' + row.printed + ' tem cũ, tạo thêm ' + appendCount(row) + ' mã TXNG mới.'
-                                                                  : 'Không thể in bổ sung khi giảm số lượng hoặc đổi quy cách cũ — chỉ được tăng số lượng / thêm quy cách mới. Hãy chọn In thay thế.'"></span>
-                                                    </span>
-                                                </label>
-                                                <label class="flex items-start gap-3 rounded-lg border bg-base-100 p-3 cursor-pointer"
-                                                       :class="row.printMode === 'replace' ? 'border-warning bg-warning/5' : 'border-base-200'">
-                                                    <input type="radio" class="radio radio-warning radio-sm mt-0.5" value="replace" x-model="row.printMode" @change="onRowModeChange(row)">
-                                                    <span class="flex-1">
-                                                        <span class="flex flex-wrap items-center gap-2 text-sm font-medium">
-                                                            In thay thế (Hủy tem cũ)
-                                                            <span class="badge badge-sm badge-warning text-[11px]">Chú ý: Quét mã cũ sẽ báo lỗi</span>
-                                                        </span>
-                                                        <span class="block text-xs text-base-content/60">Hủy toàn bộ các mã tem cũ của mặt hàng này và tạo bộ mã mới hoàn toàn.</span>
-                                                        <span class="block text-xs text-warning mt-1" x-show="row.printMode === 'replace'"
-                                                              x-text="'Khi bấm In: hủy ' + row.printed + ' mã cũ, tạo ' + rowLabelCount(row) + ' mã TXNG mới.'"></span>
-                                                    </span>
-                                                </label>
-                                            </div>
+                                            <p class="mt-2 text-xs text-primary" x-show="row.printed > 0"
+                                               x-text="appendCount(row) > 0
+                                                   ? 'Khi bấm In: tạo ' + appendCount(row) + ' mã TXNG mới (' + appendDetail(row) + ')' + (reuseCount(row) > 0 ? ', dùng lại ' + reuseCount(row) + ' mã cũ trùng khối lượng' : '') + '.'
+                                                   : 'Khi bấm In: toàn bộ trùng tem đã in — in lại ' + reuseCount(row) + ' mã cũ, không tạo mã mới.'"></p>
                                         </div>
                                     </div>
                                 </template>
                             </div>
                             <p class="mt-1 text-xs text-error" x-show="errors.items" x-text="errors.items"></p>
                             <p class="mt-2 alert alert-warning py-2 px-3 text-xs" x-show="notice" x-text="notice"></p>
-                            <label class="mt-2 flex items-start gap-2 cursor-pointer text-xs rounded-lg border border-error/40 bg-error/5 p-3" x-show="mismatchCount > 0">
-                                <input type="checkbox" class="checkbox checkbox-xs checkbox-error mt-0.5" x-model="confirmMismatch">
-                                <span class="text-error">
-                                    <span class="font-medium" x-text="mismatchCount + ' mặt hàng có tổng khối lượng tem lệch khối lượng yêu cầu.'"></span>
-                                    Tôi xác nhận cố ý in lệch (hao hụt, chia lại tem).
-                                </span>
-                            </label>
                         </div>
 
                     </div>
@@ -371,7 +340,7 @@
                             <button type="submit" class="btn btn-sm border-0 bg-blue-800 text-white hover:bg-blue-900"
                                     :disabled="!canRun">
                                 <span class="loading loading-spinner loading-xs" x-show="submitting"></span>
-                                <span x-text="selectedItems.length > 0 ? 'In ' + selectedItems.length + ' mặt hàng (' + totalLabels + ' tem)' : 'Chọn mặt hàng để in'"></span>
+                                <span x-text="sendItems.length > 0 ? 'In ' + sendItems.length + ' mặt hàng (' + totalLabels + ' tem)' : 'Chọn mặt hàng để in'"></span>
                             </button>
                             <button type="button" class="btn btn-ghost btn-sm" @click="confirming = false">Hủy</button>
                         </div>
@@ -434,77 +403,6 @@
 
 </div>
 
-@can('view', $salesOrder)
-<div x-data="printHistoryModal()" @open-print-history.window="openFor($event.detail)" x-cloak>
-    <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">
-        <div class="modal-box max-w-5xl">
-            <h3 class="font-bold text-lg">Lịch sử in tem của mặt hàng này</h3>
-            <p class="text-sm text-base-content/60 mt-1">
-                <span x-text="item?.product_name"></span>
-                <span x-show="!loading && logs.length > 0" x-text="'· Đã in ' + logs.length + ' lần'"></span>
-            </p>
-
-            <div class="mt-4 overflow-x-auto rounded-md border border-gray-200">
-                <table class="min-w-full border-collapse">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Thời gian</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" x-text="'SL/tem (' + (item?.unit || 'kg') + ')'"></th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Số tem</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" x-text="'Tổng (' + (item?.unit || 'kg') + ')'"></th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">HSD</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Người in</th>
-                            <th class="px-4 py-3"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-if="loading">
-                            <tr><td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">Đang tải...</td></tr>
-                        </template>
-                        <template x-if="!loading && error">
-                            <tr><td colspan="7" class="px-4 py-8 text-center text-sm text-red-600" x-text="error"></td></tr>
-                        </template>
-                        <template x-if="!loading && !error && logs.length === 0">
-                            <tr><td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">Chưa có lần in nào.</td></tr>
-                        </template>
-                        <template x-for="log in logs" :key="log.id">
-                            <tr class="border-b border-gray-100 last:border-b-0">
-                                <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
-                                    <span x-text="log.printed_at"></span>
-                                    <span class="badge badge-ghost badge-xs ml-1" x-show="log.is_reprint">In lại</span>
-                                    <span class="block text-xs text-red-500" x-show="log.active_count === 0">Tem đã thu hồi / hủy</span>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap font-mono" x-text="log.weight_per_label"></td>
-                                <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap" x-text="log.label_count"></td>
-                                <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap font-mono" x-text="log.total_weight"></td>
-                                <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap" x-text="log.exp_date"></td>
-                                <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap" x-text="log.printed_by || '—'"></td>
-                                <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap text-right">
-                                    <button type="button" x-show="log.reprint_url && log.active_count > 0" @click="reprint(log)"
-                                            class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-nowrap">
-                                        <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
-                                        In lại
-                                    </button>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-5 flex items-center justify-between gap-4">
-                <p class="text-xs italic text-gray-400 text-left">In lại chỉ mở lại tem cũ, không cộng dồn thêm khối lượng đã in.</p>
-                <button type="button" @click="close()"
-                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-nowrap">
-                    Đóng
-                </button>
-            </div>
-        </div>
-        <div class="modal-backdrop" @click="close()"></div>
-    </div>
-</div>
-@endcan
-
 @if($printable)
 <div x-data="printLabelModal()" @open-print-label.window="openFor($event.detail)" @sales-order-prefill.window="applyPrefill($event.detail)" x-cloak>
     <div class="modal" :class="{ 'modal-open': open }" @keydown.escape.window="close()">
@@ -544,9 +442,7 @@
                     <div class="form-control sm:col-span-2">
                         <div class="flex flex-wrap items-center justify-between gap-2 pb-1.5">
                             <span class="label-text font-medium">Nhóm tem <span class="text-error">*</span></span>
-                            <span class="badge badge-sm badge-info badge-outline text-[11px]" x-show="printedGroups.length > 0 && !splitChanged"
-                                  x-text="'Đã in ' + (item?.print_prefill?.printed ?? 0) + ' tem · in lại mã cũ'"></span>
-                            <span class="badge badge-sm badge-warning text-[11px]" x-show="splitChanged">Cấu hình thay đổi - Sẽ tạo mã tem mới</span>
+                            <span class="badge badge-sm badge-ghost font-mono text-[11px]" x-show="printedGroups.length > 0" x-text="'Đã in: ' + printedSummary"></span>
                         </div>
 
                         <div class="rounded-lg border border-base-200 overflow-hidden">
@@ -559,11 +455,13 @@
                                            class="input input-bordered input-sm w-full font-mono"
                                            :class="{ 'input-error': !(Number(group.weight) > 0) }">
                                     <span class="text-base-content/40">×</span>
-                                    <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty" @change="onQtyChange(index)"
+                                    <input type="number" step="1" min="1" max="200" inputmode="numeric" x-model="group.qty"
                                            class="input input-bordered input-sm w-full font-mono"
                                            :class="{ 'input-error': !(Number.isInteger(Number(group.qty)) && Number(group.qty) >= 1) }">
-                                    <button type="button" class="btn btn-ghost btn-sm text-error w-14" @click="removeGroup(index)"
-                                            :disabled="form.groups.length <= 1" title="Xóa dòng này">Xóa</button>
+                                    <button type="button" class="btn btn-ghost btn-sm text-error w-14" @click="removeGroup(index)" title="Xóa dòng này">Xóa</button>
+                                    <span class="col-span-4 -mt-1 text-[11px]" x-show="groupNote(group)"
+                                          :class="groupNote(group) === 'Mã cũ' ? 'text-base-content/50' : 'text-primary'"
+                                          x-text="groupNote(group)"></span>
                                 </div>
                             </template>
                         </div>
@@ -576,51 +474,17 @@
                                 </button>
                                 <button type="button" class="btn btn-ghost btn-sm text-base-content/60" @click="autoSplit()">Đặt lại</button>
                             </div>
-                            <p class="text-sm" :class="groupsMatch ? 'text-success' : 'text-error font-medium'">
+                            <p class="text-sm" :class="groupsMatch ? 'text-success' : 'text-base-content/60'">
                                 Tổng số lượng tem: <span class="font-mono" x-text="fmtKg(groupsTotal)"></span> <span x-text="item?.unit || 'kg'"></span>
                                 / Tổng yêu cầu: <span class="font-mono" x-text="fmtKg(requiredTotal)"></span> <span x-text="item?.unit || 'kg'"></span>
                                 <span class="text-base-content/50 font-normal" x-text="'(' + labelCount + ' tem)'"></span>
                             </p>
                         </div>
-                        <div class="mt-3 grid gap-2" x-show="splitChanged">
-                            <label class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer"
-                                   :class="form.printMode === 'append' ? 'border-primary bg-primary/5' : 'border-base-200'">
-                                <input type="radio" class="radio radio-primary radio-sm mt-0.5" value="append" x-model="form.printMode" @change="onModeChange()">
-                                <span class="flex-1">
-                                    <span class="block text-sm font-medium">In bổ sung</span>
-                                    <span class="block text-xs text-base-content/60">Tạo thêm mã tem mới. Các mã tem cũ đã in trước đó vẫn giữ nguyên hiệu lực.</span>
-                                    <span class="block text-xs mt-1" x-show="form.printMode === 'append'"
-                                          :class="appendCount > 0 ? 'text-primary' : 'text-error'"
-                                          x-text="appendCount > 0
-                                              ? 'Khi bấm In: giữ ' + (item?.print_prefill?.printed ?? 0) + ' tem cũ, tạo thêm ' + appendCount + ' mã TXNG mới.'
-                                              : 'Không thể in bổ sung khi giảm số lượng hoặc đổi quy cách cũ — chỉ được tăng số lượng / thêm quy cách mới. Hãy chọn In thay thế.'"></span>
-                                </span>
-                            </label>
-                            <label class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer"
-                                   :class="form.printMode === 'replace' ? 'border-warning bg-warning/5' : 'border-base-200'">
-                                <input type="radio" class="radio radio-warning radio-sm mt-0.5" value="replace" x-model="form.printMode" @change="onModeChange()">
-                                <span class="flex-1">
-                                    <span class="flex flex-wrap items-center gap-2 text-sm font-medium">
-                                        In thay thế (Hủy tem cũ)
-                                        <span class="badge badge-sm badge-warning text-[11px]">Chú ý: Quét mã cũ sẽ báo lỗi</span>
-                                    </span>
-                                    <span class="block text-xs text-base-content/60">Hủy toàn bộ các mã tem cũ của mặt hàng này và tạo bộ mã mới hoàn toàn.</span>
-                                    <span class="block text-xs text-warning mt-1" x-show="form.printMode === 'replace'"
-                                          x-text="'Khi bấm In: hủy ' + (item?.print_prefill?.printed ?? 0) + ' mã cũ, tạo ' + labelCount + ' mã TXNG mới.'"></span>
-                                </span>
-                            </label>
-                        </div>
+                        <p class="mt-2 text-xs text-primary" x-show="printedGroups.length > 0"
+                           x-text="appendCount > 0
+                               ? 'Khi bấm In: tạo ' + appendCount + ' mã TXNG mới' + (reuseCount > 0 ? ', dùng lại ' + reuseCount + ' mã cũ trùng khối lượng' : '') + '.'
+                               : 'Khi bấm In: toàn bộ trùng tem đã in — in lại ' + reuseCount + ' mã cũ, không tạo mã mới.'"></p>
 
-                        <div class="mt-2 rounded-lg border border-error/40 bg-error/5 p-3 space-y-2" x-show="!groupsMatch && createsCodes">
-                            <p class="text-xs text-error font-medium">
-                                Tổng khối lượng các tem (<span class="font-mono" x-text="fmtKg(groupsTotal)"></span>) đang lệch khối lượng yêu cầu (<span class="font-mono" x-text="fmtKg(requiredTotal)"></span>)
-                                — mỗi tem sẽ in đúng số "Số lượng/Tem", trang truy xuất sẽ hiển thị khối lượng này.
-                            </p>
-                            <label class="flex items-start gap-2 cursor-pointer text-xs">
-                                <input type="checkbox" class="checkbox checkbox-xs checkbox-error mt-0.5" x-model="form.confirmMismatch">
-                                <span>Tôi xác nhận cố ý in lệch khối lượng (hao hụt, chia lại tem).</span>
-                            </label>
-                        </div>
                         <p class="mt-1 text-xs text-error" x-show="labelCount > 200">Mỗi lần chỉ in tối đa 200 tem.</p>
                         <p class="mt-1 text-xs text-error" x-show="errors.label_groups" x-text="errors.label_groups"></p>
                     </div>
@@ -685,7 +549,8 @@
                     <div class="form-control sm:col-span-2">
                         <label class="label py-0 pb-1.5" for="ts-supplier">
                             <span class="label-text font-medium">Nguồn cung</span>
-                            <span class="label-text-alt text-base-content/40 text-xs">Tuỳ chọn</span>
+                            <span class="label-text-alt text-xs" :class="sourceOrigin ? 'text-info' : 'text-base-content/40'"
+                                  x-text="sourceOrigin === 'customer' ? 'Theo đơn trước của khách — có thể đổi' : (sourceOrigin === 'history' ? 'Theo lần in trước — có thể đổi' : 'Tuỳ chọn')"></span>
                         </label>
 
                         <div x-show="!form.supplierManual">
@@ -714,6 +579,17 @@
                         <p class="text-xs text-warning" x-show="form.supplierManual">Nguồn cung nhập tay sẽ không truy vết được theo nhà cung cấp.</p>
 
                         <p class="mt-1 text-xs text-error" x-show="errors.supplier_name" x-text="errors.supplier_name"></p>
+                    </div>
+
+                    <div class="form-control sm:col-span-2" x-show="!form.supplierManual">
+                        <label class="label py-0 pb-1.5" for="ts-partner">
+                            <span class="label-text font-medium">Hàng hóa nhà cung cấp</span>
+                            <span class="label-text-alt text-base-content/40 text-xs" x-show="loadingPartners">Đang tải…</span>
+                        </label>
+                        <select id="ts-partner" class="select select-bordered select-sm w-full" data-ts-placeholder="— Chọn nguồn cung trước —">
+                            <option value="">— Chọn nguồn cung trước —</option>
+                        </select>
+                        <p class="mt-1 text-xs text-error" x-show="errors.partner_product_id" x-text="errors.partner_product_id"></p>
                     </div>
 
                 </div>
@@ -755,8 +631,7 @@
                     <p class="text-xs text-base-content/40" x-show="!canSubmit && !submitting">
                         <span x-show="quarantineBlocked" class="text-error">Thiếu Phiếu kiểm dịch Thú y — không thể in tem</span>
                         <span x-show="!quarantineBlocked && datesMissing" class="text-error">Gia vị / Đồ khô: nhập đủ NSX và HSD để in tem</span>
-                        <span x-show="!quarantineBlocked && !datesMissing && createsCodes && !groupsMatch && !form.confirmMismatch" class="text-error">Tổng khối lượng tem lệch yêu cầu — chia lại hoặc tick xác nhận in lệch</span>
-                        <span x-show="!quarantineBlocked && !datesMissing && (groupsMatch || !createsCodes || form.confirmMismatch)">Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem</span>
+                        <span x-show="!quarantineBlocked && !datesMissing">Nhập khối lượng &gt; 0, số lượng tem hợp lệ và HSD để in tem</span>
                     </p>
                     <div class="ml-auto flex gap-2">
                         <button type="button" class="btn btn-ghost btn-sm" @click="close()">Hủy</button>

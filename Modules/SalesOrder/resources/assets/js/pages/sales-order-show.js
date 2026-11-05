@@ -60,8 +60,6 @@ const COLUMNS = [
                 + (d.qc_url
                     ? '<button type="button" data-action="qc" data-item-id="' + esc(d.id) + '" class="btn btn-ghost btn-xs" title="Ghi QC trước xuất">QC</button>'
                     : '')
-                + '<button type="button" data-action="history" data-item-id="' + esc(d.id) + '" class="btn btn-ghost btn-xs gap-1" title="Lịch sử in / In lại">'
-                + '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M3.05 11a9 9 0 11.5 4M3 4v5h5"/></svg>Lịch sử</button>'
                 + '</div>';
         },
     },
@@ -93,42 +91,34 @@ const splitMap = (groups) => {
 const appendCountOf = (printed, groups) => {
     const current = splitMap(printed);
     const target = splitMap(groups);
-    if (Object.entries(current).some(([k, qty]) => (target[k] ?? 0) < qty)) return 0;
     return Object.entries(target).reduce((sum, [k, qty]) => sum + Math.max(0, qty - (current[k] ?? 0)), 0);
 };
+const mergeSplitOf = (printed, groups) => {
+    const m = splitMap(printed);
+    Object.entries(splitMap(groups)).forEach(([k, qty]) => { m[k] = Math.max(m[k] ?? 0, qty); });
+    return Object.keys(m).sort().filter((k) => m[k] > 0).map((k) => ({ weight: Number(k), qty: m[k] }));
+};
 const toMilli = (w) => Math.round((Number(w) || 0) * 1000);
-const evenParts = (milli, n) => {
-    const base = Math.floor(milli / n);
-    if (n < 1 || base <= 0) return null;
-    const rest = milli - base * n;
-    return rest === 0 ? [{ weight: base / 1000, qty: n }] : [{ weight: base / 1000, qty: n - 1 }, { weight: (base + rest) / 1000, qty: 1 }];
+const matchParts = (printed, groups) => {
+    const current = splitMap(printed);
+    return Object.entries(splitMap(groups))
+        .map(([k, qty]) => ({ weight: Number(k), keep: Math.min(qty, current[k] ?? 0), add: Math.max(0, qty - (current[k] ?? 0)) }))
+        .filter((p) => p.keep + p.add > 0);
 };
-const withUids = (parts, firstUid, nextUid) => parts.map((p, k) => ({ uid: k === 0 && firstUid ? firstUid : nextUid(), weight: p.weight, qty: p.qty }));
-const isEvenSplit = (groups) => {
-    const ws = groups.map((g) => toMilli(g.weight));
-    const n = groups.reduce((s, g) => s + groupQty(g), 0);
-    return groups.length > 0 && groups.length <= 2 && n > 0 && Math.max(...ws) - Math.min(...ws) < n;
-};
-const rebalanceAll = (groups, totalKg, nextUid) => {
-    const n = groups.reduce((s, g) => s + groupQty(g), 0);
-    const parts = evenParts(toMilli(totalKg), n);
-    return parts ? withUids(parts, groups[0]?.uid, nextUid) : groups;
-};
-const redistributeAt = (groups, index, totalKg, nextUid) => {
-    if (isEvenSplit(groups)) return rebalanceAll(groups, totalKg, nextUid);
-    const others = groups.reduce((s, g, i) => (i === index ? s : s + toMilli(g.weight) * groupQty(g)), 0);
-    const parts = evenParts(toMilli(totalKg) - others, groupQty(groups[index]));
-    if (!parts) return groups;
-    const next = [...groups];
-    next.splice(index, 1, ...withUids(parts, groups[index].uid, nextUid));
-    return next;
+const reuseCountOf = (printed, groups) => matchParts(printed, groups).reduce((s, p) => s + p.keep, 0);
+const splitSummary = (printed, unit) => (printed ?? []).map((g) => fmtKg(g.weight) + ' ' + (unit || 'kg') + ' × ' + g.qty).join(', ');
+const groupNoteOf = (printed, groups, group) => {
+    if (!(printed?.length > 0) || !(Number(group.weight) > 0) || groupQty(group) < 1) return '';
+    const part = matchParts(printed, groups).find((p) => toMilli(p.weight) === toMilli(group.weight));
+    if (!part) return '';
+    if (part.add === 0) return 'Mã cũ';
+    return part.keep > 0 ? 'Dùng lại ' + part.keep + ' mã cũ, +' + part.add + ' mã mới' : '+' + part.add + ' mã mới';
 };
 const emitPrefill = (map) => window.dispatchEvent(new CustomEvent('sales-order-prefill', { detail: map }));
 const prefillOfGroups = (groups) => ({
     printed: groups.reduce((s, g) => s + groupQty(g), 0),
     printed_groups: groups.map((g) => ({ weight: Number(g.weight), qty: groupQty(g) })),
 });
-const groupsFrom = (printed, nextUid) => printed.map((g) => ({ uid: nextUid(), weight: g.weight, qty: g.qty }));
 const groupsTotalOf = (groups) => groups.reduce((sum, g) => sum + Math.round((Number(g.weight) || 0) * 1000) * groupQty(g), 0) / 1000;
 const toDdMmYy = (ymd) => {
     if (!ymd) return '';
@@ -143,7 +133,9 @@ document.addEventListener('alpine:init', () => {
         let templateTs = null;
         let supplierTs = null;
         let batchTs = null;
+        let partnerTs = null;
         let defaultTemplateId = '';
+        let prefilling = false;
 
         return {
             open: false,
@@ -159,15 +151,18 @@ document.addEventListener('alpine:init', () => {
             loadingBatches: false,
             batchCount: 0,
             batchVendors: {},
+            batchPartners: {},
             batchInfo: {},
-            form: { groups: [], printMode: 'append', confirmMismatch: false, mfg: '', exp: '', supplierManual: false, supplierText: '', vendorId: '', batchId: '', batchCode: '', template: '' },
+            partnerProducts: [],
+            partnerVendorId: '',
+            loadingPartners: false,
+            sourceOrigin: null,
+            form: { groups: [], partnerProductId: '', mfg: '', exp: '', supplierManual: false, supplierText: '', vendorId: '', batchId: '', batchCode: '', template: '' },
 
             get canSubmit() {
                 return !this.submitting
                     && this.groupsValid
-                    && (this.groupsMatch || !this.createsCodes || this.form.confirmMismatch)
                     && this.labelCount <= 200
-                    && !(this.splitChanged && this.form.printMode === 'append' && this.appendCount === 0)
                     && !!this.form.exp
                     && !this.quarantineBlocked
                     && !this.datesMissing;
@@ -213,32 +208,20 @@ document.addEventListener('alpine:init', () => {
                 return this.item?.print_prefill?.printed_groups ?? [];
             },
 
-            get splitChanged() {
-                return this.printedGroups.length > 0 && splitKey(this.form.groups) !== splitKey(this.printedGroups);
-            },
-
             get appendCount() {
                 return appendCountOf(this.printedGroups, this.form.groups);
             },
 
-            get createsCodes() {
-                return this.printedGroups.length === 0 || this.splitChanged;
+            get reuseCount() {
+                return reuseCountOf(this.printedGroups, this.form.groups);
             },
 
-            get canAutoDivide() {
-                return this.printedGroups.length === 0 || this.form.printMode === 'replace';
+            get printedSummary() {
+                return splitSummary(this.printedGroups, this.item?.unit);
             },
 
-            onQtyChange(index) {
-                if (!this.canAutoDivide || !(this.requiredTotal > 0) || groupQty(this.form.groups[index]) < 1) return;
-                this.form.groups = redistributeAt(this.form.groups, index, this.requiredTotal, () => ++this._uid);
-            },
-
-            onModeChange() {
-                if (this.form.printMode === 'replace' && !this.groupsMatch && this.requiredTotal > 0 && this.groupsValid
-                    && new Set(this.form.groups.map((g) => toMilli(g.weight))).size === 1) {
-                    this.form.groups = rebalanceAll(this.form.groups, this.requiredTotal, () => ++this._uid);
-                }
+            groupNote(group) {
+                return groupNoteOf(this.printedGroups, this.form.groups, group);
             },
 
             applyPrefill(map) {
@@ -247,9 +230,7 @@ document.addEventListener('alpine:init', () => {
             },
 
             autoSplit() {
-                this.form.groups = this.printedGroups.length > 0
-                    ? groupsFrom(this.printedGroups, () => ++this._uid)
-                    : [{ uid: ++this._uid, weight: this.requiredTotal > 0 ? this.requiredTotal : '', qty: 1 }];
+                this.form.groups = [{ uid: ++this._uid, weight: this.requiredTotal > 0 ? this.requiredTotal : '', qty: 1 }];
             },
 
             addGroup() {
@@ -257,7 +238,7 @@ document.addEventListener('alpine:init', () => {
             },
 
             removeGroup(index) {
-                if (this.form.groups.length > 1) this.form.groups.splice(index, 1);
+                this.form.groups.splice(index, 1);
             },
 
             init() {
@@ -286,6 +267,8 @@ document.addEventListener('alpine:init', () => {
                             onChange: (value) => {
                                 this.form.vendorId = value || '';
                                 this.form.supplierText = value ? (supplierTs.options[value]?.text ?? '') : '';
+                                if (!prefilling) this.sourceOrigin = null;
+                                this.loadPartners();
                             },
                         });
                     }
@@ -302,10 +285,26 @@ document.addEventListener('alpine:init', () => {
                                 const vendorId = this.batchVendors[value];
                                 if (vendorId && supplierTs?.options[vendorId]) {
                                     this.form.supplierManual = false;
+                                    if (this.batchPartners[value]) this.form.partnerProductId = this.batchPartners[value];
                                     supplierTs.setValue(vendorId);
+                                    this.syncPartner();
                                 }
                             },
                         });
+                    }
+
+                    const partnerEl = document.getElementById('ts-partner');
+                    if (partnerEl && !partnerEl.tomselect) {
+                        partnerTs = createTs(partnerEl, {
+                            placeholder: '— Chọn nguồn cung trước —',
+                            maxOptions: null,
+                            dropdownParent: 'body',
+                            onChange: (value) => {
+                                this.form.partnerProductId = value || '';
+                                if (!prefilling) this.sourceOrigin = null;
+                            },
+                        });
+                        partnerTs?.disable();
                     }
 
                     if (!window.initDatePicker) return;
@@ -356,12 +355,91 @@ document.addEventListener('alpine:init', () => {
                 supplierTs?.clear(true);
                 this.form.supplierText = '';
                 this.form.vendorId = '';
+                this.sourceOrigin = null;
+                this.loadPartners();
+            },
+
+            syncPartner() {
+                if (!partnerTs) return;
+                const vendorId = this.form.supplierManual ? '' : this.form.vendorId;
+                partnerTs.clear(true);
+                partnerTs.clearOptions();
+                partnerTs.addOptions(this.partnerProducts);
+                partnerTs.settings.placeholder = !vendorId ? '— Chọn nguồn cung trước —'
+                    : this.loadingPartners ? 'Đang tải…'
+                    : this.partnerProducts.length === 0 ? 'NCC chưa kê khai hàng hóa này' : '— Không chọn —';
+                partnerTs.control_input.setAttribute('placeholder', partnerTs.settings.placeholder);
+                partnerTs.setValue(this.form.partnerProductId || '', true);
+                (!vendorId || this.loadingPartners || this.partnerProducts.length === 0) ? partnerTs.disable() : partnerTs.enable();
+            },
+
+            async loadPartners() {
+                const vendorId = this.form.supplierManual ? '' : this.form.vendorId;
+                if (!vendorId || !this.item?.partner_products_url) {
+                    this.partnerProducts = [];
+                    this.partnerVendorId = '';
+                    this.form.partnerProductId = '';
+                    return this.syncPartner();
+                }
+                if (this.partnerVendorId === vendorId) return this.syncPartner();
+
+                const itemId = this.item.id;
+                this.partnerProducts = [];
+                this.loadingPartners = true;
+                this.syncPartner();
+                try {
+                    const res = await fetch(this.item.partner_products_url + '?vendor_id=' + encodeURIComponent(vendorId), {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    if (this.item?.id !== itemId || (this.form.supplierManual ? '' : this.form.vendorId) !== vendorId) return;
+                    this.partnerProducts = data.data ?? [];
+                    this.partnerVendorId = vendorId;
+                    if (this.form.partnerProductId && !this.partnerProducts.some((p) => p.value === this.form.partnerProductId)) this.form.partnerProductId = '';
+                    if (!this.form.partnerProductId && this.partnerProducts.length === 1) this.form.partnerProductId = this.partnerProducts[0].value;
+                } catch (e) {
+                    console.error('[print-label] load partner products failed', e);
+                } finally {
+                    this.loadingPartners = false;
+                    this.syncPartner();
+                }
+            },
+
+            sourcePrefill() {
+                const vendorId = this.form.supplierManual ? '' : this.form.vendorId;
+                return {
+                    origin: 'history',
+                    vendor_id: vendorId || null,
+                    vendor_name: vendorId ? (supplierTs?.options[vendorId]?.text ?? null) : null,
+                    partner_product_id: vendorId ? (this.form.partnerProductId || null) : null,
+                    supplier_name: vendorId ? null : (this.form.supplierText.trim() || null),
+                };
+            },
+
+            applySourcePrefill(row) {
+                const pf = row.print_prefill ?? {};
+                this.sourceOrigin = null;
+                if (pf.vendor_id) {
+                    prefilling = true;
+                    this.form.supplierManual = false;
+                    this.form.partnerProductId = pf.partner_product_id ?? '';
+                    if (!supplierTs?.options[pf.vendor_id]) supplierTs?.addOption({ value: pf.vendor_id, text: pf.vendor_name || pf.vendor_id });
+                    supplierTs?.setValue(pf.vendor_id);
+                    prefilling = false;
+                    this.sourceOrigin = pf.origin ?? null;
+                } else if (pf.supplier_name) {
+                    this.form.supplierManual = true;
+                    this.form.supplierText = pf.supplier_name;
+                    this.sourceOrigin = pf.origin ?? null;
+                }
             },
 
             async loadBatches(row) {
                 batchTs?.clear(true);
                 batchTs?.clearOptions();
                 this.batchVendors = {};
+                this.batchPartners = {};
                 this.batchInfo = {};
                 this.batchCount = 0;
                 if (!row.batches_url) return;
@@ -374,6 +452,7 @@ document.addEventListener('alpine:init', () => {
                     (data.data ?? []).forEach((b) => {
                         batchTs?.addOption({ value: b.value, text: b.text });
                         this.batchVendors[b.value] = b.vendor_id;
+                        this.batchPartners[b.value] = b.partner_product_id ?? '';
                         this.batchInfo[b.value] = { has_quarantine: !!b.has_quarantine, mfg_date: b.mfg_date, exp_date: b.exp_date };
                     });
                     this.batchCount = (data.data ?? []).length;
@@ -393,8 +472,6 @@ document.addEventListener('alpine:init', () => {
                 this.requiredTotal = Math.round(Number(row.requested_qty_raw) * 1000) / 1000;
                 this.form = {
                     groups: [],
-                    printMode: 'append',
-                    confirmMismatch: false,
                     mfg: row.requires_dates ? '' : toYmd(new Date()),
                     exp: '',
                     supplierManual: false,
@@ -402,11 +479,16 @@ document.addEventListener('alpine:init', () => {
                     vendorId: '',
                     batchId: '',
                     batchCode: '',
+                    partnerProductId: '',
                     // Ưu tiên mẫu tem gán riêng cho sản phẩm; nếu chưa có thì dùng mẫu mặc định của đơn.
                     template: row.label_template_id || defaultTemplateId || '',
                 };
                 templateTs?.setValue(this.form.template, true);
                 supplierTs?.clear(true);
+                this.partnerProducts = [];
+                this.partnerVendorId = '';
+                this.syncPartner();
+                this.applySourcePrefill(row);
                 if (this.form.mfg) mfgPicker?.setDate(this.form.mfg, false); else mfgPicker?.clear(false);
                 expPicker?.clear(false);
                 this.autoSplit();
@@ -471,12 +553,11 @@ document.addEventListener('alpine:init', () => {
                                 weight_per_label: Number(g.weight),
                                 label_count: Number(g.qty),
                             })),
-                            print_mode: this.splitChanged ? this.form.printMode : null,
-                            confirm_weight_mismatch: !this.groupsMatch && this.createsCodes && this.form.confirmMismatch,
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             supplier_name: this.form.supplierText.trim() || null,
                             vendor_id: this.form.supplierManual ? null : (this.form.vendorId || null),
+                            partner_product_id: !this.form.supplierManual && this.form.vendorId ? (this.form.partnerProductId || null) : null,
                             product_batch_id: this.form.batchId || null,
                             batch_code: this.form.batchCode || null,
                             label_template_id: this.form.template || null,
@@ -507,7 +588,10 @@ document.addEventListener('alpine:init', () => {
                         return;
                     }
 
-                    if (!data.reused && this.item) emitPrefill({ [this.item.id]: prefillOfGroups(this.form.groups) });
+                    if (!data.reused && this.item) {
+                        emitPrefill({ [this.item.id]: prefillOfGroups(mergeSplitOf(this.printedGroups, this.form.groups)) });
+                    }
+                    if (this.item) emitPrefill({ [this.item.id]: this.sourcePrefill() });
 
                     if (data.toast) window.Toast?.success?.(data.toast, { duration: 6000 });
 
@@ -532,67 +616,7 @@ document.addEventListener('alpine:init', () => {
     });
 });
 
-// ── Modal "Lịch sử in tem" + In lại ───────────────────────────────────
 document.addEventListener('alpine:init', () => {
-    Alpine.data('printHistoryModal', () => ({
-        open: false,
-        item: null,
-        logs: [],
-        loading: false,
-        reprinting: false,
-        error: '',
-
-        async openFor(row) {
-            this.item = row;
-            this.logs = [];
-            this.error = '';
-            this.loading = true;
-            this.open = true;
-
-            try {
-                const res = await fetch(row.history_url, {
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                this.logs = (await res.json()).data ?? [];
-            } catch (e) {
-                console.error('[print-history] failed', e);
-                this.error = 'Không tải được lịch sử in. Vui lòng thử lại.';
-            } finally {
-                this.loading = false;
-            }
-        },
-
-        close() { this.open = false; },
-
-        async reprint(log) {
-            if (!log.reprint_url || this.reprinting) return;
-            const win = window.open('', '_blank');
-            this.reprinting = true;
-            try {
-                const res = await fetch(log.reprint_url, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
-                    },
-                });
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
-                if (win) win.location = data.print_url;
-                else window.open(data.print_url, '_blank');
-                await this.openFor(this.item);
-            } catch (e) {
-                console.error('[print-history] reprint failed', e);
-                win?.close();
-                this.error = 'In lại thất bại: ' + e.message;
-            } finally {
-                this.reprinting = false;
-            }
-        },
-    }));
-
     // ── In tem toàn bộ đơn (Bulk Print): lô xuất kho / nguồn cung điền sẵn theo từng mặt hàng ──
     Alpine.data('bulkPrintOrder', ({ url, defaultTemplateId = '', vendors = [] }) => {
         let templateTs = null;
@@ -618,7 +642,7 @@ document.addEventListener('alpine:init', () => {
                 draft[row.id] = {
                     batchId: row.batchId, batchText: row.batchText, vendorId: row.vendorId, vendorName: row.vendorName, partnerProductId: row.partnerProductId,
                     supplierManual: row.supplierManual, supplierText: row.supplierText, dirty: row.dirty, viaGlobal: row.viaGlobal, manual: row.manual,
-                    groups: row.groups.map((g) => ({ weight: g.weight, qty: g.qty })), total: row.total,
+                    groups: row.groups.map((g) => ({ weight: g.weight, qty: g.qty })), total: row.total, printedKey: splitKey(row.printedGroups),
                 };
             });
             try { localStorage.setItem(draftKey, JSON.stringify(draft)); } catch {}
@@ -640,11 +664,14 @@ document.addEventListener('alpine:init', () => {
             _uid: 0,
             form: { template: '', mfg: '', exp: '', batchCode: '' },
             globalVendorId: '',
-            confirmMismatch: false,
             notice: '',
 
             get selectedItems() {
                 return this.items.filter((row) => row.selected);
+            },
+
+            get sendItems() {
+                return this.selectedItems.filter((row) => row.groups.length > 0);
             },
 
             get allSelected() {
@@ -659,47 +686,28 @@ document.addEventListener('alpine:init', () => {
                 this.items.forEach((row) => { row.selected = this.needsPrint(row); });
             },
 
-            createsCodes(row) {
-                return row.printed === 0 || this.splitChanged(row);
-            },
-
             needsPrint(row) {
-                return this.createsCodes(row) || this.sourceChanged(row);
+                return row.printed === 0 || this.sourceChanged(row);
             },
 
             rowSig(row) {
-                return [splitKey(row.groups), row.printMode, row.batchId || '', row.supplierManual ? 'm:' + (row.supplierText || '') : (row.vendorId || ''), row.partnerProductId || ''].join('|');
+                return [splitKey(row.groups), row.batchId || '', row.supplierManual ? 'm:' + (row.supplierText || '') : (row.vendorId || ''), row.partnerProductId || ''].join('|');
             },
 
             get selectedLabels() {
-                return this.selectedItems.reduce((sum, row) => sum + this.rowLabelCount(row), 0);
+                return this.sendItems.reduce((sum, row) => sum + this.rowPrintCount(row), 0);
             },
 
-            get mismatchCount() {
-                return this.selectedItems.filter((row) => this.createsCodes(row) && !this.rowMatch(row)).length;
-            },
-
-            canAutoDivideRow(row) {
-                return row.printed === 0 || !(row.printedGroups?.length > 0) || row.printMode === 'replace';
-            },
-
-            onRowQtyChange(row, index) {
-                if (!this.canAutoDivideRow(row) || !(row.total > 0) || groupQty(row.groups[index]) < 1) return;
-                row.groups = redistributeAt(row.groups, index, row.total, () => ++this._uid);
-            },
-
-            onRowModeChange(row) {
-                if (row.printMode === 'replace' && !this.rowMatch(row) && row.total > 0 && row.groups.every((g) => this.groupValid(g))
-                    && new Set(row.groups.map((g) => toMilli(g.weight))).size === 1) {
-                    row.groups = rebalanceAll(row.groups, row.total, () => ++this._uid);
-                }
+            rowPrintCount(row) {
+                if (row.printed === 0) return this.rowLabelCount(row);
+                return this.appendCount(row) > 0 ? this.appendCount(row) : this.reuseCount(row);
             },
 
             fmtKg,
             ...cascade,
 
             get introText() {
-                return `Lô xuất kho và nguồn cung của ${this.preview.total} mặt hàng đã được điền sẵn (theo lần in trước, hoặc lô còn tồn cũ nhất). Kiểm tra lại rồi bấm "In tem"; bấm biểu tượng bút nếu cần đổi lô hoặc cách chia tem.`;
+                return `Khối lượng của ${this.preview.total} mặt hàng được điền sẵn theo đơn; nguồn cung điền theo lần in trước của mặt hàng, hoặc lần in gần nhất cùng khách hàng ở đơn trước (đổi được). Bấm biểu tượng bút để tự chia số tem và khối lượng mỗi tem — tem trùng khối lượng với tem đã in sẽ dùng lại mã cũ, phần không trùng tạo mã mới.`;
             },
 
             get globalAppliedCount() {
@@ -754,12 +762,10 @@ document.addEventListener('alpine:init', () => {
             },
 
             get canRun() {
-                const rows = this.selectedItems;
+                const rows = this.sendItems;
                 return !this.submitting && rows.length > 0 && !!this.form.exp && !!this.form.template
                     && this.totalLabels <= 2000
-                    && rows.every((row) => row.groups.length > 0 && row.groups.every((g) => this.groupValid(g)))
-                    && (this.mismatchCount === 0 || this.confirmMismatch)
-                    && !rows.some((row) => this.splitChanged(row) && row.printMode === 'append' && this.appendCount(row) === 0);
+                    && rows.every((row) => row.groups.every((g) => this.groupValid(g)));
             },
 
             groupValid(g) {
@@ -775,17 +781,28 @@ document.addEventListener('alpine:init', () => {
             },
 
             autoSplit(row) {
-                row.groups = row.printedGroups?.length > 0
-                    ? groupsFrom(row.printedGroups, () => ++this._uid)
-                    : [{ uid: ++this._uid, weight: row.total, qty: 1 }];
-            },
-
-            splitChanged(row) {
-                return row.printed > 0 && row.printedGroups?.length > 0 && splitKey(row.groups) !== splitKey(row.printedGroups);
+                row.groups = [{ uid: ++this._uid, weight: row.total, qty: 1 }];
             },
 
             appendCount(row) {
                 return appendCountOf(row.printedGroups, row.groups);
+            },
+
+            reuseCount(row) {
+                return reuseCountOf(row.printedGroups, row.groups);
+            },
+
+            printedSummary(row) {
+                return splitSummary(row.printedGroups, row.unit);
+            },
+
+            appendDetail(row) {
+                return matchParts(row.printedGroups, row.groups).filter((p) => p.add > 0)
+                    .map((p) => fmtKg(p.weight) + ' ' + row.unit + ' × ' + p.add).join(', ');
+            },
+
+            groupNote(row, group) {
+                return groupNoteOf(row.printedGroups, row.groups, group);
             },
 
             rowLabelCount(row) {
@@ -797,7 +814,7 @@ document.addEventListener('alpine:init', () => {
             },
 
             removeGroup(row, index) {
-                if (row.groups.length > 1) row.groups.splice(index, 1);
+                row.groups.splice(index, 1);
             },
 
             toggleRow(row) {
@@ -835,7 +852,6 @@ document.addEventListener('alpine:init', () => {
                         unit: r.unit,
                         total,
                         groups: [],
-                        printMode: 'append',
                         editing: false,
                         batchesUrl: r.batches_url,
                         partnerProductsUrl: r.partner_products_url,
@@ -859,7 +875,7 @@ document.addEventListener('alpine:init', () => {
                             ? { batchId: pf.batch_id ?? '', vendorId: pf.vendor_id ?? '', partnerProductId: pf.vendor_id ? (pf.partner_product_id ?? '') : '', supplierText: pf.vendor_id ? '' : (pf.supplier_name ?? '') }
                             : null,
                     });
-                    if (d?.groups?.length && d.total === total) {
+                    if (d?.groups?.length && d.total === total && (d.printedKey ?? '') === splitKey(row.printedGroups)) {
                         row.groups = d.groups.map((g) => ({ uid: ++this._uid, weight: g.weight, qty: g.qty }));
                     } else {
                         this.autoSplit(row);
@@ -881,7 +897,7 @@ document.addEventListener('alpine:init', () => {
                         if (sig === row.lastSig) return;
                         row.lastSig = sig;
                         row.blocked = '';
-                        if (this.needsPrint(row)) row.selected = true;
+                        row.selected = true;
                     });
                     saveDraft(this.items);
                 }, { deep: true });
@@ -972,7 +988,7 @@ document.addEventListener('alpine:init', () => {
                 this.submitting = true;
                 this.errors = {};
                 this.notice = '';
-                const sent = this.selectedItems;
+                const sent = this.sendItems;
 
                 try {
                     const res = await fetch(url, {
@@ -988,12 +1004,10 @@ document.addEventListener('alpine:init', () => {
                             mfg_date: this.form.mfg || null,
                             exp_date: this.form.exp,
                             batch_code: this.form.batchCode || null,
-                            confirm_weight_mismatch: this.mismatchCount > 0 && this.confirmMismatch,
                             items: sent.map((row) => ({
                                 order_item_id: row.id,
                                 ...printSourcePayload(row),
                                 label_groups: row.groups.map((g) => ({ weight_per_label: Number(g.weight), label_count: Number(g.qty) })),
-                                print_mode: this.splitChanged(row) ? row.printMode : null,
                             })),
                         }),
                     });
@@ -1028,20 +1042,20 @@ document.addEventListener('alpine:init', () => {
                             return;
                         }
                         row.selected = false;
-                        if (row.printed === 0 || this.splitChanged(row)) {
-                            row.printed = this.rowLabelCount(row);
-                            row.printedGroups = row.groups.map((g) => ({ weight: Number(g.weight), qty: groupQty(g) }));
+                        if (row.printed === 0 || this.appendCount(row) > 0) {
+                            row.printedGroups = mergeSplitOf(row.printedGroups, row.groups);
+                            row.printed = row.printedGroups.reduce((s, g) => s + g.qty, 0);
                             changed[row.id] = { printed: row.printed, printed_groups: row.printedGroups };
                         }
                         row.printedSource = { batchId: row.batchId || '', vendorId: row.supplierManual ? '' : row.vendorId, partnerProductId: row.supplierManual || !row.vendorId ? '' : (row.partnerProductId || ''), supplierText: row.supplierManual ? row.supplierText.trim() : '' };
                         row.origin = 'history';
+                        changed[row.id] = { ...(changed[row.id] ?? {}), origin: 'history', batch_id: row.batchId || null, batch_text: row.batchText || null, ...printSourcePayload(row), vendor_name: row.supplierManual ? null : (row.vendorName || null) };
                         row.dirty = false;
                         row.viaGlobal = false;
                         row.manual = false;
                         row.lastSig = this.rowSig(row);
                     });
                     this.globalVendorId = '';
-                    this.confirmMismatch = false;
                     globalTs?.clear(true);
                     clearDraft();
                     emitPrefill(changed);
@@ -1109,7 +1123,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         if (btn.dataset.action === 'print' && row.print_url) window.dispatchEvent(new CustomEvent('open-print-label', { detail: row }));
         if (btn.dataset.action === 'qc' && row.qc_url) openItemQcModal(row);
-        if (btn.dataset.action === 'history') window.dispatchEvent(new CustomEvent('open-print-history', { detail: row }));
     });
 
     window.salesOrderItemsTable = window.initTabulator('#sales-order-items-table', COLUMNS, rows, {

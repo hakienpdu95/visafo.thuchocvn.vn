@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Modules\SalesOrder\Enums\PrintLogStatus;
 
@@ -214,47 +215,25 @@ class PrintLog extends TenantAwareModel
         ];
     }
 
-    public static function splitMatchesWeight(iterable $groups, float $requested): bool
+    /**
+     * Tem đang lưu hành trùng khối lượng/tem được dùng lại (đã dán lên hàng); phần vượt hoặc khối lượng mới thì sinh mã mới.
+     *
+     * @return array{0: Collection<int, self>, 1: list<array{weight: float, qty: int}>}
+     */
+    public static function matchExisting(Collection $logs, iterable $groups): array
     {
-        $milli = 0;
+        $pool = $logs->groupBy(fn (self $log) => number_format((float) $log->weight_per_label, 3, '.', ''));
+        $reuse = new Collection();
+        $new = [];
         foreach (self::splitOf($groups) as $weight => $qty) {
-            $milli += (int) round((float) $weight * 1000) * $qty;
-        }
-
-        return $requested <= 0 || $milli === (int) round($requested * 1000);
-    }
-
-    public static function appendedGroups(iterable $logs, iterable $groups): array
-    {
-        $current = self::splitOf($logs);
-        $added = [];
-        $target = self::splitOf($groups);
-        foreach ($current as $weight => $qty) {
-            if (($target[$weight] ?? 0) < $qty) {
-                return [];
-            }
-        }
-        foreach ($target as $weight => $qty) {
-            $extra = $qty - ($current[$weight] ?? 0);
-            if ($extra > 0) {
-                $added[] = ['weight_per_label' => (float) $weight, 'label_count' => $extra];
+            $taken = ($pool->get($weight) ?? new Collection())->take($qty);
+            $reuse = $reuse->merge($taken);
+            if ($qty > $taken->count()) {
+                $new[] = ['weight' => (float) $weight, 'qty' => $qty - $taken->count()];
             }
         }
 
-        return $added;
-    }
-
-    /** Đổi cách chia tem: hủy toàn bộ tem đang lưu hành của dòng hàng để thay bằng bộ mã mới. */
-    public static function revokeForResplit(iterable $logs, ?string $userId, int $newCount): void
-    {
-        foreach ($logs as $log) {
-            $log->update([
-                'status'            => PrintLogStatus::Revoked,
-                'status_reason'     => "Đã thay bằng {$newCount} tem mới do đổi cách chia tem.",
-                'status_changed_by' => $userId,
-                'status_changed_at' => now(),
-            ]);
-        }
+        return [$reuse, $new];
     }
 
     /** Ghi nhận một lần in lại — chỉ bộ đếm/phiên in; dữ liệu nguồn đã in là bất biến. */
